@@ -5,12 +5,16 @@ from time import *
 adxl345 = i2c_adxl345(1)
 a = 0
 time_start = time()
-with open("acc.txt", "w") as writer:
-    while True:
-        if adxl345.getInterruptStatus():
-            a = a + 1
-            (x, y, z) = adxl345.getAxes()
-            print((time() - time_start)/a)
-            #data = [str(x), str(y), str(z), str(time())]
-            # writer.write(" ".join(data) + '\n')
-
+# with open("acc.txt", "w") as writer:
+#     while True:
+#         if adxl345.getInterruptStatus():
+#             a = a + 1
+#             (x, y, z) = adxl345.getAxes()
+#             print((time() - time_start)/a)
+#             #data = [str(x), str(y), str(z), str(time())]
+#             # writer.write(" ".join(data) + '\n')
+while(a<1000):
+    a = a + 1
+    if adxl345.getInterruptStatus():
+        (x, y, z) = adxl345.getAxes()
+print((time.time() - time_start) / a)
