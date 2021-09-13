@@ -46,7 +46,7 @@ time_start = time.time()
 print('Printing X, Y, Z axis values, press Ctrl-C to quit...')
 while True:
     a = a + 1
-    print((time() - time_start) / a)
+    print((time.time() - time_start) / a)
     # Read the X, Y, Z axis acceleration values and print them.
     x, y, z = accel.read()
     print('X={0}, Y={1}, Z={2}'.format(x, y, z))
