@@ -11,7 +11,6 @@ with open("acc.txt", "w") as writer:
             a = a + 1
             (x, y, z) = adxl345.getAxes()
             print(adxl345.getdatarate)
-            print((time() - time_start)/a)
             #data = [str(x), str(y), str(z), str(time())]
             # writer.write(" ".join(data) + '\n')
 
