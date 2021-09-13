@@ -40,7 +40,7 @@ accel.set_range(Adafruit_ADXL345.ADXL345_RANGE_16_G)
 #  - ADXL345_DATARATE_1600_HZ = 1600 hz
 #  - ADXL345_DATARATE_3200_HZ = 3200 hz
 # For example to set to 6.25 hz:
-accel.set_data_rate(Adafruit_ADXL345.ADXL345_DATARATE_3200HZ)
+accel.set_data_rate(Adafruit_ADXL345.ADXL345_DATARATE_3200_HZ)
 a = 0
 time_start = time.time()
 print('Printing X, Y, Z axis values, press Ctrl-C to quit...')
