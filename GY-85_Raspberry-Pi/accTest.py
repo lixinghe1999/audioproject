@@ -8,6 +8,7 @@ time_start = time()
 with open("acc.txt", "w") as writer:
     while True:
         if adxl345.getInterruptStatus():
+            a = a + 1
             (x, y, z) = adxl345.getAxes()
             print((time() - time_start)/a)
             #data = [str(x), str(y), str(z), str(time())]
