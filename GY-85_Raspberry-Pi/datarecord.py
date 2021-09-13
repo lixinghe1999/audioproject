@@ -16,7 +16,8 @@ time_start = time()
 while True:
     a = a + 1
     print((time()-time_start) / a)
-    print (adxl345)
+    print(adxl345)
+    print(hmc5883l)
     (itgready, dataready) = itg3205.getInterruptStatus()
     if dataready:
         temp = itg3205.getDieTemperature()
@@ -26,4 +27,3 @@ while True:
         print ("Y:" + str (y ))
         print ("Z:" + str (z ))
         print ("")
-    print(hmc5883l)
