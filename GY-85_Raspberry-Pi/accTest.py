@@ -5,7 +5,8 @@ from time import *
 adxl345 = i2c_adxl345(1)
 with open("acc.txt", "w") as writer:
     while True:
-        (x, y, z) = adxl345.getAxes()
-        data = [str(x), str(y), str(z), str(time())]
-        writer.write(" ".join(data) + '\n')
+        if adxl345.getInterruptStatus():
+            (x, y, z) = adxl345.getAxes()
+            data = [str(x), str(y), str(z), str(time())]
+            writer.write(" ".join(data) + '\n')
 

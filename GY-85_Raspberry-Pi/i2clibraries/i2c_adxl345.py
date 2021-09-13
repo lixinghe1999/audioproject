@@ -109,7 +109,6 @@ class i2c_adxl345:
 		ret_str += "X:    "+str(x)+"\n"
 		ret_str += "Y:    "+str(y)+"\n"
 		ret_str += "Z:    "+str(z)+"\n"
-		
 		return ret_str
 
 	def wakeUp(self):
@@ -274,8 +273,8 @@ class i2c_adxl345:
 		return self.getOptions(self.TapAxesStatus)
 	
 	def getInterruptStatus(self):
-		#	Returns	(dataready, singletap, doubletap, activity, inactivity, freefall, watermark, overrun)	
-		return self.getOptions(self.InterruptSource)
+		(dataready, singletap, doubletap, activity, inactivity, freefall, watermark, overrun) = self.getOptions(self.InterruptSource)
+		return dataready
 	
 	def getOptions(self, register):
 		options_bin = self.bus.read_byte(register)
