@@ -9,5 +9,5 @@ a = 0
 time_start = time.time()
 while True:
     a = a + 1
-    print((time() - time_start) / a)
+    print((time.time() - time_start) / a)
     print("%f %f %f"%accelerometer.acceleration)
