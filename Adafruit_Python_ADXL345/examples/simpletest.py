@@ -20,7 +20,7 @@ accel = Adafruit_ADXL345.ADXL345()
 #  - ADXL345_RANGE_8_G   = +/-8G
 #  - ADXL345_RANGE_16_G  = +/-16G
 # For example to set to +/- 16G:
-#accel.set_range(Adafruit_ADXL345.ADXL345_RANGE_16_G)
+accel.set_range(Adafruit_ADXL345.ADXL345_RANGE_16_G)
 
 # Or change the data rate to one of:
 #  - ADXL345_DATARATE_0_10_HZ = 0.1 hz
@@ -40,12 +40,13 @@ accel = Adafruit_ADXL345.ADXL345()
 #  - ADXL345_DATARATE_1600_HZ = 1600 hz
 #  - ADXL345_DATARATE_3200_HZ = 3200 hz
 # For example to set to 6.25 hz:
-#accel.set_data_rate(Adafruit_ADXL345.ADXL345_DATARATE_6_25HZ)
-
+accel.set_data_rate(Adafruit_ADXL345.ADXL345_DATARATE_3200HZ)
+a = 0
+time_start = time.time()
 print('Printing X, Y, Z axis values, press Ctrl-C to quit...')
 while True:
+    a = a + 1
+    print((time() - time_start) / a)
     # Read the X, Y, Z axis acceleration values and print them.
     x, y, z = accel.read()
     print('X={0}, Y={1}, Z={2}'.format(x, y, z))
-    # Wait half a second and repeat.
-    time.sleep(0.5)

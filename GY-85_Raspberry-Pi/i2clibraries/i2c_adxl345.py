@@ -101,6 +101,7 @@ class i2c_adxl345:
 		self.setInactivityTime()
 		self.setFreeFallThreshold()
 		self.setFreeFallTime()
+
 		self.setdatarate()
 
 		
