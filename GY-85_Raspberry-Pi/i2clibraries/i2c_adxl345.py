@@ -101,7 +101,6 @@ class i2c_adxl345:
 		self.setInactivityTime()
 		self.setFreeFallThreshold()
 		self.setFreeFallTime()
-		self.save()
 
 		
 	def __str__(self):
@@ -112,12 +111,6 @@ class i2c_adxl345:
 		ret_str += "Z:    "+str(z)+"\n"
 		
 		return ret_str
-	def save(self):
-		with open("acc.txt", "w") as writer:
-			while True:
-				(x, y, z) = self.getAxes()
-				xyz = [str(x), str(y), str(z), time()]
-				writer.write(" ".join(xyz) + '\n')
 
 	def wakeUp(self):
 		self.bus.write_byte(self.PowerControl, 0x00)
