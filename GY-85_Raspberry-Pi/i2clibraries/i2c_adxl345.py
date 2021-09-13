@@ -89,10 +89,9 @@ class i2c_adxl345:
 	def __init__(self, port, addr=0x53):
 		self.bus = i2c.i2c(port, addr)
 		
-		self.wakeUp();
-		
+		self.wakeUp()
 		# Set defaults
-		self.setScale();
+		self.setScale()
 		self.setTapThreshold()
 		self.setTapDuration()
 		self.setTapLatency()
@@ -102,16 +101,23 @@ class i2c_adxl345:
 		self.setInactivityTime()
 		self.setFreeFallThreshold()
 		self.setFreeFallTime()
+		self.save()
+
 		
 	def __str__(self):
 		ret_str = ""
-		
 		(x, y, z) = self.getAxes() 
 		ret_str += "X:    "+str(x)+"\n"
 		ret_str += "Y:    "+str(y)+"\n"
 		ret_str += "Z:    "+str(z)+"\n"
 		
 		return ret_str
+	def save(self):
+		with open("acc.txt", "w") as writer:
+			while True:
+				(x, y, z) = self.getAxes()
+				xyz = [str(x), str(y), str(z), time()]
+				writer.write(" ".join(xyz) + '\n')
 
 	def wakeUp(self):
 		self.bus.write_byte(self.PowerControl, 0x00)

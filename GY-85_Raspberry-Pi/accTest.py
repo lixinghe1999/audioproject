@@ -5,7 +5,4 @@ from time import *
 a = 0
 adxl345 = i2c_adxl345(1)
 time_start = time()
-while True:
-    a = a + 1
-    print((time()-time_start) / a)
-   # print (adxl345)
+adxl345.save()
