@@ -112,7 +112,9 @@ class i2c_adxl345:
 		ret_str += "Z:    "+str(z)+"\n"
 		return ret_str
 	def setdatarate(self):
-		self.setOption(self.BandwidthRate, 0x0F)
+		self.setOption(self.BandwidthRate, 0x0F & 0x0F)
+	def getdatarate(self):
+		return self.getOptions(self.BandwidthRate) & 0x0F
 	def wakeUp(self):
 		self.bus.write_byte(self.PowerControl, 0x00)
 		self.bus.write_byte(self.PowerControl, self.PC_Measure)
