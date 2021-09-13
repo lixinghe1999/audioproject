@@ -15,6 +15,6 @@ time_start = time()
 #             # writer.write(" ".join(data) + '\n')
 while(a<1000):
     a = a + 1
-    if adxl345.getInterruptStatus():
-        (x, y, z) = adxl345.getAxes()
+    # if adxl345.getInterruptStatus():
+    #     (x, y, z) = adxl345.getAxes()
 print((time() - time_start) / a)
