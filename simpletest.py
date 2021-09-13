@@ -1,8 +1,9 @@
 import time
 import board
+import busio
 import adafruit_adxl34x
 
-i2c = board.I2C()  # uses board.SCL and board.SDA
+i2c = busio.I2C(board.SCL, board.SDA
 accelerometer = adafruit_adxl34x.ADXL345(i2c)
 a = 0
 time_start = time.time()
