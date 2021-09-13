@@ -17,4 +17,4 @@ while(a<1000):
     a = a + 1
     if adxl345.getInterruptStatus():
         (x, y, z) = adxl345.getAxes()
-print((time.time() - time_start) / a)
+print((time() - time_start) / a)
