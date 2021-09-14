@@ -5,18 +5,20 @@ from i2c_adxl345 import *
 from i2c_itg3205 import *
 from i2c_hmc5883l import *
 import time
-a, b, c = 0, 0, 0
-adxl345 = i2c_adxl345(1)
-adxl345.setdatarate(0x0F)
-itg3205 = i2c_itg3205(1)
+
+
 hmc5883l = i2c_hmc5883l(1)
 hmc5883l.setContinuousMode()
 hmc5883l.setDeclination(3, 5)
-accwriter = open('acc.txt', 'w')
-gyrowriter = open('gyro.txt', 'w')
+
+
 compasswriter = open('compass.txt', 'w')
 time_start = time.time()
-def acc_save():
+def acc_save(time_start):
+    a = 0
+    adxl345 = i2c_adxl345(1)
+    adxl345.setdatarate(0x0F)
+    accwriter = open('acc.txt', 'w')
     while (a < 1000):
         if adxl345.getInterruptStatus():
             a = a + 1
@@ -24,7 +26,10 @@ def acc_save():
             accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
     print('acc 1000')
     print((time.time() - time_start) / a)
-def gyro_save():
+def gyro_save(time_start):
+    b = 0
+    itg3205 = i2c_itg3205(1)
+    gyrowriter = open('gyro.txt', 'w')
     while (b < 1000):
         itgready, dataready = itg3205.getInterruptStatus()
         if dataready:
@@ -33,8 +38,8 @@ def gyro_save():
             b = b + 1
     print('gyro 1000')
     print((time.time() - time_start) / b)
-thread1 = threading.Thread(target = acc_save, args = ())
-thread2 = threading.Thread(target = gyro_save, args = ())
+thread1 = threading.Thread(target = acc_save, args = (time_start))
+thread2 = threading.Thread(target = gyro_save, args =(time_start))
 thread1.start()
 thread2.start()
 thread1.join()
