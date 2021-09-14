@@ -17,25 +17,25 @@ def acc_save(time_start):
     adxl345 = i2c_adxl345(1)
     adxl345.setdatarate(0x0F)
     accwriter = open('acc.txt', 'w')
-    while (a < 1000):
+    while (a < 10000):
         if adxl345.getInterruptStatus():
             a = a + 1
             (x1, y1, z1) = adxl345.getRawAxes()
             accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
     print('acc 1000')
-    print((time.time() - time_start) / a)
+    print(a/(time.time() - time_start))
 def gyro_save(time_start):
     b = 0
     itg3205 = i2c_itg3205(1)
     gyrowriter = open('gyro.txt', 'w')
-    while (b < 1000):
+    while (b < 10000):
         itgready, dataready = itg3205.getInterruptStatus()
         if dataready:
             (x2, y2, z2) = itg3205.getDegPerSecAxes()
             gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + '\n')
             b = b + 1
     print('gyro 1000')
-    print((time.time() - time_start) / b)
+    print(b/(time.time() - time_start) / b)
 thread1 = threading.Thread(target = acc_save, args = (time_start,))
 thread2 = threading.Thread(target = gyro_save, args =(time_start,))
 thread1.start()
