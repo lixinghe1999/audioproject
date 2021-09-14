@@ -21,7 +21,7 @@ def acc_save(time_start):
         if adxl345.getInterruptStatus():
             a = a + 1
             (x1, y1, z1) = adxl345.getAxes()
-            accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
+            accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + ' ' + str(time.time()) + '\n')
     print('acc 10000')
     print(a/(time.time() - time_start))
 def gyro_save(time_start):
@@ -32,7 +32,7 @@ def gyro_save(time_start):
         itgready, dataready = itg3205.getInterruptStatus()
         if dataready:
             (x2, y2, z2) = itg3205.getDegPerSecAxes()
-            gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + '\n')
+            gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + ' ' + str(time.time()) + '\n')
             b = b + 1
     print('gyro 10000')
     print(b/(time.time() - time_start))
