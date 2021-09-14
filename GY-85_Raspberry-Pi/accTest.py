@@ -7,9 +7,9 @@ def test_samplerate():
     time_start = time()
     a = 0
     while (a<1000):
-        #if adxl345.getInterruptStatus():
-        a = a + 1
-        (x, y, z) = adxl345.getRawAxes()
+        if adxl345.getInterruptStatus():
+            a = a + 1
+            (x, y, z) = adxl345.getRawAxes()
     return (time() - time_start) / a
 
 for rate in [0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F]:
