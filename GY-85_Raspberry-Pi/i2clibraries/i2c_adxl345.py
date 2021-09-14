@@ -100,7 +100,7 @@ class i2c_adxl345:
 		# self.setInactivityTime()
 		# self.setFreeFallThreshold()
 		# self.setFreeFallTime()
-		#self.setdatarate()
+		# self.setdatarate()
 
 
 		
@@ -114,7 +114,7 @@ class i2c_adxl345:
 	def setdatarate(self, rate):
 		self.setOption(self.BandwidthRate, rate & 0x0F)
 	def getdatarate(self):
-		return self.getOptions(self.BandwidthRate) & 0x0F
+		return self.getOptions(self.BandwidthRate)
 	def wakeUp(self):
 		self.bus.write_byte(self.PowerControl, 0x00)
 		self.bus.write_byte(self.PowerControl, self.PC_Measure)
