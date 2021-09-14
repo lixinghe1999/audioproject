@@ -16,7 +16,6 @@ class i2c_adxl345:
 	InactivityThreshold = 0x25
 	InactivityTime = 0x26
 	AxesEnable = 0x27 # Axis enable control fro activity and inactivity detection
-	FreeFallThreshold = 0x28
 	FreeFallTime = 0x29
 	TapAxes = 0x2A # Axis control for single tap/double tap
 	TapAxesStatus = 0x2B # Source of tap
@@ -91,16 +90,16 @@ class i2c_adxl345:
 		
 		self.wakeUp()
 		# Set defaults
-		self.setScale()
-		self.setTapThreshold()
-		self.setTapDuration()
-		self.setTapLatency()
-		self.setTapWindow()
-		self.setActivityThreshold()
-		self.setInactivityThreshold()
-		self.setInactivityTime()
-		self.setFreeFallThreshold()
-		self.setFreeFallTime()
+		# self.setScale()
+		# self.setTapThreshold()
+		# self.setTapDuration()
+		# self.setTapLatency()
+		# self.setTapWindow()
+		# self.setActivityThreshold()
+		# self.setInactivityThreshold()
+		# self.setInactivityTime()
+		# self.setFreeFallThreshold()
+		# self.setFreeFallTime()
 		#self.setdatarate()
 
 
@@ -180,7 +179,7 @@ class i2c_adxl345:
 		# Figure out g's and then intervals based on 62.5 mg
 		# Range 0-16g
 		intervals = math.floor(math.fabs(g) / 0.0625 )
-		print( intervals);
+		print(intervals);
 		if intervals < 256:
 			self.setOption(self.ActivityThreshold, intervals)
 			
