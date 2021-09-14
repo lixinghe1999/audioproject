@@ -89,18 +89,17 @@ class i2c_adxl345:
 		self.bus = i2c.i2c(port, addr)
 		
 		self.wakeUp()
-		# Set defaults
-		# self.setScale()
-		# self.setTapThreshold()
-		# self.setTapDuration()
-		# self.setTapLatency()
-		# self.setTapWindow()
-		# self.setActivityThreshold()
-		# self.setInactivityThreshold()
-		# self.setInactivityTime()
-		# self.setFreeFallThreshold()
-		# self.setFreeFallTime()
-		# self.setdatarate()
+		#Set defaults
+		self.setScale()
+		self.setTapThreshold()
+		self.setTapDuration()
+		self.setTapLatency()
+		self.setTapWindow()
+		self.setActivityThreshold()
+		self.setInactivityThreshold()
+		self.setInactivityTime()
+		self.setFreeFallThreshold()
+		self.setFreeFallTime()
 		self.setInterrupt(self.DataReady)
 
 

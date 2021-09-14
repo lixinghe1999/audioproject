@@ -20,7 +20,7 @@ def acc_save(time_start):
     while (a < 10000):
         if adxl345.getInterruptStatus():
             a = a + 1
-            (x1, y1, z1) = adxl345.getRawAxes()
+            (x1, y1, z1) = adxl345.getAxes()
             accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
     print('acc 10000')
     print(a/(time.time() - time_start))
