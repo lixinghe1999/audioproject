@@ -1,4 +1,5 @@
 import sys
+import threading
 sys.path.insert(1,'/home/pi/audioproject/GY-85_Raspberry-Pi/i2clibraries')
 from i2c_adxl345 import *
 from i2c_itg3205 import *
@@ -15,21 +16,44 @@ accwriter = open('acc.txt', 'w')
 gyrowriter = open('gyro.txt', 'w')
 compasswriter = open('compass.txt', 'w')
 time_start = time.time()
-for i in range(10000):
-    if ( i % 200 == 0):
-        (x, y, z) = hmc5883l.getAxes()
-        compasswriter.write(str(x) + ' ' + str(y) + ' ' + str(z) + '\n')
-        c = c + 1
-    itgready, dataready = itg3205.getInterruptStatus()
-    if adxl345.getInterruptStatus():
-        (x1, y1, z1) = adxl345.getRawAxes()
-        accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
-        a = a + 1
-    else:
+def acc_save():
+    while (a < 1000):
+        if adxl345.getInterruptStatus():
+            a = a + 1
+            (x1, y1, z1) = adxl345.getRawAxes()
+            accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
+    print((time.time() - time_start) / a)
+def gyro_save():
+    while (b < 1000):
         itgready, dataready = itg3205.getInterruptStatus()
         if dataready:
             (x2, y2, z2) = itg3205.getDegPerSecAxes()
             gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + '\n')
             b = b + 1
-time_pass = time.time() - time_start
-print(a/time_pass, b/time_pass, c/time_pass)
+    print((time.time() - time_start) / b)
+thread1 = threading.Thread(target = acc_save, args = ())
+thread2 = threading.Thread(target = gyro_save, args = ())
+thread1.start()
+thread2.start()
+thread1.join()
+thread2.join()
+print('end')
+
+
+# for i in range(10000):
+#     if ( i % 200 == 0):
+#         (x, y, z) = hmc5883l.getAxes()
+#         compasswriter.write(str(x) + ' ' + str(y) + ' ' + str(z) + '\n')
+#         c = c + 1
+#     if adxl345.getInterruptStatus():
+#         (x1, y1, z1) = adxl345.getRawAxes()
+#         accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
+#         a = a + 1
+#     else:
+#         itgready, dataready = itg3205.getInterruptStatus()
+#         if dataready:
+#             (x2, y2, z2) = itg3205.getDegPerSecAxes()
+#             gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + '\n')
+#             b = b + 1
+# time_pass = time.time() - time_start
+# print(a/time_pass, b/time_pass, c/time_pass)
