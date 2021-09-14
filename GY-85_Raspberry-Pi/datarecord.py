@@ -16,27 +16,20 @@ gyrowriter = open('gyro.txt', 'w')
 compasswriter = open('compass.txt', 'w')
 time_start = time.time()
 for i in range(10000):
-    if ( a % 200 == 0):
+    if ( i % 200 == 0):
         (x, y, z) = hmc5883l.getAxes()
         compasswriter.write(str(x) + ' ' + str(y) + ' ' + str(z) + '\n')
         c = c + 1
     itgready, dataready = itg3205.getInterruptStatus()
-    if adxl345.getInterruptStatus() & dataready:
-        (x1, y1, z1) = adxl345.getRawAxes()
-        (x2, y2, z2) = itg3205.getDegPerSecAxes()
-        accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
-        gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + '\n')
-        a = a + 1
-        b = b + 1
-    elif adxl345.getInterruptStatus():
+    if adxl345.getInterruptStatus():
         (x1, y1, z1) = adxl345.getRawAxes()
         accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
         a = a + 1
-    elif dataready:
-        (x2, y2, z2) = itg3205.getDegPerSecAxes()
-        gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + '\n')
-        b = b + 1
     else:
-        pass
+        itgready, dataready = itg3205.getInterruptStatus()
+        if dataready:
+            (x2, y2, z2) = itg3205.getDegPerSecAxes()
+            gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + '\n')
+            b = b + 1
 time_pass = time.time() - time_start
 print(a/time_pass, b/time_pass, c/time_pass)
