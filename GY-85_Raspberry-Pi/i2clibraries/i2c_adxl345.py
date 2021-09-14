@@ -101,6 +101,7 @@ class i2c_adxl345:
 		# self.setFreeFallThreshold()
 		# self.setFreeFallTime()
 		# self.setdatarate()
+		self.setInterrupt(self.DataReady)
 
 
 		
@@ -111,6 +112,10 @@ class i2c_adxl345:
 		ret_str += "Y:    "+str(y)+"\n"
 		ret_str += "Z:    "+str(z)+"\n"
 		return ret_str
+	def getInterruptStatus(self):
+		(dataready, singletap, doubletap, activity, inactivity, freefall, watermark, overrun) = self.getOptions(
+			self.InterruptSource)
+		return dataready
 	def setdatarate(self, rate):
 		self.setOption(self.BandwidthRate, rate & 0x0F)
 	def getdatarate(self):
@@ -275,11 +280,7 @@ class i2c_adxl345:
 	def getTapStatus(self):
 		#	Returns (reserved, activityx, activityy, activityz, asleep, tapx, tapy, tapz)
 		return self.getOptions(self.TapAxesStatus)
-	
-	def getInterruptStatus(self):
-		(dataready, singletap, doubletap, activity, inactivity, freefall, watermark, overrun) = self.getOptions(self.InterruptSource)
-		return dataready
-	
+
 	def getOptions(self, register):
 		options_bin = self.bus.read_byte(register)
 		options = [False, False, False, False, False, False, False, False]
