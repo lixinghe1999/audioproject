@@ -13,7 +13,7 @@ def test_samplerate():
     return (time() - time_start) / a
 
 for rate in [0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F]:
-    adxl345.set_data_rate(rate)
+    adxl345.setdatarate(rate)
     print(test_samplerate())
 # with open("acc.txt", "w") as writer:
 #     while True:
