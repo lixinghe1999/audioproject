@@ -22,6 +22,7 @@ def acc_save():
             a = a + 1
             (x1, y1, z1) = adxl345.getRawAxes()
             accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
+    print('acc 1000')
     print((time.time() - time_start) / a)
 def gyro_save():
     while (b < 1000):
@@ -30,6 +31,7 @@ def gyro_save():
             (x2, y2, z2) = itg3205.getDegPerSecAxes()
             gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + '\n')
             b = b + 1
+    print('gyro 1000')
     print((time.time() - time_start) / b)
 thread1 = threading.Thread(target = acc_save, args = ())
 thread2 = threading.Thread(target = gyro_save, args = ())
