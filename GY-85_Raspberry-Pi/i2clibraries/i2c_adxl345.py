@@ -16,6 +16,7 @@ class i2c_adxl345:
 	InactivityThreshold = 0x25
 	InactivityTime = 0x26
 	AxesEnable = 0x27 # Axis enable control fro activity and inactivity detection
+	FreeFallThreshold = 0x28
 	FreeFallTime = 0x29
 	TapAxes = 0x2A # Axis control for single tap/double tap
 	TapAxesStatus = 0x2B # Source of tap
