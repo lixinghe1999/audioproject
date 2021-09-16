@@ -15,7 +15,7 @@ def voice_record(name, stream, frames):
     stream.close()
     wf = wave.open(name, 'wb')
     wf.setnchannels(CHANNELS)
-    wf.setsampwidth(FORMAT)
+    wf.setsampwidth(16*8)
     wf.setframerate(RATE)
     wf.writeframes(block)
     wf.close()
