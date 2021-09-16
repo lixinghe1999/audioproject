@@ -17,15 +17,15 @@ def acc_save(time_start):
     adxl345 = i2c_adxl345(1)
     adxl345.setdatarate(0x0F)
     accwriter = open('acc.txt', 'w')
-    # acc = ''
+    acc = ''
     while (a < 10000):
         if adxl345.getInterruptStatus():
             a = a + 1
             (x1, y1, z1) = adxl345.getAxes()
-        #     acc = acc + str(x1) + ' ' + str(y1) + ' ' + str(z1) + ' ' + str(time.time()) + '\n'
-        # else:
-        #     accwriter.write(acc)
-        #     acc = ''
+            acc = acc + str(x1) + ' ' + str(y1) + ' ' + str(z1) + ' ' + str(time.time()) + '\n'
+        else:
+            accwriter.write(acc)
+            acc = ''
     print('acc 10000')
     print(a/(time.time() - time_start))
 def gyro_save(time_start):
