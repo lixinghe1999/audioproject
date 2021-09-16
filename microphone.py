@@ -33,8 +33,8 @@ def open_mic_stream(index, rate = 44100):
 
 if __name__ == "__main__":
     pa = pyaudio.PyAudio()
-    thread1 = threading.Thread(target=voice_record, args=('mic1', open_mic_stream(1), 200))
-    thread2 = threading.Thread(target=voice_record, args=('mic2', open_mic_stream(2), 200))
+    thread1 = threading.Thread(target=voice_record, args=('mic1.wav', open_mic_stream(1), 100000))
+    thread2 = threading.Thread(target=voice_record, args=('mic2.wav', open_mic_stream(2), 100000))
     thread1.start()
     thread2.start()
     thread1.join()
