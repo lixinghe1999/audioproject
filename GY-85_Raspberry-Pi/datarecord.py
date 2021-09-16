@@ -5,13 +5,34 @@ from i2c_adxl345 import *
 from i2c_itg3205 import *
 from i2c_hmc5883l import *
 import time
+import pyaudio
+import threading
+import wave
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 44100
 
+def voice_record(name, stream, frames):
+    block = stream.read(frames, exception_on_overflow=False)
+    stream.stop_stream()
+    stream.close()
+    wf = wave.open(name, 'wb')
+    wf.setnchannels(CHANNELS)
+    wf.setsampwidth(2)
+    wf.setframerate(RATE)
+    wf.writeframes(block)
+    wf.close()
+    print(time.time()-time_start)
 
-hmc5883l = i2c_hmc5883l(1)
-hmc5883l.setContinuousMode()
-hmc5883l.setDeclination(3, 5)
-compasswriter = open('compass.txt', 'w')
-time_start = time.time()
+def open_mic_stream(index, frames):
+    stream = pyaudio.PyAudio().open(format = FORMAT,
+                             channels = CHANNELS,
+                             rate = RATE,
+                             input = True,
+                             input_device_index = index,
+                             frames_per_buffer = frames)
+
+    return stream
 def acc_save(time_start):
     a = 0
     adxl345 = i2c_adxl345(1)
@@ -40,29 +61,23 @@ def gyro_save(time_start):
             b = b + 1
     print('gyro 10000')
     print(b/(time.time() - time_start))
-thread1 = threading.Thread(target = acc_save, args = (time_start,))
-thread2 = threading.Thread(target = gyro_save, args =(time_start,))
-thread1.start()
-thread2.start()
-thread1.join()
-thread2.join()
-print('end')
+if __name__ == "__main__":
+    #hmc5883l = i2c_hmc5883l(1)
+    #hmc5883l.setContinuousMode()
+    #hmc5883l.setDeclination(3, 5)
+    #compasswriter = open('compass.txt', 'w')
+    time_start = time.time()
+    thread1 = threading.Thread(target = acc_save, args = (time_start,))
+    thread2 = threading.Thread(target = gyro_save, args =(time_start,))
+    thread3 = threading.Thread(target=voice_record, args=('mic1.wav', open_mic_stream(1, 100000), 100000))
+    thread4 = threading.Thread(target=voice_record, args=('mic2.wav', open_mic_stream(2, 100000), 100000))
+    thread1.start()
+    thread2.start()
+    thread3.start()
+    thread4.start()
+    thread1.join()
+    thread2.join()
+    thread3.join()
+    thread4.join()
+    print('end')
 
-
-# for i in range(10000):
-#     if ( i % 200 == 0):
-#         (x, y, z) = hmc5883l.getAxes()
-#         compasswriter.write(str(x) + ' ' + str(y) + ' ' + str(z) + '\n')
-#         c = c + 1
-#     if adxl345.getInterruptStatus():
-#         (x1, y1, z1) = adxl345.getRawAxes()
-#         accwriter.write(str(x1) + ' ' + str(y1) + ' ' + str(z1) + '\n')
-#         a = a + 1
-#     else:
-#         itgready, dataready = itg3205.getInterruptStatus()
-#         if dataready:
-#             (x2, y2, z2) = itg3205.getDegPerSecAxes()
-#             gyrowriter.write(str(x2) + ' ' + str(y2) + ' ' + str(z2) + '\n')
-#             b = b + 1
-# time_pass = time.time() - time_start
-# print(a/time_pass, b/time_pass, c/time_pass)
