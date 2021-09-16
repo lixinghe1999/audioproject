@@ -1,5 +1,5 @@
 
-import pyaudio
+import python-pyaudio
 import struct
 import math
 import datetime
