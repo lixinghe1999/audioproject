@@ -23,9 +23,9 @@ def acc_save(time_start):
             a = a + 1
             (x1, y1, z1) = adxl345.getAxes()
             acc = acc + str(x1) + ' ' + str(y1) + ' ' + str(z1) + ' ' + str(time.time()) + '\n'
-            if a % 2000 == 0:
-                acc = ''
-                accwriter.write(acc)
+            # if a % 2000 == 0:
+            #     acc = ''
+    accwriter.write(acc)
     print('acc 10000')
     print(a/(time.time() - time_start))
 def gyro_save(time_start):
