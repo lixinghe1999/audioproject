@@ -1,10 +1,6 @@
 
 import pyaudio
-import struct
-import math
-import datetime
-import time
-import audioop
+import threading
 
 INITIAL_TAP_THRESHOLD = 200
 INITIAL_TAP_THRESHOLD1 = 200
@@ -14,60 +10,26 @@ CHANNELS = 1
 RATE = 44100
 INPUT_BLOCK_TIME = 0.0001
 INPUT_FRAMES_PER_BLOCK = int(RATE*INPUT_BLOCK_TIME)
-printed = 1000
-printed1 = 1000
-timeKonig1 = None
-timeKonig = None
-detectedmic1 = False
-detectedmic2 = False
+def voice_record(stream, frames):
+    block = stream.read(frames, exception_on_overflow=False)
+    print(type(block), len(block))
+    return block
 
-def get_rms( block ):
-    return audioop.rms(block, 2)
+def open_mic_stream(index, rate = 44100):
+    stream = pyaudio.PyAudio().open(format = FORMAT,
+                             channels = CHANNELS,
+                             rate = RATE,
+                             input = True,
+                             input_device_index = index,
+                             frames_per_buffer = INPUT_FRAMES_PER_BLOCK)
 
-def get_rms1( block1 ):
-    return audioop.rms(block1, 2)
-
-class TapTester(object):
-    def __init__(self):
-        self.pa = pyaudio.PyAudio()
-        self.stream = self.open_mic_stream()
-        self.stream1 = self.open_mic_stream1()
-        self.tap_threshold = INITIAL_TAP_THRESHOLD
-        self.tap_threshold1 = INITIAL_TAP_THRESHOLD1
-
-    def stop(self):
-        self.stream.close()
-
-    def open_mic_stream( self ):
-
-        stream = self.pa.open(   format = FORMAT,
-                                 channels = CHANNELS,
-                                 rate = RATE,
-                                 input = True,
-                                 input_device_index = 1,
-                                 frames_per_buffer = INPUT_FRAMES_PER_BLOCK)
-
-        return stream
-    def open_mic_stream1( self ):
-
-        stream1 = self.pa.open(  format = FORMAT,
-                                 channels = CHANNELS,
-                                 rate = RATE,
-                                 input = True,
-                                 input_device_index = 2,
-                                 frames_per_buffer = INPUT_FRAMES_PER_BLOCK)
-
-        return stream1
-
-    def listen(self):
-        block = self.stream.read(INPUT_FRAMES_PER_BLOCK, exception_on_overflow = False)
-        amplitude = get_rms( block )
-        block1 = self.stream1.read(INPUT_FRAMES_PER_BLOCK, exception_on_overflow = False)
-        amplitude1 = get_rms( block1 )
-        print(len(block), len(block1))
-
+    return stream
 
 if __name__ == "__main__":
-    tt = TapTester()
-    for i in range(1):
-        tt.listen()
+    pa = pyaudio.PyAudio()
+    thread1 = threading.Thread(target=voice_record, args=(1,))
+    thread2 = threading.Thread(target=voice_record, args=(2,))
+    thread1.start()
+    thread2.start()
+    thread1.join()
+    thread2.join()
