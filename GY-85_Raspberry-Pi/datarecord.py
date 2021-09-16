@@ -16,7 +16,7 @@ def acc_save(time_start):
     a = 0
     adxl345 = i2c_adxl345(1)
     adxl345.setdatarate(0x0F)
-    accwriter = open('acc.txt', 'w')
+    accwriter = open('acc.txt', 'w', buffering=1024)
     while (a < 10000):
         if adxl345.getInterruptStatus():
             a = a + 1
@@ -27,7 +27,7 @@ def acc_save(time_start):
 def gyro_save(time_start):
     b = 0
     itg3205 = i2c_itg3205(1)
-    gyrowriter = open('gyro.txt', 'w')
+    gyrowriter = open('gyro.txt', 'w' , buffering=1024)
     while (b < 10000):
         itgready, dataready = itg3205.getInterruptStatus()
         if dataready:
