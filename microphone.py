@@ -64,7 +64,7 @@ class TapTester(object):
         amplitude = get_rms( block )
         block1 = self.stream1.read(INPUT_FRAMES_PER_BLOCK, exception_on_overflow = False)
         amplitude1 = get_rms( block1 )
-        print(len(amplitude), len(amplitude1))
+        print(len(block), len(block1))
 
 
 if __name__ == "__main__":
