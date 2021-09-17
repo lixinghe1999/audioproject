@@ -62,7 +62,7 @@ def gyro_save(time_start):
             b = b + 1
     print('gyro 10000')
     print(b/(time.time() - time_start))
-def compass_save(time_start):
+def compass_save():
     c = 0
     hmc5883l = i2c_hmc5883l(1)
     hmc5883l.setContinuousMode()
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     # thread4.join()
     # #
     thread1 = Process(target = acc_save, args=(time_start,))
-    thread2 = Process(target = compass_save(), args=(time_start,))
+    thread2 = Process(target = compass_save, args=())
     #thread2 = Process(target = gyro_save, args =(time_start,))
     thread3 = Process(target = voice_record, args=('mic1.wav', open_mic_stream(1, 1024), 120000))
     thread4 = Process(target = voice_record, args=('mic2.wav', open_mic_stream(2, 1024), 120000))
