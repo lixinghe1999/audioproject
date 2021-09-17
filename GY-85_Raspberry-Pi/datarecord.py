@@ -68,11 +68,11 @@ def compass_save():
     hmc5883l.setContinuousMode()
     hmc5883l.setDeclination(3, 5)
     compasswriter = open('compass.txt', 'w')
-    while (c<10):
+    while (c<300):
         (x3, y3, z3) = hmc5883l.getAxes()
         compasswriter.write(str(x3) + ' ' + str(y3) + ' ' + str(z3) + ' ' + str(time.time()) + '\n')
         c = c + 1
-        time.sleep(0.5)
+        time.sleep(0.01)
 if __name__ == "__main__":
 
     time_start = time.time()

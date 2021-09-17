@@ -33,19 +33,20 @@ def GLA(iter, Zxx, phase):
     Zxx = Zxx * phase
     t, audio = signal.istft(Zxx, fs=2500)
     return audio, Zxx
-fig ,axs = plt.subplots(3,2)
-data = read_data('../data/acc.txt')
-data = interpolation(data)
-for i in range(3):
-    f, t, Zxx = signal.stft(data[:, i], fs=2500)
-    phase_random = np.exp(2j * np.pi * np.random.rand(*Zxx.shape))
-    phase_acc = np.exp(1j * np.angle(Zxx))
-    Zxx = np.abs(Zxx)
-    Zxx[:, :10] = 0
-    audio, Zxx_new = GLA(10, Zxx, phase_random)
-    axs[i, 0].plot(data[:, i])
-    axs[i, 1].plot(audio)
-    #t, audio = signal.istft(Zxx, fs=2500)
-    #axs[i].plot(audio)
-    #axs[i].plot(t, np.convolve(audio, np.ones(100)/100, mode='same'))
-plt.show()
+if __name__ == "__main__":
+    fig ,axs = plt.subplots(3,2)
+    data = read_data('../data/acc.txt')
+    data = interpolation(data)
+    for i in range(3):
+        f, t, Zxx = signal.stft(data[:, i], fs=2500)
+        phase_random = np.exp(2j * np.pi * np.random.rand(*Zxx.shape))
+        phase_acc = np.exp(1j * np.angle(Zxx))
+        Zxx = np.abs(Zxx)
+        Zxx[:, :10] = 0
+        audio, Zxx_new = GLA(10, Zxx, phase_random)
+        axs[i, 0].plot(data[:, i])
+        axs[i, 1].plot(audio)
+        #t, audio = signal.istft(Zxx, fs=2500)
+        #axs[i].plot(audio)
+        #axs[i].plot(t, np.convolve(audio, np.ones(100)/100, mode='same'))
+    plt.show()
