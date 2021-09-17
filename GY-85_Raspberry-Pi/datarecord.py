@@ -83,8 +83,8 @@ if __name__ == "__main__":
     # #
     thread1 = Process(target = acc_save, args=(time_start,))
     thread2 = Process(target = gyro_save, args =(time_start,))
-    thread3 = Process(target = voice_record, args=('mic1.wav', open_mic_stream(1, 100000), 100000))
-    thread4 = Process(target = voice_record, args=('mic2.wav', open_mic_stream(2, 100000), 100000))
+    thread3 = Process(target = voice_record, args=('mic1.wav', open_mic_stream(1, 100000), 200000))
+    thread4 = Process(target = voice_record, args=('mic2.wav', open_mic_stream(2, 100000), 200000))
     thread1.start()
     thread2.start()
     thread3.start()
