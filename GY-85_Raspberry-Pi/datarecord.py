@@ -23,7 +23,7 @@ def voice_record(name, stream, frames):
     wf.setframerate(RATE)
     wf.writeframes(block)
     wf.close()
-    print(time.time()-time_start)
+    print(frames/(time.time()-time_start))
 
 def open_mic_stream(index, frames):
     stream = pyaudio.PyAudio().open(format = FORMAT,
