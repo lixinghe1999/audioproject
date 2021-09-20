@@ -40,7 +40,7 @@ def acc_save(time_start):
     adxl345.setdatarate(0x0F)
     accwriter = open('acc.txt', 'w')
     acc = ''
-    while (a < 10000):
+    while (a < 100000):
         if adxl345.getInterruptStatus():
             a = a + 1
             (x1, y1, z1) = adxl345.getAxes()
@@ -48,8 +48,11 @@ def acc_save(time_start):
         else:
             accwriter.write(acc)
             acc = ''
+        if a % 10000 == 0:
+            print(10000 / (time.time() - time_start))
+            time_start = time.time()
     print('acc 10000')
-    print(a/(time.time() - time_start))
+
 def gyro_save(time_start):
     b = 0
     itg3205 = i2c_itg3205(1)
@@ -89,17 +92,18 @@ if __name__ == "__main__":
     # thread3.join()
     # thread4.join()
     # #
-    thread1 = Process(target = acc_save, args=(time_start,))
-    thread2 = Process(target = compass_save, args=())
-    #thread2 = Process(target = gyro_save, args =(time_start,))
-    thread3 = Process(target = voice_record, args=('mic1.wav', open_mic_stream(1, 1024), 120000))
-    thread4 = Process(target = voice_record, args=('mic2.wav', open_mic_stream(2, 1024), 120000))
-    thread1.start()
-    thread2.start()
-    thread3.start()
-    thread4.start()
-    thread1.join()
-    thread2.join()
-    thread3.join()
-    thread4.join()
+    acc_save(time_start)
+    # thread1 = Process(target = acc_save, args=(time_start,))
+    # thread2 = Process(target = compass_save, args=())
+    # #thread2 = Process(target = gyro_save, args =(time_start,))
+    # thread3 = Process(target = voice_record, args=('mic1.wav', open_mic_stream(1, 1024), 120000))
+    # thread4 = Process(target = voice_record, args=('mic2.wav', open_mic_stream(2, 1024), 120000))
+    # thread1.start()
+    # thread2.start()
+    # thread3.start()
+    # thread4.start()
+    # thread1.join()
+    # thread2.join()
+    # thread3.join()
+    # thread4.join()
 
