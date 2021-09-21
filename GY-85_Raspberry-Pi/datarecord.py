@@ -18,7 +18,7 @@ def voice_record(name, stream, frames):
     time_start = time.time()
     block = stream.read(frames, exception_on_overflow=False)
     print(frames / (time.time() - time_start))
-    wf = wave.open(name + '_' + str(time_start) + '.wav , 'wb')
+    wf = wave.open(name + '_' + str(time_start) + '.wav' , 'wb')
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(2)
     wf.setframerate(RATE)
