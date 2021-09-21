@@ -15,13 +15,14 @@ RATE = 44100
 #CHUNK = 8192
 
 def voice_record(name, stream, frames):
+    time_start = time.time()
+    block = stream.read(frames, exception_on_overflow=False)
+    with open('time_stamp.txt', 'w') as f:
+        f.write(time_start + ' ' + str(frames / (time.time() - time_start)) + ' ' + name)
     wf = wave.open(name, 'wb')
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(2)
     wf.setframerate(RATE)
-    time_start = time.time()
-    block = stream.read(frames, exception_on_overflow=False)
-    print(frames / (time.time() - time_start))
     wf.writeframes(block)
     stream.stop_stream()
     stream.close()
