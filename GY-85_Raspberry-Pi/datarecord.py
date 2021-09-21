@@ -19,11 +19,9 @@ def voice_record(name, stream, frames):
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(2)
     wf.setframerate(RATE)
-    data = bytes('', 'utf-8')
-    for i in range(0, int(frames / CHUNK)):
-        data = data + stream.read(CHUNK, exception_on_overflow=False)
-    wf.writeframes(data)
+    block = stream.read(frames, exception_on_overflow=False)
     print(frames / (time.time() - time_start))
+    wf.writeframes(block)
     stream.stop_stream()
     stream.close()
     wf.close()
