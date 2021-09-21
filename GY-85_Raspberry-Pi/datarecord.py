@@ -12,25 +12,27 @@ from multiprocessing import Process
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
+CHUNK = 1024
 
 def voice_record(name, stream, frames):
-    block = stream.read(frames, exception_on_overflow=False)
-    print(frames / (time.time() - time_start))
-    stream.stop_stream()
-    stream.close()
     wf = wave.open(name, 'wb')
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(2)
     wf.setframerate(RATE)
-    wf.writeframes(block)
+    for i in range(0, int(frames / CHUNK )):
+        block = stream.read(frames, exception_on_overflow=False)
+        wf.writeframes(block)
+    print(frames / (time.time() - time_start))
+    stream.stop_stream()
+    stream.close()
     wf.close()
-def open_mic_stream(index, frames):
+def open_mic_stream(index):
     stream = pyaudio.PyAudio().open(format = FORMAT,
                              channels = CHANNELS,
                              rate = RATE,
                              input = True,
                              input_device_index = index,
-                             frames_per_buffer = frames)
+                             frames_per_buffer = CHUNK)
 
     return stream
 def acc_save(time_start, num):
@@ -75,13 +77,13 @@ def compass_save(num):
 if __name__ == "__main__":
 
     time_start = time.time()
-    num = 100000
-    micframe = num * 5
+    num = 10000
+    micframe = num * 10
     # thread1 = Process(target = acc_save, args=(time_start, num))
     # thread2 = Process(target = compass_save, args=(num, ))
     #thread2 = Process(target = gyro_save, args =(time_start,))
     #thread3 = Process(target = voice_record, args=('mic1.wav', open_mic_stream(1, 1024), micframe))
-    thread4 = Process(target = voice_record, args=('mic2.wav', open_mic_stream(2, 1024), micframe))
+    thread4 = Process(target = voice_record, args=('mic2.wav', open_mic_stream(2), micframe))
     # thread1.start()
     # thread2.start()
     # thread3.start()
