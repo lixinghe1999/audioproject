@@ -21,7 +21,7 @@ def voice_record(name, stream, frames):
     wf.setframerate(RATE)
     time_1 = time.time()
     block = stream.read(frames, exception_on_overflow=False)
-    print(frames / (time.time() - time_1)
+    print(frames / (time.time() - time_1))
     wf.writeframes(block)
     stream.stop_stream()
     stream.close()
