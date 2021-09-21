@@ -75,7 +75,7 @@ def compass_save(num):
 if __name__ == "__main__":
 
     time_start = time.time()
-    num = 10000
+    num = 100
     micframe = num * 10
     # thread1 = Process(target = acc_save, args=(time_start, num))
     # thread2 = Process(target = compass_save, args=(num, ))
