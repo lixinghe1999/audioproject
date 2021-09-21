@@ -79,17 +79,17 @@ if __name__ == "__main__":
     time_start = time.time()
     num = 10000
     micframe = num * 10
-    # thread1 = Process(target = acc_save, args=(time_start, num))
+    thread1 = Process(target = acc_save, args=(time_start, num))
     # thread2 = Process(target = compass_save, args=(num, ))
     #thread2 = Process(target = gyro_save, args =(time_start,))
-    #thread3 = Process(target = voice_record, args=('mic1.wav', open_mic_stream(1, 1024), micframe))
+    thread3 = Process(target = voice_record, args=('mic1.wav', open_mic_stream(1, micframe), micframe))
     thread4 = Process(target = voice_record, args=('mic2.wav', open_mic_stream(2, micframe), micframe))
-    # thread1.start()
+    thread1.start()
     # thread2.start()
-    # thread3.start()
+    thread3.start()
     thread4.start()
-    # thread1.join()
+    thread1.join()
     # thread2.join()
-    # thread3.join()
+    thread3.join()
     thread4.join()
 
