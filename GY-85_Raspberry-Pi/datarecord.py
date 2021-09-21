@@ -19,9 +19,9 @@ def voice_record(name, stream, frames):
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(2)
     wf.setframerate(RATE)
-    time_1 = time.time()
+    time_start = time.time()
     block = stream.read(frames, exception_on_overflow=False)
-    print(frames / (time.time() - time_1))
+    print(frames / (time.time() - time_start))
     wf.writeframes(block)
     stream.stop_stream()
     stream.close()
@@ -35,12 +35,13 @@ def open_mic_stream(index, frames):
                              frames_per_buffer = frames)
 
     return stream
-def acc_save(time_start, num):
+def acc_save(num):
     a = 0
     adxl345 = i2c_adxl345(1)
     adxl345.setdatarate(0x0F)
     accwriter = open('acc.txt', 'w')
     acc = ''
+    time_start = time.time()
     while (a < num):
         if adxl345.getInterruptStatus():
             a = a + 1
@@ -51,10 +52,11 @@ def acc_save(time_start, num):
             acc = ''
     print('acc', a / (time.time() - time_start))
 
-def gyro_save(time_start, num):
+def gyro_save(num):
     b = 0
     itg3205 = i2c_itg3205(1)
     gyrowriter = open('gyro.txt', 'w')
+    time_start = time.time()
     while (b < num):
         itgready, dataready = itg3205.getInterruptStatus()
         if dataready:
@@ -75,13 +77,11 @@ def compass_save(num):
         c = c + 1
         time.sleep(0.1)
 if __name__ == "__main__":
-
-    time_start = time.time()
     num = 10000
     micframe = num * 10
-    thread1 = Process(target = acc_save, args=(time_start, num))
+    thread1 = Process(target = acc_save, args=(num,))
     # thread2 = Process(target = compass_save, args=(num, ))
-    #thread2 = Process(target = gyro_save, args =(time_start,))
+    #thread2 = Process(target = gyro_save, args =(num,))
     thread3 = Process(target = voice_record, args=('mic1.wav', open_mic_stream(1, micframe), micframe))
     thread4 = Process(target = voice_record, args=('mic2.wav', open_mic_stream(2, micframe), micframe))
     thread1.start()
