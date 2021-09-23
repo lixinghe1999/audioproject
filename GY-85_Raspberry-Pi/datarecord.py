@@ -9,10 +9,12 @@ import pyaudio
 import threading
 import wave
 from multiprocessing import Process
+import argparse
+
+
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
-#CHUNK = 8192
 
 def voice_record(name, stream, frames):
     time_start = time.time()
@@ -26,13 +28,13 @@ def voice_record(name, stream, frames):
     stream.stop_stream()
     stream.close()
     wf.close()
-def open_mic_stream(index, frames):
+def open_mic_stream(index):
     stream = pyaudio.PyAudio().open(format = FORMAT,
                              channels = CHANNELS,
                              rate = RATE,
                              input = True,
                              input_device_index = index,
-                             frames_per_buffer = frames)
+                             frames_per_buffer = RATE)
 
     return stream
 def acc_save(num):
@@ -70,20 +72,25 @@ def compass_save(num):
     hmc5883l.setContinuousMode()
     hmc5883l.setDeclination(3, 5)
     compasswriter = open('compass.txt', 'w')
-    num / 3000
-    while (c < int(num / 300)):
+    while (c < num):
         (x3, y3, z3) = hmc5883l.getAxes()
         compasswriter.write(str(x3) + ' ' + str(y3) + ' ' + str(z3) + ' ' + str(time.time()) + '\n')
         c = c + 1
         time.sleep(0.1)
 if __name__ == "__main__":
-    num = 10000
-    micframe = num * 10
-    thread1 = Process(target = acc_save, args=(num,))
-    thread2 = Process(target = compass_save, args=(num, ))
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('time', metavar='t', type=int, default = 10, help='time of data recording')
+    parser.add_argument('mode', metavar='m', type=int, default = 10, help='whether use acc, gyro, compass')
+    args = parser.parse_args()
+
+    accframe = args.time * 3000
+    compassframe = args.time * 10
+    micframe = args.time * 44100
+    thread1 = Process(target = acc_save, args=(accframe,))
+    thread2 = Process(target = compass_save, args=(compassframe, ))
     #thread2 = Process(target = gyro_save, args =(num,))
-    thread3 = Process(target = voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
-    thread4 = Process(target = voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
+    thread3 = Process(target = voice_record, args=('mic1', open_mic_stream(1), micframe))
+    thread4 = Process(target = voice_record, args=('mic2', open_mic_stream(2), micframe))
     thread1.start()
     thread2.start()
     thread3.start()
