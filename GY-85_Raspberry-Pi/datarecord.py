@@ -80,6 +80,7 @@ def compass_save(num):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--time', action = "store",type=int, default = 10, required=False, help='time of data recording')
+    parser.add_argument('--mode', action="store", type=int, default = 1, required=False, help='time of data recording')
     args = parser.parse_args()
 
     accframe = args.time * 3000
@@ -87,17 +88,20 @@ if __name__ == "__main__":
     compassframe = args.time * 10
     micframe = args.time * 44100
     thread1 = Process(target = acc_save, args=(accframe,))
-    thread2 = Process(target = compass_save, args=(compassframe, ))
+    if args.mode == 0:
+        thread2 = Process(target=compass_save, args=(compassframe,))
     thread3 = Process(target = voice_record, args=('mic1', open_mic_stream(1), micframe))
     thread4 = Process(target = voice_record, args=('mic2', open_mic_stream(2), micframe))
     #thread5 = Process(target=gyro_save, args=(gyroframe,))
     thread1.start()
-    thread2.start()
+    if args.mode == 0:
+        thread2.start()
     thread3.start()
     thread4.start()
     #thread5.start()
     thread1.join()
-    thread2.join()
+    if args.mode == 0:
+        thread2.join()
     thread3.join()
     thread4.join()
     #thread5.join()
