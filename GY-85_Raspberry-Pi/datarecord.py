@@ -76,16 +76,16 @@ def compass_save(num):
         (x3, y3, z3) = hmc5883l.getAxes()
         compasswriter.write(str(x3) + ' ' + str(y3) + ' ' + str(z3) + ' ' + str(time.time()) + '\n')
         c = c + 1
-        time.sleep(0.1)
+        time.sleep(0.02)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--time', action = "store",type=int, default = 10, required=False, help='time of data recording')
-    parser.add_argument('--mode', action="store", type=int, default = 1, required=False, help='time of data recording')
+    parser.add_argument('--mode', action="store", type=int, default = 0, required=False, help='time of data recording')
     args = parser.parse_args()
 
     accframe = args.time * 3000
     gyroframe = args.time * 1500
-    compassframe = args.time * 10
+    compassframe = args.time * 50
     micframe = args.time * 44100
     thread1 = Process(target = acc_save, args=(accframe,))
     if args.mode == 0:

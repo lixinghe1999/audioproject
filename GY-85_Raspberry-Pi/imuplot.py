@@ -22,7 +22,7 @@ def interpolation(data):
     start_time = data[0, 3]
     t_norm = data[:, 3] - start_time
     f_linear = interpolate.interp1d(t_norm, data[:, :3], axis=0)
-    t_new = np.linspace(0, max(t_norm), int(max(t_norm) * 2500))
+    t_new = np.linspace(0, max(t_norm), int(max(t_norm) * 3000))
     return f_linear(t_new)
 
 def phase_estimation(Zxx, phase):
@@ -44,26 +44,25 @@ def euler(accel, compass):
     compassX, compassY, compassZ = compass
     pitch = 180 * math.atan2(accelX, math.sqrt(accelY*accelY + accelZ*accelZ))/math.pi
     roll = 180 * math.atan2(accelY, math.sqrt(accelX*accelX + accelZ*accelZ))/math.pi
-    mag_x = compassX * math.cos(pitch) + compassY * math.sin(roll)*math.sin(pitch) + compassZ*math.cos(roll)*math.sin(pitch)
+    mag_x = compassX * math.cos(pitch) + compassY * math.sin(roll) * math.sin(pitch) + compassZ*math.cos(roll)*math.sin(pitch)
     mag_y = compassY * math.cos(roll) - compassZ * math.sin(roll)
-    # print(pitch, roll)
-    plt.scatter(mag_x, mag_y)
 
     yaw = 180 * math.atan2(-mag_y, mag_x)/math.pi
-    #print(yaw)
+    print(yaw)
     return [roll, pitch, yaw]
-def smooth(acc_data):
+def smooth(acc_data, width):
     for i in range(3):
-        acc_data[:, i] = np.convolve(acc_data[:, i], np.ones(100)/100, mode='same')
+        acc_data[:, i] = np.convolve(acc_data[:, i], np.ones(width)/width, mode='same')
     return acc_data
 def re_coordinate(acc_data, compass):
     compass_num = 0
     max_num = np.shape(compass)[0] - 1
     rotationmatrix = np.eye(3)
-    smooth_acc = smooth(acc_data)
+    smooth_acc = smooth(acc_data, 500)
+    smooth_compass = smooth(compass, 5)
     for i in range(np.shape(acc_data)[0]):
         data1 = acc_data[i, :]
-        data2 = compass[min(compass_num, max_num), :]
+        data2 = smooth_compass[min(compass_num, max_num), :]
         if data1[-1] > data2[-1] and compass_num <= max_num:
             compass_num = compass_num + 1
             #print(euler(smooth_acc[i, :-1], data2[:-1]))
@@ -73,30 +72,33 @@ def re_coordinate(acc_data, compass):
     return acc_data
 if __name__ == "__main__":
     # read data, get absolute value, estimate phase == reconstruction from time-frequency
-    # fig ,axs = plt.subplots(3,2)
-    # data = read_data('../data/acc.txt')
+    # fig ,axs = plt.subplots(3, 2)
+    # data = read_data('../test/acc.txt')
+    # # compass = read_data('../test/compass3.txt')
+    # # data = re_coordinate(data, compass)
     # data = interpolation(data)
     # for i in range(3):
-    #     f, t, Zxx = signal.stft(data[:, i], fs=2500)
+    #     f, t, Zxx = signal.stft(data[:, i], fs=3000)
     #     phase_random = np.exp(2j * np.pi * np.random.rand(*Zxx.shape))
     #     phase_acc = np.exp(1j * np.angle(Zxx))
     #     Zxx = np.abs(Zxx)
-    #     Zxx[:, :10] = 0
-    #     audio, Zxx_new = GLA(10, Zxx, phase_random)
+    #     Zxx[:10, :] = 0
+    #     audio, Zxx_new = GLA(0, Zxx, phase_acc)
     #     axs[i, 0].plot(data[:, i])
-    #     axs[i, 1].plot(audio)
-    #     #t, audio = signal.istft(Zxx, fs=2500)
-    #     #axs[i].plot(audio)
-    #     #axs[i].plot(t, np.convolve(audio, np.ones(100)/100, mode='same'))
+    #     axs[i, 1].imshow(Zxx[:, :])
+    #
+    #     #
+    #     # axs[i, 0].plot(data[:, i])
+    #     # axs[i, 1].plot(audio)
     # plt.show()
 
     # re-coordinate acc to global frame by acc & compass
-    acc_data = read_data('../acc.txt')
-    compass = read_data('../compass.txt')
+    acc_data = read_data('../test/acc.txt')
+    compass = read_data('../test/compass.txt')
     acc_data = re_coordinate(acc_data, compass)
-    acc_data = interpolation(acc_data)
+    #acc_data = interpolation(acc_data)
 
-    #fig, axs = plt.subplots(3, 1)
-    # for i in range(3):
-    #     plt.plot(acc_data[:, i])
+    fig, axs = plt.subplots(3, 1)
+    for i in range(3):
+        axs[i].plot(acc_data[:, i])
     plt.show()
