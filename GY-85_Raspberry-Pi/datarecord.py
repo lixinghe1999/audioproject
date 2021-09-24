@@ -79,8 +79,7 @@ def compass_save(num):
         time.sleep(0.1)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('time', metavar='t', type=int, default = 10, required=False, help='time of data recording')
-    parser.add_argument('mode', metavar='m', type=int, default = 10, required=False, help='whether use acc, gyro, compass')
+    parser.add_argument('--time', action = "store",type=int, default = 10, required=False, help='time of data recording')
     args = parser.parse_args()
 
     accframe = args.time * 3000
