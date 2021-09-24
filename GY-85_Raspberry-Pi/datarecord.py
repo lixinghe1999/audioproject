@@ -28,13 +28,13 @@ def voice_record(name, stream, frames):
     stream.stop_stream()
     stream.close()
     wf.close()
-def open_mic_stream(index):
+def open_mic_stream(index, frames):
     stream = pyaudio.PyAudio().open(format = FORMAT,
                              channels = CHANNELS,
                              rate = RATE,
                              input = True,
                              input_device_index = index,
-                             frames_per_buffer = RATE)
+                             frames_per_buffer = frames)
 
     return stream
 def acc_save(num):
@@ -90,8 +90,8 @@ if __name__ == "__main__":
     thread1 = Process(target = acc_save, args=(accframe,))
     if args.mode == 0:
         thread2 = Process(target=compass_save, args=(compassframe,))
-    thread3 = Process(target = voice_record, args=('mic1', open_mic_stream(1), micframe))
-    thread4 = Process(target = voice_record, args=('mic2', open_mic_stream(2), micframe))
+    thread3 = Process(target = voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
+    thread4 = Process(target = voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
     #thread5 = Process(target=gyro_save, args=(gyroframe,))
     thread1.start()
     if args.mode == 0:
