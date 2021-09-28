@@ -120,7 +120,7 @@ def normalize(Zxx):
 if __name__ == "__main__":
     # read data, get absolute value, estimate phase == reconstruction from time-frequency
     fig, axs = plt.subplots(3, 2)
-    path = '../exp1/HE/55db/4/'
+    path = '../exp1/HE/70db/1/'
     #path = '../test/'
     data = read_data(path + 'acc.txt')
     compass = read_data(path + 'compass.txt')

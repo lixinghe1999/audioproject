@@ -90,7 +90,7 @@ if __name__ == "__main__":
     micframe = args.time * 44100
     thread1 = Process(target = acc_save, args=(accframe1, 1))
     if args.mode == 0:
-        thread2 = Process(target=acc_save, args=(accframe2, 6))
+        thread2 = Process(target=acc_save, args=(accframe2, 0))
         #thread3 = Process(target=compass_save, args=(compassframe,))
     thread4 = Process(target = voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
     thread5 = Process(target = voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
