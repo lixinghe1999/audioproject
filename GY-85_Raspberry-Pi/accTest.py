@@ -6,6 +6,6 @@ adxl345_1 = i2c_adxl345(1)
 adxl345_2 = i2c_adxl345(6)
 while True:
     print (adxl345_1)
-    time.sleep (0.5)
+    time.sleep(0.5)
     print(adxl345_2)
     time.sleep(0.5)
