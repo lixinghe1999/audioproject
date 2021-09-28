@@ -37,9 +37,9 @@ def open_mic_stream(index, frames):
                              frames_per_buffer = frames)
 
     return stream
-def acc_save(num):
+def acc_save(num, port):
     a = 0
-    adxl345 = i2c_adxl345(1)
+    adxl345 = i2c_adxl345(port)
     adxl345.setdatarate(0x0F)
     accwriter = open('acc.txt', 'w')
     acc = ''
@@ -79,30 +79,32 @@ def compass_save(num):
         time.sleep(0.07)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--time', action = "store",type=int, default = 10, required=False, help='time of data recording')
-    parser.add_argument('--mode', action="store", type=int, default = 0, required=False, help='time of data recording')
+    parser.add_argument('--time', action = "store",type=int, default = 5, required=False, help='time of data recording')
+    parser.add_argument('--mode', action="store", type=int, default = 0, required=False, help='type')
     args = parser.parse_args()
 
     accframe = args.time * 3000
     gyroframe = args.time * 1500
     compassframe = args.time * 15
     micframe = args.time * 44100
-    thread1 = Process(target = acc_save, args=(accframe,))
+    thread1 = Process(target = acc_save, args=(accframe, 1))
     if args.mode == 0:
-        thread2 = Process(target=compass_save, args=(compassframe,))
-    thread3 = Process(target = voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
-    thread4 = Process(target = voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
-    #thread5 = Process(target=gyro_save, args=(gyroframe,))
+        thread2 = Process(target=acc_save, args=(accframe, 6))
+        thread3 = Process(target=compass_save, args=(compassframe,))
+    thread4 = Process(target = voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
+    thread5 = Process(target = voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
+
     thread1.start()
     if args.mode == 0:
         thread2.start()
-    thread3.start()
+        thread3.start()
     thread4.start()
-    #thread5.start()
+    thread5.start()
+
     thread1.join()
     if args.mode == 0:
         thread2.join()
-    thread3.join()
+        thread3.join()
     thread4.join()
-    #thread5.join()
+    thread5.join()
 
