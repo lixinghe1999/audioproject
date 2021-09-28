@@ -11,9 +11,9 @@ i = 0
 time_start = time.time()
 while (i<1000):
     i = i + 1
-    #print (adxl345_1)
-    (x1, y1, z1) = adxl345_2.getAxes()
-    acc = str(x1) + ' ' + str(y1) + ' ' + str(z1) + ' ' + str(time.time()) + '\n'
+    if adxl345_2.getInterruptStatus():
+        (x1, y1, z1) = adxl345_2.getAxes()
+        acc = str(x1) + ' ' + str(y1) + ' ' + str(z1) + ' ' + str(time.time()) + '\n'
 print(1000/(time.time() - time_start))
 
 
