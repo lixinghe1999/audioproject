@@ -1,7 +1,5 @@
 from i2clibraries import i2c
 import math
-from time import *
-
 class i2c_adxl345:
 	
 	DeviceID = 0x00
