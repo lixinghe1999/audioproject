@@ -52,7 +52,7 @@ def acc_save(num, port):
         else:
             accwriter.write(acc)
             acc = ''
-    print('acc', a / (time.time() - time_start))
+    print('port:', port, a / (time.time() - time_start))
 
 def gyro_save(num):
     b = 0
