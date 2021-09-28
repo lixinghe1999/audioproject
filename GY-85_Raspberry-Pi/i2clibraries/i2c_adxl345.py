@@ -153,7 +153,7 @@ class i2c_adxl345:
 			self.setOption(self.TapWindow, intervals)
 			
 	# Scale can be 2, 4, 8, or 16 (default)
-	def setScale(self, scale=16):
+	def setScale(self, scale=2):
 		if scale == 2:
 			self.axesScale = 2;
 			self.setOption(self.DataFormat, self.DF_Range_2g)

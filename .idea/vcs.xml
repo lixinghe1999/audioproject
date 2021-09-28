@@ -2,12 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/A-Convolutional-Recurrent-Neural-Network-for-Real-Time-Speech-Enhancement" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/CRN" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Speech-enhancement" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/denoiser" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/py-webrtcns" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/python-webrtc-audio-processing" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/python-webrtc-audio-processing/webrtc-audio-processing" vcs="Git" />
   </component>
 </project>
