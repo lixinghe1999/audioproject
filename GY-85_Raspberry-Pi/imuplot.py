@@ -75,8 +75,8 @@ def re_coordinate(acc, compass):
             rotationmatrix = R.from_euler('xyz', euler(smooth_acc[i, :-1], data2[:-1]), degrees=True).as_matrix()
         acc[i, :-1] = np.dot(rotationmatrix, data1[:-1].transpose())
     return acc
-def noise_reduce(Zxx, p):
-    left, right = p
+def noise_reduce(Zxx):
+
     shape = Zxx.shape
     low = int((shape[0] - 1) * 100 / 1500)
     high = int((shape[0] - 1) * 800 / 1500)
@@ -84,11 +84,12 @@ def noise_reduce(Zxx, p):
     Zxx[high:, :] = 0
     Zxx = np.abs(Zxx)
 
-    left = ((left - 1) * 8 + 6) / 14.7
-    right = ((right - 1) * 8 + 6) / 14.7
-    noise = np.zeros((shape[0]))
-    j = 0
-    n = 1
+    # left, right = p
+    # left = ((left - 1) * 8 + 6) / 14.7
+    # right = ((right - 1) * 8 + 6) / 14.7
+    # noise = np.zeros((shape[0]))
+    # j = 0
+    # n = 1
     # for i in range(shape[1]):
     #     if n == 1:
     #         noise = noise * 0.8 + 0.2 * Zxx[:, i]
@@ -106,7 +107,7 @@ def normalize(Zxx):
     Zmax, Zmin = Zxx.max(), Zxx.min()
     Zxx = (Zxx - Zmin) / (Zmax - Zmin)
     #Zxx = np.clip(Zxx, 0.4, 1)
-    #Zxx = 10**(Zxx)
+    Zxx = np.exp(Zxx)
     # Zxx_smooth = np.mean(Zxx, axis=1)
     # # Zxx_smooth = np.zeros(shape)
     # # for i in range(shape[0]):
@@ -119,26 +120,27 @@ def normalize(Zxx):
 if __name__ == "__main__":
     # read data, get absolute value, estimate phase == reconstruction from time-frequency
     fig, axs = plt.subplots(3, 2)
-    path = '../exp1/HE/70db/4/'
+    path = '../exp1/HE/55db/4/'
+    #path = '../test/'
     data = read_data(path + 'acc.txt')
     compass = read_data(path + 'compass.txt')
     files = os.listdir(path)
-    for file in files:
-        if file[3] == '1':
-            mic1, Zxx1 = get_wav(path + file)
-            time1 = float(file.split('.')[0].split('_')[1])
-            p1 = peaks(Zxx1)[0], peaks(Zxx1)[1]
-        if file[3] == '2':
-            mic2, Zxx2 = get_wav(path + file)
-            time2 = float(file.split('.')[0].split('_')[1])
-            p2 = peaks(Zxx1)[0], peaks(Zxx1)[1]
+    # for file in files:
+    #     if file[3] == '1':
+    #         mic1, Zxx1 = get_wav(path + file)
+    #         time1 = float(file.split('.')[0].split('_')[1])
+    #         p1 = peaks(Zxx1)[0], peaks(Zxx1)[1]
+    #     if file[3] == '2':
+    #         mic2, Zxx2 = get_wav(path + file)
+    #         time2 = float(file.split('.')[0].split('_')[1])
+    #         p2 = peaks(Zxx1)[0], peaks(Zxx1)[1]
     #data = re_coordinate(data, compass)
     #data = interpolation(data)
     for i in range(3):
         f, t, Zxx = signal.stft(data[:, i], nperseg=seg_len, noverlap=overlap, fs=rate)
         # phase_random = np.exp(2j * np.pi * np.random.rand(*Zxx.shape))
         # phase_acc = np.exp(1j * np.angle(Zxx))
-        Zxx = noise_reduce(Zxx, p1)
+        Zxx = noise_reduce(Zxx)
         Zxx, entro = normalize(Zxx)
         #audio, Zxx_new = GLA(0, Zxx, phase_acc)
         #t, audio = signal.istft(Zxx, nperseg=seg_len, noverlap=overlap, fs=rate)
@@ -146,7 +148,7 @@ if __name__ == "__main__":
         axs[i, 0].set_aspect(1/300)
         # axs[i, 1].imshow(entro, extent=[0, 5, 1, 0])
         # axs[i, 1].set_aspect(5)
-        axs[i, 1].plot(entro)
+        axs[i, 1].plot(data[:, i])
     plt.show()
 
     # re-coordinate acc to global frame by acc & compass

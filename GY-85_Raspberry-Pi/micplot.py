@@ -23,7 +23,7 @@ def peaks(Zxx):
     peaks, dict = find_peaks(sum_Zxx, distance=m, width=[m,n], prominence=1*np.mean(sum_Zxx))
     return dict['left_ips'], dict['right_ips']
 if __name__ == "__main__":
-    path = '../exp1/HE/70db/4/'
+    path = '../exp1/HE/55db/3/'
     files = os.listdir(path)
     fig, axs = plt.subplots(2, 2)
     for file in files:
