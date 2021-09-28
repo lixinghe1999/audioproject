@@ -83,13 +83,14 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default = 0, required=False, help='type')
     args = parser.parse_args()
 
-    accframe = args.time * 3000
+    accframe1 = args.time * 3000
+    accframe2 = args.time * 400
     gyroframe = args.time * 1500
     compassframe = args.time * 15
     micframe = args.time * 44100
-    thread1 = Process(target = acc_save, args=(accframe, 6))
+    thread1 = Process(target = acc_save, args=(accframe1, 1))
     if args.mode == 0:
-        thread2 = Process(target=acc_save, args=(accframe, 1))
+        thread2 = Process(target=acc_save, args=(accframe2, 6))
         thread3 = Process(target=compass_save, args=(compassframe,))
     thread4 = Process(target = voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
     thread5 = Process(target = voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
