@@ -84,7 +84,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     accframe1 = args.time * 3000
-    accframe2 = args.time * 400
+    accframe2 = args.time * 350
     gyroframe = args.time * 1500
     compassframe = args.time * 15
     micframe = args.time * 44100
