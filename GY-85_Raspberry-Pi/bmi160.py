@@ -14,6 +14,7 @@ while(i<1000):
       'az': data[2]
     })
     i = i + 1
+    time.sleep(0.001)
 print(1000/(time.time() - time_start))
 #while True:
   #data = sensor.getAcceleration()
