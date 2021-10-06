@@ -13,7 +13,7 @@ import wave
 
 seg_len = 256
 overlap = 128
-rate = 3000
+rate = 1600
 def read_data(file):
     fileobject = open(file, 'r')
     lines = fileobject.readlines()
@@ -119,7 +119,7 @@ def normalize(Zxx):
     Zmax, Zmin = Zxx.max(), Zxx.min()
     Zxx = (Zxx - Zmin) / (Zmax - Zmin)
     #Zxx = np.clip(Zxx, 0.4, 1)
-    Zxx = 1000**(Zxx)
+    #Zxx = 1000**(Zxx)
     # Zxx_smooth = n p.mean(Zxx, axis=1)
     # # Zxx_smooth = np.zeros(shape)
     # # for i in range(shape[0]):
@@ -132,9 +132,9 @@ def normalize(Zxx):
 if __name__ == "__main__":
     # read data, get absolute value, estimate phase == reconstruction from time-frequency
     fig, axs = plt.subplots(1, 2)
-    path = '../exp1/HE/70db/3/'
-    #path = '../test/'
-    data = read_data(path + 'acc' + '.txt')
+    #path = '../exp1/HE/70db/3/'
+    path = '../test/'
+    data = read_data(path + 'bmi_acc' + '.txt')
     #compass = read_data(path + 'compass_still.txt')
     files = os.listdir(path)
     for file in files:
@@ -154,13 +154,13 @@ if __name__ == "__main__":
     f, t, Zxx = signal.stft( data_norm, nperseg=seg_len, noverlap=overlap, fs=rate)
     phase_random = np.exp(2j * np.pi * np.random.rand(*Zxx.shape))
     phase_acc = np.exp(1j * np.angle(Zxx))
-    Zxx = noise_reduce(Zxx)
-    #Zxx = normalize(Zxx)
+    #Zxx = noise_reduce(Zxx)
+    Zxx = normalize(Zxx)
     acc, Zxx = GLA(0, Zxx, phase_acc)
     #time_correlate(audio, p1, time1, data[0, 3])
 
-    axs[0].imshow(np.abs(Zxx), extent=[0, 5, 1500, 0])
-    axs[0].set_aspect(1/300)
+    axs[0].imshow(np.abs(Zxx), extent=[0, 5, rate/2, 0])
+    axs[0].set_aspect(10/rate)
     # axs[0].plot(np.abs(np.fft.fft(data_norm)[5:]))
     axs[1].plot(acc)
     plt.show()

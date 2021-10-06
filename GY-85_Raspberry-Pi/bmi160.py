@@ -4,7 +4,7 @@ from BMI160_i2c import Driver
 sensor = Driver(0x68) # change address if needed
 sensor.set_accel_rate(12)
 time_start = time.time()
-num = 10000
+num = 8000
 a = 0
 accwriter = open('bmi_acc.txt', 'w')
 acc = ''
