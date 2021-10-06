@@ -18,6 +18,8 @@ ACCEL_RANGE_SEL_BIT = (0)
 ACCEL_RANGE_SEL_LEN = (4)
 STATUS_FOC_RDY = (3)
 
+DRDY_ACC_BIT = (7)
+
 ## Gyroscope Sensitivity Range options
 # see setFullScaleGyroRange()
 GYRO_RANGE_2000     = (0)    # +/- 2000 degrees/second
