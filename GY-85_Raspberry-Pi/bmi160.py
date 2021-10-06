@@ -4,18 +4,17 @@ from BMI160_i2c import Driver
 sensor = Driver(0x68) # change address if needed
 sensor.set_accel_rate(12)
 time_start = time.time()
-i = 0
-while(i<1000):
+num = 10000
+a = 0
+accwriter = open('bmi_acc.txt', 'w')
+acc = ''
+time_start = time.time()
+while (a < num):
     if sensor.getIntDataReadyStatus():
+        a = a + 1
         data = sensor.getAcceleration()
-    # print({
-    #   'ax': data[0],
-    #   'ay': data[1],
-    #   'az': data[2]
-    # })
-        i = i + 1
-    #time.sleep(0.1)
-print(1000/(time.time() - time_start))
-#while True:
-  #data = sensor.getAcceleration()
-  # fetch all gyro and acclerometer values
+        acc = acc + str(data[0]) + ' ' + str(data[1]) + ' ' + str(data[2]) + ' ' + str(time.time()) + '\n'
+    else:
+        accwriter.write(acc)
+        acc = ''
+print(num/(time.time() - time_start))
