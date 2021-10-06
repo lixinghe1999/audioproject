@@ -6,14 +6,14 @@ sensor.set_accel_rate(12)
 time_start = time.time()
 i = 0
 while(i<1000):
-    #if sensor.getIntDataReadyStatus():
-    data = sensor.getAcceleration()
+    if sensor.getIntDataReadyStatus():
+        data = sensor.getAcceleration()
     # print({
     #   'ax': data[0],
     #   'ay': data[1],
     #   'az': data[2]
     # })
-    i = i + 1
+        i = i + 1
     #time.sleep(0.1)
 print(1000/(time.time() - time_start))
 #while True:
