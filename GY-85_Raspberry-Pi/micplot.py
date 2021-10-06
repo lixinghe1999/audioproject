@@ -18,23 +18,26 @@ def get_wav(name):
     Zxx = np.abs(Zxx)
     return wave_data, Zxx
 def peaks(Zxx):
-    m, n = 0.06 * rate /(seg_len - overlap), 0.5 * rate /(seg_len - overlap)
+    m, n = 0.03 * rate /(seg_len - overlap), 0.5 * rate /(seg_len - overlap)
     sum_Zxx = np.sum(Zxx[int(seg_len/220):int(seg_len/40), :], axis=0)
     peaks, dict = find_peaks(sum_Zxx, distance=m, width=[m,n], prominence=1*np.mean(sum_Zxx))
     return dict['left_ips'], dict['right_ips']
 if __name__ == "__main__":
-    path = '../exp1/HE/55db/3/'
+    path = '../exp1/HE/70db/3/'
     files = os.listdir(path)
     fig, axs = plt.subplots(2, 2)
     for file in files:
         if file[3] == '1':
             wave_1, Zxx = get_wav(path + file)
+            print(wave_1.max())
             axs[0, 0].plot(np.sum(Zxx[int(seg_len/220):int(seg_len/40), :], axis=0))
             axs[0, 1].imshow(Zxx[:int(seg_len/40), :], extent=[0, 5, rate/40/2, 0])
             axs[0, 1].set_aspect(1/200)
+            print(peaks(Zxx))
         if file[3] == '2':
             wave_2, Zxx = get_wav(path + file)
             axs[1, 0].plot(np.sum(Zxx[int(seg_len/220):int(seg_len/40), :], axis=0))
             axs[1, 1].imshow(Zxx[:int(seg_len/40), :], extent=[0, 5, rate/40/2, 0])
             axs[1, 1].set_aspect(1/200)
+            print(peaks(Zxx))
     plt.show()
