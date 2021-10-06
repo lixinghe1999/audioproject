@@ -1,10 +1,10 @@
 # FROM https://github.com/serioeseGmbH/BMI160
 # based on https://github.com/arduino/ArduinoCore-arc32/blob/master/libraries/CurieIMU/src/BMI160.cpp
 
-import registers
-import commands
-import definitions
-from sleep import sleep_us, sleep_ms
+from BMI160_i2c import registers
+from BMI160_i2c import commands
+from BMI160_i2c import definitions
+from BMI160_i2c.sleep import sleep_us, sleep_ms
 
 from struct import unpack
 from smbus2 import SMBus, i2c_msg
