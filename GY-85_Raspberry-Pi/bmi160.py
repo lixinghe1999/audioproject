@@ -1,11 +1,11 @@
 import time
 from BMI160_i2c import Driver
 
-print('Trying to initialize the sensor...')
 sensor = Driver(0x68) # change address if needed
 print('Initialization done')
 sensor.set_accel_rate(13)
 time_start = time.time()
+i = 0
 while(i<10000):
     if sensor.getIntDataReadyStatus():
         data = sensor.getAcceleration()
