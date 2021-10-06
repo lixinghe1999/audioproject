@@ -2,7 +2,7 @@ import time
 from BMI160_i2c import Driver
 
 sensor = Driver(0x68) # change address if needed
-#sensor.set_accel_rate(13)
+sensor.set_accel_rate(12)
 time_start = time.time()
 i = 0
 while(i<1000):
