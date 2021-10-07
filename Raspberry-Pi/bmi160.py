@@ -4,9 +4,9 @@ def bmi160_accsave(name, num, port):
     sensor = Driver(0x68, port) # change address if needed
     sensor.set_accel_rate(12)
     a = 0
-    accwriter = open(name + '_' + str(time_start) + '.txt', 'w')
     acc = ''
     time_start = time.time()
+    accwriter = open(name + '_' + str(time_start) + '.txt', 'w')
     while (a < num):
         if sensor.getIntDataReadyStatus():
             a = a + 1
