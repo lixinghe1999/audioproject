@@ -24,9 +24,9 @@ if __name__ == "__main__":
     compassframe = args.time * 15
     micframe = args.time * 44100
     if args.acctype == 0:
-        thread1 = Process(target = bmi160_accsave(), args=(bmiaccframe, port))
+        thread1 = Process(target = bmi160_accsave, args=(bmiaccframe, port))
     else:
-        thread1 = Process(target= gy85_accsave(), args=(gyaccframe, port))
+        thread1 = Process(target= gy85_accsave, args=(gyaccframe, port))
     thread2 = Process(target = voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
     thread3 = Process(target = voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
     if args.compass == 1:
