@@ -4,11 +4,11 @@ from i2c_adxl345 import *
 from i2c_itg3205 import *
 from i2c_hmc5883l import *
 
-def gy85_accsave(num, port):
+def gy85_accsave(name, num, port):
     a = 0
     adxl345 = i2c_adxl345(port)
     adxl345.setdatarate(0x0F)
-    accwriter = open('acc.txt', 'w')
+    accwriter = open(name + '_' + str(time_start) + '.txt', 'w')
     acc = ''
     time_start = time.time()
     while (a < num):
