@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(1,'/home/pi/audioproject/GY-85_Raspberry-Pi/i2clibraries')
+sys.path.insert(1,'/home/pi/audioproject/Raspberry-Pi/i2clibraries')
 from i2c_itg3205 import *
 from time import *
 a = 0

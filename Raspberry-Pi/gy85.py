@@ -2,7 +2,7 @@ import sys
 from i2c_adxl345 import *
 from i2c_itg3205 import *
 from i2c_hmc5883l import *
-sys.path.insert(1,'/home/pi/audioproject/GY-85_Raspberry-Pi/i2clibraries')
+sys.path.insert(1,'/home/pi/audioproject/Raspberry-Pi/i2clibraries')
 def gy85_accsave(num, port):
     a = 0
     adxl345 = i2c_adxl345(port)
