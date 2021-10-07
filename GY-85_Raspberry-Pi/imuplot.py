@@ -87,11 +87,11 @@ def time_correlate(data, p, time_start_audio, time_start_imu ):
         print((left[i]+right[i])/2,(-corr).argsort()[:5])
 def noise_reduce(Zxx):
     shape = Zxx.shape
-    low = int((shape[0] - 1) * 50 / 1500)
-    high = int((shape[0] - 1) * 800 / 1500)
+    low = int((shape[0] - 1) * 60 / rate * 2)
+    high = int((shape[0] - 1) * 800 / rate * 2)
     Zxx[:low, :] = 0
     Zxx[high:, :] = 0
-    Zxx[:, :3] = 0
+    Zxx[:, :2] = 0
     Zxx[:, -2:] = 0
     Zxx = np.abs(Zxx)
 
@@ -133,8 +133,8 @@ if __name__ == "__main__":
     # read data, get absolute value, estimate phase == reconstruction from time-frequency
     fig, axs = plt.subplots(1, 2)
     #path = '../exp1/HE/70db/3/'
-    path = '../test/'
-    data = read_data(path + 'bmi_acc' + '.txt')
+    path = '../test/bmi160/'
+    data = read_data(path + 'bmi_acc_face_2' + '.txt')
     #compass = read_data(path + 'compass_still.txt')
     files = os.listdir(path)
     for file in files:
@@ -154,8 +154,8 @@ if __name__ == "__main__":
     f, t, Zxx = signal.stft( data_norm, nperseg=seg_len, noverlap=overlap, fs=rate)
     phase_random = np.exp(2j * np.pi * np.random.rand(*Zxx.shape))
     phase_acc = np.exp(1j * np.angle(Zxx))
-    #Zxx = noise_reduce(Zxx)
-    Zxx = normalize(Zxx)
+    Zxx = noise_reduce(Zxx)
+    #Zxx = normalize(Zxx)
     acc, Zxx = GLA(0, Zxx, phase_acc)
     #time_correlate(audio, p1, time1, data[0, 3])
 
