@@ -1,7 +1,8 @@
+import spidev
 class MCP3008:
     def __init__(self, bus=0, device=0):
         self.bus, self.device = bus, device
-        self.spi = spidev()
+        self.spi = spidev.SpiDev()
         self.open()
         self.spi.max_speed_hz = 1000000  # 1MHz
 
@@ -17,7 +18,6 @@ class MCP3008:
     def close(self):
         self.spi.close()
 if __name__ == "__main__":
-    from MCP3008 import MCP3008
     adc = MCP3008()
     value = adc.read( channel = 0 )
     while (1):
