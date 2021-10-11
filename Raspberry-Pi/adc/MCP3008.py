@@ -1,4 +1,5 @@
 import spidev
+import time
 class MCP3008:
     def __init__(self, bus=0, device=0):
         self.bus, self.device = bus, device
@@ -20,4 +21,5 @@ class MCP3008:
 if __name__ == "__main__":
     adc = MCP3008()
     while (1):
+        time.sleep(0.003)
         print("Applied voltage: %.2f" % (adc.read( channel = 0 ) / 1023.0 * 3.3) )
