@@ -19,6 +19,5 @@ class MCP3008:
         self.spi.close()
 if __name__ == "__main__":
     adc = MCP3008()
-    value = adc.read( channel = 0 )
     while (1):
-        print("Applied voltage: %.2f" % (value / 1023.0 * 3.3) )
+        print("Applied voltage: %.2f" % (adc.read( channel = 0 ) / 1023.0 * 3.3) )
