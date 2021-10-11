@@ -5,14 +5,13 @@ import scipy.interpolate as interpolate
 import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from micplot import get_wav, peaks
+from micplot import get_wav, peaks_mic
 import os
 import matplotlib.pyplot as plt
-from scipy.stats import entropy
 import wave
 
-seg_len = 256
-overlap = 128
+seg_len = 128
+overlap = 64
 rate = 1600
 def read_data(file):
     fileobject = open(file, 'r')
@@ -75,16 +74,7 @@ def re_coordinate(acc, compass):
             rotationmatrix = R.from_euler('xyz', euler(smooth_acc[i, :-1], data2[:-1]), degrees=True).as_matrix()
         acc[i, :-1] = np.dot(rotationmatrix, data1[:-1].transpose())
     return acc
-def time_correlate(data, p, time_start_audio, time_start_imu ):
-    left, right = p
-    left = (left) * 1024 / 44100 + time_start_audio
-    right = (right + 2) * 1024 / 44100 + time_start_audio
-    left = ((left - time_start_imu) * 3000).astype(int)
-    right = ((right - time_start_imu) * 3000).astype(int)
-    print((left + right)/2)
-    for i in range(1, len(left)):
-        corr = np.convolve(data, data[left[i]: right[i]], mode='valid')
-        print((left[i]+right[i])/2,(-corr).argsort()[:5])
+
 def noise_reduce(Zxx):
     shape = Zxx.shape
     low = int((shape[0] - 1) * 60 / rate * 2)
@@ -93,31 +83,11 @@ def noise_reduce(Zxx):
     Zxx[high:, :] = 0
     Zxx[:, :2] = 0
     Zxx[:, -2:] = 0
-    Zxx = np.abs(Zxx)
-
-    # left, right = p
-    # left = ((left - 1) * 8 + 6) / 14.7
-    # right = ((right - 1) * 8 + 6) / 14.7
-    # noise = np.zeros((shape[0]))
-    # j = 0
-    # n = 1
-    # for i in range(shape[1]):
-    #     if n == 1:
-    #         noise = noise * 0.8 + 0.2 * Zxx[:, i]
-    #         Zxx[:, i] = 0
-    #     else:
-    #         Zxx[:, i] = Zxx[:, i] - noise
-    #         #pass
-    #     if i > left[j]:
-    #         n = 0
-    #     if i > right[j]:
-    #         j = min(j + 1, len(left) - 1)
-    #         n = 1
-    #         noise = np.zeros((shape[0]))
     return Zxx
 def normalize(Zxx):
-    Zmax, Zmin = Zxx.max(), Zxx.min()
-    Zxx = (Zxx - Zmin) / (Zmax - Zmin)
+    Zxx /= 2**14
+    # Zmax, Zmin = Zxx.max(), Zxx.min()
+    # Zxx = (Zxx - Zmin) / (Zmax - Zmin)
     #Zxx = np.clip(Zxx, 0.4, 1)
     #Zxx = 1000**(Zxx)
     # Zxx_smooth = n p.mean(Zxx, axis=1)
@@ -126,44 +96,96 @@ def normalize(Zxx):
     # #     Zxx_smooth[i, :] = np.convolve(Zxx[i, :], np.ones(5)/5, mode='same')
     # for i in range(shape[1]):
     #     Zxx[:, i] = np.abs(Zxx[:, i] - Zxx_smooth)
-    entro = entropy(np.abs(Zxx), axis=0)
     return Zxx
+def peaks_imu(Zxx):
+    sum_Zxx = np.sum(Zxx, axis=0)
+    m, n = 0.1 * rate/(seg_len - overlap), 1 * rate/(seg_len - overlap)
+    smooth_Zxx = np.convolve(sum_Zxx , np.ones(10)/10, mode='same')
+    peaks, dict = signal.find_peaks(smooth_Zxx, distance=m, width=[m, n], prominence=1*np.var(smooth_Zxx))
+    return peaks
+def time_match(p1, p2):
+    P1 = np.tile(p1.reshape((len(p1), 1)), (1, len(p2)))
+    P2 = np.tile(p2, (len(p1), 1))
+    diff = np.abs(P1 - P2)
+    #return np.sum(np.min(diff, axis = 0) < 0.2)/len(p2)
+    m = np.min(diff, axis = 0) < 0.2
+    n = np.argmin(diff, axis = 0)
+    return m, n
+def saveaswav(data, l, r, count):
+    l = (l + 1) * 1024
+    r = (r + 1) * 1024
+    for i in range(len(l)):
+        data_seg = data[int(l[i])-5000: int(r[i])+5000]
+        wf = wave.open('../exp2/audio_seg/' + str(count)+'.wav', 'wb')
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(44100)
+        wf.writeframes(data_seg.astype('int16'))
+        wf.close()
+        count = count + 1
+    return count
 
 if __name__ == "__main__":
-    # read data, get absolute value, estimate phase == reconstruction from time-frequency
-    fig, axs = plt.subplots(1, 2)
-    #path = '../exp1/HE/70db/3/'
-    path = '../test/bmi160/'
-    data = read_data(path + 'bmi_acc_face_2' + '.txt')
-    #compass = read_data(path + 'compass_still.txt')
-    files = os.listdir(path)
-    for file in files:
-        if file[3] == '1':
-            mic1, Zxx1 = get_wav(path + file)
-            time1 = float(file.split('.')[0].split('_')[1])
-            p1 = peaks(Zxx1)[0], peaks(Zxx1)[1]
-        if file[3] == '2':
-            mic2, Zxx2 = get_wav(path + file)
-            time2 = float(file.split('.')[0].split('_')[1])
-            p2 = peaks(Zxx1)[0], peaks(Zxx1)[1]
-    #data = re_coordinate(data, compass)
-    #data = interpolation(data)
-    #time_correlate(data, p1, time1)
+    fig, axs = plt.subplots(2, 2)
+    # path = '../test/bmi160/'
+    count = 0
+    for path in ['../exp2/HE/', '../exp2/HOU/']:
+        #index = [3]
+        index = range(27)
+        files = os.listdir(path)
+        for i in index:
+            data = read_data(path + files[i])
+            time_start = data[0, 3]
+            # compass = read_data(path + 'compass_still.txt')
+            mic1_index, mic2_index = i + 27, i + 54
+            mic1, Zxx1 = get_wav(path + files[mic1_index])
+            time1 = float(files[mic1_index][:-4].split('_')[1])
+            p1, l1, r1 = peaks_mic(Zxx1)
+            mic2, Zxx2 = get_wav(path + files[mic2_index])
+            time2 = float(files[mic2_index][:-4].split('_')[1])
+            p2, l2, r2 = peaks_mic(Zxx2)
+            p1 = (p1 + 1) * 1024 / 44100
+            p2 = (p2 + 1) * 1024 / 44100
+            #data = interpolation(data)
+            #data = re_coordinate(data, compass)
 
-    data_norm = np.linalg.norm(data[:, :-1], axis=1)
-    f, t, Zxx = signal.stft( data_norm, nperseg=seg_len, noverlap=overlap, fs=rate)
-    phase_random = np.exp(2j * np.pi * np.random.rand(*Zxx.shape))
-    phase_acc = np.exp(1j * np.angle(Zxx))
-    Zxx = noise_reduce(Zxx)
-    #Zxx = normalize(Zxx)
-    acc, Zxx = GLA(0, Zxx, phase_acc)
-    #time_correlate(audio, p1, time1, data[0, 3])
+            #data_norm = np.linalg.norm(data[:, :-1], axis=1)
+            b, a = signal.butter(8, 0.07, 'highpass')
+            for j in range(3):
+                data[:, j] = signal.filtfilt(b, a, data[:, j])
+            dominant_axis = (np.argmax(np.sum(np.abs(data[:, :-1]),axis=0)))
+            for j in range(3):
+                f, t, Zxx = signal.stft(data[:, j], nperseg=seg_len, noverlap=overlap, fs=rate)
+                Zxx = normalize(Zxx)
+                # phase_random = np.exp(2j * np.pi * np.random.rand(*Zxx.shape))
+                # phase_acc = np.exp(1j * np.angle(Zxx))
+                # acc, Zxx = GLA(0, Zxx, phase_acc)
+                Zxx = np.abs(Zxx)
+                # axs[j//2, j%2].imshow(Zxx, extent=[0, 5, rate/2, 0])
+                # axs[j//2, j%2].set_aspect(10/rate)
+                if j == dominant_axis:
+                    p3 = peaks_imu(Zxx)
+                    p3 = (p3 + 1) * 64/1600
+                    p1 = p1 + time1 - time_start
+                    p2 = p2 + time2 - time_start
+                    match_tone = []
+                    m1, m2 = time_match(p1, p3), time_match(p2, p3)
 
-    axs[0].imshow(np.abs(Zxx), extent=[0, 5, rate/2, 0])
-    axs[0].set_aspect(10/rate)
-    # axs[0].plot(np.abs(np.fft.fft(data_norm)[5:]))
-    axs[1].plot(acc)
-    plt.show()
+                    for k in range(len(p3)):
+                        match_tone.append(m1[0][k] and m2[0][k])
+                    l1 = l1[m1[1][match_tone]]
+                    r1 = r1[m1[1][match_tone]]
+
+                    count = saveaswav(mic1, l1, r1, count)
+                    l2 = l2[m2[1][match_tone]]
+                    r2 = r2[m2[1][match_tone]]
+                    count = saveaswav(mic2, l2, r2, count)
+                    p3 = p3[match_tone]
+                    #print(p1, p2, p3)
+
+            # axs[1, 1].imshow(Zxx1[:75],  extent=[0, 5, 800, 0])
+            # axs[1, 1].set_aspect(5 / 550)
+            # plt.show()
 
     # save IMU as audio file
     # wf = wave.open('vibration.wav', 'wb')

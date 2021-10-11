@@ -17,27 +17,26 @@ def get_wav(name):
     f, t, Zxx = signal.stft(wave_data, nperseg=seg_len, noverlap=overlap, fs=rate)
     Zxx = np.abs(Zxx)
     return wave_data, Zxx
-def peaks(Zxx):
+def peaks_mic(Zxx):
     m, n = 0.03 * rate /(seg_len - overlap), 0.5 * rate /(seg_len - overlap)
     sum_Zxx = np.sum(Zxx[int(seg_len/220):int(seg_len/40), :], axis=0)
-    peaks, dict = find_peaks(sum_Zxx, distance=m, width=[m,n], prominence=1*np.mean(sum_Zxx))
-    return dict['left_ips'], dict['right_ips']
+    peaks, properties = find_peaks(sum_Zxx, distance=m, width=[m,n], prominence=0.5*np.mean(sum_Zxx))
+    return peaks, properties['left_ips'], properties['right_ips']
 if __name__ == "__main__":
-    path = '../exp1/HE/70db/3/'
+    path = '../exp2/HE/'
     files = os.listdir(path)
+    index = 3
     fig, axs = plt.subplots(2, 2)
-    for file in files:
-        if file[3] == '1':
-            wave_1, Zxx = get_wav(path + file)
-            print(wave_1.max())
-            axs[0, 0].plot(np.sum(Zxx[int(seg_len/220):int(seg_len/40), :], axis=0))
-            axs[0, 1].imshow(Zxx[:int(seg_len/40), :], extent=[0, 5, rate/40/2, 0])
-            axs[0, 1].set_aspect(1/200)
-            print(peaks(Zxx))
-        if file[3] == '2':
-            wave_2, Zxx = get_wav(path + file)
-            axs[1, 0].plot(np.sum(Zxx[int(seg_len/220):int(seg_len/40), :], axis=0))
-            axs[1, 1].imshow(Zxx[:int(seg_len/40), :], extent=[0, 5, rate/40/2, 0])
-            axs[1, 1].set_aspect(1/200)
-            print(peaks(Zxx))
+    file1 = files[index + 27]
+    wave_1, Zxx = get_wav(path + file1)
+    axs[0, 0].plot(np.sum(Zxx[int(seg_len/220):int(seg_len/40), :], axis=0))
+    axs[0, 1].imshow(Zxx[:int(seg_len/40), :], extent=[0, 5, rate/40/2, 0])
+    axs[0, 1].set_aspect(1/200)
+    print(peaks_mic(Zxx))
+    file2 = files[index + 54]
+    wave_2, Zxx = get_wav(path + file2)
+    axs[1, 0].plot(np.sum(Zxx[int(seg_len/220):int(seg_len/40), :], axis=0))
+    axs[1, 1].imshow(Zxx[:int(seg_len/40), :], extent=[0, 5, rate/40/2, 0])
+    axs[1, 1].set_aspect(1/200)
+    print(peaks_mic(Zxx))
     plt.show()
