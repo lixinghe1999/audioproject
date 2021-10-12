@@ -1,8 +1,11 @@
 import matplotlib.pyplot as plt
 
-f = open('../adc3.txt', 'r')
+f = open('../adc.txt', 'r')
 adc = []
 for line in f.readlines():
-    adc.append(int(line))
+    try:
+        adc.append(int(line))
+    except:
+        pass
 plt.plot(adc)
 plt.show()

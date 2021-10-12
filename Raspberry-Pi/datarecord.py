@@ -24,22 +24,29 @@ if __name__ == "__main__":
     compassframe = args.time * 15
     micframe = args.time * 44100
     if args.acctype == 0:
-        thread1 = Process(target = bmi160_accsave, args=('bmiacc', bmiaccframe, port))
+        thread1 = Process(target=bmi160_accsave, args=('bmiacc', bmiaccframe, port))
+        thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
+        thread3 = Process(target=voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
+        thread1.start()
+        thread2.start()
+        thread3.start()
+        thread1.join()
+        thread2.join()
+        thread3.join()
+    elif args.acctype == 1:
+        thread1 = Process(target=gy85_accsave, args=('gyacc', gyaccframe, port))
+        thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
+        thread3 = Process(target=voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
+        thread1.start()
+        thread2.start()
+        thread3.start()
+        thread1.join()
+        thread2.join()
+        thread3.join()
     else:
-        thread1 = Process(target= gy85_accsave, args=('gyacc', gyaccframe, port))
-    thread2 = Process(target = voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
-    thread3 = Process(target = voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
-    if args.compass == 1:
-        thread4 = Process(target=gy85_compasssave, args=(compassframe,))
-    thread1.start()
-    thread2.start()
-    thread3.start()
-    if args.compass == 1:
-        thread4.start()
-
-    thread1.join()
-    thread2.join()
-    thread3.join()
-    if args.compass == 1:
-        thread4.join()
+        thread1 = Process(target=bmi160_accsave, args=('bmiacc', bmiaccframe, port))
+        thread1.start()
+        thread1.join()
+    # if args.compass == 1:
+    #     thread4 = Process(target=gy85_compasssave, args=(compassframe,))
 
