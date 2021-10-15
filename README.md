@@ -2,6 +2,7 @@
 ## sensors involve: GY85 BMI160 piezo disc piezo vibration sensor
 ## platform: raspberry pi 4b
 ## structure of the project
+'''
 ├─ README.md
 ├─ Raspberry-Pi
 │    ├─ BMI160_i2c
@@ -65,3 +66,4 @@
 ├─ project proposal.pptx
 ├─ quick2wire-python-api
 ├─ reference
+'''
