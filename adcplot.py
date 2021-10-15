@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-f = open('../adc.txt', 'r')
+f = open('adc.txt', 'r')
 adc = []
 for line in f.readlines():
     try:
