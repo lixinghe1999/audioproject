@@ -1,5 +1,5 @@
-# audioproject
-## sensors involve: GY85 BMI160 piezo disc piezo vibration sensor
+# audioproject--Lixing HE
+## sensors involve: GY85 BMI160 piezo disc piezo vibration sensor, all data in txt format.
 ## platform: raspberry pi 4b
 ## structure of the project
 ```
