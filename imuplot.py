@@ -1,3 +1,4 @@
+import os
 import scipy.signal as signal
 import scipy.interpolate as interpolate
 import math
@@ -5,6 +6,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 import wave
+from micplot import get_wav
 
 seg_len = 128
 overlap = 64
@@ -101,7 +103,7 @@ def saveaswav(data, l, r, count):
 
 if __name__ == "__main__":
     # check imu plot
-    test_path = 'bmiacc_2.txt'
+    test_path = 'exp2/HE/'
     data = read_data(test_path)
     length = data.shape[0]
     fig, axs = plt.subplots(3, 1)
@@ -115,8 +117,7 @@ if __name__ == "__main__":
         # acc, Zxx = GLA(0, Zxx, phase_acc)
         Zxx = np.abs(Zxx)
         #Zxx[:, 200:] = 0
-        axs[j].imshow(Zxx, extent=[0, int(length/rate), rate/2, 0])
-        axs[j].set_aspect(int(length/rate)/rate)
+        axs[j].imshow(Zxx, extent=[0, 5, rate/2, 0], aspect='auto')
     plt.show()
 
     # save IMU as audio file
