@@ -6,13 +6,12 @@ import scipy.signal as signal
 import numpy as np
 import argparse
 from skimage.transform import resize
-import wave
 
 seg_len_mic = 2048
 overlap_mic = 1024
 rate_mic = 44100
 seg_len_imu = 256
-overlap_imu = 128
+overlap_imu = 224
 rate_imu = 1600
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -75,7 +74,7 @@ if __name__ == "__main__":
         path_clean = 'exp2/HE/'
         files_noise = os.listdir(path_noise)
         files_clean = os.listdir(path_clean)
-        index = [1]
+        index = [20]
         for i in index:
             file_noise1 = files_noise[i]
             file_noise2 = files_noise[i + 27]
@@ -85,40 +84,37 @@ if __name__ == "__main__":
             time2 = float(file_clean2[:-4].split('_')[1])
             wave_1, Zxx1, phase1 = micplot.get_wav(path_noise + file_noise1, normalize=True)
             wave_2, Zxx2, phase2 = micplot.get_wav(path_noise + file_noise2, normalize=True)
-            wave_3, Zxx3, phase3 = micplot.get_wav(path_clean + file_clean1, normalize=False)
+            wave_3, Zxx3, phase3 = micplot.get_wav(path_clean + file_clean1, normalize=True)
 
             imu = imuplot.read_data(path_clean + files_clean[i])
             b, a = signal.butter(8, 0.05, 'highpass')
             for j in range(3):
                 imu[:, j] = signal.filtfilt(b, a, imu[:, j])
             dominant_axis = (np.argmax(np.sum(np.abs(imu[:, :-1]), axis=0)))
-            f, t, Zxx = signal.stft(imu[:, dominant_axis], nperseg=seg_len_imu, noverlap=overlap_imu, fs=rate_imu)
+            f, t, Zxx = signal.stft(imu[:, dominant_axis], nperseg=seg_len_imu, noverlap=overlap_imu, fs=rate_imu, window="hamming")
             Zxx = np.abs(Zxx)
-            Zxx_share = np.where(np.abs(Zxx1 - Zxx2) < 0.003, Zxx1, 0)
-
-            freq_bin = int(rate_imu/rate_mic * (overlap_mic + 1))
+            freq_bin = int(rate_imu/rate_mic * (int(seg_len_mic/2) + 1))
             time_bin = np.shape(Zxx1)[1]
             time_imu = imu[0, 3]
             time_diff = time_imu - time1
-            shift = int(time_diff * rate_mic / overlap_mic)
+            shift = round(time_diff * rate_mic / overlap_mic)
             Zxx_resize = np.roll(resize(Zxx, (freq_bin, time_bin)), shift, axis=1)
             Zxx_resize[:, :shift] = 0
-            Zxx_both = Zxx_share[:freq_bin, :] * phase1[:freq_bin, :]
-            Zxx_both = Zxx_both * (Zxx_resize > np.mean(Zxx_resize, axis=(0, 1)))
+
+            Zxx_phase = Zxx1[:freq_bin, :]
+            Zxx_final = np.zeros(np.shape(Zxx1), dtype='complex64')
+            #Zxx_final[:freq_bin, :] = Zxx_phase * (Zxx_resize > np.mean(Zxx_resize, axis=(0, 1)))
+            Zxx_final[:freq_bin, :] = np.sqrt(Zxx_phase * (np.where(Zxx_resize > np.mean(Zxx_resize, axis=(0, 1)), Zxx_resize, 0)))
+
+            # Zxx_final[:freq_bin, :] = Zxx_final[:freq_bin, :] * phase1[:freq_bin, :]
+            audio = micplot.GLA(10, Zxx_final)
+            #t, audio = signal.istft(Zxx_final, fs=rate_mic, window='hamming', nperseg=seg_len_mic, noverlap=overlap_mic)
+            micplot.save_wav(audio, 'test.wav')
 
             fig, axs = plt.subplots(4)
             axs[0].imshow(Zxx3[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
             axs[1].imshow(Zxx1[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
-            axs[2].imshow(Zxx_share[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
-            axs[3].imshow(Zxx_resize, extent=[0, 5, rate_imu / 2, 0], aspect='auto')
+            axs[2].imshow(Zxx_resize, extent=[0, 5, rate_imu/2, 0], aspect='auto')
+            axs[3].imshow(np.abs(Zxx_final[:freq_bin, :]), extent=[0, 5, rate_imu / 2, 0], aspect='auto')
             plt.show()
 
-            Zxx_final = np.zeros(np.shape(Zxx1), dtype='complex64')
-            Zxx_final[:freq_bin, :] = Zxx_both
-            wf = wave.open('test.wav', 'wb')
-            _, audio = signal.istft(Zxx_final, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)
-            wf.setnchannels(1)
-            wf.setsampwidth(2)
-            wf.setframerate(44100)
-            wf.writeframes((audio*32767).astype('int16'))
-            wf.close()

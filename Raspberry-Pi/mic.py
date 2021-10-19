@@ -4,7 +4,7 @@ import time
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 44100
+RATE = 16000
 
 def voice_record(name, stream, frames):
     time_start = time.time()

@@ -41,62 +41,41 @@ def peaks_mic(Zxx):
     sum_Zxx = np.sum(Zxx[int(seg_len/220):int(seg_len/40), :], axis=0)
     peaks, properties = find_peaks(sum_Zxx, distance=m, width=[m, n], prominence=3*np.var(sum_Zxx))
     return peaks, properties['left_ips'], properties['right_ips']
+def save_wav(audio, name):
+    wf = wave.open(name, 'wb')
+    wf.setnchannels(1)
+    wf.setsampwidth(2)
+    wf.setframerate(44100)
+    t = 32767/audio.max()
+    wf.writeframes((audio * t).astype('int16'))
+    wf.close()
+def GLA(iter, Zxx, i = 'random'):
+    audio = librosa.griffinlim(Zxx, iter, seg_len-overlap, seg_len, "hamming", init= i )
+    return audio
 
 if __name__ == "__main__":
     path_noise = 'exp2/noisy/'
     path_clean = 'exp2/HE/'
+    path_conversation = 'reference/conversation.wav'
     files_noise = os.listdir(path_noise)
     files_clean = os.listdir(path_clean)
     index = [1]
+    freq_bin = int(1600/ 44100 * (1024 + 1))
     for i in index:
-        file_noise1 = files_noise[i]
-        file_noise2 = files_noise[i + 27]
-        file_clean = files_clean[i+27]
-        wave_1, Zxx1 = get_wav(path_noise + file_noise1, normalize=False)
-        wave_2, Zxx2 = get_wav(path_noise + file_noise2, normalize=True)
-        wave_3, Zxx3 = get_wav(path_clean + file_clean, normalize=True)
-
+        # file_noise1 = files_noise[i]
+        # file_noise2 = files_noise[i + 27]
+        # file_clean = files_clean[i+27]
+        # wave_1, Zxx1, phase = get_wav(path_noise + file_noise1, normalize=False)
+        # wave_2, Zxx2, phase = get_wav(path_noise + file_noise2, normalize=True)
+        # wave_3, Zxx3, phase = get_wav(path_clean + file_clean, normalize=True)
+        wave, Zxx, phase = get_wav(path_conversation, normalize=False)
         fig, ax = plt.subplots()
-
-        wave, S = get_wav(path_clean + file_clean, normalize=False, mfcc=True)
-        print(S.shape)
-        S_dB = librosa.power_to_db(S, ref=np.max)
-        plt.imshow(S_dB[:50, :])
+        #Zxx_dB = librosa.power_to_db(Zxx, ref=np.max)
+        plt.imshow(Zxx[:freq_bin, 200:300])
         #img = librosa.display.specshow(S_dB, x_axis='time', y_axis='mel', sr=44100, ax=ax)
-        plt.show()
-
-        imu = read_data(path_clean + files_clean[i])
-        length = imu.shape[0]
-        b, a = signal.butter(8, 0.05, 'highpass')
-        for j in range(3):
-            imu[:, j] = signal.filtfilt(b, a, imu[:, j])
-        dominant_axis = (np.argmax(np.sum(np.abs(imu[:, :-1]), axis=0)))
         # f, t, Zxx = signal.stft(imu[:, dominant_axis], nperseg=256, noverlap=128, fs=1600)
+        # Zxx = melspectrogram(imu[:, dominant_axis], sr=44100, n_fft=256, hop_length=128, n_mels=128)
         # Zxx = np.abs(Zxx)
-        Zxx = melspectrogram(imu[:, dominant_axis], sr=44100, n_fft=256, hop_length=128, n_mels=128)
-        print(Zxx.shape)
-        plt.imshow(Zxx)
         plt.show()
-
-        #
-        # fig, axs = plt.subplots(2, 2)
-        # axs[0, 0].plot(np.sum(Zxx1[:int(seg_len/40), :], axis=0))
-        # axs[0, 1].imshow(Zxx1[:int(seg_len/40), :], extent=[0, 5, rate/40/2, 0])
-        # axs[0, 1].set_aspect(1/200)
-        # #print(peaks_mic(Zxx1))
-        # axs[1, 0].plot(np.sum(Zxx3[:int(seg_len/40), :], axis=0))
-        # axs[1, 1].imshow(Zxx3[:int(seg_len/40), :], extent=[0, 5, rate/40/2, 0])
-        # axs[1, 1].set_aspect(1/200)
-        # #print(peaks_mic(Zxx3))
-        # plt.show()
-
-        #
-        # wf = wave.open('test.wav', 'wb')
-        # t, audio = signal.istft(Zxx_share, nperseg=seg_len, noverlap=overlap, fs=rate)
-        # wf.setnchannels(1)
-        # wf.setsampwidth(2)
-        # wf.setframerate(44100)
-        # wf.writeframes((audio*32768).astype('int16'))
-        # wf.close()
 
 

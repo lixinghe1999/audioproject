@@ -6,10 +6,10 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 import wave
-from micplot import get_wav
+import librosa
 
-seg_len = 128
-overlap = 64
+seg_len = 256
+overlap = 128
 rate = 1600
 def read_data(file):
     fileobject = open(file, 'r')
@@ -30,19 +30,6 @@ def interpolation(data):
     t_new = np.linspace(0, max(t_norm), int(max(t_norm) * rate))
     return f_linear(t_new)
 
-def phase_estimation(Zxx, phase):
-    Zxx = Zxx * phase
-    t, audio = signal.istft(Zxx, fs=rate)
-    f, t, next_data = signal.stft(audio, fs=rate)
-    phase = np.exp(1j*np.angle(next_data))
-    return phase
-
-def GLA(iter, Zxx, phase):
-    for j in range(iter):
-        phase = phase_estimation(Zxx, phase)
-    Zxx = Zxx * phase
-    t, audio = signal.istft(Zxx, nperseg=seg_len, noverlap=overlap, fs=rate)
-    return audio, Zxx
 
 def euler(accel, compass):
     accelX, accelY, accelZ = accel
@@ -119,17 +106,6 @@ if __name__ == "__main__":
         #Zxx[:, 200:] = 0
         axs[j].imshow(Zxx, extent=[0, 5, rate/2, 0], aspect='auto')
     plt.show()
-
-    # save IMU as audio file
-    # wf = wave.open('vibration.wav', 'wb')
-    # f_linear = interpolate.interp1d(np.linspace(0, 5, 15104), acc, axis=0)
-    # t_new = np.linspace(0, 5, 5 * 44100)
-    # audio = f_linear(t_new)
-    # wf.setnchannels(1)
-    # wf.setsampwidth(2)
-    # wf.setframerate(44100)
-    # wf.writeframes(audio.astype('int16'))
-    # wf.close()
 
     # re-coordinate acc to global frame by acc & compass
     # acc_data = read_data('../test/acc.txt')
