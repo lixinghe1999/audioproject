@@ -22,7 +22,7 @@ if __name__ == "__main__":
     port = args.port
     gyroframe = args.time * 1500
     compassframe = args.time * 15
-    micframe = args.time * 16000
+    micframe = args.time * 44100
     if args.acctype == 0:
         thread1 = Process(target=bmi160_accsave, args=('bmiacc', bmiaccframe, port))
         thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))

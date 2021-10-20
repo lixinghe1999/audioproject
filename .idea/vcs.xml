@@ -2,5 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/simulator/ANF-Generator" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/simulator/RIR-Generator" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/simulator/Wind-Generator" vcs="Git" />
   </component>
 </project>

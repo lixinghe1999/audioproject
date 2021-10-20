@@ -5,8 +5,7 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
-import wave
-import librosa
+import soundfile as sf
 
 seg_len = 256
 overlap = 128
@@ -70,7 +69,6 @@ def time_match(p1, p2):
     P1 = np.tile(p1.reshape((len(p1), 1)), (1, len(p2)))
     P2 = np.tile(p2, (len(p1), 1))
     diff = np.abs(P1 - P2)
-    #return np.sum(np.min(diff, axis = 0) < 0.2)/len(p2)
     m = np.min(diff, axis = 0) < 0.2
     n = np.argmin(diff, axis = 0)
     return m, n
@@ -79,22 +77,17 @@ def saveaswav(data, l, r, count):
     r = (r + 1) * 1024
     for i in range(len(l)):
         data_seg = data[int(l[i])-5000: int(r[i])+5000]
-        wf = wave.open('exp2/audio_seg/' + str(count)+'.wav', 'wb')
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(44100)
-        wf.writeframes(data_seg.astype('int16'))
-        wf.close()
+        sf.write('exp2/audio_seg/' + str(count)+'.wav', data_seg, 16000, subtype='PCM_16')
         count = count + 1
     return count
 
 if __name__ == "__main__":
     # check imu plot
-    test_path = 'exp2/HE/'
+    test_path = 'exp2/HE/bmiacc_1633585703.4800572.txt'
     data = read_data(test_path)
     length = data.shape[0]
     fig, axs = plt.subplots(3, 1)
-    b, a = signal.butter(8, 0.05, 'highpass')
+    b, a = signal.butter(8, 0.02, 'highpass')
     for j in range(3):
         data[:, j] = signal.filtfilt(b, a, data[:, j])
     for j in range(3):
