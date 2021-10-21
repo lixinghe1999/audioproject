@@ -6,6 +6,7 @@ import scipy.signal as signal
 import numpy as np
 import argparse
 from skimage.transform import resize
+from PIL import Image
 
 seg_len_mic = 2048
 overlap_mic = 1024
@@ -70,20 +71,22 @@ if __name__ == "__main__":
                     #     print(p1, p2, p3)
                 plt.show()
     elif args.mode == 1:
-        path_noise = 'exp2/HE/noisy1/'
-        path_clean = 'exp2/HE/mic1/'
+        path_noise = 'exp2/HE/noisy2/'
+        path_clean = 'exp2/HE/mic2/'
+        path_fusion = 'exp2/HE/imu2/'
         path_imu = 'exp2/HE/imu/'
+
         files_noise = os.listdir(path_noise)
         files_clean = os.listdir(path_clean)
         files_imu = os.listdir(path_imu)
-        index = [1]
+        index = range(27)
         for i in index:
             file_noise = files_noise[i]
             file_clean = files_clean[i]
             file_imu = files_imu[i]
             time1 = float(file_clean[:-4].split('_')[1])
             wave_1, Zxx1, phase1 = micplot.get_wav(path_noise + file_noise, normalize=True)
-            wave_3, Zxx3, phase3 = micplot.get_wav(path_clean + file_clean, normalize=True)
+            wave_2, Zxx2, phase2 = micplot.get_wav(path_clean + file_clean, normalize=True)
 
             imu = imuplot.read_data(path_imu + file_imu)
             b, a = signal.butter(8, 0.05, 'highpass')
@@ -104,17 +107,17 @@ if __name__ == "__main__":
             Zxx_final = np.zeros(np.shape(Zxx1), dtype='complex64')
             #Zxx_final[:freq_bin, :] = Zxx_phase * (Zxx_resize > np.mean(Zxx_resize, axis=(0, 1)))
             Zxx_final[:freq_bin, :] = np.sqrt(Zxx_phase * (np.where(Zxx_resize > np.mean(Zxx_resize, axis=(0, 1)), Zxx_resize, 0)))
-
             Zxx_final[:freq_bin, :] = Zxx_final[:freq_bin, :] * phase1[:freq_bin, :]
+
             t, audio = signal.istft(Zxx_final, fs=rate_mic, window='hamming', nperseg=seg_len_mic, noverlap=overlap_mic)
             # audio = micplot.GLA(10, Zxx_final)
 
-            micplot.save_wav(audio, 'test.wav')
-
-            fig, axs = plt.subplots(4)
-            axs[0].imshow(Zxx3[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
-            axs[1].imshow(Zxx1[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
-            axs[2].imshow(Zxx_resize, extent=[0, 5, rate_imu/2, 0], aspect='auto')
-            axs[3].imshow(np.abs(Zxx_final[:freq_bin, :]), extent=[0, 5, rate_imu / 2, 0], aspect='auto')
-            plt.show()
+            micplot.save_wav(audio[:(5 * rate_mic)], path_fusion + file_clean)
+            #
+            # fig, axs = plt.subplots(4)
+            # axs[0].imshow(Zxx2[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
+            # axs[1].imshow(Zxx1[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
+            # axs[2].imshow(Zxx_resize, extent=[0, 5, rate_imu/2, 0], aspect='auto')
+            # axs[3].imshow(np.abs(Zxx_final[:freq_bin, :]), extent=[0, 5, rate_imu / 2, 0], aspect='auto')
+            # plt.show()
 
