@@ -169,14 +169,14 @@ def reading(byte_count):
     return _SPITransfer(read_byte_count=byte_count)
 
 def writing(byte_sequence):
-    """An SPI transfer that writes one or more bytes of data and ignores any bytes read from the device.
+    """An SPI transfer that writes one or more bytes of dataset and ignores any bytes read from the device.
     
     The bytes are passed to this function as a sequence.
     """
     return _SPITransfer(write_byte_seq=byte_sequence)
 
 def writing_bytes(*byte_values):
-    """An SPI transfer that writes one or more bytes of data and ignores any bytes read from the device.
+    """An SPI transfer that writes one or more bytes of dataset and ignores any bytes read from the device.
     
     Each byte is passed as an argument to this function.
     """

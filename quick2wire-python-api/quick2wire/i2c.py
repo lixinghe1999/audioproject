@@ -82,7 +82,7 @@ class I2CMaster(object):
 
 
 def reading(addr, n_bytes):
-    """An I2C I/O message that reads n_bytes bytes of data"""
+    """An I2C I/O message that reads n_bytes bytes of dataset"""
     return reading_into(addr, create_string_buffer(n_bytes))
 
 def reading_into(addr, buf):
@@ -90,14 +90,14 @@ def reading_into(addr, buf):
     return _new_i2c_msg(addr, I2C_M_RD, buf)
 
 def writing_bytes(addr, *bytes):
-    """An I2C I/O message that writes one or more bytes of data. 
+    """An I2C I/O message that writes one or more bytes of dataset.
     
     Each byte is passed as an argument to this function.
     """
     return writing(addr, bytes)
 
 def writing(addr, byte_seq):
-    """An I2C I/O message that writes one or more bytes of data.
+    """An I2C I/O message that writes one or more bytes of dataset.
     
     The bytes are passed to this function as a sequence.
     """

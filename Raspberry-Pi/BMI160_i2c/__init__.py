@@ -63,10 +63,10 @@ class Driver:
   def _reg_write_bits(self, reg, data, pos, len):
     b = self._reg_read(reg)
     mask = ((1 << len) - 1) << pos
-    data <<= pos  # shift data into correct position
-    data &= mask  # zero all non-important bits in data
+    data <<= pos  # shift dataset into correct position
+    data &= mask  # zero all non-important bits in dataset
     b &= ~(mask)  # zero all important bits in existing byte
-    b |= data     # combine data with existing byte
+    b |= data     # combine dataset with existing byte
     self._reg_write(reg, b)
 
   def _is_bit_set(self, value, bit):
@@ -83,8 +83,8 @@ class Driver:
   def get_device_id(self):
     return self._reg_read(registers.CHIP_ID)
 
-  # Get gyroscope output data rate.
-  # The gyr_odr parameter allows setting the output data rate of the gyroscope
+  # Get gyroscope output dataset rate.
+  # The gyr_odr parameter allows setting the output dataset rate of the gyroscope
   # as described in the table below.
   #
   # <pre>
@@ -104,8 +104,8 @@ class Driver:
   def get_gyro_rate(self):
     return self._reg_read_bits(registers.GYRO_CONF, definitions.GYRO_RATE_SEL_BIT, definitions.GYRO_RATE_SEL_LEN)
 
-  # Set gyroscope output data rate.
-  # @param rate New output data rate
+  # Set gyroscope output dataset rate.
+  # @param rate New output dataset rate
   # @see get_gyro_rate()
   # @see definitions.GYRO_RATE_25HZ
   # @see registers.GYRO_CONF
@@ -113,8 +113,8 @@ class Driver:
     self._reg_write_bits(registers.GYRO_CONF, rate,
       definitions.GYRO_RATE_SEL_BIT, definitions.GYRO_RATE_SEL_LEN)
 
-  # Get accelerometer output data rate.
-  # The acc_odr parameter allows setting the output data rate of the accelerometer
+  # Get accelerometer output dataset rate.
+  # The acc_odr parameter allows setting the output dataset rate of the accelerometer
   # as described in the table below.
   #
   # <pre>
@@ -135,8 +135,8 @@ class Driver:
   def get_accel_rate(self):
     return self._reg_read_bits(registers.ACCEL_CONF, definitions.ACCEL_RATE_SEL_BIT, definitions.ACCEL_RATE_SEL_LEN)
 
-  # Set accelerometer output data rate.
-  # @param rate New output data rate
+  # Set accelerometer output dataset rate.
+  # @param rate New output dataset rate
   # @see get_accel_rate()
   # @see registers.ACCEL_CONF
   def set_accel_rate(self, rate):
@@ -147,7 +147,7 @@ class Driver:
   # The gyro_bwp parameter sets the gyroscope digital low pass filter configuration.
   #
   # When the filter mode is set to Normal (@see definitions.DLPF_MODE_NORM), the filter
-  # bandwidth for each respective gyroscope output data rates is shown in the table below:
+  # bandwidth for each respective gyroscope output dataset rates is shown in the table below:
   #
   # <pre>
   # ODR     | 3dB cut-off
@@ -184,7 +184,7 @@ class Driver:
   # The acc_bwp parameter sets the accelerometer digital low pass filter configuration.
   #
   # When the filter mode is set to Normal (@see definitions.DLPF_MODE_NORM), the filter
-  # bandwidth for each respective accelerometer output data rates is shown in the table below:
+  # bandwidth for each respective accelerometer output dataset rates is shown in the table below:
   #
   # <pre>
   # ODR     | 3dB cut-off
@@ -381,53 +381,53 @@ class Driver:
     while (not (self._reg_read_bits(registers.STATUS, definitions.STATUS_FOC_RDY, 1))):
       sleep_ms(1)
 
-  # Get offset compensation value for accelerometer X-axis data.
+  # Get offset compensation value for accelerometer X-axis dataset.
   # The value is represented as an 8-bit two-complement number in
   # units of 3.9mg per LSB.
   # @see registers.OFFSET_0
   def getXAccelOffset(self):
     return self._reg_read(registers.OFFSET_0)
 
-  # Set offset compensation value for accelerometer X-axis data.
+  # Set offset compensation value for accelerometer X-axis dataset.
   # This is used for applying manual calibration constants if required.
   # For auto-calibration, @see autoCalibrateXAccelOffset().
   # @see getXAccelOffset()
   # @see registers.OFFSET_0
   def setXAccelOffset(self, offset):
     self._reg_write(registers.OFFSET_0, offset)
-    getAccelerationX()  # Read and discard the next data value
+    getAccelerationX()  # Read and discard the next dataset value
 
-  # Get offset compensation value for accelerometer Y-axis data.
+  # Get offset compensation value for accelerometer Y-axis dataset.
   # The value is represented as an 8-bit two-complement number in
   # units of 3.9mg per LSB.
   # @see registers.OFFSET_1
   def getYAccelOffset(self):
     return self._reg_read(registers.OFFSET_1)
 
-  # Set offset compensation value for accelerometer Y-axis data.
+  # Set offset compensation value for accelerometer Y-axis dataset.
   # This is used for applying manual calibration constants if required.
   # For auto-calibration, @see autoCalibrateYAccelOffset().
   # @see getYAccelOffset()
   # @see registers.OFFSET_1
   def setYAccelOffset(self, offset):
     self._reg_write(registers.OFFSET_1, offset)
-    getAccelerationY()  # Read and discard the next data value
+    getAccelerationY()  # Read and discard the next dataset value
 
-  # Get offset compensation value for accelerometer Z-axis data.
+  # Get offset compensation value for accelerometer Z-axis dataset.
   # The value is represented as an 8-bit two-complement number in
   # units of 3.9mg per LSB.
   # @see registers.OFFSET_2
   def getZAccelOffset(self):
     return self._reg_read(registers.OFFSET_2)
 
-  # Set offset compensation value for accelerometer Z-axis data.
+  # Set offset compensation value for accelerometer Z-axis dataset.
   # This is used for applying manual calibration constants if required.
   # For auto-calibration, @see autoCalibrateZAccelOffset().
   # @see getZAccelOffset()
   # @see registers.OFFSET_2
   def setZAccelOffset(self, offset):
     self._reg_write(registers.OFFSET_2, offset)
-    getAccelerationZ()  # Read and discard the next data value
+    getAccelerationZ()  # Read and discard the next dataset value
 
   # Get gyroscope offset compensation enabled value.
   # @see getXGyroOffset()
@@ -464,7 +464,7 @@ class Driver:
     while (not (self._reg_read_bits(registers.STATUS, definitions.STATUS_FOC_RDY, 1))):
       sleep_ms(1)
 
-  # Get offset compensation value for gyroscope X-axis data.
+  # Get offset compensation value for gyroscope X-axis dataset.
   # The value is represented as an 10-bit two-complement number in
   # units of 0.061 degrees/s per LSB (sign-extended for type).
   # @see registers.OFFSET_3
@@ -475,7 +475,7 @@ class Driver:
       definitions.GYR_OFFSET_X_MSB_BIT, definitions.GYR_OFFSET_X_MSB_LEN)) << 8
     return self._sign_extend(offset, 10)
 
-  # Set offset compensation value for gyroscope X-axis data.
+  # Set offset compensation value for gyroscope X-axis dataset.
   # This is used for applying manual calibration constants if required.
   # For auto-calibration, @see autoCalibrateGyroOffset().
   # @see getXGyroOffset()
@@ -485,9 +485,9 @@ class Driver:
     self._reg_write(registers.OFFSET_3, offset)
     self._reg_write_bits(registers.OFFSET_6, offset >> 8,
       definitions.GYR_OFFSET_X_MSB_BIT, definitions.GYR_OFFSET_X_MSB_LEN)
-    getRotationX()  # Read and discard the next data value
+    getRotationX()  # Read and discard the next dataset value
 
-  # Get offset compensation value for gyroscope Y-axis data.
+  # Get offset compensation value for gyroscope Y-axis dataset.
   # The value is represented as an 10-bit two-complement number in
   # units of 0.061 degrees/s per LSB (sign-extended for type).
   # @see registers.OFFSET_4
@@ -498,7 +498,7 @@ class Driver:
       definitions.GYR_OFFSET_Y_MSB_BIT, definitions.GYR_OFFSET_Y_MSB_LEN)) << 8
     return self._sign_extend(offset, 10)
 
-  # Set offset compensation value for gyroscope Y-axis data.
+  # Set offset compensation value for gyroscope Y-axis dataset.
   # This is used for applying manual calibration constants if required.
   # For auto-calibration, @see autoCalibrateGyroOffset().
   # @see getYGyroOffset()
@@ -508,9 +508,9 @@ class Driver:
     self._reg_write(registers.OFFSET_4, offset)
     self._reg_write_bits(registers.OFFSET_6, offset >> 8,
       definitions.GYR_OFFSET_Y_MSB_BIT, definitions.GYR_OFFSET_Y_MSB_LEN)
-    getRotationY()  # Read and discard the next data value
+    getRotationY()  # Read and discard the next dataset value
 
-  # Get offset compensation value for gyroscope Z-axis data.
+  # Get offset compensation value for gyroscope Z-axis dataset.
   # The value is represented as an 10-bit two-complement number in
   # units of 0.061 degrees/s per LSB (sign-extended for type).
   # @see registers.OFFSET_5
@@ -521,7 +521,7 @@ class Driver:
       definitions.GYR_OFFSET_Z_MSB_BIT, definitions.GYR_OFFSET_Z_MSB_LEN)) << 8
     return self._sign_extend(offset, 10)
 
-  # Set offset compensation value for gyroscope Z-axis data.
+  # Set offset compensation value for gyroscope Z-axis dataset.
   # This is used for applying manual calibration constants if required.
   # For auto-calibration, @see autoCalibrateGyroOffset().
   # @see getZGyroOffset()
@@ -531,7 +531,7 @@ class Driver:
     self._reg_write(registers.OFFSET_5, offset)
     self._reg_write_bits(registers.OFFSET_6, offset >> 8,
       definitions.GYR_OFFSET_Z_MSB_BIT, definitions.GYR_OFFSET_Z_MSB_LEN)
-    getRotationZ()  # Read and discard the next data value
+    getRotationZ()  # Read and discard the next dataset value
 
   # Get free-fall event acceleration threshold.
   # This register configures the detection threshold for Free Fall event
@@ -681,7 +681,7 @@ class Driver:
     step_conf0 = 0
     min_step_buf = 0
 
-    # Applying pre-defined values suggested in data-sheet Section 2.11.37
+    # Applying pre-defined values suggested in dataset-sheet Section 2.11.37
     if definitions.STEP_MODE_NORMAL == mode:
       step_conf0 = 0x15
       min_step_buf = 0x3
@@ -1202,7 +1202,7 @@ class Driver:
       registers.INT_EN_1, 0x1 if enabled else 0x0, definitions.DRDY_EN_BIT, 1)
 
   # Get accelerometer FIFO enabled value.
-  # When set to 1, this bit enables accelerometer data samples to be
+  # When set to 1, this bit enables accelerometer dataset samples to be
   # written into the FIFO buffer.
   # @return Current accelerometer FIFO enabled value
   # @see registers.FIFO_CONFIG_1
@@ -1218,7 +1218,7 @@ class Driver:
       registers.FIFO_CONFIG_1, 0x1 if enabled else 0, definitions.FIFO_ACC_EN_BIT, 1)
 
   # Get gyroscope FIFO enabled value.
-  # When set to 1, this bit enables gyroscope data samples to be
+  # When set to 1, this bit enables gyroscope dataset samples to be
   # written into the FIFO buffer.
   # @return Current gyroscope FIFO enabled value
   # @see registers.FIFO_CONFIG_1
@@ -1238,7 +1238,7 @@ class Driver:
   # number is in turn the number of bytes that can be read from the FIFO buffer.
   #
   # In "headerless" FIFO mode, it is directly proportional to the number of
-  # samples available given the set of sensor data bound to be stored in the
+  # samples available given the set of sensor dataset bound to be stored in the
   # FIFO. See @ref getFIFOHeaderModeEnabled().
   #
   # @return Current FIFO buffer size
@@ -1249,7 +1249,7 @@ class Driver:
     return ((buffer[1]) << 8) | buffer[0]
 
   # Reset the FIFO.
-  # This command clears all data in the FIFO buffer.  It is recommended
+  # This command clears all dataset in the FIFO buffer.  It is recommended
   # to invoke this after reconfiguring the FIFO.
   #
   # @see registers.CMD
@@ -1267,11 +1267,11 @@ class Driver:
 
   # Get FIFO Header-Mode enabled status.
   # When this bit is set to 0, the FIFO header-mode is disabled, and frames
-  # read from the FIFO will be headerless (raw sensor data only).
+  # read from the FIFO will be headerless (raw sensor dataset only).
   # When this bit is set to 1, the FIFO header-mode is enabled, and frames
   # read from the FIFO will include headers.
   #
-  # For more information on the FIFO modes and data formats, please refer
+  # For more information on the FIFO modes and dataset formats, please refer
   # to Section 2.5 of the BMI160 Data Sheet.
   #
   # @return Current FIFO Header-Mode enabled status
@@ -1289,25 +1289,25 @@ class Driver:
     self._reg_write_bits(
       registers.FIFO_CONFIG_1, 0x1 if enabled else 0, definitions.FIFO_HEADER_EN_BIT, 1)
 
-  # Get data frames from FIFO buffer.
-  # This register is used to read and write data frames from the FIFO buffer.
+  # Get dataset frames from FIFO buffer.
+  # This register is used to read and write dataset frames from the FIFO buffer.
   # Data is written to the FIFO in order of DATA register number (from lowest
-  # to highest) corresponding to the FIFO data sources enabled (@see
+  # to highest) corresponding to the FIFO dataset sources enabled (@see
   # getGyroFIFOEnabled() and getAccelFIFOEnabled()).
   #
-  # The data frame format depends on the enabled data sources and also on
+  # The dataset frame format depends on the enabled dataset sources and also on
   # the FIFO header-mode setting (@see getFIFOHeaderModeEnabled()).
   #
   # It is strongly recommended, where possible, to read whole frames from the
   # FIFO.  Partially-read frames will be repeated until fully read out.
   #
   # If the FIFO buffer has filled to the powhere subsequent writes may
-  # cause data loss, the status bit ffull_is automatically set to 1. This bit
+  # cause dataset loss, the status bit ffull_is automatically set to 1. This bit
   # is located in INT_STATUS[1]. When the FIFO buffer has overflowed, the oldest
-  # data will be lost and new data will be written to the FIFO.
+  # dataset will be lost and new dataset will be written to the FIFO.
   #
   # If the FIFO buffer is empty, reading this register will return a magic number
-  # (@see definitions.FIFO_DATA_INVALID) until new data is available. The user should
+  # (@see definitions.FIFO_DATA_INVALID) until new dataset is available. The user should
   # check FIFO_LENGTH to ensure that the FIFO buffer is not read when empty (see
   # @getFIFOCount()).
   #
@@ -1613,7 +1613,7 @@ class Driver:
 
   # Get Data Ready interrupt status.
   # This bit automatically sets to 1 when a Data Ready interrupt has been
-  # generated. The bit clears to 0 after the data registers have been read.
+  # generated. The bit clears to 0 after the dataset registers have been read.
   # @return Current interrupt status
   # @see registers.INT_STATUS_1
   # @see definitions.FFULL_INT_BIT
@@ -1736,12 +1736,12 @@ class Driver:
   #
   # The accelerometer measurement registers, along with the temperature
   # measurement registers, gyroscope measurement registers, and external sensor
-  # data registers, are composed of two sets of registers: an internal register
+  # dataset registers, are composed of two sets of registers: an internal register
   # set and a user-facing read register set.
   #
-  # The data within the accelerometer sensors' internal register set is always
+  # The dataset within the accelerometer sensors' internal register set is always
   # updated at the Output Data Rate. Meanwhile, the user-facing read register set
-  # duplicates the internal register set's data values whenever the serial
+  # duplicates the internal register set's dataset values whenever the serial
   # interface is idle. This guarantees that a burst read of sensor registers will
   # read measurements from the same sampling instant. Note that if burst reads
   # are not used, the user is responsible for ensuring a set of single byte reads
@@ -1821,11 +1821,11 @@ class Driver:
   # Get 3-axis gyroscope readings.
   # These gyroscope measurement registers, along with the accelerometer
   # measurement registers, temperature measurement registers, and external sensor
-  # data registers, are composed of two sets of registers: an internal register
+  # dataset registers, are composed of two sets of registers: an internal register
   # set and a user-facing read register set.
-  # The data within the gyroscope sensors' internal register set is always
+  # The dataset within the gyroscope sensors' internal register set is always
   # updated at the Output Data Rate. Meanwhile, the user-facing read register set
-  # duplicates the internal register set's data values whenever the serial
+  # duplicates the internal register set's dataset values whenever the serial
   # interface is idle. This guarantees that a burst read of sensor registers will
   # read measurements from the same sampling instant. Note that if burst reads
   # are not used, the user is responsible for ensuring a set of single byte reads
@@ -1890,7 +1890,7 @@ class Driver:
 
   # Write a BMI160 register directly.
   # @param reg register address
-  # @param data 8-bit register value
+  # @param dataset 8-bit register value
   def setRegister(self, reg, data):
     self._reg_write(reg, data)
 

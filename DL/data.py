@@ -45,12 +45,12 @@ class Audioset:
         for file, file_length in self.files:
             if length is None:
                 examples = 1
-            elif file_length < length:
+            elif file_length < length*self.sample_rate:
                 examples = 1 if pad else 0
             elif pad:
-                examples = int(math.ceil((file_length - self.length) / self.stride) + 1)
+                examples = int(math.ceil((file_length - self.length * self.sample_rate) / self.stride/self.sample_rate) + 1)
             else:
-                examples = (file_length - self.length) // self.stride + 1
+                examples = (file_length - self.length * self.sample_rate) // (self.stride*self.sample_rate) + 1
             self.num_examples.append(examples)
 
 
@@ -71,8 +71,12 @@ class Audioset:
             if self.length:
                 out = np.pad(out, (0, duration*self.sample_rate - out.shape[-1]))
             Zxx = signal.stft(out, nperseg=self.window, noverlap=self.overlap, fs=sr)[-1]
+            freq_bin_max = int(1600 / self.sample_rate * (self.window/2 + 1))
+            freq_bin_min = int(100 / self.sample_rate * (self.window / 2 + 1))
+            Zxx = Zxx[freq_bin_min:freq_bin_max, :]
             out = np.dstack((np.real(Zxx), np.imag(Zxx)))
             out = torch.from_numpy(np.transpose(out,(2, 0, 1)))
+            #out = np.abs(Zxx)
             if self.with_path:
                 return out, file
             else:
@@ -100,7 +104,7 @@ class NoisyCleanSet:
 
         assert len(self.clean_set) == len(self.noisy_set)
     def __getitem__(self, index):
-        return self.noisy_set[index].squeeze(), self.clean_set[index].squeeze()
+        return self.noisy_set[index], self.clean_set[index]
 
     def __len__(self):
         return len(self.noisy_set)
@@ -116,7 +120,7 @@ def find_audio_files(path):
 
 if __name__ == "__main__":
     meta = []
-    #for path in ['../exp2/HE/noisy2/', '../exp2/HE/noisy1/']:
-    for path in ['../exp2/HE/mic2/', '../exp2/HE/mic1/']:
+    for path in ['../exp2/HE/imu2/', '../exp2/HE/imu1/', '../exp2/HOU/imu2/', '../exp2/HOU/imu1/']:
+    #for path in ['../exp2/HE/mic2/', '../exp2/HE/mic1/', '../exp2/HOU/mic2/', '../exp2/HOU/mic1/']:
         meta += find_audio_files(path)
-    json.dump(meta, open('mic.json','w'), indent=4)
+    json.dump(meta, open('dataset/noisy.json', 'w'), indent=4)

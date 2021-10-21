@@ -2534,7 +2534,7 @@ def mach_o_change(path, what, value):
             # Read command header
             cmd, cmdsize = read_data(file, endian, 2)
             if cmd == LC_LOAD_DYLIB:
-                # The first data field in LC_LOAD_DYLIB commands is the
+                # The first dataset field in LC_LOAD_DYLIB commands is the
                 # offset of the name, starting from the beginning of the
                 # command.
                 name_offset = read_data(file, endian)

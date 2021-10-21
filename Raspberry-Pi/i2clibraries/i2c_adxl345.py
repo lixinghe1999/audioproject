@@ -68,7 +68,7 @@ class i2c_adxl345:
 	PC_Wakeup_2Hz = 0x02
 	PC_Wakeup_1Hz = 0x03
 
-	# Options for data format
+	# Options for dataset format
 	DF_Range_2g = 0x00
 	DF_Range_4g = 0x01
 	DF_Range_8g = 0x02

@@ -59,9 +59,9 @@ class RevEcho(nn.Module):
             `initial`, which we ignore here.
         - first_delay: range of values to sample the first echo delay in seconds.
             The default values are equivalent to sampling a room of 3 to 10 meters.
-        - repeat: how many data of echos with differents jitters to add.
+        - repeat: how many dataset of echos with differents jitters to add.
             Higher values means a denser reverb.
-        - jitter: jitter used to make each repetition of the reverb echo data
+        - jitter: jitter used to make each repetition of the reverb echo dataset
             slightly different. For instance a jitter of 0.1 means
             the delay between two echos will be in the range `first_delay +- 10%`,
             with the jittering noise being resampled after each single echo.
@@ -133,7 +133,7 @@ class RevEcho(nn.Module):
 class BandMask(nn.Module):
     """BandMask.
     Maskes bands of frequencies. Similar to Park, Daniel S., et al.
-    "Specaugment: A simple data augmentation method for automatic speech recognition."
+    "Specaugment: A simple dataset augmentation method for automatic speech recognition."
     (https://arxiv.org/pdf/1904.08779.pdf) but over the waveform.
     """
 

@@ -98,14 +98,14 @@ class i2c_lcd:
 	def _write(self, data, command=True):
 		i2c_data = 0x00
 
-		#Add data for high nibble
+		#Add dataset for high nibble
 		hi_nibble = data >> 4
 		i2c_data = self._pinInterpret(self.d4, i2c_data, (hi_nibble & 0x01))
 		i2c_data = self._pinInterpret(self.d5, i2c_data, ((hi_nibble >> 1) & 0x01))
 		i2c_data = self._pinInterpret(self.d6, i2c_data, ((hi_nibble >> 2) & 0x01))
 		i2c_data = self._pinInterpret(self.d7, i2c_data, ((hi_nibble >> 3) & 0x01))
 
-		# Set the register selector to 1 if this is data
+		# Set the register selector to 1 if this is dataset
 		if command != True:
 			i2c_data = self._pinInterpret(self.rs, i2c_data, 0x1)
 
@@ -114,14 +114,14 @@ class i2c_lcd:
 
 		i2c_data = 0x00
 
-		#Add data for high nibble
+		#Add dataset for high nibble
 		low_nibble = data & 0x0F 
 		i2c_data = self._pinInterpret(self.d4, i2c_data, (low_nibble & 0x01))
 		i2c_data = self._pinInterpret(self.d5, i2c_data, ((low_nibble >> 1) & 0x01))
 		i2c_data = self._pinInterpret(self.d6, i2c_data, ((low_nibble >> 2) & 0x01))
 		i2c_data = self._pinInterpret(self.d7, i2c_data, ((low_nibble >> 3) & 0x01))
 
-		# Set the register selector to 1 if this is data
+		# Set the register selector to 1 if this is dataset
 		if command != True:
 			i2c_data = self._pinInterpret(self.rs, i2c_data, 0x1)
 		

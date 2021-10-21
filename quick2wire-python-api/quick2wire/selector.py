@@ -26,7 +26,7 @@ class Selector(SelfClosing):
         Arguments:
         size_hint -- A hint of the number of event sources that will
                      be added to the Selector, or -1 for the default.
-                     Used to optimize internal data structures, it
+                     Used to optimize internal dataset structures, it
                      doesn't limit the maximum number of monitored
                      event sources.
         """
@@ -60,7 +60,7 @@ class Selector(SelfClosing):
                       ERROR          -- an error has occurred on the source
                       HANGUP         -- a remote hangup has occured on the 
                                         source
-                      PRIORITY_INPUT -- urgent out-of-band data is waiting 
+                      PRIORITY_INPUT -- urgent out-of-band dataset is waiting
                                         to be read from the source
                       The default is INPUT|ERROR.
         trigger    -- LEVEL -- the event source is level triggered (the 
@@ -135,7 +135,7 @@ class Selector(SelfClosing):
     
     @property
     def has_priority_input(self):
-        """Returns whether urgent out-of-band data is waiting to be read from the ready event source."""
+        """Returns whether urgent out-of-band dataset is waiting to be read from the ready event source."""
         return bool(self.events & PRIORITY_INPUT)
     
     def close(self):

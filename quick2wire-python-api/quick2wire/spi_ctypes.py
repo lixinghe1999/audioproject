@@ -31,9 +31,9 @@ SPI_IOC_MAGIC = 107 # ord('k')
 
 # struct spi_ioc_transfer - describes a single SPI transfer
 #
-# tx_buf:        Holds pointer to userspace buffer with transmit data, or null.
-#                If no data is provided, zeroes are shifted out.
-# rx_buf:        Holds pointer to userspace buffer for receive data, or null.
+# tx_buf:        Holds pointer to userspace buffer with transmit dataset, or null.
+#                If no dataset is provided, zeroes are shifted out.
+# rx_buf:        Holds pointer to userspace buffer for receive dataset, or null.
 # len:           Length of tx and rx buffers, in bytes.
 # speed_hz:      Temporary override of the device's bitrate.
 # bits_per_word: Temporary override of the device's wordsize.
@@ -57,7 +57,7 @@ SPI_IOC_MAGIC = 107 # ord('k')
 #	status = ioctl(fd, SPI_IOC_MESSAGE(4), mesg);
 #
 # So for example one transfer might send a nine bit command (right aligned
-# in a 16-bit word), the next could read a block of 8-bit data before
+# in a 16-bit word), the next could read a block of 8-bit dataset before
 # terminating that command by temporarily deselecting the chip; the next
 # could send a different nine bit command (re-selecting the chip), and the
 # last transfer might write some register values.
