@@ -83,13 +83,13 @@ def saveaswav(data, l, r, count):
 
 if __name__ == "__main__":
     # check imu plot
-    #test_path = "exp2/HE/imu/bmiacc_1633585671.5115263.txt"
-    #test_path = 'test/bmiacc_1635248218.2405603.txt'
-    test_path = 'test/bmigryo_1635248218.2576137.txt'
+    #test_path = "exp2/HE/imu/bmiacc_1633585810.4177535.txt"
+    test_path = 'test/bmiacc_1635248675.3446405.txt'
+    #test_path = 'test/bmigryo_1635248218.2576137.txt'
     data = read_data(test_path)
     length = data.shape[0]
     fig, axs = plt.subplots(3, 1)
-    b, a = signal.butter(8, 100, 'highpass', fs = rate)
+    b, a = signal.butter(8, 50, 'highpass', fs = rate)
     for j in range(3):
         data[:, j] = signal.filtfilt(b, a, data[:, j])
     for j in range(3):
