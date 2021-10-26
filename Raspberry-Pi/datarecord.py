@@ -25,17 +25,17 @@ if __name__ == "__main__":
     micframe = args.time * 44100
     if args.acctype == 0:
         thread1 = Process(target=bmi160_accsave, args=('bmiacc', bmiaccframe, port))
-        thread4 = Process(target=bmi160_gyrosave, args=('bmigryo', bmiaccframe, port))
+        #thread4 = Process(target=bmi160_gyrosave, args=('bmigryo', bmiaccframe, port))
         thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
         thread3 = Process(target=voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
         thread1.start()
         thread2.start()
         thread3.start()
-        thread4.start()
+        #thread4.start()
         thread1.join()
         thread2.join()
         thread3.join()
-        thread4.join()
+        #thread4.join()
     elif args.acctype == 1:
         thread1 = Process(target=gy85_accsave, args=('gyacc', gyaccframe, port))
         thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
