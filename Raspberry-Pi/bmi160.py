@@ -18,7 +18,7 @@ def bmi160_accsave(name, num, port):
     print(num/(time.time() - time_start))
 def bmi160_gyrosave(name, num, port):
     sensor = Driver(0x68, port) # change address if needed
-    sensor.set_gyro_rate(13)
+    sensor.set_gyro_rate(12)
     a = 0
     acc = ''
     time_start = time.time()
