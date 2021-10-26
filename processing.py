@@ -71,15 +71,15 @@ if __name__ == "__main__":
                     #     print(p1, p2, p3)
                 plt.show()
     elif args.mode == 1:
-        path_noise = 'exp2/HE/noisy2/'
-        path_clean = 'exp2/HE/mic2/'
-        path_fusion = 'exp2/HE/imu2/'
-        path_imu = 'exp2/HE/imu/'
+        path_noise = 'exp2/HOU/noisy2/'
+        path_clean = 'exp2/HOU/mic2/'
+        path_fusion = 'exp2/HOU/imu2/'
+        path_imu = 'exp2/HOU/imu/'
 
         files_noise = os.listdir(path_noise)
         files_clean = os.listdir(path_clean)
         files_imu = os.listdir(path_imu)
-        index = [0]
+        index = [26]
         for i in index:
             file_noise = files_noise[i]
             file_clean = files_clean[i]
@@ -94,53 +94,53 @@ if __name__ == "__main__":
                 imu[:, j] = signal.filtfilt(b, a, imu[:, j])
             dominant_axis = (np.argmax(np.sum(np.abs(imu[:, :-1]), axis=0)))
             time_diff = imu[0, 3] - time1
-
-            imu = imuplot.interpolation(imu, rate_imu)
-            shift = round(time_diff * rate_imu)+45
-            imu = np.roll(imu, shift, axis=0)
-            imu = imu[:, dominant_axis]
-            imu = imu/imu.max()
-            for k in range(len(imu)):
-                wave_1[k*10:(k+1)*10] *= imu[k]
-            wave_1 = np.sqrt(np.abs(wave_1))
-            fig, axs = plt.subplots(3, 1)
-            span = [2200, 2300]
-            axs[0].plot(wave_2[span[0]*10: span[1]*10])
-            axs[1].plot(imu[span[0]: span[1]])
-            axs[2].plot(wave_1[span[0]*10: span[1]*10])
-            plt.show()
-
-
-
-
-
-
             #
-            # f, t, Zxx = signal.stft(imu[:, dominant_axis], nperseg=seg_len_imu, noverlap=overlap_imu, fs=rate_imu, window="hamming")
-            # Zxx = np.abs(Zxx)
-            # freq_bin = int(rate_imu/rate_mic * (int(seg_len_mic/2) + 1))
-            # time_bin = np.shape(Zxx1)[1]
-            # time_imu = imu[0, 3]
-            # time_diff = time_imu - time1
-            # shift = round(time_diff * rate_mic / overlap_mic)
-            # Zxx_resize = np.roll(resize(Zxx, (freq_bin, time_bin)), shift, axis=1)
-            # Zxx_resize[:, :shift] = 0
-            #
-            # Zxx_phase = Zxx1[:freq_bin, :]
-            # Zxx_final = np.zeros(np.shape(Zxx1), dtype='complex64')
-            # #Zxx_final[:freq_bin, :] = Zxx_phase * (Zxx_resize > np.mean(Zxx_resize, axis=(0, 1)))
-            # Zxx_final[:freq_bin, :] = np.sqrt(Zxx_phase * (np.where(Zxx_resize > np.mean(Zxx_resize, axis=(0, 1)), Zxx_resize, 0)))
-            # Zxx_final[:freq_bin, :] = Zxx_final[:freq_bin, :] * phase1[:freq_bin, :]
-            #
-            # _, audio = signal.istft(Zxx_final, fs=rate_mic, window='hamming', nperseg=seg_len_mic, noverlap=overlap_mic)
-            # # audio = micplot.GLA(10, Zxx_final)
-            #
-            # micplot.save_wav(audio[:(5 * rate_mic)], path_fusion + file_clean)
-            #
-            # fig, axs = plt.subplots(4)
-            # axs[0].imshow(Zxx2[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
-            # axs[1].imshow(Zxx1[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
-            # axs[2].imshow(Zxx_resize, extent=[0, 5, rate_imu/2, 0], aspect='auto')
-            # axs[3].imshow(np.abs(Zxx_final[:freq_bin, :]), extent=[0, 5, rate_imu / 2, 0], aspect='auto')
+            # imu = imuplot.interpolation(imu, rate_imu)
+            # shift = round(time_diff * rate_imu)+45
+            # imu = np.roll(imu, shift, axis=0)
+            # imu = imu[:, dominant_axis]
+            # imu = imu/imu.max()
+            # for k in range(len(imu)):
+            #     wave_1[k*10:(k+1)*10] *= imu[k]
+            # wave_1 = np.sqrt(np.abs(wave_1))
+            # fig, axs = plt.subplots(3, 1)
+            # span = [2200, 2300]
+            # axs[0].plot(wave_2[span[0]*10: span[1]*10])
+            # axs[1].plot(imu[span[0]: span[1]])
+            # axs[2].plot(wave_1[span[0]*10: span[1]*10])
             # plt.show()
+
+
+
+
+
+
+
+            f, t, Zxx = signal.stft(imu[:, dominant_axis], nperseg=seg_len_imu, noverlap=overlap_imu, fs=rate_imu, window="hamming")
+            Zxx = np.abs(Zxx)
+            freq_bin = int(rate_imu/rate_mic * (int(seg_len_mic/2) + 1))
+            time_bin = np.shape(Zxx1)[1]
+            time_imu = imu[0, 3]
+            time_diff = time_imu - time1
+            shift = round(time_diff * rate_mic / overlap_mic)
+            Zxx_resize = np.roll(resize(Zxx, (freq_bin, time_bin)), shift, axis=1)
+            Zxx_resize[:, :shift] = 0
+
+            Zxx_phase = Zxx1[:freq_bin, :]
+            Zxx_final = np.zeros(np.shape(Zxx1), dtype='complex64')
+            #Zxx_final[:freq_bin, :] = Zxx_phase * (Zxx_resize > np.mean(Zxx_resize, axis=(0, 1)))
+            Zxx_final[:freq_bin, :] = np.sqrt(Zxx_phase * (np.where(Zxx_resize > np.mean(Zxx_resize, axis=(0, 1)), Zxx_resize, 0)))
+            Zxx_final[:freq_bin, :] = Zxx_final[:freq_bin, :] * phase1[:freq_bin, :]
+
+            _, audio = signal.istft(Zxx_final, fs=rate_mic, window='hamming', nperseg=seg_len_mic, noverlap=overlap_mic)
+            # audio = micplot.GLA(10, Zxx_final)
+
+            #micplot.save_wav(audio[:(5 * rate_mic)], path_fusion + file_clean)
+
+            fig, axs = plt.subplots(4)
+            axs[0].imshow(Zxx2[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
+            axs[1].imshow(Zxx1[:freq_bin, :], extent=[0, 5, rate_imu/2, 0], aspect='auto')
+            axs[2].imshow(Zxx_resize, extent=[0, 5, rate_imu/2, 0], aspect='auto')
+            axs[3].imshow(np.abs(Zxx_final[:freq_bin, :]), extent=[0, 5, rate_imu / 2, 0], aspect='auto')
+            plt.show()
             #
