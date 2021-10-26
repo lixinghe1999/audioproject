@@ -11,7 +11,7 @@ def voice_record(name, stream, micframes):
     time_start = time.time()
     frames = []
     for i in range(0, int(micframes / CHUNK)):
-        data = stream.read(CHUNK)
+        data = stream.read(CHUNK, exception_on_overflow = False)
         frames.append(data)
     print(frames / (time.time() - time_start))
     stream.stop_stream()
