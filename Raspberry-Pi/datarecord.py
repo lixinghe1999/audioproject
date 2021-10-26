@@ -38,8 +38,8 @@ if __name__ == "__main__":
         thread4.join()
     elif args.acctype == 1:
         thread1 = Process(target=gy85_accsave, args=('gyacc', gyaccframe, port))
-        thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1, micframe), micframe))
-        thread3 = Process(target=voice_record, args=('mic2', open_mic_stream(2, micframe), micframe))
+        thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1), micframe))
+        thread3 = Process(target=voice_record, args=('mic2', open_mic_stream(2), micframe))
         thread1.start()
         thread2.start()
         thread3.start()
