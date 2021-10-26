@@ -15,7 +15,7 @@ if __name__ == "__main__":
     pad = True
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
-    model = UNet(2, 2).to(device)
+    model = UNet(1, 1).to(device)
 
     dataset_train = NoisyCleanSet('dataset', length=segment, stride=stride, pad=pad, sample_rate=sample_rate)
     loader = Data.DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=True)

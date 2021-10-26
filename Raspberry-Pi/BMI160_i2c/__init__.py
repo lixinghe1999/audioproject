@@ -1617,9 +1617,10 @@ class Driver:
   # @return Current interrupt status
   # @see registers.INT_STATUS_1
   # @see definitions.FFULL_INT_BIT
-  def getIntDataReadyStatus(self):
+  def getIntACCDataReadyStatus(self):
     return 0 != (self._reg_read_bits(registers.STATUS, definitions.DRDY_ACC_BIT, 1))
-
+  def getIntGYRODataReadyStatus(self):
+    return 0 != (self._reg_read_bits(registers.STATUS, definitions.DRDY_GYRO_BIT, 1))
   # Get interrupt logic level mode.
   # Will be set 0 for active-high, 1 for active-low.
   # @return Current interrupt mode (0=active-high, 1=active-low)

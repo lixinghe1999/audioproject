@@ -22,11 +22,11 @@ def read_data(file):
     data[:, :-1] /= 2**14
     return data
 
-def interpolation(data):
+def interpolation(data, target_rate):
     start_time = data[0, 3]
     t_norm = data[:, 3] - start_time
     f_linear = interpolate.interp1d(t_norm, data[:, :3], axis=0)
-    t_new = np.linspace(0, max(t_norm), int(max(t_norm) * rate))
+    t_new = np.linspace(0, 5, 5 * target_rate)
     return f_linear(t_new)
 
 

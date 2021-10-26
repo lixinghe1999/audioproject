@@ -74,9 +74,9 @@ class Audioset:
             freq_bin_max = int(1600 / self.sample_rate * (self.window/2 + 1))
             freq_bin_min = int(100 / self.sample_rate * (self.window / 2 + 1))
             Zxx = Zxx[freq_bin_min:freq_bin_max, :]
-            out = np.dstack((np.real(Zxx), np.imag(Zxx)))
-            out = torch.from_numpy(np.transpose(out,(2, 0, 1)))
-            #out = np.abs(Zxx)
+            #out = np.dstack((np.real(Zxx), np.imag(Zxx)))
+            #out = torch.from_numpy(np.transpose(out,(2, 0, 1)))
+            out = torch.unsqueeze(torch.from_numpy(np.abs(Zxx)), 0)
             if self.with_path:
                 return out, file
             else:

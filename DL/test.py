@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 def tensor2image(t):
     t = t.squeeze().numpy()
-    t = t[0] + t[1] * 1j
+    #t = t[0] + t[1] * 1j
     return np.abs(t)
 if __name__ == "__main__":
     fig, axs = plt.subplots(3, 1)
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     segment = 4
     stride = 1
     pad = True
-    model = UNet(2, 2)
+    model = UNet(1, 1)
     model.load_state_dict(torch.load('checkpoint.pth'))
     dataset_train = NoisyCleanSet('dataset', length=segment, stride=stride, pad=pad, sample_rate=sample_rate)
     loader = Data.DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=True)
