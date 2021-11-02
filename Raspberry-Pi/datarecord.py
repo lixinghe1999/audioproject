@@ -26,7 +26,7 @@ if __name__ == "__main__":
     if args.acctype == 0:
         thread1 = Process(target=bmi160_accsave, args=('bmiacc', bmiaccframe, port))
         thread4 = Process(target=bmi160_gyrosave, args=('bmigryo', bmiaccframe, port))
-        thread5 = Process(target=gy85_accsave, args=('gyacc', gyaccframe, 1))
+        thread5 = Process(target=gy85_accsave, args=('gyacc', gyaccframe, 0))
         thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1), micframe))
         thread3 = Process(target=voice_record, args=('mic2', open_mic_stream(2), micframe))
         thread1.start()
