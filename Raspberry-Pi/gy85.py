@@ -3,6 +3,7 @@ sys.path.insert(1,'/home/pi/audioproject/Raspberry-Pi/i2clibraries')
 from i2c_adxl345 import *
 from i2c_itg3205 import *
 from i2c_hmc5883l import *
+import time
 
 def gy85_accsave(name, num, port):
     a = 0
