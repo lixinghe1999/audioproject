@@ -7,8 +7,8 @@ from librosa.feature import melspectrogram
 import librosa.display
 import librosa
 import soundfile as sf
-seg_len = 2048
-overlap = 1024
+seg_len = 2560
+overlap = 2240
 rate = 16000
 def get_wav(name, normalize = False, mfcc=False):
     wave_data, r = librosa.load(name, sr=rate, mono=True)

@@ -3,7 +3,7 @@ import librosa
 import soundfile as sf
 # basically use this script to change sample rate
 
-dir = 'reference'
+dir = 'exp3/mic2'
 file = os.listdir(dir)
 for f in file:
     if f[-4:] == '.wav':

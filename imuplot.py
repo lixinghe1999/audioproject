@@ -83,8 +83,9 @@ def saveaswav(data, l, r, count):
 
 if __name__ == "__main__":
     # check imu plot
+    test_path = 'exp3/acc/bmiacc_1635301465.0471392.txt'
     #test_path = "exp2/HE/imu/bmiacc_1633585810.4177535.txt"
-    test_path = 'test/bmiacc_1635249068.8786418.txt'
+    #test_path = 'test/bmiacc_1635249068.8786418.txt'
     #test_path = 'test/bmigryo_1635249068.8956292.txt'
     data = read_data(test_path)
     length = data.shape[0]
