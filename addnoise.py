@@ -15,7 +15,10 @@ if __name__ == "__main__":
     for file in files:
         wave_clean, Zxx_clean, _ = get_wav(path + file, normalize=False)
         random_index = random.randint(0, length - len(wave_clean))
-        ratio = wave_clean.max()/wave_noise.max()
+        clip = wave_noise[random_index: random_index + len(wave_clean)]
+        ratio = wave_clean.max()/clip.max()
         # keep the same volume
-        save_wav(wave_clean + ratio * wave_noise[random_index: random_index+len(wave_clean)], save_path + file)
+        wave_save = wave_clean + ratio * clip
+        save_wav(wave_save, save_path + file)
+        print(ratio,  wave_clean.max(), wave_save.max())
 

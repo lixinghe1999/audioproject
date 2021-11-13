@@ -7,10 +7,8 @@ from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 import soundfile as sf
 
-seg_len = 256
-overlap = 128
-rate = 1600
-def read_data(file):
+
+def read_data(file, seg_len, overlap, rate):
     fileobject = open(file, 'r')
     lines = fileobject.readlines()
     data = np.zeros((len(lines), 4))

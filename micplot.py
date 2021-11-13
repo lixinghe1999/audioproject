@@ -7,30 +7,19 @@ from librosa.feature import melspectrogram
 import librosa.display
 import librosa
 import soundfile as sf
-seg_len = 2560
-overlap = 2240
-rate = 16000
-def get_wav(name, normalize = False, mfcc=False):
-    wave_data, r = librosa.load(name, sr=rate, mono=True)
+
+def get_wav(name, seg_len, overlap, rate,  normalize = False, fft=False):
+    wave_data, r = sf.read(name, dtype='int16')
     if normalize:
-        b, a = signal.butter(4, 100, 'highpass', fs = rate)
+        b, a = signal.butter(4, 100, 'highpass', fs=rate)
         wave_data = signal.filtfilt(b, a, wave_data)
-        wave_data = wave_data/wave_data.max()
-        if mfcc:
-            Zxx = melspectrogram(wave_data.astype(np.float32), sr=44100, n_fft=seg_len, hop_length=overlap, n_mels=128)
-            phase = None
-        else:
-            f, t, Zxx = signal.stft(wave_data, nperseg=seg_len, noverlap=overlap, fs=rate)
-            phase = np.exp(1j * np.angle(Zxx))
-            Zxx = np.abs(Zxx)
+        wave_data = wave_data/32767
+    if fft:
+        Zxx = np.fft.fft(wave_data)
     else:
-        if mfcc:
-            Zxx = melspectrogram(wave_data.astype(np.float32), sr=44100, n_fft=seg_len, hop_length=overlap, n_mels=128)
-            phase = None
-        else:
-            f, t, Zxx = signal.stft(wave_data, nperseg=seg_len, noverlap=overlap, fs=rate)
-            phase = np.exp(1j * np.angle(Zxx))
-            Zxx = np.abs(Zxx)
+        f, t, Zxx = signal.stft(wave_data, nperseg=seg_len, noverlap=overlap, fs=rate)
+    phase = np.exp(1j * np.angle(Zxx))
+    Zxx = np.abs(Zxx)
     return wave_data, Zxx, phase
 def peaks_mic(Zxx):
     m, n = 0.05 * rate /(seg_len - overlap), 1 * rate /(seg_len - overlap)
@@ -38,8 +27,6 @@ def peaks_mic(Zxx):
     peaks, properties = find_peaks(sum_Zxx, distance=m, width=[m, n], prominence=3*np.var(sum_Zxx))
     return peaks, properties['left_ips'], properties['right_ips']
 def save_wav(audio, name):
-    t = 32767 / audio.max()
-    audio = audio * t
     sf.write(name, audio.astype('int16'), rate, subtype='PCM_16')
 def GLA(iter, Zxx, i = 'random'):
     audio = librosa.griffinlim(Zxx, iter, seg_len-overlap, seg_len, "hamming", init= i )
