@@ -15,7 +15,7 @@ class Driver:
   # This will activate the device and take it out of sleep mode (which must be done
   # after start-up). This function also sets both the accelerometer and the gyroscope
   # to default range settings, namely +/- 2g and +/- 250 degrees/sec.
-  def __init__(self, addr=0x68, bus):
+  def __init__(self, addr=0x68, bus=1):
     self.addr = addr
     
     # Initialize the i2c bus driver
