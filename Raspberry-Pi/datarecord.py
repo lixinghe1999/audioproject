@@ -21,7 +21,7 @@ if __name__ == "__main__":
     port = [1, 2]
     gyroframe = args.time * 1600
     compassframe = args.time * 15
-    micframe = args.time * 16000
+    micframe = args.time * 44100
     if args.acctype == 0:
         thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, port[0]))
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, port[1]))
