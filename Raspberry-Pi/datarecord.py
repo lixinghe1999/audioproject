@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     gyaccframe = args.time * 3000
     bmiaccframe = args.time * 1600
-    port = [0, 1]
+    port = [1, 2]
     gyroframe = args.time * 1600
     compassframe = args.time * 15
     micframe = args.time * 16000
