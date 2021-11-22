@@ -37,3 +37,4 @@ if __name__ == "__main__":
     print(pyaudio.PyAudio().get_device_info_by_index(0))
     print(pyaudio.PyAudio().get_device_info_by_index(1))
     open_mic_stream(1)
+    open_mic_stream(2)
