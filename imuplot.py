@@ -8,17 +8,21 @@ import matplotlib.pyplot as plt
 import soundfile as sf
 
 
-def read_data(file, seg_len, overlap, rate):
+def read_data(file, seg_len=256, overlap=224, rate=1600):
     fileobject = open(file, 'r')
     lines = fileobject.readlines()
     data = np.zeros((len(lines), 4))
     for i in range(len(lines)):
-        line = lines[i]
-        l = line.split(' ')
-        for j in range(4):
-            data[i, j] = float(l[j])
+        line = lines[i].split(' ')
+        data[i, :] = [float(item) for item in line]
     data[:, :-1] /= 2**14
-    return data
+    time_imu = data[0, 3]
+    b, a = signal.butter(4, 100, 'highpass', fs=rate)
+    data[:, :3] = signal.filtfilt(b, a, data[:, :3], axis=0)
+    data[:, :3] = np.clip(data[:, :3], -0.01, 0.01)
+    f, t, Zxx = signal.stft(data[:, :3], nperseg=seg_len, noverlap=overlap, fs=rate, window="hamming", axis=0)
+    Zxx = np.linalg.norm(np.abs(Zxx), axis=1)
+    return Zxx, time_imu
 
 def interpolation(data, target_rate):
     start_time = data[0, 3]
@@ -81,24 +85,13 @@ def saveaswav(data, l, r, count):
 
 if __name__ == "__main__":
     # check imu plot
-    test_path = 'exp3/acc/bmiacc_1635301465.0471392.txt'
+    test_path = 'test/bmiacc1_1637153032.8487477.txt'
     #test_path = "exp2/HE/imu/bmiacc_1633585810.4177535.txt"
     #test_path = 'test/bmiacc_1635249068.8786418.txt'
     #test_path = 'test/bmigryo_1635249068.8956292.txt'
-    data = read_data(test_path)
+    data, time_imu = read_data(test_path)
     length = data.shape[0]
-    fig, axs = plt.subplots(3, 1)
-    b, a = signal.butter(8, 50, 'highpass', fs = rate)
-    for j in range(3):
-        data[:, j] = signal.filtfilt(b, a, data[:, j])
-    for j in range(3):
-        f, t, Zxx = signal.stft(data[:, j], nperseg=seg_len, noverlap=overlap, fs=rate)
-        # phase_random = np.exp(2j * np.pi * np.random.rand(*Zxx.shape))
-        # phase_acc = np.exp(1j * np.angle(Zxx))
-        # acc, Zxx = GLA(0, Zxx, phase_acc)
-        Zxx = np.abs(Zxx)
-        #Zxx[:, 200:] = 0
-        axs[j].imshow(Zxx, extent=[0, 5, rate/2, 0], aspect='auto')
+    plt.imshow(data, extent=[0, 5, 800, 0], aspect='auto')
     plt.show()
 
     # re-coordinate acc to global frame by acc & compass

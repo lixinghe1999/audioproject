@@ -6,7 +6,7 @@ import scipy.signal as signal
 import numpy as np
 import argparse
 from skimage.transform import resize
-from PIL import Image
+import time
 
 seg_len_mic = 2560
 overlap_mic = 2240
@@ -14,13 +14,62 @@ rate_mic = 16000
 seg_len_imu = 256
 overlap_imu = 224
 rate_imu = 1600
-def geo_mean_overflow(iterable):
-    return np.exp(np.log(iterable).mean())
-def response2filter(response, pad1, pad2):
-    response = np.repeat(np.pad(response, (pad1, pad2), mode='constant', constant_values=(1, 0)), 2)
-    print(response.shape)
-    filter = np.fft.ifft(response)
-    return filter
+freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
+freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
+def imu_resize(time_diff, imu1, time_bin):
+    shift = round(time_diff * rate_mic / (seg_len_mic - overlap_mic))
+    Zxx_resize = np.roll(resize(imu1, (freq_bin_high, time_bin)), shift, axis=1)
+    Zxx_resize[:, :shift] = 0
+    Zxx_resize = Zxx_resize[freq_bin_low:, :]
+    return Zxx_resize
+def estimate_response(Zxx, imu1, imu2, none, time_bin):
+    #none_response = static_noise(none)
+    fig, axs = plt.subplots(3)
+
+    Zxx = Zxx[freq_bin_low: freq_bin_high, :]
+    #Zxx -= none_response
+    #Zxx -= np.tile(np.expand_dims(np.mean(Zxx, axis=1),axis=1), (1, time_bin))
+
+
+    select1 = Zxx > np.mean(Zxx, axis=(0, 1))
+    #imu1 = np.log(imu1) + 20
+    select2 = imu1 > (1.5 * np.mean(imu1, axis=(0, 1)) + 0 * np.var(imu1, axis=(0, 1)))
+    Zxx_ratio1 = np.divide(Zxx, imu1, out=np.zeros_like(Zxx), where=select2 & select1)
+    Zxx_ratio2 = Zxx / (imu2 + 0.0001)
+    axs[0].imshow(select1, aspect='auto')
+    axs[1].imshow(select2, aspect='auto')
+    axs[2].imshow(Zxx_ratio1, aspect='auto')
+    # select = (Zxx_ratio1 > 3 * m1) & (Zxx_ratio2 > 3 * m2)
+
+    # new_response = np.sum((Zxx_ratio1 + Zxx_ratio2) / 2, axis=1, where=select)
+    # new_variance = np.var((Zxx_ratio1 + Zxx_ratio2) / 2, axis=1, where=select)
+    # new_response = np.divide(new_response, np.sum(select, axis=1), out=np.zeros_like(new_response),
+    #                          where=np.sum(select, axis=1) != 0)
+    #
+    # axs[3].plot(new_response)
+    # axs[3].plot(new_variance)
+    plt.show()
+    # new_response = np.zeros(freq_bin_high - freq_bin_low)
+    #count = np.zeros(freq_bin_high - freq_bin_low)
+    # for j in range(time_bin):
+    #     select_freq = (Zxx_ratio1[:, j] > m1) & (Zxx_ratio2[:, j] > m2)
+    #     count += select_freq
+    #     select_val = (Zxx_ratio1[select_freq, j] + Zxx_ratio1[select_freq, j])/2
+    #     new_response[select_freq] += select_val
+    # for j in range(freq_bin_high - freq_bin_low):
+    #     if count[j] != 0:
+    #         new_response[j] = new_response[j]/count[j]
+    #return new_response
+def static_noise(path_none):
+    files_none = os.listdir(path_none)
+    N = int(len(files_none) / 4)
+    for i in [0]:
+        files_none1 = files_none[2 * N + i]
+        files_none2 = files_none[3 * N + i]
+        wave_1, Zxx1, phase1 = micplot.get_wav(path_none + files_none1, normalize=True)
+        wave_2, Zxx2, phase2 = micplot.get_wav(path_none + files_none2, normalize=True)
+    return (np.mean(Zxx1[freq_bin_low:freq_bin_high, :]) + np.mean(Zxx2[freq_bin_low:freq_bin_high, :]))/2
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--mode', action="store", type=int, default=1, required=False, help='mode of processing, 0-time segment, 1-mic denoising')
@@ -81,83 +130,40 @@ if __name__ == "__main__":
                     #     print(p1, p2, p3)
                 plt.show()
     elif args.mode == 1:
-        # path_noise = 'exp2/HE/noisy1/'
-        # path_clean = 'exp2/HE/mic2/'
-        # path_fusion = 'exp2/HE/imu1/'
-        # path_imu = 'exp2/HE/imu/'
-        # T = 5
-        path_noise = 'exp3/noisy1/'
-        path_clean = 'exp3/mic1/'
-        path_fusion = 'exp3/imu/'
-        path_imu = 'exp3/acc/'
+        path = 'exp4/he/clean/'
+        files = os.listdir(path)
+        N = int(len(files)/4)
         T = 15
-        files_noise = os.listdir(path_noise)
-        files_clean = os.listdir(path_clean)
-        files_imu = os.listdir(path_imu)
-        freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
-        freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
+        files_imu1 = files[:N]
+        files_imu2 = files[N:2*N]
+        files_mic1 = files[2*N:3*N]
+        files_mic2 = files[3*N:]
+        t_start = time.time()
         response = np.zeros(freq_bin_high-freq_bin_low)
         r = []
-        fig, axs = plt.subplots(2)
-        for index in range(100):
-            i = np.random.randint(0, len(files_imu))
-            #i = index
-            file_noise = files_noise[i]
-            file_clean = files_clean[i]
-            file_imu = files_imu[i]
-            time1 = float(file_clean[:-4].split('_')[1])
-            wave_1, Zxx1, phase1 = micplot.get_wav(path_noise + file_noise, seg_len_mic, overlap_mic, rate_mic, normalize=True)
-            wave_2, Zxx2, phase2 = micplot.get_wav(path_clean + file_clean, seg_len_mic, overlap_mic, rate_mic, normalize=True)
+        #fig, axs = plt.subplots(2)
+        for index in range(1):
+            #i = np.random.randint(0, N)
+            i = index
+            time1 = float(files_mic1[i][:-4].split('_')[1])
+            time2 = float(files_mic2[i][:-4].split('_')[1])
+            wave_1, Zxx1, phase1 = micplot.get_wav(path + files_mic1[i], seg_len_mic, overlap_mic, rate_mic, normalize=True)
+            wave_2, Zxx2, phase2 = micplot.get_wav(path + files_mic2[i], seg_len_mic, overlap_mic, rate_mic, normalize=True)
+            time_bin = np.shape(Zxx1)[1]
+            imu1, t_imu1 = imuplot.read_data(path + files_imu1[i], seg_len_imu, overlap_imu, rate_imu)
+            imu2, t_imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
+            imu1 = imu_resize(t_imu1 - time1, imu1, time_bin)
+            imu2 = imu_resize(t_imu2 - time1, imu2, time_bin)
+            new_response = estimate_response(Zxx1, imu1, imu2, 'exp4/he/none/', time_bin)
+            response = 0.75 * new_response + 0.25 * response
 
-            imu = imuplot.read_data(path_imu + file_imu, seg_len_imu, overlap_imu, rate_imu)
-            b, a = signal.butter(4, 100, 'highpass', fs= rate_imu)
-            imu[:, :3] = signal.filtfilt(b, a, imu[:, :3], axis=0)
-            imu[:, :3] = np.clip(imu[:, :3], -0.01, 0.01)
-            # dominant_axis = np.argmax(np.sum(imu[:, :3], axis=0))
-            f, t, Zxx = signal.stft(imu[:, :3], nperseg=seg_len_imu, noverlap=overlap_imu, fs=rate_imu, window="hamming", axis=0)
-            Zxx = np.linalg.norm(np.abs(Zxx), axis=1)
-            time_bin = np.shape(Zxx2)[1]
-            time_imu = imu[0, 3]
-            time_diff = time_imu - time1
-            shift = round(time_diff * rate_mic / (seg_len_mic - overlap_mic))
-            Zxx_resize = np.roll(resize(Zxx, (freq_bin_high, time_bin)), shift, axis=1)
-            Zxx_resize[:, :shift] = 0
-            Zxx_resize = Zxx_resize[freq_bin_low:, :]
-            #Zxx_ratio = Zxx_resize / Zxx2[freq_bin_low:freq_bin_high, :]
-
-            Zxx_ratio = Zxx2[freq_bin_low:freq_bin_high, :] / (Zxx_resize + 0.0001)
-            #Zxx_ratio = np.abs(np.diff(Zxx_ratio, axis=1))
-            #diff_Zxx = np.abs(np.diff(Zxx2[freq_bin_low:freq_bin_high, :], axis=1))
-            new_response = np.zeros(freq_bin_high - freq_bin_low)
-            count = np.zeros(freq_bin_high - freq_bin_low)
-            m = np.mean(Zxx_ratio, axis=(0, 1))
-            n = np.var(Zxx_ratio, axis=(0, 1))
-            for j in range(time_bin):
-                freq_temp = Zxx_ratio[:, j]
-                select_freq = freq_temp > 1 * m
-                count += select_freq
-                select_val = Zxx_ratio[select_freq, j]
-                new_response[select_freq] += select_val
-            # axs[0].plot(count)
-            # axs[1].plot(new_response)
-
-            for j in range(freq_bin_high - freq_bin_low):
-                if count[j] != 0:
-                    new_response[j] = new_response[j]/count[j]
-            #new_response = np.mean(Zxx_ratio, axis=1, where=Zxx_ratio > 1 * np.mean(Zxx_ratio, axis=(0, 1)))
-            # axs[2].plot(new_response)
-            # plt.show()
-            response = 0.5 * new_response + 0.5 * response
-
-
-            if index % 5 == 0 and index > 0:
-                axs[0].plot(response)
-                # axs[1].plot(response2filter(response, freq_bin_low, np.shape(Zxx2)[0] - freq_bin_high))
-                r.append(response)
-                response = np.zeros(freq_bin_high - freq_bin_low)
-        corr = axs[1].imshow(np.corrcoef(r))
-        fig.colorbar(corr, boundaries=np.linspace(0, 1, 5))
-        plt.show()
+            #if index % 5 == 0 and index > 0:
+        #         axs[0].plot(response)
+        #         r.append(response)
+        #         response = np.zeros(freq_bin_high - freq_bin_low)
+        # corr = axs[1].imshow(np.corrcoef(r))
+        # fig.colorbar(corr)
+        # plt.show()
 
     else:
         path_noise = 'exp2/HE/noisy1/'

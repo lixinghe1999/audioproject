@@ -21,26 +21,26 @@ if __name__ == "__main__":
     port = [0, 1]
     gyroframe = args.time * 1600
     compassframe = args.time * 15
-    micframe = args.time * 44100
+    micframe = args.time * 16000
     if args.acctype == 0:
         thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, port[1]))
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, port[0]))
         #thread3 = Process(target=bmi160_gyrosave, args=('bmigryo1', bmiaccframe, port[1]))
         #thread4 = Process(target=bmi160_gyrosave, args=('bmigryo2', bmiaccframe, port[0]))
-        # thread5 = Process(target=voice_record, args=('mic1', open_mic_stream(1), micframe))
-        # thread6 = Process(target=voice_record, args=('mic2', open_mic_stream(2), micframe))
+        thread5 = Process(target=voice_record, args=('mic1', open_mic_stream(1), micframe))
+        thread6 = Process(target=voice_record, args=('mic2', open_mic_stream(2), micframe))
         thread1.start()
         thread2.start()
         #thread3.start()
         #thread4.start()
-        # thread5.start()
-        # thread6.start()
+        thread5.start()
+        thread6.start()
         thread1.join()
         thread2.join()
         #thread3.join()
         #thread4.join()
-        # thread5.join()
-        # thread6.join()
+        thread5.join()
+        thread6.join()
     elif args.acctype == 1:
         thread1 = Process(target=gy85_accsave, args=('gyacc', gyaccframe, port))
         thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1), micframe))
