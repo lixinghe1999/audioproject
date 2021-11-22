@@ -33,3 +33,6 @@ def open_mic_stream(index):
                              frames_per_buffer = CHUNK)
 
     return stream
+if __name__ == "__main__":
+    print(pyaudio.get_device_info_by_index(0))
+    print(pyaudio.get_device_info_by_index(1))
