@@ -7,7 +7,7 @@ def bmi160_accsave(name, num, port):
     acc = ''
     time_start = time.time()
     accwriter = open(name + '_' + str(time_start) + '.txt', 'w')
-    while (a < num):
+    while (time.time() < (time_start + 5) ):
         if sensor.getIntACCDataReadyStatus():
             a = a + 1
             data = sensor.getAcceleration()
@@ -15,7 +15,7 @@ def bmi160_accsave(name, num, port):
         else:
             accwriter.write(acc)
             acc = ''
-    print('port:', port, num/(time.time() - time_start))
+    print('port:', port, a)
 def bmi160_gyrosave(name, num, port):
     sensor = Driver(0x68, port)# change address if needed
     sensor.set_gyro_rate(12)
