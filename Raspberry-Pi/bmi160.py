@@ -7,7 +7,7 @@ def bmi160_accsave(name, num, port):
     acc = ''
     time_start = time.time()
     accwriter = open(name + '_' + str(time_start) + '.txt', 'w')
-    while (time.time() < (time_start + 5) ):
+    while (a < num):
         if sensor.getIntACCDataReadyStatus():
             a = a + 1
             data = sensor.getAcceleration()
