@@ -10,11 +10,13 @@ CHUNK = 1024
 def voice_record(name, stream, micframes):
     time_start = time.time()
     frames = []
+    num_frames = 0
     #for i in range(0, int(micframes / CHUNK)):
     while(time.time() < (time_start + 5)):
         data = stream.read(CHUNK, exception_on_overflow = False)
         frames.append(data)
-    print(micframes / (time.time() - time_start))
+        num_frames += CHUNK
+    print(num_frames / (time.time() - time_start))
     stream.stop_stream()
     stream.close()
     wf = wave.open(name + '_' + str(time_start) + '.wav', 'wb')
