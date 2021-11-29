@@ -3,36 +3,43 @@ import torch.utils.data as Data
 import torch.nn as nn
 from data import NoisyCleanSet
 from unet import UNet
-
+from tqdm import tqdm
+import argparse
+def parse():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--local_rank', type=int, default=0, help='node rank for distributed training')
+    args = parser.parse_args()
+    return args
 if __name__ == "__main__":
-    torch.manual_seed(1)
-    EPOCH = 30
-    BATCH_SIZE = 16
+
+    device_ids = [0]
+    EPOCH = 50
+    BATCH_SIZE = 64
     sample_rate = 16000
-    segment = 2
+    segment = 3
     stride = 1
-    lr = 0.001
+    lr = 0.001 / len(device_ids)
     pad = True
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
-    model = UNet(1, 1).to(device)
+    model = UNet(1, 1)
+    model = torch.nn.DataParallel(model, device_ids=device_ids)
+    model = model.cuda(device=device_ids[0])
 
-    dataset_train = NoisyCleanSet('dataset', length=segment, stride=stride, pad=pad, sample_rate=sample_rate)
-    loader = Data.DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=True)
+    train_dataset1 = NoisyCleanSet('speech100.json')
+    train_dataset2 = NoisyCleanSet('speech360.json')
+    #train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
+    train_loader = Data.DataLoader(dataset=train_dataset1, batch_size=BATCH_SIZE * len(device_ids), shuffle=True)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.99))
     loss_func = nn.MSELoss()
     for epoch in range(EPOCH):
-        loss_train = 0
-        for step, (x, y) in enumerate(loader):
-            x = x.to(device)
-            y = y.to(device)
-            predict = model(x).to(device)
+        for x, y in tqdm(train_loader):
+            x, y = x.to(device=device_ids[0], dtype=torch.float), y.to(device = device_ids[0])
+            predict = model(x)
             loss = loss_func(predict, y)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            loss_train += loss.item()
-        print('Epoch :', epoch, '|', 'train_loss:%.6f' % (loss_train/(step+1)))
-        torch.save(model.state_dict(), 'checkpoint.pth')
+        torch.save(model.state_dict(), f'checkpoint{epoch}.pth')
     print('________________________________________')
     print('finish training')
