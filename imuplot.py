@@ -19,10 +19,14 @@ def read_data(file, seg_len=256, overlap=224, rate=1600):
     time_imu = data[0, 3]
     b, a = signal.butter(4, 100, 'highpass', fs=rate)
     data[:, :3] = signal.filtfilt(b, a, data[:, :3], axis=0)
-    data[:, :3] = np.clip(data[:, :3], -0.01, 0.01)
+    data[:, :3] = np.clip(data[:, :3], -0.02, 0.02)
+    #data = np.linalg.norm(data[:, :3], axis=1)
+    #data = signal.filtfilt(b, a, data)
+    # data = np.clip(data, -0.05, 0.05)
+    #f, t, Zxx = signal.stft(data, nperseg=seg_len, noverlap=overlap, fs=rate, window="hamming")
     f, t, Zxx = signal.stft(data[:, :3], nperseg=seg_len, noverlap=overlap, fs=rate, window="hamming", axis=0)
     Zxx = np.linalg.norm(np.abs(Zxx), axis=1)
-    return Zxx, time_imu
+    return data, np.abs(Zxx), time_imu
 
 def interpolation(data, target_rate):
     start_time = data[0, 3]
@@ -30,7 +34,6 @@ def interpolation(data, target_rate):
     f_linear = interpolate.interp1d(t_norm, data[:, :3], axis=0)
     t_new = np.linspace(0, 5, 5 * target_rate)
     return f_linear(t_new)
-
 
 def euler(accel, compass):
     accelX, accelY, accelZ = accel
@@ -61,19 +64,6 @@ def re_coordinate(acc, compass):
             rotationmatrix = R.from_euler('xyz', euler(smooth_acc[i, :-1], data2[:-1]), degrees=True).as_matrix()
         acc[i, :-1] = np.dot(rotationmatrix, data1[:-1].transpose())
     return acc
-def peaks_imu(Zxx):
-    m, n = 0.05 * rate/(seg_len - overlap), 1 * rate/(seg_len - overlap)
-    sum_Zxx = np.sum(Zxx, axis=0)
-    smooth_Zxx = np.convolve(sum_Zxx , np.ones(10)/10, mode='same')
-    peaks, dict = signal.find_peaks(smooth_Zxx, distance=m, width=[m, n], prominence=3*np.var(smooth_Zxx))
-    return peaks
-def time_match(p1, p2):
-    P1 = np.tile(p1.reshape((len(p1), 1)), (1, len(p2)))
-    P2 = np.tile(p2, (len(p1), 1))
-    diff = np.abs(P1 - P2)
-    m = np.min(diff, axis = 0) < 0.2
-    n = np.argmin(diff, axis = 0)
-    return m, n
 def saveaswav(data, l, r, count):
     l = (l + 1) * 1024
     r = (r + 1) * 1024

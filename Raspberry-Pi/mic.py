@@ -3,15 +3,15 @@ import wave
 import time
 
 FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 44100
+CHANNELS = 2
+RATE = 16000
 CHUNK = 4096
 
 def voice_record(name, stream, micframes):
     time_start = time.time()
     frames = []
     for i in range(0, int(micframes / CHUNK)):
-        data = stream.read(CHUNK, exception_on_overflow = False)
+        data = stream.read(CHUNK, exception_on_overflow=False)
         frames.append(data)
     print(micframes / (time.time() - time_start))
     stream.stop_stream()

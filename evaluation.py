@@ -173,8 +173,9 @@ if __name__ == "__main__":
     wave_clean = micplot.get_wav(reference, rate=16000)
     noise = 'conversation.wav'
     wave_noise = micplot.get_wav(noise, rate=16000)
-    noisy = micplot.add_noise(wave_noise, wave_clean, ratio=0.1)
-    score = pesq(16000, wave_clean,  noisy, 'wb')
+    noisy1 = micplot.add_noise(wave_noise, wave_clean, ratio=0.1)
+    noisy2 = micplot.add_noise(wave_noise, wave_clean, ratio=0.2)
+    score = pesq(16000, wave_clean, noisy1, 'wb')
     print(score)
-    score = pesq(16000, wave_clean, wave_clean, 'wb')
+    score = pesq(16000, wave_clean, noisy2, 'wb')
     print(score)
