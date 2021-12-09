@@ -20,7 +20,7 @@ if __name__ == "__main__":
     bmiaccframe = args.time * 1600
     gyroframe = args.time * 1600
     compassframe = args.time * 15
-    micframe = args.time * 48000
+    micframe = args.time * 16000
     if args.acctype == 0:
         thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, 0))
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, 1))
