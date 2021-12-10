@@ -17,7 +17,7 @@ rate_mic = 16000
 seg_len_imu = 256
 overlap_imu = 224
 rate_imu = 1600
-T = 15
+T = 5
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(T*rate_mic/(seg_len_mic-overlap_mic)) + 1
@@ -28,7 +28,7 @@ def noise_extraction():
     #index = np.random.randint(0, noise_clip.shape[1] - time_bin)
     return noise_clip
 def imu_resize(time_diff, imu1):
-    shift = round(time_diff * rate_mic / (seg_len_mic - overlap_mic))
+    shift = round(time_diff * rate_mic / (seg_len_mic - overlap_mic)) + 2
     Zxx_resize = np.roll(resize(imu1, (freq_bin_high, time_bin)), shift, axis=1)
     Zxx_resize[:, :shift] = 0
     Zxx_resize = Zxx_resize[freq_bin_low:, :]

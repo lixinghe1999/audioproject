@@ -8,11 +8,14 @@ RATE = 16000
 CHUNK = 1024
 
 def voice_record(name, stream, micframes):
-    time_start = time.time()
     frames = []
-    for i in range(0, int(micframes / CHUNK)):
+    time_start = time.time()
+    data = stream.read(CHUNK, exception_on_overflow=False)
+    frames.append(data)
+    for i in range(1, int(micframes / CHUNK)):
         data = stream.read(CHUNK, exception_on_overflow=False)
         frames.append(data)
+    #time_final = time.time()
     print(micframes / (time.time() - time_start))
     stream.stop_stream()
     stream.close()
