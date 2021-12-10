@@ -14,7 +14,7 @@ if __name__ == "__main__":
     model = UNet(1, 1)
     # because the training is done on multiple cards
     # model = torch.nn.DataParallel(model, device_ids=[0])
-    model.load_state_dict(torch.load("checkpoint_0_0.025589364272651866.pth"))
+    model.load_state_dict(torch.load("checkpoint_2_0.023311801766063654.pth"))
     #model.load_state_dict(torch.load("checkpoint_5_0.005457089898101558.pth"))
 
     transfer_function, variance, hist, bins, noise_hist, noise_bins, noise = read_transfer_function('transfer_function')
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     # train_loader = Data.DataLoader(dataset=train_dataset1, num_workers=4, batch_size=BATCH_SIZE, shuffle=True,
     #                                pin_memory=True)
     #test_dataset = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise, 'devclean.json')
-    test_loader = Data.DataLoader(dataset=IMU_dataset, num_workers=4, batch_size=1, shuffle=True)
+    test_loader = Data.DataLoader(dataset=train_dataset1, num_workers=4, batch_size=1, shuffle=True)
     Loss = nn.SmoothL1Loss(beta=0.1)
     #Loss = nn.SmoothL1Loss(beta=0.0001)
     #Loss = nn.HuberLoss(delta=50)

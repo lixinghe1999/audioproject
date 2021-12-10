@@ -54,12 +54,20 @@ if __name__ == "__main__":
     # plt.plot(wave1, 'b')
     # plt.plot(wave2, 'r')
     # plt.show()
-    path = 'airpods_example.wav'
-    wave1, sr = sf.read(path, dtype='int16')
-    wave2, sr = librosa.load(path, sr=None)
+    path = 'mic_1639035480.4962566.wav'
+    wave, sr = librosa.load(path, mono=False, sr=None)
+    wave1 = wave[0, :]
+    wave2 = wave[1, :]
+    b, a = signal.butter(4, 100, 'highpass', fs=16000)
+    wave1 = signal.filtfilt(b, a, wave1)
+    wave1 = np.pad(wave1, (0, 80000 - len(wave2)), 'constant', constant_values=(0, 0))
+    wave2 = signal.filtfilt(b, a, wave2)
+    wave2 = np.pad(wave2, (0, 80000 - len(wave2)), 'constant', constant_values=(0, 0))
     fig, axs = plt.subplots(2)
-    axs[0].plot(wave1, 'b')
-    axs[1].plot(wave2 * 32767, 'r')
+    wave1 = np.clip(wave1, -0.01, 0.01)
+    wave2 = np.clip(wave2, -0.01, 0.01)
+    axs[0].plot(wave1, 'r')
+    axs[1].plot(wave2, 'b')
     plt.show()
 
 

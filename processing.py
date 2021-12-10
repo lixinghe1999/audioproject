@@ -81,7 +81,7 @@ if __name__ == "__main__":
     # mode 2 IMU Mic fusion
     args = parser.parse_args()
     if args.mode == 0:
-        for name in ["he"]:
+        for name in ["he", "hou", "wu", "shi"]:
             path = 'exp4/' + name + '/clean/'
             files = os.listdir(path)
             N = int(len(files)/4)
@@ -115,32 +115,31 @@ if __name__ == "__main__":
                 variance = 0.1 * new_variance + 0.9 * variance
                 noise_mean = 0.1 * new_noise_mean + 0.9 * noise_mean
                 noise_variance = 0.1 * new_noise_variance + 0.9 * noise_variance
-            # hist = np.zeros((freq_bin_high-freq_bin_low, 50))
-            # bins = np.zeros((freq_bin_high-freq_bin_low, 51))
-            # for f in range(freq_bin_high-freq_bin_low):
-            #     a, b = np.histogram(distribution[f], bins=50)
-            #     hist[f] = a
-            #     bins[f] = b
-            # noise_hist, noise_bin = np.histogram(noise_distribution, bins=50)
-            # np.savez(name + '_transfer_function.npz', response=response, variance=variance, hist=hist, bins=bins,
-            #            noise_hist=noise_hist, noise_bins=noise_bin, noise=(noise_mean, noise_variance))
-            response = new_response
-            variance = new_variance
-            full_response = np.tile(np.expand_dims(response, axis=1), (1, time_bin))
-            for j in range(time_bin):
-                full_response[:, j] += np.random.normal(0, variance, (freq_bin_high-freq_bin_low))
-            augmentedZxx = Zxx1[freq_bin_low: freq_bin_high, :] * full_response
-            #augmentedZxx += np.random.normal(noise_mean, noise_variance, (freq_bin_high-freq_bin_low, time_bin))
-            augmentedZxx += noise_extraction()
-            fig, axs = plt.subplots(4)
-            axs[0].imshow(Zxx1[freq_bin_low: freq_bin_high, :], aspect='auto', vmax=0.004, vmin=0)
-            axs[1].imshow(imu1, aspect='auto',  vmax=0.004, vmin=0)
-            axs[2].imshow(augmentedZxx, aspect='auto',  vmax=0.004, vmin=0)
-            #axs[3].imshow(full_response, aspect='auto')
-            axs[3].plot(response, 'b')
-            axs[3].plot(variance, 'r')
-            axs[3].plot(new_response, 'g')
-            plt.show()
+            hist = np.zeros((freq_bin_high-freq_bin_low, 50))
+            bins = np.zeros((freq_bin_high-freq_bin_low, 51))
+            for f in range(freq_bin_high-freq_bin_low):
+                a, b = np.histogram(distribution[f], bins=50)
+                hist[f] = a
+                bins[f] = b
+            noise_hist, noise_bin = np.histogram(noise_distribution, bins=50)
+            np.savez(name + '_transfer_function.npz', response=response, variance=variance, hist=hist, bins=bins,
+                       noise_hist=noise_hist, noise_bins=noise_bin, noise=(noise_mean, noise_variance))
+
+            # full_response = np.tile(np.expand_dims(response, axis=1), (1, time_bin))
+            # for j in range(time_bin):
+            #     full_response[:, j] += np.random.normal(0, variance, (freq_bin_high-freq_bin_low))
+            # augmentedZxx = Zxx1[freq_bin_low: freq_bin_high, :] * full_response
+            # #augmentedZxx += np.random.normal(noise_mean, noise_variance, (freq_bin_high-freq_bin_low, time_bin))
+            # augmentedZxx += noise_extraction()
+            # fig, axs = plt.subplots(4)
+            # axs[0].imshow(Zxx1[freq_bin_low: freq_bin_high, :], aspect='auto', vmax=0.004, vmin=0)
+            # axs[1].imshow(imu1, aspect='auto',  vmax=0.004, vmin=0)
+            # axs[2].imshow(augmentedZxx, aspect='auto',  vmax=0.004, vmin=0)
+            # #axs[3].imshow(full_response, aspect='auto')
+            # axs[3].plot(response, 'b')
+            # axs[3].plot(variance, 'r')
+            # axs[3].plot(new_response, 'g')
+            # plt.show()
     elif args.mode == 1:
         count = 0
         for name in ['he', 'hou', 'wu', 'shi']:

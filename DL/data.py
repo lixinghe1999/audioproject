@@ -44,7 +44,7 @@ def transfer_function_generator(transfer_function):
     y1 = np.linspace(1, n, N)
     f = interp2d(x, y, transfer_function, kind='cubic')
     Z = f(x1, y1)
-    return np.clip(Z, 0, 2)
+    return np.clip(Z, 0, None)
 def histogram(hist, bins):
     bin_midpoints = bins[:-1] + np.diff(bins) / 2
     cdf = np.cumsum(hist)
@@ -282,11 +282,11 @@ if __name__ == "__main__":
     #
     transfer_function = transfer_function_generator(transfer_function)
     variance = transfer_function_generator(variance)
-    fig, axs = plt.subplots(2)
-    for i in range(N):
-        axs[0].plot(transfer_function[i])
-        axs[1].plot(variance[i])
-    plt.show()
+    # fig, axs = plt.subplots(2)
+    # for i in range(N):
+    #     axs[0].plot(transfer_function[i])
+    #     axs[1].plot(variance[i])
+    # plt.show()
     # for i in range(N):
     #     fig, axs = plt.subplots(2, 2)
     #     axs[0, 0].imshow(hist[i])
@@ -296,30 +296,29 @@ if __name__ == "__main__":
     #     plt.show()
 
 
-    # BATCH_SIZE = 1
-    # #device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    # #dataset_train = IMUSPEECHSet('imuexp4.json', 'wavexp4.json', minmax=(1, 1))
-    # #dataset_train = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise, 'speech100.json', alpha=5.93)
-    # dataset_train = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise,
-    #                               'devclean.json', alpha=(5.93, 0.01))
-    # loader = Data.DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=True)
-    # # X_list = np.empty((len(dataset_train), 2))
-    # # Y_list = np.empty((len(dataset_train), 2))
-    # #Loss = nn.SmoothL1Loss(beta=0.1)
-    # #Loss = nn.MSELoss()
-    # Loss = nn.L1Loss()
-    # #Loss = MS_SSIM(data_range=1, win_size=3, channel=1)
-    # for step, (x, y) in enumerate(loader):
-    # #     X_list[step, :] = [torch.amax(x, dim=(0, 2, 3)), torch.amin(x, dim=(0, 2, 3))]
-    # #     Y_list[step, :] = [torch.amax(y, dim=(0, 2, 3)), torch.amin(y, dim=(0, 2, 3))]
-    # # print(np.mean(X_list[:, 0]), np.mean(X_list[:, 1]))
-    # # print(np.mean(Y_list[:, 0]), np.mean(Y_list[:, 1]))
-    #     fig, axs = plt.subplots(2)
-    #     x, y = x.to(dtype=torch.float), y.to(dtype=torch.float)
-    #     print(Loss(x, y))
-    #     print(weighted_loss(x[0, 0, :, :], y[0, 0, :, :]))
-    #     #generated = synthetic(y[0, 0, :, :], transfer_function, variance, hist, bins, noise_hist, noise_bins, noise)
-    #     axs[0].imshow(x[0, 0, :, :], aspect='auto')
-    #     axs[1].imshow(y[0, 0, :, :], aspect='auto')
-    #     #axs[2].imshow(generated, aspect='auto')
-    #     plt.show()
+    BATCH_SIZE = 1
+    #device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    #dataset_train = IMUSPEECHSet('imuexp4.json', 'wavexp4.json', minmax=(1, 1))
+    #dataset_train = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise, 'speech100.json', alpha=5.93)
+    dataset_train = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise,
+                                  'devclean.json', alpha=(5.93, 0.01))
+    loader = Data.DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=True)
+    # X_list = np.empty((len(dataset_train), 2))
+    # Y_list = np.empty((len(dataset_train), 2))
+    #Loss = nn.SmoothL1Loss(beta=0.1)
+    #Loss = nn.MSELoss()
+    Loss = nn.L1Loss()
+    #Loss = MS_SSIM(data_range=1, win_size=3, channel=1)
+    for step, (x, y) in enumerate(loader):
+    #     X_list[step, :] = [torch.amax(x, dim=(0, 2, 3)), torch.amin(x, dim=(0, 2, 3))]
+    #     Y_list[step, :] = [torch.amax(y, dim=(0, 2, 3)), torch.amin(y, dim=(0, 2, 3))]
+    # print(np.mean(X_list[:, 0]), np.mean(X_list[:, 1]))
+    # print(np.mean(Y_list[:, 0]), np.mean(Y_list[:, 1]))
+        fig, axs = plt.subplots(2)
+        x, y = x.to(dtype=torch.float), y.to(dtype=torch.float)
+        print(Loss(x, y), weighted_loss(x[0, 0, :, :], y[0, 0, :, :]))
+        #generated = synthetic(y[0, 0, :, :], transfer_function, variance, hist, bins, noise_hist, noise_bins, noise)
+        axs[0].imshow(x[0, 0, :, :], aspect='auto')
+        axs[1].imshow(y[0, 0, :, :], aspect='auto')
+        #axs[2].imshow(generated, aspect='auto')
+        plt.show()

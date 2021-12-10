@@ -24,15 +24,15 @@ if __name__ == "__main__":
     model = UNet(1, 1).to(device)
     #model.load_state_dict(torch.load("checkpoint_41_0.002247016663086074.pth"))
 
-    # only select weight we want
-    pretrained_dict = torch.load("pretrained.pth")
-    model_dict = model.state_dict()
-    # 1. filter out unnecessary keys
-    pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
-    # 2. overwrite entries in the existing state dict
-    model_dict.update(pretrained_dict)
-    # 3. load the new state dict
-    model.load_state_dict(model_dict)
+    # # only select weight we want
+    # pretrained_dict = torch.load("pretrained.pth")
+    # model_dict = model.state_dict()
+    # # 1. filter out unnecessary keys
+    # pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
+    # # 2. overwrite entries in the existing state dict
+    # model_dict.update(pretrained_dict)
+    # # 3. load the new state dict
+    # model.load_state_dict(model_dict)
 
     # model = torch.nn.DataParallel(model, device_ids=device_ids)
     # model = model.cuda(device=device_ids[0])

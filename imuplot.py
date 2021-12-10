@@ -75,13 +75,12 @@ def saveaswav(data, l, r, count):
 
 if __name__ == "__main__":
     # check imu plot
-    test_path = 'test/bmiacc1_1637153032.8487477.txt'
+    test_path = 'bmiacc2_1639035480.7018366.txt'
     #test_path = "exp2/HE/imu/bmiacc_1633585810.4177535.txt"
     #test_path = 'test/bmiacc_1635249068.8786418.txt'
     #test_path = 'test/bmigryo_1635249068.8956292.txt'
-    data, time_imu = read_data(test_path)
-    length = data.shape[0]
-    plt.imshow(data, extent=[0, 5, 800, 0], aspect='auto')
+    data, Zxx, time_imu = read_data(test_path)
+    plt.imshow(Zxx, aspect='auto')
     plt.show()
 
     # re-coordinate acc to global frame by acc & compass
