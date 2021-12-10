@@ -9,10 +9,11 @@ CHUNK = 1024
 
 def voice_record(name, stream, micframes):
     frames = []
+    extra = micframes % CHUNK
     time_start = time.time()
-    data = stream.read(CHUNK, exception_on_overflow=False)
+    data = stream.read(extra, exception_on_overflow=False)
     frames.append(data)
-    for i in range(1, int(micframes / CHUNK)):
+    for i in range(int(micframes / CHUNK)):
         data = stream.read(CHUNK, exception_on_overflow=False)
         frames.append(data)
     #time_final = time.time()
