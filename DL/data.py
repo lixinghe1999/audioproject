@@ -28,14 +28,16 @@ overlap_imu = 224
 rate_imu = 1600
 segment = 4
 stride = 1
-T = 15
 N = 50
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(segment * rate_mic/(seg_len_mic-overlap_mic)) + 1
-Loss_weight = torch.tile(torch.unsqueeze(np.exp(torch.linspace(0, 1, freq_bin_high-freq_bin_low)), dim=1), (1, time_bin))
-def weighted_loss(input, target, device='cpu'):
-    return (Loss_weight.to(device=device) * torch.abs(input - target)).mean()
+Loss_weight = torch.tile(torch.unsqueeze(np.exp(torch.linspace(0, 2, freq_bin_high-freq_bin_low)), dim=1), (1, time_bin))
+def weighted_loss(input, target, beta, device='cpu'):
+    diff = torch.abs(input - target)
+    cond = diff < beta
+    loss = torch.where(cond, 0.5 * diff ** 2 /beta, diff - 0.5*beta)
+    return (Loss_weight.to(device=device) * loss).mean()
 def transfer_function_generator(transfer_function):
     n, m = np.shape(transfer_function)
     x = np.linspace(1, m, m)
@@ -45,64 +47,30 @@ def transfer_function_generator(transfer_function):
     f = interp2d(x, y, transfer_function, kind='cubic')
     Z = f(x1, y1)
     return np.clip(Z, 0, None)
-def histogram(hist, bins):
-    bin_midpoints = bins[:-1] + np.diff(bins) / 2
-    cdf = np.cumsum(hist)
-    if cdf[-1] == 0:
-        return bin_midpoints, cdf+1
-    cdf = cdf / cdf[-1]
-    return bin_midpoints, cdf
 def read_transfer_function(path):
     npzs = os.listdir(path)
     transfer_function = np.zeros((len(npzs), freq_bin_high - freq_bin_low))
     variance = np.zeros((len(npzs), freq_bin_high - freq_bin_low))
-    hist = np.zeros((len(npzs), freq_bin_high - freq_bin_low, 50))
-    bins = np.zeros((len(npzs), freq_bin_high - freq_bin_low, 50))
-    noise_hist = np.zeros((len(npzs), 50))
-    noise_bins = np.zeros((len(npzs), 50))
     noise = np.zeros((len(npzs), 2))
     for i in range(len(npzs)):
         npz = np.load(path + '/' + npzs[i])
         transfer_function[i, :] = npz['response']
         variance[i, :] = npz['variance']
-        for j in range(freq_bin_high - freq_bin_low):
-            bins[i, j, :], hist[i, j, :] = histogram(npz['hist'][j, :], npz['bins'][j, :])
-        noise_bins[i, :], noise_hist[i, :] = histogram(npz['noise_hist'], npz['noise_bins'])
         noise[i, :] = npz['noise']
-    return transfer_function, variance, hist, bins, noise_hist, noise_bins, noise
-def randomness_bins(bins):
-    #print(np.diff(bins, axis=1).shape)
-    bins_diff = np.concatenate((np.diff(bins, axis=1), np.zeros((freq_bin_high-freq_bin_low, 1))), axis=1)
-    bins = bins + 2 * (np.random.rand(freq_bin_high-freq_bin_low, 50)-0.5) * bins_diff
-    return bins
+    return transfer_function, variance, noise
 def noise_extraction():
     noise_list = os.listdir('../dataset/noise/')
     index = np.random.randint(0, len(noise_list))
     noise_clip = np.load('../dataset/noise/' + noise_list[index])
     index = np.random.randint(0, noise_clip.shape[1] - time_bin)
     return noise_clip[:, index:index + time_bin]
-def transfer_function_sampler(transfer_function, variance, hist, bins, index):
+def synthetic(clean, transfer_function, variance):
+    index = np.random.randint(0, N)
     response = np.tile(np.expand_dims(transfer_function[index, :], axis=1), (1, time_bin))
-    # for i in range(freq_bin_high-freq_bin_low):
-    #     response[i, :] += bins[index, i, np.searchsorted(hist[index, i, :], np.random.rand(time_bin))]
     for j in range(time_bin):
         response[:, j] += np.random.normal(0, variance[index, :], (freq_bin_high-freq_bin_low))
-    return response
-def synthetic(clean, transfer_function, variance, hist, bins, noise_hist, noise_bins, noise):
-    index = np.random.randint(0, N)
-    #bins[index] = randomness_bins(bins[index])
-    noisy = clean * transfer_function_sampler(transfer_function, variance, hist, bins, index)
-    #noisy = clean
-    # bins_diff = np.append(np.diff(noise_bins[index]), 0)
-    # for j in range(time_bin):
-    #     new_noise_bins = noise_bins[index, :] + 2 * (np.random.rand(50) - 0.5) * bins_diff
-    #
-    #     select = np.searchsorted(noise_hist[index, :], np.random.rand((freq_bin_high-freq_bin_low)))
-    #     print(new_noise_bins[select])
-    #     noisy[:, j] += new_noise_bins[select]
-    #noisy += np.random.normal(noise[index, 0], noise[index, 1], (freq_bin_high-freq_bin_low, time_bin))
+    noisy = clean * response
     background_noise = noise_extraction()
-    #noisy += torch.max(clean) / np.max(background_noise) * background_noise * 0.4
     noisy += 1 * background_noise
     return noisy
 
@@ -123,14 +91,17 @@ def read_data(file, seg_len=256, overlap=224, rate=1600, offset=None, duration=N
     Zxx = np.linalg.norm(np.abs(Zxx), axis=1)
     return Zxx
 def imu_resize(time_diff, imu1):
-    shift = round(time_diff * rate_mic / (seg_len_mic - overlap_mic))
-    Zxx_resize = np.roll(resize(imu1, (freq_bin_high, time_bin)), shift, axis=1)
-    #Zxx_resize[:, :0] = 0
+    #shift = round(time_diff * rate_mic / (seg_len_mic - overlap_mic))
+    # shift = 0
+    # Zxx_resize = np.roll(resize(imu1, (freq_bin_high, time_bin)), shift, axis=1)
+    # Zxx_resize[:, :shift] = 0
+    # Zxx_resize = Zxx_resize[freq_bin_low:, :]
+    Zxx_resize = resize(imu1, (freq_bin_high, time_bin))
     Zxx_resize = Zxx_resize[freq_bin_low:, :]
     return Zxx_resize
 
 class Audioset:
-    def __init__(self, files=None, with_path=False, pad=True, imu=False):
+    def __init__(self, files=None, with_path=False, pad=True, imu=False, phase=False):
         """
         files should be a list [(file, length)]
         """
@@ -151,6 +122,7 @@ class Audioset:
             self.sample_rate = rate_mic
             self.window = seg_len_mic
             self.overlap = overlap_mic
+            self.phase = phase
 
         for file, file_length, _ in self.files:
             if self.length is None:
@@ -181,20 +153,20 @@ class Audioset:
                 out = torch.unsqueeze(torch.from_numpy(np.abs(Zxx)), 0)
             else:
                 out, sr = librosa.load(file, offset=offset, duration=duration, sr=None)
-                #out *= 32767
-                #out, sr = sf.read(file, start=offset*rate_mic, stop=(offset+duration)*rate_mic, dtype='int16')
-                #out = out / 32767
                 if self.length:
                     out = np.pad(out, (0, duration * self.sample_rate - out.shape[-1]))
                 Zxx = signal.stft(out, nperseg=self.window, noverlap=self.overlap, fs=sr)[-1]
                 Zxx = Zxx[freq_bin_low:freq_bin_high, :]
-                out = torch.unsqueeze(torch.from_numpy(np.abs(Zxx)), 0)
+                if self.phase:
+                    out = torch.unsqueeze(torch.from_numpy(Zxx), 0)
+                else:
+                    out = torch.unsqueeze(torch.from_numpy(np.abs(Zxx)), 0)
             if self.with_path:
                 return out, file
             else:
                 return out
 class NoisyCleanSet:
-    def __init__(self, transfer_function, variance, hist, bins, noise_hist, noise_bins, noise, json_path, alpha=(1, 1)):
+    def __init__(self, transfer_function, variance, noise, json_path, alpha=(1, 1)):
         """__init__. n
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -212,19 +184,15 @@ class NoisyCleanSet:
         self.clean_set = Audioset(clean)
         self.transfer_function = transfer_function
         self.variance = variance
-        self.hist = hist
-        self.bins = bins
-        self.noise_hist = noise_hist
-        self.noise_bins = noise_bins
         self.noise = noise
         self.alpha = alpha
     def __getitem__(self, index):
-        return synthetic(self.clean_set[index]/self.alpha[0], self.transfer_function, self.variance, self.hist, self.bins, self.noise_hist,
-                         self.noise_bins, self.noise)/self.alpha[1], self.clean_set[index]/self.alpha[0]/self.alpha[1]
+        return synthetic(self.clean_set[index]/self.alpha[0], self.transfer_function, self.variance)/self.alpha[1],\
+               self.clean_set[index]/self.alpha[2]
     def __len__(self):
         return len(self.clean_set)
 class IMUSPEECHSet:
-    def __init__(self, imu_path, wav_path, minmax=(1, 1)):
+    def __init__(self, imu_path, wav_path, with_path=False, phase=False, minmax=(1, 1)):
         """__init__.
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -241,10 +209,16 @@ class IMUSPEECHSet:
             imu = json.load(f)
         with open(wav_path, 'r') as f:
             wav = json.load(f)
-        self.imu_set = Audioset(imu, imu=True)
-        self.wav_set = Audioset(wav, imu=False)
+        self.with_path = with_path
+        self.phase = phase
+        self.imu_set = Audioset(imu, with_path=self.with_path, phase=self.phase, imu=True)
+        self.wav_set = Audioset(wav, with_path=self.with_path, phase=self.phase, imu=False)
         self.minmax = minmax
+
     def __getitem__(self, index):
+        if self.with_path:
+            return (self.imu_set[index][0]/self.minmax[0], self.imu_set[index][1]), \
+                   (self.wav_set[index][0]/self.minmax[1], self.wav_set[index][1])
         return self.imu_set[index]/self.minmax[0], self.wav_set[index]/self.minmax[1]
     def __len__(self):
         return len(self.imu_set)
@@ -261,32 +235,45 @@ if __name__ == "__main__":
 
     # imu_files = []
     # wav_files = []
-    # g = os.walk(r"../exp4")
+    # g = os.walk(r"../exp6")
     # for path, dir_list, file_list in g:
     #     N = int(len(file_list) / 4)
     #     if path[-5:] != "clean":
     #         # only collect clean data
     #         continue
     #     for i in range(N):
-    #         time_imu = float(file_list[i][:-4].split('_')[1])
+    #         # have 2 IMUs, but now only use one
+    #         time_imu1 = float(file_list[i][:-4].split('_')[1])
     #         time_wav = float(file_list[2*N + i][:-4].split('_')[1])
     #         imu_files.append([os.path.join(path, file_list[i]),
-    #                           len(open(os.path.join(path, file_list[i])).readlines()), max(time_imu - time_wav, 0)])
+    #                           len(open(os.path.join(path, file_list[i])).readlines()), max(time_imu1 - time_wav, 0)])
     #         wav_files.append([os.path.join(path, file_list[2*N + i]),
-    #                           torchaudio.info(os.path.join(path, file_list[2*N + i])).num_frames, max(time_wav - time_imu, 0)])
-    # json.dump(imu_files, open('imuexp4.json', 'w'), indent=4)
-    # json.dump(wav_files, open('wavexp4.json', 'w'), indent=4)
+    #                           torchaudio.info(os.path.join(path, file_list[2*N + i])).num_frames, max(time_wav - time_imu1, 0)])
+    # json.dump(imu_files, open('imuexp6.json', 'w'), indent=4)
+    # json.dump(wav_files, open('wavexp6.json', 'w'), indent=4)
 
     #
-    transfer_function, variance, hist, bins, noise_hist, noise_bins, noise = read_transfer_function('transfer_function')
+    transfer_function, variance, noise = read_transfer_function('transfer_function')
     #
     transfer_function = transfer_function_generator(transfer_function)
     variance = transfer_function_generator(variance)
-    # fig, axs = plt.subplots(2)
+    plt.plot(transfer_function[0])
+    plt.text(60, 0, 'Frequency', ha='center', fontsize=50)
+    plt.text(-5, 6, 'Response', va='center', rotation='vertical', fontsize=50)
+    plt.show()
     # for i in range(N):
-    #     axs[0].plot(transfer_function[i])
-    #     axs[1].plot(variance[i])
+    #     plt.plot(transfer_function[i])
     # plt.show()
+    # fig, axs = plt.subplots(2, sharex=True)
+    # fig.tight_layout()
+    # plt.subplots_adjust(wspace=0, hspace=0.05)
+    # axs[0].plot(transfer_function[0])
+    # for i in range(8):
+    #     axs[1].plot(transfer_function[i])
+    # fig.text(0.5, 0.02, 'Frequency', ha='center', fontsize=30)
+    # fig.text(0.02, 0.5, 'Response', va='center', rotation='vertical', fontsize=30)
+    # plt.show()
+
     # for i in range(N):
     #     fig, axs = plt.subplots(2, 2)
     #     axs[0, 0].imshow(hist[i])
@@ -296,29 +283,36 @@ if __name__ == "__main__":
     #     plt.show()
 
 
-    BATCH_SIZE = 1
-    #device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    #dataset_train = IMUSPEECHSet('imuexp4.json', 'wavexp4.json', minmax=(1, 1))
-    #dataset_train = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise, 'speech100.json', alpha=5.93)
-    dataset_train = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise,
-                                  'devclean.json', alpha=(5.93, 0.01))
-    loader = Data.DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=True)
-    # X_list = np.empty((len(dataset_train), 2))
-    # Y_list = np.empty((len(dataset_train), 2))
-    #Loss = nn.SmoothL1Loss(beta=0.1)
-    #Loss = nn.MSELoss()
-    Loss = nn.L1Loss()
-    #Loss = MS_SSIM(data_range=1, win_size=3, channel=1)
-    for step, (x, y) in enumerate(loader):
-    #     X_list[step, :] = [torch.amax(x, dim=(0, 2, 3)), torch.amin(x, dim=(0, 2, 3))]
-    #     Y_list[step, :] = [torch.amax(y, dim=(0, 2, 3)), torch.amin(y, dim=(0, 2, 3))]
-    # print(np.mean(X_list[:, 0]), np.mean(X_list[:, 1]))
-    # print(np.mean(Y_list[:, 0]), np.mean(Y_list[:, 1]))
-        fig, axs = plt.subplots(2)
-        x, y = x.to(dtype=torch.float), y.to(dtype=torch.float)
-        print(Loss(x, y), weighted_loss(x[0, 0, :, :], y[0, 0, :, :]))
-        #generated = synthetic(y[0, 0, :, :], transfer_function, variance, hist, bins, noise_hist, noise_bins, noise)
-        axs[0].imshow(x[0, 0, :, :], aspect='auto')
-        axs[1].imshow(y[0, 0, :, :], aspect='auto')
-        #axs[2].imshow(generated, aspect='auto')
-        plt.show()
+    # BATCH_SIZE = 1
+    # dataset_train = IMUSPEECHSet('imuexp6.json', 'wavexp6.json', minmax=(0.012, 0.002))
+    # #dataset_train = NoisyCleanSet(transfer_function, variance, noise, 'speech100.json', alpha=(6, 0.012, 0.0583))
+    # # dataset_train = NoisyCleanSet(transfer_function, variance,noise,'devclean.json', alpha=(31.53, 0.00185))
+    # loader = Data.DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=False)
+    # # try the best loss to describe
+    # #Loss = nn.SmoothL1Loss(beta=0.1)
+    # #Loss = nn.MSELoss()
+    # Loss = nn.L1Loss()
+    # #Loss = MS_SSIM(data_range=1, win_size=3, channel=1)
+    # # X_list = np.empty((len(dataset_train), 1))
+    # # Y_list = np.empty((len(dataset_train), 1))
+    # for step, (x, y) in enumerate(loader):
+    # #     X_list[step, :] = torch.amax(x, dim=(0, 2, 3))
+    # #     Y_list[step, :] = torch.amax(y, dim=(0, 2, 3))
+    # # print(np.mean(X_list))
+    # # print(np.mean(Y_list))
+    #     #print(torch.mean(x), torch.mean(y))
+    #     x, y = x.to(dtype=torch.float), y.to(dtype=torch.float)
+    #     x_t = np.sum(x[0, 0, :50, :].numpy(), axis=0)
+    #     y_t = np.sum(y[0, 0, :50, :].numpy(), axis=0)
+    #     corr = signal.correlate(y_t, x_t, 'full')
+    #     shift = np.argmax(corr) - len(x_t)
+    #     print(shift)
+    #     new = np.roll(x, shift, axis=3)
+    #     #print(weighted_loss(x[0, 0, :, :], y[0, 0, :, :]))
+    #     #generated = synthetic(y[0, 0, :, :], transfer_function, variance, hist, bins, noise_hist, noise_bins, noise)
+    #     fig, axs = plt.subplots(4)
+    #     axs[0].imshow(x[0, 0, :, :], aspect='auto')
+    #     axs[1].imshow(y[0, 0, :, :], aspect='auto')
+    #     axs[2].imshow(new[0, 0, :, :], aspect='auto')
+    #     axs[3].plot(corr)
+    #     plt.show()

@@ -9,9 +9,14 @@ from unet import UNet
 import numpy as np
 from tqdm import tqdm
 
-# max for IMU = 0.01200766
-# max for SPEECH = 0.0097796
-# max for synthetic data 0.06739869493873622 ## 0.1
+# IMU data 0.012 or 0.011
+# SPEECH 0.01 -- ratio 6
+# LibriSPEECH 0.0583 divided by 6 and add noise
+
+# max for IMU exp4 = 0.01200766
+# max for SPEECH exp4 = 0.0097796 ratio = 5.93
+# max for IMU exp6 = 0.01093818
+# max for SPEECH exp6 = 0.001848658 ratio = 31.53
 # max for Librispeech 0.058281441500849615
 if __name__ == "__main__":
 
@@ -37,24 +42,21 @@ if __name__ == "__main__":
     # model = torch.nn.DataParallel(model, device_ids=device_ids)
     # model = model.cuda(device=device_ids[0])
 
-    transfer_function, variance, hist, bins, noise_hist, noise_bins, noise = read_transfer_function('transfer_function')
+    transfer_function, variance, noise = read_transfer_function('transfer_function')
     transfer_function = transfer_function_generator(transfer_function)
     variance = transfer_function_generator(variance)
-    train_dataset1 = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise, 'speech100.json', alpha=(5.93, 0.01))
+    train_dataset1 = NoisyCleanSet(transfer_function, variance, noise, 'speech100.json', alpha=(6, 0.012, 0.0583))
     #train_dataset2 = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise, 'speech360.json')
     #train_dataset = IMUSPEECHSet('imuexp4.json', 'wavexp4.json', minmax=(0.01200766, 0.0097796))
     #train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
 
-
-    test_dataset = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise, 'devclean.json', alpha=(5.93, 0.01))
+    test_dataset = NoisyCleanSet(transfer_function, variance, noise, 'devclean.json', alpha=(6, 0.012, 0.0583))
 
     train_loader = Data.DataLoader(dataset=train_dataset1, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     #optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
-
-
     #Loss = nn.MSELoss()
     #Loss = nn.SmoothL1Loss(beta=0.1)
     #Loss = nn.L1Loss()

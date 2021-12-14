@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import soundfile as sf
 
 
-def read_data(file, seg_len=256, overlap=224, rate=1600):
+def read_data(file,seg_len=256, overlap=224, rate=1600):
     fileobject = open(file, 'r')
     lines = fileobject.readlines()
     data = np.zeros((len(lines), 4))
@@ -18,8 +18,9 @@ def read_data(file, seg_len=256, overlap=224, rate=1600):
     data[:, :-1] /= 2**14
     time_imu = data[0, 3]
     b, a = signal.butter(4, 100, 'highpass', fs=rate)
+    #data = interpolation(data, rate)
     data[:, :3] = signal.filtfilt(b, a, data[:, :3], axis=0)
-    data[:, :3] = np.clip(data[:, :3], -0.02, 0.02)
+    data[:, :3] = np.clip(data[:, :3], -0.05, 0.05)
     #data = np.linalg.norm(data[:, :3], axis=1)
     #data = signal.filtfilt(b, a, data)
     # data = np.clip(data, -0.05, 0.05)
@@ -31,8 +32,8 @@ def read_data(file, seg_len=256, overlap=224, rate=1600):
 def interpolation(data, target_rate):
     start_time = data[0, 3]
     t_norm = data[:, 3] - start_time
-    f_linear = interpolate.interp1d(t_norm, data[:, :3], axis=0)
-    t_new = np.linspace(0, 5, 5 * target_rate)
+    f_linear = interpolate.interp1d(t_norm, data[:, :3], kind='previous', axis=0)
+    t_new = np.linspace(0, t_norm.max(), int(t_norm.max() * target_rate))
     return f_linear(t_new)
 
 def euler(accel, compass):

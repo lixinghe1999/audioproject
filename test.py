@@ -17,9 +17,9 @@ freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(T*rate_mic/(seg_len_mic-overlap_mic)) + 1
 if __name__ == "__main__":
     # this scripts is for testing of new data
-    path_IMU1 = 'bmiacc1_1639118461.803137.txt'
-    path_IMU2 = 'bmiacc2_1639118461.8085744.txt'
-    path_stereo = 'mic_1639118461.6029863.wav'
+    path_IMU1 = 'bmiacc1_1639192317.839837.txt'
+    path_IMU2 = 'bmiacc2_1639192317.8456254.txt'
+    path_stereo = 'mic_1639192317.6397896.wav'
     time1 = float(path_stereo[:-4].split('_')[1])
     wave1, wave2, Zxx1, Zxx2, phase1, phase2 = micplot.load_stereo(path_stereo, T, seg_len_mic, overlap_mic, rate_mic, normalize=True, dtw=False)
     data1, imu1, t_imu1 = imuplot.read_data(path_IMU1, seg_len_imu, overlap_imu, rate_imu)
