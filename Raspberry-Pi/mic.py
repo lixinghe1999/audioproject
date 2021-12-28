@@ -2,10 +2,10 @@ import pyaudio
 import wave
 import time
 
-FORMAT = pyaudio.paInt16
+FORMAT = pyaudio.paInt32
 CHANNELS = 2
-RATE = 16000
-CHUNK = 1024
+RATE = 441000
+CHUNK = 4096
 
 def voice_record(name, stream, micframes):
     frames = []
