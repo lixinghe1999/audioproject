@@ -5,7 +5,7 @@ from torchvision import transforms
 import matplotlib.pyplot as plt
 import torch.nn as nn
 from data import NoisyCleanSet, read_transfer_function, transfer_function_generator, IMUSPEECHSet, weighted_loss
-from unet import UNet
+from unet import UNet, TinyUNet
 import numpy as np
 from tqdm import tqdm
 
@@ -20,14 +20,16 @@ from tqdm import tqdm
 # max for Librispeech 0.058281441500849615
 if __name__ == "__main__":
 
-    EPOCH = 50
-    BATCH_SIZE = 32
-    lr = 0.03
+    EPOCH = 25
+    BATCH_SIZE = 16
+    lr = 0.01
     pad = True
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
     model = UNet(1, 1).to(device)
-    #model.load_state_dict(torch.load("checkpoint_41_0.002247016663086074.pth"))
+    model.load_state_dict(torch.load("checkpoints/pretrain_0.013042071700069288.pth"))
+    #model = TinyUNet(1, 1).to(device)
+
 
     # # only select weight we want
     # pretrained_dict = torch.load("pretrained.pth")
@@ -39,28 +41,31 @@ if __name__ == "__main__":
     # # 3. load the new state dict
     # model.load_state_dict(model_dict)
 
-    # model = torch.nn.DataParallel(model, device_ids=device_ids)
-    # model = model.cuda(device=device_ids[0])
+    # transfer_function, variance, noise = read_transfer_function('transfer_function')
+    # transfer_function = transfer_function_generator(transfer_function)
+    # variance = transfer_function_generator(variance)
+    # train_dataset1 = NoisyCleanSet(transfer_function, variance, noise, 'speech100.json', alpha=(6, 0.012, 0.0583))
+    # test_dataset1 = NoisyCleanSet(transfer_function, variance, noise, 'devclean.json', alpha=(6, 0.012, 0.0583))
 
-    transfer_function, variance, noise = read_transfer_function('transfer_function')
-    transfer_function = transfer_function_generator(transfer_function)
-    variance = transfer_function_generator(variance)
-    train_dataset1 = NoisyCleanSet(transfer_function, variance, noise, 'speech100.json', alpha=(6, 0.012, 0.0583))
-    #train_dataset2 = NoisyCleanSet(transfer_function, variance, hist, bins, noise_hist, noise_bins, noise, 'speech360.json')
-    #train_dataset = IMUSPEECHSet('imuexp4.json', 'wavexp4.json', minmax=(0.01200766, 0.0097796))
-    #train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
+    train_dataset2 = IMUSPEECHSet('clean_imuexp6.json', 'clean_wavexp6.json', minmax=(0.012, 0.002))
+    length = len(train_dataset2)
+    train_size, validate_size = int(0.8 * length), int(0.2 * length)
+    train_dataset2, test_dataset2 = torch.utils.data.random_split(train_dataset2, [train_size, validate_size], torch.Generator().manual_seed(0))
 
-    test_dataset = NoisyCleanSet(transfer_function, variance, noise, 'devclean.json', alpha=(6, 0.012, 0.0583))
+    train_loader = Data.DataLoader(dataset=train_dataset2, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
+    test_loader = Data.DataLoader(dataset=test_dataset2, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
-    train_loader = Data.DataLoader(dataset=train_dataset1, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
-    test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
-    #optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
+    down1_params = list(map(id, model.down1.parameters()))
+    down2_params = list(map(id, model.down2.parameters()))
+    down3_params = list(map(id, model.down3.parameters()))
+    down4_params = list(map(id, model.down4.parameters()))
+    base_params = filter(lambda p: id(p) not in down4_params + down3_params + down2_params + down1_params,
+                         model.parameters())
+    optimizer = torch.optim.AdamW([{'params': base_params}, {'params': model.down1.parameters(), 'lr': lr*0.1}, {'params': model.down2.parameters(), 'lr': lr*0.2},
+                                   {'params': model.down3.parameters(), 'lr': lr*0.3},{'params': model.down4.parameters(), 'lr': lr*0.4}], lr=lr, weight_decay=0.05)
+    #optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
-    #Loss = nn.MSELoss()
-    #Loss = nn.SmoothL1Loss(beta=0.1)
-    #Loss = nn.L1Loss()
-    #ssim_loss = MS_SSIM(data_range=1, win_size=5, channel=1, size_average=True)
+    Loss = nn.L1Loss()
     for epoch in range(EPOCH):
         for x, y in tqdm(train_loader):
             x, y = x.to(device=device, dtype=torch.float), y.to(device=device, dtype=torch.float)
@@ -74,7 +79,7 @@ if __name__ == "__main__":
             for x, y in test_loader:
                 x, y = x.to(device=device, dtype=torch.float), y.to(device=device, dtype=torch.float)
                 predict = model(x)
-                loss = weighted_loss(predict, y, device)
+                loss = Loss(predict, y)
                 Loss_all.append(loss.item())
             val_loss = np.mean(Loss_all)
         scheduler.step()

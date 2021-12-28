@@ -5,6 +5,7 @@ import numpy as np
 import scipy.signal as signal
 import soundfile as sf
 import audioread
+from pesq import pesq
 from dtw import *
 import random
 import librosa
@@ -19,8 +20,6 @@ def add_noise(wave_noise, wave_clean, ratio=1):
 def normalization(wave_data, rate=16000, T=15):
     b, a = signal.butter(4, 100, 'highpass', fs=rate)
     wave_data = signal.filtfilt(b, a, wave_data)
-    #wave_data = np.clip(wave_data, -0.01, 0.01)
-    #wave_data = wave_data/32767
     if len(wave_data) >= T * rate:
         return wave_data
     wave_data = np.pad(wave_data, (0, T * rate - len(wave_data)), 'constant', constant_values=(0, 0))
@@ -31,8 +30,8 @@ def frequencydomain(wave_data, seg_len=2560, overlap=2240, rate=16000):
     Zxx = np.abs(Zxx)
     return Zxx, phase
 def load_audio(name1, name2, T, seg_len=2560, overlap=2240, rate=16000, normalize=False, dtw=False):
-    wave1, sr = librosa.load(name1, sr=None)
-    wave2, sr = librosa.load(name2, sr=None)
+    wave1, sr = librosa.load(name1, sr=rate)
+    wave2, sr = librosa.load(name2, sr=rate)
     if normalize:
         wave1 = normalization(wave1, rate, T)
         wave2 = normalization(wave2, rate, T)
@@ -60,14 +59,7 @@ def offset(in1, in2):
     # generally in1 will be longer than in2
     corr = signal.correlate(in1, in2, 'valid')
     shift = np.argmax(corr)
-    print(corr[shift])
     return shift
-def DTW(wave_1, wave_2):
-    alignment = dtw(wave_1[::20], wave_2[::20])
-    print(wave_1[::20].shape, wave_2[::20].shape)
-    wq = warp(alignment, index_reference=False)
-    new_index = 20 * np.repeat([wq], 20) + np.tile(np.linspace(0, 19, 20, dtype='int'), len(wq))
-    return new_index
 def save_wav(audio, name):
     sf.write(name, audio.astype('int16'), 16000, subtype='PCM_16')
 
@@ -86,17 +78,16 @@ if __name__ == "__main__":
     path2 = 'mic_1639207419.358194.wav'
     wave3, wave4, Zxx3, Zxx4, phase3, phase4 = load_stereo(path2, 30, normalize=True)
     wave3 = np.clip(wave3, -0.02, 0.02)
-    wave3[:1000] = 0
+    start = 10000
+    length = 30000
+    wave3 = wave3[start: start+length]
     shift = offset(wave1, wave3)
-    shift_freq = int(shift / 320)
-    #wave_shift = np.roll(wave3, shift)
-    fig, axs = plt.subplots(5)
+    print(shift)
+    print(pesq(16000, wave1[shift:shift+length], wave3, 'nb'))
+    fig, axs = plt.subplots(3)
     axs[0].plot(wave1, 'r')
     axs[1].plot(wave3, 'b')
-    axs[2].plot(wave3*10, 'b')
-    axs[2].plot(wave1[shift:shift+len(wave3)], 'r')
-    axs[3].imshow(Zxx3[:100, :100], aspect='auto')
-    axs[4].imshow(Zxx1[:100, shift_freq:shift_freq+100], aspect='auto')
+    axs[2].plot(wave1[shift:shift+length], 'r')
     plt.show()
 
 

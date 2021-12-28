@@ -1,8 +1,10 @@
+import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 from speechbrain.pretrained import EncoderDecoderASR, SpectralMaskEnhancement
 import torch
 import torchaudio
+from torch.nn.utils.rnn import pad_sequence
 import soundfile as sf
 # This is baseline for 1. Noise suppression 2. beamforming: webrtc, coherence based 3. facebook denoiser 4. Speech brain
 # basically this script is only for checking
@@ -26,11 +28,31 @@ if __name__ == "__main__":
     # speech brain just in this script
     # below is ASR, trained on Librispeech, available for batch inference, need admin for cache
 
-    asr_model = EncoderDecoderASR.from_hparams(source="pretrained_models/asr-transformer-transformerlm-librispeech", run_opts={"device":"cuda"})
-    audio_1 = 'demo/noisy.wav'
-    snt_1, fs = torchaudio.load(audio_1)
-    wav_lens = torch.tensor([1.0])
-    print(asr_model.transcribe_batch(snt_1, wav_lens))
+
+    asr_model = EncoderDecoderASR.from_hparams(source="pretrained_models/asr-transformer-transformerlm-librispeech",
+                                               savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
+                                               run_opts={"device":"cuda"})
+
+
+    audio_files = []
+    audio_files.append('test/mic_1639205708.8325815.wav')
+    audio_files.append('test/test.wav')
+    #audio_files.append('exp6\he\clean\mic_1639205708.8325815.wav')
+    #audio_files.append('exp6\he\clean\mic_1639205761.9480312.wav')
+    sigs = []
+    lens = []
+    for audio_file in audio_files:
+        #snt, fs = librosa.load(audio_file, mono=False)
+        snt, fs = torchaudio.load(audio_file)
+        sigs.append(snt[0])
+        lens.append(snt.shape[1])
+    batch = pad_sequence(sigs, batch_first=True, padding_value=0.0)
+    lens = torch.Tensor(lens) / batch.shape[1]
+    print(asr_model.transcribe_batch(batch, lens))
+
+    #
+    # audio_1 = 'D://audioproject\exp6\he\clean\mic_1639205708.8325815.wav'
+    # asr_model.transcribe_file(audio_1)
 
     #below is speech enhancement, dataset voicebank
 
