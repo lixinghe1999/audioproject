@@ -2,7 +2,7 @@ import pyaudio
 import wave
 import time
 
-FORMAT = pyaudio.paInt32
+FORMAT = pyaudio.paInt16
 CHANNELS = 2
 RATE = 16000
 CHUNK = 1024
@@ -22,7 +22,7 @@ def voice_record(name, stream, micframes):
     stream.close()
     wf = wave.open(name + '_' + str(time_start) + '.wav', 'wb')
     wf.setnchannels(CHANNELS)
-    wf.setsampwidth(4)
+    wf.setsampwidth(2)
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     stream.stop_stream()

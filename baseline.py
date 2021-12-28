@@ -35,8 +35,12 @@ if __name__ == "__main__":
 
 
     audio_files = []
-    audio_files.append('test/mic_1639205708.8325815.wav')
-    audio_files.append('test/test.wav')
+    audio_files.append('test/clip1.wav')
+    audio_files.append('test/clip2.wav')
+    audio_files.append('test/clip3.wav')
+    audio_files.append('test/clip4.wav')
+    audio_files.append('test/clip5.wav')
+    audio_files.append('test/clip6.wav')
     #audio_files.append('exp6\he\clean\mic_1639205708.8325815.wav')
     #audio_files.append('exp6\he\clean\mic_1639205761.9480312.wav')
     sigs = []

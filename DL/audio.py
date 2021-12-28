@@ -29,40 +29,43 @@ def spec2audio(spec):
     spectrogram[freq_bin_low:freq_bin_high, :] = spec
     _, audio = signal.istft(spectrogram, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
     return audio
-def cal_pesq(x, y, model):
+def cal_pesq(x, y, model, device):
     # Note that x can be magnitude, y need to have phase
-    y_abs = torch.abs(y)
-    phase = torch.angle(y)
+    x_abs = x.to(dtype=torch.float, device=device)
+    predict = model(x_abs).cpu().numpy()
+    x_abs = x_abs.cpu()
+    y = y.numpy()
+    values = []
+    for b in range(len(x)):
+        gt = y[b, 0]
+        predict_y = predict[b, 0]
 
-    _, gt_audio = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-    x_abs = x.to(dtype=torch.float)
-    predict = model(x_abs)
-    recover = torch.exp(1j * phase[0, 0, freq_bin_low:freq_bin_high, :]) * predict
-    y[:, :, freq_bin_low:freq_bin_high, :] = recover
-    _, recover_audio = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+        gt = np.pad(gt, ((freq_bin_low, 0), (0, 0)))
+        #gt[freq_bin_high:, 0] = 0
+        _, gt_audio = signal.istft(gt, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
-    recover_audio = recover_audio[0, 0] * 0.012
-    gt_audio = gt_audio[0, 0] * 0.012
+        gt_phase = np.angle(gt)
+        gt_abs = np.abs(gt)
+        recover = np.exp(1j * gt_phase[freq_bin_low:freq_bin_high, :]) * predict_y
+        gt[freq_bin_low:freq_bin_high, :] = recover
+        _, recover_audio = signal.istft(gt, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
-    value = pesq(16000, recover_audio, gt_audio, 'nb')
-    print(value)
-
-    sf.write('result.wav', recover_audio, 16000)
-    sf.write('ground_truth.wav', gt_audio, 16000)
-    fig, axs = plt.subplots(3)
-    axs[0].imshow(x_abs[0, 0, :, :], aspect='auto')
-    axs[1].imshow(predict[0, 0, :, :], aspect='auto')
-    axs[2].imshow(y_abs[0, 0, freq_bin_low:freq_bin_high, :], aspect='auto')
-    plt.show()
-    return value
+        recover_audio = recover_audio * 0.002
+        gt_audio = gt_audio * 0.002
+        values.append(pesq(16000, recover_audio, gt_audio, 'nb'))
+        # sf.write('result.wav', recover_audio, 16000)
+        # sf.write('ground_truth.wav', gt_audio, 16000)
+        # fig, axs = plt.subplots(3)
+        # axs[0].imshow(x_abs[b, 0, :, :], aspect='auto')
+        # axs[1].imshow(predict_y, aspect='auto')
+        # axs[2].imshow(gt_abs[freq_bin_low:freq_bin_high, :], aspect='auto')
+        # plt.show()
+    return values
 if __name__ == "__main__":
     # load IMU audio ground truth
-    BATCH_SIZE = 1
-    model = UNet(1, 1)
-    #model = TinyUNet(1, 1)
-    transfer_function, variance, noise = read_transfer_function('transfer_function')
-    transfer_function = transfer_function_generator(transfer_function)
-    variance = transfer_function_generator(variance)
+    BATCH_SIZE = 32
+    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    model = UNet(1, 1).to(device)
 
     model.load_state_dict(torch.load("checkpoints/finetuneIMUs_0.019480812113865147.pth"))
     #dataset = NoisyCleanSet(transfer_function, variance, noise, 'speech100.json', alpha=(6, 0.012, 0.0583))
@@ -73,15 +76,15 @@ if __name__ == "__main__":
     train_size, validate_size = int(0.8 * length), length - int(0.8 * length)
     dataset, test = torch.utils.data.random_split(dataset, [train_size, validate_size], torch.Generator().manual_seed(0))
 
-    test_loader = Data.DataLoader(dataset=test, batch_size=1, shuffle=False)
+    test_loader = Data.DataLoader(dataset=test, batch_size=BATCH_SIZE, shuffle=False)
     PESQ = []
     with torch.no_grad():
         for x, y in test_loader:
-            value = cal_pesq(x, y, model)
-            PESQ.append(value)
-    # plt.plot(PESQ)
-    # print(np.mean(PESQ))
-    # plt.show()
+            values = cal_pesq(x, y, model, device)
+            PESQ += values
+    plt.plot(PESQ)
+    print(np.mean(PESQ))
+    plt.show()
             # y_abs = torch.abs(y)
             # phase = torch.angle(y)
             # x_abs, y_abs = x.to(dtype=torch.float), y_abs.to(dtype=torch.float)

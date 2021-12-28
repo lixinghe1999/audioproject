@@ -155,6 +155,8 @@ class Audioset:
                 Zxx = signal.stft(out, nperseg=self.window, noverlap=self.overlap, fs=sr)[-1]
                 if not self.full:
                     Zxx = Zxx[freq_bin_low:freq_bin_high, :]
+                else:
+                    Zxx = Zxx[freq_bin_low:, :]
             if self.phase:
                 out = np.expand_dims(Zxx, 0)
             else:
