@@ -4,7 +4,7 @@ import time
 
 FORMAT = pyaudio.paInt32
 CHANNELS = 2
-RATE = 441000
+RATE = 44100
 CHUNK = 4096
 
 def voice_record(name, stream, micframes):
