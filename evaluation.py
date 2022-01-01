@@ -1,3 +1,4 @@
+import librosa
 from pesq import pesq
 import micplot
 import numpy as np
@@ -170,11 +171,11 @@ if __name__ == "__main__":
     # wer(r, h)
     #
     reference = 'demo/clean.wav'
-    wave_clean = micplot.get_wav(reference, rate=16000)
+    wave_clean, _ = librosa.load(reference, sr=16000)
     noise = 'conversation.wav'
-    wave_noise = micplot.get_wav(noise, rate=16000)
+    wave_noise, _ = librosa.load(noise, sr=16000)
     noisy1 = micplot.add_noise(wave_noise, wave_clean, ratio=0.1)
-    noisy2 = micplot.add_noise(wave_noise, wave_clean, ratio=0.2)
+    noisy2 = micplot.add_noise(wave_noise, wave_clean, ratio=0.05)
     score = pesq(16000, wave_clean, noisy1, 'wb')
     print(score)
     score = pesq(16000, wave_clean, noisy2, 'wb')

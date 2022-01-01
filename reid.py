@@ -21,24 +21,34 @@ if __name__ == "__main__":
         d[name]['n'].append(npzs['noise'])
 
     iterated = {}
-    max_iteration = 1
+    max_iteration = 5
     X = []
     Y = []
     candidate = ["liang", "shuai", "shen", "wu", "he", "hou", "zhao", "shi"]
+    #candidate = ["zhao"]
     for i in range(len(candidate)):
+        count = 0
         name = candidate[i]
         response = d[name]['r']
-        iterated = np.zeros((112))
+        variance = d[name]['v']
+        iterated_response = np.zeros((112))
+        iterated_variance = np.zeros((112))
         for j in range(len(response)):
             select = response[j] > 0
-            iterated[select] = 0.1 * response[j][select] + 0.9 * iterated[select]
+            iterated_response[select] = 0.5 * response[j][select] + 0.5 * iterated_response[select]
+            iterated_variance[select] = 0.5 * variance[j][select] + 0.5 * iterated_variance[select]
             if (j + 1) % max_iteration == 0:
-                X.append(iterated)
+                X.append(iterated_response)
                 Y.append(i)
-                iterated = np.zeros((112))
-    clf = SVC(decision_function_shape='ovr')
+                np.savez('iterated_function/' + str(count) + '_' + name + '_transfer_function.npz',
+                         response=iterated_response, variance=iterated_variance)
+                iterated_response = np.zeros((112))
+                iterated_variance = np.zeros((112))
+
+                count += 1
     X = np.array(X)
     Y = np.array(Y)
+    clf = SVC(decision_function_shape='ovr')
     print(X.shape, Y.shape)
     clf.fit(X, Y)
     print(accuracy_score(Y, clf.predict(X)))

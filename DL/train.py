@@ -18,16 +18,28 @@ from tqdm import tqdm
 # max for IMU exp6 = 0.01093818
 # max for SPEECH exp6 = 0.001848658 ratio = 31.53
 # max for Librispeech 0.058281441500849615
+
+# for mel spectrogram
+# max for IMU 0.28
+# max for SPEECH 0.73
+
+# for spectrogram
+# max for IMU 0.0132
+# max for SPEECH 0.0037
+
+# for Librispeech
+# 0.0637 ratio = 17.2
 if __name__ == "__main__":
 
     EPOCH = 25
     BATCH_SIZE = 16
-    lr = 0.01
+    lr = 0.0025
     pad = True
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
     model = UNet(1, 1).to(device)
-    model.load_state_dict(torch.load("checkpoints/pretrain_0.013042071700069288.pth"))
+    model.load_state_dict(torch.load("checkpoints/pretrain_0.011717716008242146.pth"))
+    #model.load_state_dict(torch.load("checkpoint_1_0.012661107610363294.pth"))
     #model = TinyUNet(1, 1).to(device)
 
 
@@ -41,13 +53,11 @@ if __name__ == "__main__":
     # # 3. load the new state dict
     # model.load_state_dict(model_dict)
 
-    # transfer_function, variance, noise = read_transfer_function('transfer_function')
-    # transfer_function = transfer_function_generator(transfer_function)
-    # variance = transfer_function_generator(variance)
-    # train_dataset1 = NoisyCleanSet(transfer_function, variance, noise, 'speech100.json', alpha=(6, 0.012, 0.0583))
-    # test_dataset1 = NoisyCleanSet(transfer_function, variance, noise, 'devclean.json', alpha=(6, 0.012, 0.0583))
+    # transfer_function, variance = read_transfer_function('../iterated_function')
+    # train_dataset1 = NoisyCleanSet(transfer_function, variance, 'speech100.json', alpha=(17.2, 0.07, 0.063))
+    # test_dataset1 = NoisyCleanSet(transfer_function, variance, 'devclean.json', alpha=(17.2, 0.07, 0.063))
 
-    train_dataset2 = IMUSPEECHSet('clean_imuexp6.json', 'clean_wavexp6.json', minmax=(0.012, 0.002))
+    train_dataset2 = IMUSPEECHSet('clean_imuexp6.json', 'clean_wavexp6.json', minmax=(0.0132, 0.0037))
     length = len(train_dataset2)
     train_size, validate_size = int(0.8 * length), int(0.2 * length)
     train_dataset2, test_dataset2 = torch.utils.data.random_split(train_dataset2, [train_size, validate_size], torch.Generator().manual_seed(0))
@@ -63,6 +73,7 @@ if __name__ == "__main__":
                          model.parameters())
     optimizer = torch.optim.AdamW([{'params': base_params}, {'params': model.down1.parameters(), 'lr': lr*0.1}, {'params': model.down2.parameters(), 'lr': lr*0.2},
                                    {'params': model.down3.parameters(), 'lr': lr*0.3},{'params': model.down4.parameters(), 'lr': lr*0.4}], lr=lr, weight_decay=0.05)
+
     #optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
     Loss = nn.L1Loss()

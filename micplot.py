@@ -15,7 +15,7 @@ def add_noise(wave_noise, wave_clean, ratio=1):
     random_index = random.randint(0, len(wave_noise) - len(wave_clean))
     clip = wave_noise[random_index: random_index + len(wave_clean)]
     # keep the same volume
-    noisy = wave_clean + ratio * clip
+    noisy = wave_clean + ratio * (wave_clean.max()/clip.max()) * clip
     return noisy
 def normalization(wave_data, rate=16000, T=15):
     b, a = signal.butter(4, 100, 'highpass', fs=rate)

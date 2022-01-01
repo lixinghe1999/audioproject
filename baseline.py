@@ -37,6 +37,7 @@ if __name__ == "__main__":
     audio_files = []
     audio_files.append('test/clip1.wav')
     audio_files.append('test/clip2.wav')
+    audio_files.append('test/clip7.wav')
     audio_files.append('test/clip3.wav')
     audio_files.append('test/clip4.wav')
     audio_files.append('test/clip5.wav')

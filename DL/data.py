@@ -33,6 +33,7 @@ freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
 Loss_weight = torch.tile(torch.unsqueeze(np.exp(torch.linspace(0, 2, (freq_bin_high-freq_bin_low))), dim=1), (1, time_bin))
+#Loss_weight = torch.tile(torch.unsqueeze(np.exp(torch.linspace(0, 2, 128)), dim=1), (1, time_bin))
 def weighted_loss(input, target, device='cpu'):
     #return (Loss_weight.to(device=device) * torch.abs(input - target)).mean()
     beta = 0.01
@@ -53,13 +54,11 @@ def read_transfer_function(path):
     npzs = os.listdir(path)
     transfer_function = np.zeros((len(npzs), freq_bin_high - freq_bin_low))
     variance = np.zeros((len(npzs), freq_bin_high - freq_bin_low))
-    noise = np.zeros((len(npzs), 2))
     for i in range(len(npzs)):
         npz = np.load(path + '/' + npzs[i])
         transfer_function[i, :] = npz['response']
         variance[i, :] = npz['variance']
-        noise[i, :] = npz['noise']
-    return transfer_function, variance, noise
+    return transfer_function, variance
 def noise_extraction():
     noise_list = os.listdir('../dataset/noise/')
     index = np.random.randint(0, len(noise_list))
@@ -74,7 +73,6 @@ def synthetic(clean, transfer_function, variance):
     noisy = clean * response
     background_noise = noise_extraction()
     noisy += 1 * background_noise
-    noisy = np.hstack((noisy, np.zeros(np.shape(noisy))))
     return noisy
 
 def read_data(file, seg_len=256, overlap=224, rate=1600, offset=0, duration=length):
@@ -88,11 +86,13 @@ def read_data(file, seg_len=256, overlap=224, rate=1600, offset=0, duration=leng
     b, a = signal.butter(4, 100, 'highpass', fs=rate)
     data[:, :3] = signal.filtfilt(b, a, data[:, :3], axis=0)
     data[:, :3] = np.clip(data[:, :3], -0.02, 0.02)
+    # Zxx = np.empty((128, 201, 3))
+    # for i in range(3):
+    #     Zxx[:, :, i] = librosa.feature.melspectrogram(data[:, i], sr=rate, n_fft=seg_len, hop_length=seg_len - overlap,
+    #                                          power=1, fmin=100)
     f, t, Zxx = signal.stft(data[:, :3], nperseg=seg_len, noverlap=overlap, fs=rate, window="hamming", axis=0)
     Zxx = np.linalg.norm(np.abs(Zxx), axis=1)
-    #Zxx = resize(Zxx, (freq_bin_high, time_bin))
     Zxx = Zxx[freq_bin_low:, :]
-    # Zxx = np.vstack((Zxx, np.zeros(np.shape(Zxx))))
     return Zxx
 def synchronize(x, y):
     x_t = np.sum(x[:, :50, :], axis=(0, 1))
@@ -152,6 +152,9 @@ class Audioset:
                 out, sr = librosa.load(file, offset=offset, duration=duration, sr=rate_mic)
                 if self.length:
                     out = np.pad(out, (0, duration * self.sample_rate - out.shape[-1]))
+
+                # Zxx = librosa.feature.melspectrogram(out, sr=rate_mic, n_fft=self.window, hop_length=self.window-self.overlap,
+                #                                      power=1, fmin=100, fmax=800)
                 Zxx = signal.stft(out, nperseg=self.window, noverlap=self.overlap, fs=sr)[-1]
                 if not self.full:
                     Zxx = Zxx[freq_bin_low:freq_bin_high, :]
@@ -163,7 +166,7 @@ class Audioset:
                 out = np.expand_dims(np.abs(Zxx), 0)
             return out
 class NoisyCleanSet:
-    def __init__(self, transfer_function, variance, noise, json_path, alpha=(1, 1)):
+    def __init__(self, transfer_function, variance, json_path, alpha=(1, 1)):
         """__init__. n
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -177,7 +180,6 @@ class NoisyCleanSet:
         self.clean_set = Audioset(clean)
         self.transfer_function = transfer_function
         self.variance = variance
-        self.noise = noise
         self.alpha = alpha
     def __getitem__(self, index):
         return torch.from_numpy(synthetic(self.clean_set[index]/self.alpha[0],
@@ -186,7 +188,7 @@ class NoisyCleanSet:
     def __len__(self):
         return len(self.clean_set)
 class IMUSPEECHSet:
-    def __init__(self, imu_path, wav_path, full, phase=False, minmax=(1, 1)):
+    def __init__(self, imu_path, wav_path, full=False, phase=False, minmax=(1, 1)):
         """__init__.
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -207,9 +209,9 @@ class IMUSPEECHSet:
 
     def __getitem__(self, index):
         speech = self.wav_set[index]
-        audio = self.imu_set[index]
-        audio = synchronize(audio, np.abs(speech))
-        return torch.from_numpy(audio/self.minmax[0]), torch.from_numpy(speech/self.minmax[1])
+        imu = self.imu_set[index]
+        imu = synchronize(imu, np.abs(speech))
+        return torch.from_numpy(imu/self.minmax[0]), torch.from_numpy(speech/self.minmax[1])
     def __len__(self):
         return len(self.imu_set)
 
@@ -252,14 +254,15 @@ if __name__ == "__main__":
     # json.dump(gt_files, open(folder + '_gtexp6.json', 'w'), indent=4)
 
     #
-    # transfer_function, variance, noise = read_transfer_function('transfer_function')
+    transfer_function, variance = read_transfer_function('../iterated_function')
     # transfer_function = transfer_function_generator(transfer_function)
     # variance = transfer_function_generator(variance)
     # # plt.plot(transfer_function[0])
     # plt.text(60, 0, 'Frequency', ha='center', fontsize=50)
     # plt.text(-5, 6, 'Response', va='center', rotation='vertical', fontsize=50)
     # plt.show()
-    # for i in range(N):
+    # print(len(transfer_function))
+    # for i in range(len(transfer_function)):
     #     plt.plot(transfer_function[i])
     # plt.show()
     # fig, axs = plt.subplots(2, sharex=True)
@@ -281,16 +284,22 @@ if __name__ == "__main__":
     #     plt.show()
 
     #
-    BATCH_SIZE = 1
-    dataset_train = IMUSPEECHSet('clean_imuexp6.json', 'clean_wavexp6.json', minmax=(0.012, 0.002))
-    #dataset_train = NoisyCleanSet(transfer_function, variance, noise, 'speech100.json', alpha=(6, 0.012, 0.0583))
+    BATCH_SIZE = 4
+    #dataset_train = IMUSPEECHSet('clean_imuexp6.json', 'clean_wavexp6.json', minmax=(1, 1))
+    dataset_train = NoisyCleanSet(transfer_function, variance, 'speech100.json', alpha=(17.2, 0.07, 0.063))
     # dataset_train = NoisyCleanSet(transfer_function, variance,noise,'devclean.json', alpha=(31.53, 0.00185))
     loader = Data.DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=True)
     # try the best loss to describe
+    x_max = []
+    y_max = []
     Loss = nn.L1Loss()
     for step, (x, y) in enumerate(loader):
+    #     x_max.append(np.max(x.numpy(), axis=(0, 1, 2, 3)))
+    #     y_max.append(np.max(y.numpy(), axis=(0, 1, 2, 3)))
+    # print(np.mean(x_max))
+    # print(np.mean(y_max))
+
         x, y = x.to(dtype=torch.float), y.to(dtype=torch.float)
-        #print(weighted_loss(x[0, 0, :, :], y[0, 0, :, :]))
         fig, axs = plt.subplots(2)
         axs[0].imshow(x[0, 0, :, :], aspect='auto')
         axs[1].imshow(y[0, 0, :, :], aspect='auto')
