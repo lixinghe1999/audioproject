@@ -96,15 +96,15 @@ def cal_pesq(x, y, model, device):
     # Note that x can be magnitude, y need to have phase
     x_abs = x.to(dtype=torch.float, device=device)
     predict = model(x_abs).cpu().numpy()
-    x_abs = x_abs.cpu()
+    x_abs = x_abs.cpu().numpy()
     y = y.numpy()
     values = []
     for b in range(len(x)):
         gt = y[b, 0]
         predict_y = predict[b, 0]
-
+        # if np.mean(gt*0.0037) > 0.0002 or np.mean(x_abs[b, 0]*0.0132) < 0.0006:
+        #     continue
         gt = np.pad(gt, ((freq_bin_low, 0), (0, 0)))
-        #gt[freq_bin_high:, 0] = 0
         _, gt_audio = signal.istft(gt, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
 
@@ -135,10 +135,10 @@ if __name__ == "__main__":
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     model = UNet(1, 1).to(device)
 
-    model.load_state_dict(torch.load("checkpoint_4_0.011230765171919246.pth"))
-    #model.load_state_dict(torch.load("checkpoints/finetuneIMUs_2.75.pth"))
+    model.load_state_dict(torch.load("checkpoint_24_0.009499040138172475.pth"))
+    # model.load_state_dict(torch.load("checkpoints/finetuneIMUs_2.75.pth"))
     dataset = IMUSPEECHSet('clean_imuexp6.json', 'clean_wavexp6.json', phase=True, full=True, minmax=(0.0132, 0.0037))
-    #dataset = IMUSPEECHSet('noise_imuexp6.json', 'noise_wavexp6.json-', ground_truth=False, phase=True, minmax=(0.012, 0.002))
+    #dataset = IMUSPEECHSet('noise_imuexp6.json', 'noise_wavexp6.json', phase=True, minmax=(0.012, 0.002))
     length = len(dataset)
     train_size, validate_size = int(0.8 * length), length - int(0.8 * length)
     dataset, test = torch.utils.data.random_split(dataset, [train_size, validate_size], torch.Generator().manual_seed(0))

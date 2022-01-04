@@ -22,7 +22,7 @@ if __name__ == "__main__":
     #compassframe = args.time * 15
     micframe = args.time * 16000
     if args.acctype == 0:
-        stream = open_mic_stream(1)
+        stream = open_mic_stream(2)
         thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, 0))
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, 1))
         #thread3 = Process(target=bmi160_gyrosave, args=('bmigryo1', bmiaccframe, port[1]))

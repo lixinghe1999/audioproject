@@ -11,6 +11,7 @@ import numpy as np
 import torch
 import torch.utils.data as Data
 import torch.nn as nn
+from skimage import filters
 import torchaudio
 import matplotlib.pyplot as plt
 import soundfile as sf
@@ -26,7 +27,7 @@ rate_mic = 16000
 seg_len_imu = 256
 overlap_imu = 224
 rate_imu = 1600
-length = 4
+length = 5
 stride = 1
 N = 100
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
@@ -95,7 +96,7 @@ def read_data(file, seg_len=256, overlap=224, rate=1600, offset=0, duration=leng
     Zxx = Zxx[freq_bin_low:, :]
     return Zxx
 def synchronize(x, y):
-    x_t = np.sum(x[:, :50, :], axis=(0, 1))
+    x_t = np.sum(np.abs(x[:, :50, :]), axis=(0, 1))
     y_t = np.sum(y[:, :50, :], axis=(0, 1))
     corr = signal.correlate(y_t, x_t, 'full')
     shift = np.argmax(corr) - time_bin
@@ -211,7 +212,7 @@ class IMUSPEECHSet:
         speech = self.wav_set[index]
         imu = self.imu_set[index]
         imu = synchronize(imu, np.abs(speech))
-        return torch.from_numpy(imu/self.minmax[0]), torch.from_numpy(speech/self.minmax[1])
+        return torch.from_numpy(imu / self.minmax[0]), torch.from_numpy(speech / self.minmax[1])
     def __len__(self):
         return len(self.imu_set)
 
@@ -252,9 +253,36 @@ if __name__ == "__main__":
     # json.dump(imu_files, open(folder + '_imuexp6.json', 'w'), indent=4)
     # json.dump(wav_files, open(folder + '_wavexp6.json', 'w'), indent=4)
     # json.dump(gt_files, open(folder + '_gtexp6.json', 'w'), indent=4)
+    #
+    # imu_files = []
+    # wav_files = []
+    # gt_files = []
+    # g = os.walk(r"../exp7")
+    # folders = ['s1', 's2']
+    # for path, dir_list, file_list in g:
+    #     N = int(len(file_list) / 4)
+    #     if path[-2:] not in folders:
+    #         continue
+    #     imu1 = file_list[: N]
+    #     imu2 = file_list[N: 2 * N]
+    #     gt = file_list[2 * N: 3 * N]
+    #     wav = file_list[3 * N:]
+    #     wav.sort(key=lambda x: int(x[4:-5]))
+    #     for i in range(N):
+    #         # have 2 IMUs, but now only use one
+    #         imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i])).readlines())])
+    #         wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
+    #         gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
+    #
+    #         imu_files.append([os.path.join(path, imu2[i]), len(open(os.path.join(path, imu2[i])).readlines())])
+    #         wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
+    #         gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
+    # json.dump(imu_files, open('test_imuexp6.json', 'w'), indent=4)
+    # json.dump(wav_files, open('test_wavexp6.json', 'w'), indent=4)
+    # json.dump(gt_files, open('test_gtexp6.json', 'w'), indent=4)
 
     #
-    transfer_function, variance = read_transfer_function('../iterated_function')
+    # transfer_function, variance = read_transfer_function('../iterated_function')
     # transfer_function = transfer_function_generator(transfer_function)
     # variance = transfer_function_generator(variance)
     # # plt.plot(transfer_function[0])
@@ -284,23 +312,29 @@ if __name__ == "__main__":
     #     plt.show()
 
     #
-    BATCH_SIZE = 4
-    #dataset_train = IMUSPEECHSet('clean_imuexp6.json', 'clean_wavexp6.json', minmax=(1, 1))
-    dataset_train = NoisyCleanSet(transfer_function, variance, 'speech100.json', alpha=(17.2, 0.07, 0.063))
+    BATCH_SIZE = 1
+    dataset_train = IMUSPEECHSet('clean_imuexp6.json', 'clean_wavexp6.json', minmax=(1, 1))
+    #dataset_train = NoisyCleanSet(transfer_function, variance, 'speech100.json', alpha=(17.2, 0.07, 0.063))
     # dataset_train = NoisyCleanSet(transfer_function, variance,noise,'devclean.json', alpha=(31.53, 0.00185))
     loader = Data.DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=True)
     # try the best loss to describe
     x_max = []
     y_max = []
     Loss = nn.L1Loss()
+    count = 0
     for step, (x, y) in enumerate(loader):
+        x, y = x.numpy()[0, 0], y.numpy()[0, 0]
+
     #     x_max.append(np.max(x.numpy(), axis=(0, 1, 2, 3)))
     #     y_max.append(np.max(y.numpy(), axis=(0, 1, 2, 3)))
     # print(np.mean(x_max))
     # print(np.mean(y_max))
-
-        x, y = x.to(dtype=torch.float), y.to(dtype=torch.float)
-        fig, axs = plt.subplots(2)
-        axs[0].imshow(x[0, 0, :, :], aspect='auto')
-        axs[1].imshow(y[0, 0, :, :], aspect='auto')
+    #     if np.mean(x) < 0.0006 or np.mean(y) > 0.0002:
+    #         continue
+    #     plt.scatter(np.mean(x), np.mean(y))
+    #     count += 1
+        fig, axs = plt.subplots(3)
+        axs[0].imshow(x, aspect='auto')
+        axs[1].imshow(y, aspect='auto')
+        axs[2].imshow(z, aspect='auto')
         plt.show()

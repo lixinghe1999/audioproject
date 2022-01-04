@@ -156,8 +156,9 @@ def wer(r, h):
 
     # print the result in aligned way
     result = float(d[len(r)][len(h)]) / len(r) * 100
-    result = str("%.2f" % result) + "%"
-    alignedPrint(list, r, h, result)
+    #result = str("%.2f" % result) + "%"
+    #alignedPrint(list, r, h, result)
+    return result
 
 
 ## we evaluate WER and PESQ in this script

@@ -64,17 +64,17 @@ if __name__ == "__main__":
 
     train_loader = Data.DataLoader(dataset=train_dataset2, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset2, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    #
+    # down1_params = list(map(id, model.down1.parameters()))
+    # down2_params = list(map(id, model.down2.parameters()))
+    # down3_params = list(map(id, model.down3.parameters()))
+    # down4_params = list(map(id, model.down4.parameters()))
+    # base_params = filter(lambda p: id(p) not in down4_params + down3_params + down2_params + down1_params,
+    #                      model.parameters())
+    # optimizer = torch.optim.AdamW([{'params': base_params}, {'params': model.down1.parameters(), 'lr': lr*0.1}, {'params': model.down2.parameters(), 'lr': lr*0.2},
+    #                                {'params': model.down3.parameters(), 'lr': lr*0.3},{'params': model.down4.parameters(), 'lr': lr*0.4}], lr=lr, weight_decay=0.05)
 
-    down1_params = list(map(id, model.down1.parameters()))
-    down2_params = list(map(id, model.down2.parameters()))
-    down3_params = list(map(id, model.down3.parameters()))
-    down4_params = list(map(id, model.down4.parameters()))
-    base_params = filter(lambda p: id(p) not in down4_params + down3_params + down2_params + down1_params,
-                         model.parameters())
-    optimizer = torch.optim.AdamW([{'params': base_params}, {'params': model.down1.parameters(), 'lr': lr*0.1}, {'params': model.down2.parameters(), 'lr': lr*0.2},
-                                   {'params': model.down3.parameters(), 'lr': lr*0.3},{'params': model.down4.parameters(), 'lr': lr*0.4}], lr=lr, weight_decay=0.05)
-
-    #optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
     Loss = nn.L1Loss()
     for epoch in range(EPOCH):

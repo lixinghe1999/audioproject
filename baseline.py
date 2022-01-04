@@ -33,7 +33,6 @@ if __name__ == "__main__":
                                                savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
                                                run_opts={"device":"cuda"})
 
-
     audio_files = []
     audio_files.append('test/clip1.wav')
     audio_files.append('test/clip2.wav')
