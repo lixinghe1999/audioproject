@@ -42,18 +42,24 @@ def load_audio(name1, name2, T, seg_len=2560, overlap=2240, rate=16000, normaliz
     Zxx2, phase2 = frequencydomain(wave2, seg_len=seg_len, overlap=overlap, rate=rate)
     return wave1, wave2, Zxx1, Zxx2, phase1, phase2
 
-def load_stereo(name, T, seg_len=2560, overlap=2240, rate=16000, normalize=False, dtw=False):
-    wave, sr = librosa.load(name, mono=False, sr=rate)
-    wave1 = wave[0]
-    wave2 = wave[1]
+# def load_stereo(name, T, seg_len=2560, overlap=2240, rate=16000, normalize=False, dtw=False):
+#     wave, sr = librosa.load(name, mono=False, sr=rate)
+#     wave1 = wave[0]
+#     wave2 = wave[1]
+#     if normalize:
+#         wave1 = normalization(wave[0], rate, T)
+#         wave2 = normalization(wave[1], rate, T)
+#     if dtw:
+#         wave1 = wave1[DTW(wave1, wave2)]
+#     Zxx1, phase1 = frequencydomain(wave1, seg_len=seg_len, overlap=overlap, rate=rate)
+#     Zxx2, phase2 = frequencydomain(wave2, seg_len=seg_len, overlap=overlap, rate=rate)
+#     return wave1, wave2, Zxx1, Zxx2, phase1, phase2
+def load_stereo(name, T, seg_len=2560, overlap=2240, rate=16000, normalize=False):
+    wave, sr = librosa.load(name, sr=rate)
     if normalize:
-        wave1 = normalization(wave[0], rate, T)
-        wave2 = normalization(wave[1], rate, T)
-    if dtw:
-        wave1 = wave1[DTW(wave1, wave2)]
-    Zxx1, phase1 = frequencydomain(wave1, seg_len=seg_len, overlap=overlap, rate=rate)
-    Zxx2, phase2 = frequencydomain(wave2, seg_len=seg_len, overlap=overlap, rate=rate)
-    return wave1, wave2, Zxx1, Zxx2, phase1, phase2
+        wave = normalization(wave, rate, T)
+    Zxx, phase = frequencydomain(wave, seg_len=seg_len, overlap=overlap, rate=rate)
+    return wave, Zxx, phase
 
 def offset(in1, in2):
     # generally in1 will be longer than in2

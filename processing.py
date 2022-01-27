@@ -9,51 +9,50 @@ import argparse
 from skimage.transform import resize
 from skimage import filters
 import time
-from dtw import *
-seg_len_mic = 2560
-overlap_mic = 2240
+seg_len_mic = 640
+overlap_mic = 320
+seg_len_imu = 64
+overlap_imu = 32
+# seg_len_mic = 2560
+# overlap_mic = 2240
+# seg_len_imu = 256
+# overlap_imu = 224
 rate_mic = 16000
-seg_len_imu = 256
-overlap_imu = 224
 rate_imu = 1600
 T = 30
-segment = 6
-stride = 4
+segment = 5
+stride = 3
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
-freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
-time_bin = int(segment*rate_mic/(seg_len_mic-overlap_mic)) + 1
+time_bin = int(segment * rate_mic/(seg_len_mic-overlap_mic)) + 1
+time_stride = int(stride * rate_mic/(seg_len_mic-overlap_mic))
 def synchronize(x, y):
-    x = x[freq_bin_low:, :]
-    y = y[freq_bin_low:freq_bin_high, :]
-    x_t = np.sum(x[:50, :], axis=0)
-    y_t = np.sum(y[:50, :], axis=0)
+    y = y[:freq_bin_high, :]
+    x_t = np.sum(x, axis=0)
+    y_t = np.sum(y, axis=0)
     corr = signal.correlate(y_t, x_t, 'full')
     shift = np.argmax(corr) - time_bin
     x = np.roll(x, shift, axis=1)
     return x
-def imu_resize(time_diff, imu1):
-    shift = round(time_diff * rate_mic / (seg_len_mic - overlap_mic))
-    Zxx_resize = np.roll(resize(imu1, (freq_bin_high, time_bin)), shift, axis=1)
-    Zxx_resize[:, :shift] = 0
-    Zxx_resize = Zxx_resize[freq_bin_low:, :]
-    return Zxx_resize
-def estimate_response(Zxx, imu1, imu2):
-    Zxx = Zxx[freq_bin_low: freq_bin_high, :]
+
+def noise_extraction():
+    noise_list = os.listdir('dataset/noise/')
+    index = np.random.randint(0, len(noise_list))
+    noise_clip = np.load('dataset/noise/' + noise_list[index])
+    index = np.random.randint(0, noise_clip.shape[1] - time_bin)
+    return noise_clip[:, index:index + time_bin]
+
+def estimate_response(Zxx, imu):
     select1 = Zxx > 1 * filters.threshold_otsu(Zxx)
-    select2 = imu1 > 1 * filters.threshold_otsu(imu1)
+    select2 = imu > 1 * filters.threshold_otsu(imu)
     select = select2 & select1
-    select_noise = np.logical_not(select)
-    Zxx_ratio1 = np.divide(imu1, Zxx, out=np.zeros_like(imu1), where=select)
-    #Zxx_ratio2 = np.divide(imu2, Zxx, out=np.zeros_like(imu1), where=select)
+    Zxx_ratio1 = np.divide(imu, Zxx, out=np.zeros_like(imu), where=select)
     Zxx_ratio = Zxx_ratio1
-    new_variance = np.zeros(freq_bin_high - freq_bin_low)
-    new_response = np.zeros(freq_bin_high - freq_bin_low)
-    for i in range(freq_bin_high-freq_bin_low):
+    new_variance = np.zeros(freq_bin_high)
+    new_response = np.zeros(freq_bin_high)
+    for i in range(freq_bin_high):
         if np.sum(select[i, :]) > 0:
             new_response[i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
             new_variance[i] = np.std(Zxx_ratio[i, :], where=select[i, :])
-    noise_mean = np.mean(imu1, axis=(0, 1), where=select_noise)
-    noise_variance = np.sqrt(np.mean(np.abs(imu1 - noise_mean)**2))
     # fig, axs = plt.subplots(5)
     # axs[0].imshow(imu1, aspect='auto')
     # axs[1].imshow(select2, aspect='auto')
@@ -62,7 +61,16 @@ def estimate_response(Zxx, imu1, imu2):
     # axs[4].plot(new_response, 'b')
     # axs[4].plot(new_variance, 'r')
     # plt.show()
-    return new_response, new_variance, noise_mean, noise_variance
+    return new_response, new_variance
+
+def filter_function(response):
+    m = np.max(response)
+    n1 = np.mean(response[-5:])
+    n2 = np.mean(response)
+    if m > 30 or n1 > 3 or n2 < 2:
+        return False
+    else:
+        return True
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -72,11 +80,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.mode == 0:
-        #for name in ["he", "hou", "wu", "shi"]:
-            # path = 'exp4/' + name + '/clean/'
-        for name in ["liang", "shuai", "shen", "wu", "he", "hou", "zhao", "shi"]:
+        for name in ["liang", "wu", "he", "hou", "zhao", "shi"]:
+        #for name in ["shen", "shuai"]:
             count = 0
-        #for name in ["liang", "shuai", "shen", "wu"]:
+            error = []
             path = 'exp6/' + name + '/clean/'
             files = os.listdir(path)
             N = int(len(files)/4)
@@ -84,93 +91,83 @@ if __name__ == "__main__":
             files_imu2 = files[N:2*N]
             files_mic1 = files[2*N:3*N]
             files_mic2 = files[3*N:]
-            t_start = time.time()
-            response = np.zeros(freq_bin_high-freq_bin_low)
-            variance = np.zeros(freq_bin_high-freq_bin_low)
-            noise_mean = 0
-            noise_variance = 0
+
             for index in range(N):
                 i = index
-                time1 = float(files_mic1[i][:-4].split('_')[1])
-                #time2 = float(files_mic2[i][:-4].split('_')[1])
-                # wave1, wave2, Zxx1, Zxx2, phase1, phase2 = micplot.load_audio(path + files_mic1[i], path + files_mic2[i],
-                #                                                               seg_len_mic, overlap_mic, rate_mic,
-                #                                                               normalize=True, dtw=False)
-                wave1, wave2, Zxx1, Zxx2, phase1, phase2 = micplot.load_stereo(path + files_mic1[i], T, seg_len_mic, overlap_mic, rate_mic,
-                                                                               normalize=True, dtw=False)
-                data1, imu1, t_imu1 = imuplot.read_data(path + files_imu1[i], seg_len_imu, overlap_imu, rate_imu)
-                data2, imu2, t_imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
-                for j in range(int((T-segment)/stride) + 1):
-                    clip1 = imu1[:, j * 50:(j + segment) * 50]
-                    clip2 = imu2[:, j * 50:(j + segment) * 50]
-                    clip3 = Zxx1[:, j * 50:(j + segment) * 50]
+                response, variance = np.zeros(freq_bin_high), np.zeros(freq_bin_high)
+                wave, Zxx, phase = micplot.load_stereo(path + files_mic1[i], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
+                data1, imu1 = imuplot.read_data(path + files_imu1[i], seg_len_imu, overlap_imu, rate_imu)
+                #data2, imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
+                for j in range(int((T - segment) / stride) + 1):
+                    clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
+                    #clip2 = imu2[:, j * time_stride:j * time_stride + time_bin]
+                    clip3 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
                     clip1 = synchronize(clip1, clip3)
-                    clip2 = synchronize(clip2, clip3)
-                    new_response, new_variance, new_noise_mean, new_noise_variance = estimate_response(clip3, clip1, clip2)
-                    np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz', response=new_response, variance=new_variance,
-                             noise=(new_noise_mean, new_noise_variance))
-                    count += 1
-                    # response = 0.1 * new_response + 0.9 * response
-                    # variance = 0.1 * new_variance + 0.9 * variance
-                    # noise_mean = 0.1 * new_noise_mean + 0.9 * noise_mean
-                    # noise_variance = 0.1 * new_noise_variance + 0.9 * noise_variance
+                    #clip2 = synchronize(clip2, clip3)
+                    new_response, new_variance = estimate_response(clip3, clip1)
+                    # new_response2, new_variance2 = estimate_response(clip3, clip2)
+
+                    if filter_function(new_response):
+                        response = 0.5 * new_response + 0.5 * response
+                        variance = 0.5 * new_variance + 0.5 * variance
+
+                    full_response = np.tile(np.expand_dims(new_response, axis=1), (1, time_bin))
+                    for j in range(time_bin):
+                        full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
+                    augmentedZxx = clip3 * full_response
+                    e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
+                    error.append(e)
+                    augmentedZxx += noise_extraction()
+                    fig, axs = plt.subplots(2, sharex=True, figsize=(5,3))
+                    axs[0].imshow(augmentedZxx, extent=[0,5,800,0], aspect='auto')
+                    axs[1].imshow(clip1, extent=[0,5,800,0], aspect='auto')
+                    fig.text(0.45, 0.022, 'Time (Second)', va='center')
+                    fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
+                    plt.savefig('synthetic_compare.eps')
+                    plt.show()
+
+                    # print(np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1))
+                    #
                     # fig, axs = plt.subplots(3)
-                    # fig.tight_layout()
-                    # axs[0].imshow(clip3[freq_bin_low: freq_bin_high, :], aspect='auto')
+                    # axs[0].imshow(clip3[: freq_bin_high, :], aspect='auto')
                     # axs[1].imshow(clip1, aspect='auto')
-                    # axs[2].imshow(clip2, aspect='auto')
+                    # axs[2].plot(new_response)
                     # plt.show()
-                # imu2 = synchronize(imu2, Zxx1)
-                # imu1 = imu_resize(t_imu1 - time1, imu1)
-                # imu2 = imu_resize(t_imu2 - time1, imu2)
-            # save transfer function
-            # np.savez(name + '_transfer_function.npz', response=response, variance=variance, noise=(noise_mean, noise_variance))
 
-            #show transfer function effectiveness
+                full_response = np.tile(np.expand_dims(response, axis=1), (1, 1501))
+                for j in range(time_bin):
+                    full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
+                augmentedZxx = Zxx[:freq_bin_high, :] * full_response
+                e = np.mean(np.abs(augmentedZxx - imu1)) / np.max(imu1)
 
-            # full_response = np.tile(np.expand_dims(response, axis=1), (1, time_bin))
-            # for j in range(time_bin):
-            #     full_response[:, j] += np.random.normal(0, variance, (freq_bin_high-freq_bin_low))
-            # augmentedZxx = Zxx1[freq_bin_low: freq_bin_high, :] * full_response
-            # fig, axs = plt.subplots(4)
-            # axs[0].imshow(Zxx1[freq_bin_low: freq_bin_high, :], aspect='auto')
-            # axs[1].imshow(imu1, aspect='auto')
-            # axs[2].imshow(augmentedZxx, aspect='auto')
-            # #axs[3].imshow(full_response, aspect='auto')
-            # axs[3].plot(response, 'b')
-            # axs[3].plot(variance, 'r')
-            # axs[3].plot(new_response, 'g')
-            # plt.show()
+                if e < 0.05 and filter_function(response):
+                    print(e)
+                    plt.plot(response)
+                    plt.plot(variance)
+                    plt.show()
+                    np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
+                             response=response, variance=variance)
+                    count += 1
+            #print(sum(error)/len(error))
+        plt.show()
     elif args.mode == 1:
         count = 0
+        Mean = []
         for path in ['exp4/he/none/', 'exp4/hou/none/', 'exp4/wu/none/', 'exp4/shi/none/', 'exp6/he/none/', 'exp6/hou/none/',
                      'exp6/liang/none/', 'exp6/shen/none/','exp6/shuai/none/', 'exp6/wu/none/']:
             files = os.listdir(path)
             N = int(len(files) / 4)
             files_imu1 = files[:N]
             files_imu2 = files[N:2 * N]
-            files_mic1 = files[2 * N:3 * N]
             for index in range(N):
                 i = index
-                time1 = float(files_mic1[i][:-4].split('_')[1])
-                imu1, Zxx_imu1, t_imu1 = imuplot.read_data(path + files_imu1[i], seg_len_imu, overlap_imu, rate_imu)
-                imu2, Zxx_imu2, t_imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
-                Zxx_imu1 = imu_resize(t_imu1 - time1, Zxx_imu1)
-                Zxx_imu2 = imu_resize(t_imu2 - time1, Zxx_imu2)
+                imu1, Zxx_imu1 = imuplot.read_data(path + files_imu1[i], seg_len_imu, overlap_imu, rate_imu)
+                imu2, Zxx_imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
                 np.save('dataset/noise/' + str(count) + '.npy', Zxx_imu1)
+                Mean.append(np.mean(Zxx_imu1))
                 count += 1
                 np.save('dataset/noise/' + str(count) + '.npy', Zxx_imu2)
                 count += 1
-            # fig, axs = plt.subplots(3)
-            # axs[0].plot(a)
-            # axs[0].plot(peaks, a[peaks], "x")
-            # axs[0].vlines(x=peaks, ymin=a[peaks] - properties["prominences"],
-            #            ymax=a[peaks], color="C1")
-            # axs[0].hlines(y=properties["width_heights"], xmin=properties["left_ips"],
-            #            xmax=properties["right_ips"], color="C1")
-            # axs[1].imshow(Zxx_imu1, aspect='auto', vmax=0.004, vmin=0)
-            # axs[2].imshow(Zxx_imu1 * select, aspect='auto', vmax=0.004, vmin=0)
-            # #axs[2].imshow(Zxx_imu1[:, select], aspect='auto', vmax=0.004, vmin=0)
-            # plt.show()
-
+                Mean.append(np.mean(Zxx_imu2))
+        print(sum(Mean)/count)
 

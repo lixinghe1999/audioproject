@@ -4,8 +4,9 @@ import math
 import matplotlib.pyplot as plt
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
-from scipy.stats.stats import pearsonr
+function_length = 33
 if __name__ == "__main__":
+
     functions = os.listdir('transfer_function')
     d = {}
     for f in functions:
@@ -15,24 +16,21 @@ if __name__ == "__main__":
             d[name] = {}
             d[name]['r'] = []
             d[name]['v'] = []
-            d[name]['n'] = []
         d[name]['r'].append(npzs['response'])
         d[name]['v'].append(npzs['variance'])
-        d[name]['n'].append(npzs['noise'])
 
     iterated = {}
     max_iteration = 5
     X = []
     Y = []
-    candidate = ["liang", "shuai", "shen", "wu", "he", "hou", "zhao", "shi"]
-    #candidate = ["zhao"]
+    candidate = ["liang", "wu", "he", "hou", "zhao", "shi"]
+    color_map = {"liang":'b', "wu":'g', "he":'r', "hou":'y', "zhao":'k', "shi":'w'}
+    fig, ax = plt.subplots(1, sharex=True, figsize=(5, 4))
     for i in range(len(candidate)):
-        count = 0
         name = candidate[i]
         response = d[name]['r']
         variance = d[name]['v']
-        iterated_response = np.zeros((112))
-        iterated_variance = np.zeros((112))
+        iterated_response, iterated_variance = np.zeros((function_length)), np.zeros((function_length))
         for j in range(len(response)):
             select = response[j] > 0
             iterated_response[select] = 0.5 * response[j][select] + 0.5 * iterated_response[select]
@@ -40,29 +38,16 @@ if __name__ == "__main__":
             if (j + 1) % max_iteration == 0:
                 X.append(iterated_response)
                 Y.append(i)
-                np.savez('iterated_function/' + str(count) + '_' + name + '_transfer_function.npz',
-                         response=iterated_response, variance=iterated_variance)
-                iterated_response = np.zeros((112))
-                iterated_variance = np.zeros((112))
+                #plt.plot(np.arange(0, 801, 25), iterated_variance)
+                iterated_response, iterated_variance = np.zeros((function_length)), np.zeros((function_length))
+    # plt.xlabel('Frequency (Hz)')
+    # plt.ylabel(r'Ratio ($S_{Acc}/S_{Mic}$)')
+    # plt.savefig('transfer.eps')
+    # plt.show()
 
-                count += 1
     X = np.array(X)
     Y = np.array(Y)
     clf = SVC(decision_function_shape='ovr')
     print(X.shape, Y.shape)
     clf.fit(X, Y)
     print(accuracy_score(Y, clf.predict(X)))
-
-
-    # corr = np.zeros((len(candidate), len(candidate)))
-    # for i in range(len(candidate)):
-    #     for j in range(len(candidate)):
-    #         i_j_corr = np.corrcoef(np.hstack((iterated[candidate[i]], iterated[candidate[j]])), rowvar=False)
-    #         l1, l2 = np.shape(iterated[candidate[i]])[1], np.shape(iterated[candidate[j]])[1]
-    #         true_corr = i_j_corr[:l1, l2:]
-    #         flat = list(set(i_j_corr.flatten()))
-    #         flat.sort()
-    #         corr[i, j] = np.mean(flat)
-    # plt.imshow(corr)
-    # plt.colorbar()
-    # plt.show()

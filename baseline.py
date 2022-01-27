@@ -2,6 +2,7 @@ import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 from speechbrain.pretrained import EncoderDecoderASR, SpectralMaskEnhancement
+from DL.evaluation import wer
 import torch
 import torchaudio
 from torch.nn.utils.rnn import pad_sequence
@@ -33,26 +34,11 @@ if __name__ == "__main__":
                                                savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
                                                run_opts={"device":"cuda"})
 
-    audio_files = []
-    audio_files.append('test/clip1.wav')
-    audio_files.append('test/clip2.wav')
-    audio_files.append('test/clip7.wav')
-    audio_files.append('test/clip3.wav')
-    audio_files.append('test/clip4.wav')
-    audio_files.append('test/clip5.wav')
-    audio_files.append('test/clip6.wav')
-    #audio_files.append('exp6\he\clean\mic_1639205708.8325815.wav')
-    #audio_files.append('exp6\he\clean\mic_1639205761.9480312.wav')
-    sigs = []
-    lens = []
-    for audio_file in audio_files:
-        #snt, fs = librosa.load(audio_file, mono=False)
-        snt, fs = torchaudio.load(audio_file)
-        sigs.append(snt[0])
-        lens.append(snt.shape[1])
-    batch = pad_sequence(sigs, batch_first=True, padding_value=0.0)
-    lens = torch.Tensor(lens) / batch.shape[1]
-    print(asr_model.transcribe_batch(batch, lens))
+    text1 = asr_model.transcribe_file(r'exp7/hou/s1/noise/新录音 312.wav').split()
+    text2 = asr_model.transcribe_file(r'exp7/airpod/s1/新录音 312.wav').split()
+    gt = ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"]
+    print(wer(text1, gt))
+    print(wer(text2, gt))
 
     #
     # audio_1 = 'D://audioproject\exp6\he\clean\mic_1639205708.8325815.wav'
@@ -68,3 +54,32 @@ if __name__ == "__main__":
     # enhanced = enhance_model.enhance_batch(noisy, lengths=torch.tensor([1.]))
     # # Saving enhanced signal on disk
     # torchaudio.save('enhanced.wav', enhanced.cpu(), 16000, bits_per_sample = 16)
+
+    ## blind separation
+    # def convergence_callback(Y):
+    #     global error
+    #     y = pra.transform.stft.synthesis(Y, L, hop, win=win_s)
+    #     y = y[L - hop:, :].T
+    #     m = np.minimum(y.shape[1], ref.shape[1])
+    #     mae = np.abs(ref[:, :m], y[:, :m]).mean()
+    #     error.append(mae)
+    # def blind_separation(noise, y):
+    #     L = 640
+    #     hop = 320
+    #     win_a = pra.hamming(L)
+    #     win_s = pra.transform.stft.compute_synthesis_window(win_a, hop)
+    #     print(noise.T.shape)
+    #     X = pra.transform.stft.analysis(noise.T, L, hop, win=win_a)
+    #     print(X.shape)
+    #     ref = y
+    #     mae = np.abs(ref - noise).mean()
+    #     print(mae)
+    #
+    #     Y = pra.bss.auxiva(X, n_iter=30, proj_back=True, callback=convergence_callback)
+    #     y = pra.transform.stft.synthesis(Y, L, hop, win=win_s)
+    #     y = pra.transform.stft.synthesis(Y, L, hop, win=win_s)
+    #     y = y[L - hop:, :].T
+    #     m = np.minimum(y.shape[1], ref.shape[1])
+    #
+    #     mae = np.abs(ref - y).mean()
+    #     return mae

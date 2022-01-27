@@ -5,8 +5,18 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
-import soundfile as sf
+import librosa
 
+seg_len_mic = 2560
+overlap_mic = 2240
+rate_mic = 16000
+seg_len_imu = 256
+overlap_imu = 224
+rate_imu = 1600
+segment = 6
+stride = 4
+freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
+freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 
 def read_data(file,seg_len=256, overlap=224, rate=1600):
     fileobject = open(file, 'r')
@@ -16,72 +26,35 @@ def read_data(file,seg_len=256, overlap=224, rate=1600):
         line = lines[i].split(' ')
         data[i, :] = [float(item) for item in line]
     data[:, :-1] /= 2**14
-    time_imu = data[0, 3]
     b, a = signal.butter(4, 100, 'highpass', fs=rate)
-    #data = interpolation(data, rate)
     data[:, :3] = signal.filtfilt(b, a, data[:, :3], axis=0)
     data[:, :3] = np.clip(data[:, :3], -0.05, 0.05)
-    #data = np.linalg.norm(data[:, :3], axis=1)
-    #data = signal.filtfilt(b, a, data)
-    # data = np.clip(data, -0.05, 0.05)
-    #f, t, Zxx = signal.stft(data, nperseg=seg_len, noverlap=overlap, fs=rate, window="hamming")
-    f, t, Zxx = signal.stft(data[:, :3], nperseg=seg_len, noverlap=overlap, fs=rate, window="hamming", axis=0)
+    f, t, Zxx = signal.stft(data[:, :3], nperseg=seg_len, noverlap=overlap, fs=rate, axis=0)
     Zxx = np.linalg.norm(np.abs(Zxx), axis=1)
-    return data, np.abs(Zxx), time_imu
+    return data, np.abs(Zxx)
 
-def interpolation(data, target_rate):
-    start_time = data[0, 3]
-    t_norm = data[:, 3] - start_time
-    f_linear = interpolate.interp1d(t_norm, data[:, :3], kind='previous', axis=0)
-    t_new = np.linspace(0, t_norm.max(), int(t_norm.max() * target_rate))
-    return f_linear(t_new)
-
-def euler(accel, compass):
-    accelX, accelY, accelZ = accel
-    compassX, compassY, compassZ = compass
-    pitch = 180 * math.atan2(accelX, math.sqrt(accelY*accelY + accelZ*accelZ))/math.pi
-    roll = 180 * math.atan2(accelY, math.sqrt(accelX*accelX + accelZ*accelZ))/math.pi
-    mag_x = compassX * math.cos(pitch) + compassY * math.sin(roll) * math.sin(pitch) + compassZ*math.cos(roll)*math.sin(pitch)
-    mag_y = compassY * math.cos(roll) - compassZ * math.sin(roll)
-    yaw = 180 * math.atan2(-mag_y, mag_x)/math.pi
-    return [roll, pitch, yaw]
-def smooth(data, width):
-    for i in range(3):
-        data[:, i] = np.convolve(data[:, i], np.ones(width)/width, mode='same')
-    return data
-def re_coordinate(acc, compass):
-    compass_num = 0
-    max_num = np.shape(compass)[0] - 1
-    rotationmatrix = np.eye(3)
-    smooth_acc = smooth(acc.copy(), 500)
-    compass = smooth(compass, 2)
-    for i in range(np.shape(acc)[0]):
-        data1 = acc[i, :]
-        data2 = compass[min(compass_num, max_num), :]
-        if data1[-1] > data2[-1] and compass_num <= max_num:
-            compass_num = compass_num + 1
-            #print(euler(smooth_acc[i, :-1], data2[:-1]))
-            #plt.scatter(compass_num, euler(smooth_acc[i, :-1], data2[:-1])[-1])
-            rotationmatrix = R.from_euler('xyz', euler(smooth_acc[i, :-1], data2[:-1]), degrees=True).as_matrix()
-        acc[i, :-1] = np.dot(rotationmatrix, data1[:-1].transpose())
-    return acc
-def saveaswav(data, l, r, count):
-    l = (l + 1) * 1024
-    r = (r + 1) * 1024
-    for i in range(len(l)):
-        data_seg = data[int(l[i])-5000: int(r[i])+5000]
-        sf.write('exp2/audio_seg/' + str(count)+'.wav', data_seg, 16000, subtype='PCM_16')
-        count = count + 1
-    return count
 
 if __name__ == "__main__":
     # check imu plot
-    loc = 'exp7/s2/'
+    loc = 'exp7/he_calibrated/train/'
     files = os.listdir(loc)
-    for f in files:
-        test_path = loc + f
-        data, Zxx, time_imu = read_data(test_path)
-        plt.imshow(Zxx, aspect='auto')
+    N = int(len(files) / 4)
+    files_imu1 = files[:N]
+    files_imu2 = files[N:2 * N]
+    files_mic1 = files[2 * N:3 * N]
+
+    for i in range(N):
+        _, imu1, _ = read_data(loc + files_imu1[i])
+        _, imu2, _ = read_data(loc + files_imu2[i])
+        wave = librosa.load(loc + files_mic1[i], sr=None)[0]
+        b, a = signal.butter(4, 100, 'highpass', fs=16000)
+        wave = signal.filtfilt(b, a, wave)
+        Zxx = signal.stft(wave, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1]
+
+        fig, axs = plt.subplots(3, 1)
+        axs[0].imshow(imu1, aspect='auto')
+        axs[1].imshow(imu2, aspect='auto')
+        axs[2].imshow(np.abs(Zxx[:freq_bin_high, :]), aspect='auto')
         plt.show()
 
     # re-coordinate acc to global frame by acc & compass
