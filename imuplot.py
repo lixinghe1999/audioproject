@@ -7,11 +7,11 @@ from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 import librosa
 
-seg_len_mic = 2560
-overlap_mic = 2240
+seg_len_mic = 640
+overlap_mic = 320
 rate_mic = 16000
-seg_len_imu = 256
-overlap_imu = 224
+seg_len_imu = 64
+overlap_imu = 32
 rate_imu = 1600
 segment = 6
 stride = 4
@@ -29,14 +29,34 @@ def read_data(file,seg_len=256, overlap=224, rate=1600):
     b, a = signal.butter(4, 100, 'highpass', fs=rate)
     data[:, :3] = signal.filtfilt(b, a, data[:, :3], axis=0)
     data[:, :3] = np.clip(data[:, :3], -0.05, 0.05)
-    f, t, Zxx = signal.stft(data[:, :3], nperseg=seg_len, noverlap=overlap, fs=rate, axis=0)
+
+    Zxx = signal.stft(data[:, :3], nperseg=seg_len, noverlap=overlap, fs=rate, axis=0)[-1]
     Zxx = np.linalg.norm(np.abs(Zxx), axis=1)
     return data, np.abs(Zxx)
+def calibrate(file, target, T, shift):
+    fileobject = open(file, 'r')
+    lines = fileobject.readlines()
+    data = np.zeros((len(lines), 4))
+    for i in range(len(lines)):
+        line = lines[i].split(' ')
+        data[i, :] = [float(item) for item in line]
+    f = interpolate.interp1d(data[:, -1] - data[0, -1], data[:, :3], axis=0, kind='nearest')
+    t = min((data[-1, -1]-data[0, -1]), T)
+    num_sample = int(t * rate_imu)
+    xnew = np.linspace(0, t, num_sample)
+    data = np.zeros((num_sample, 4))
+    data[shift:num_sample, :3] = f(xnew)[:-shift, :]
+    data[shift:num_sample, -1] = xnew[:-shift]
+    writer = open(target, 'w')
+    for i in range(num_sample):
+        writer.write(str(data[i, 0]) + ' ' + str(data[i, 1]) + ' ' + str(data[i, 2]) + ' ' + str(data[i, 3]) + '\n')
+    writer.close()
+    return None
 
 
 if __name__ == "__main__":
     # check imu plot
-    loc = 'exp7/he_calibrated/train/'
+    loc = 'exp7/he/train/'
     files = os.listdir(loc)
     N = int(len(files) / 4)
     files_imu1 = files[:N]
@@ -44,8 +64,8 @@ if __name__ == "__main__":
     files_mic1 = files[2 * N:3 * N]
 
     for i in range(N):
-        _, imu1, _ = read_data(loc + files_imu1[i])
-        _, imu2, _ = read_data(loc + files_imu2[i])
+        _, imu1 = read_data(loc + files_imu1[i], seg_len=seg_len_imu, overlap=overlap_imu)
+        _, imu2 = read_data(loc + files_imu2[i], seg_len=seg_len_imu, overlap=overlap_imu)
         wave = librosa.load(loc + files_mic1[i], sr=None)[0]
         b, a = signal.butter(4, 100, 'highpass', fs=16000)
         wave = signal.filtfilt(b, a, wave)

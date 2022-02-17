@@ -57,7 +57,7 @@ def data_extract(path, files_mic1, files_mic2, files_imu1, files_imu2, i):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', action="store", type=int, default=1, required=False,
+    parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-WER, 1-spectrogram compare, 2-low, high frequency')
     args = parser.parse_args()
     if args.mode == 0:
@@ -67,11 +67,12 @@ if __name__ == "__main__":
                         's4': ["TRANSFER", "FUNCTION", "CAN", "BE", "A", "GOOD", "HELPER", "TO", "GENERATE", "DATA"]}
         sentences = ['s1', 's2', 's3', 's4']
         plt_WER = []
-        for earphone in ['galaxy', 'freebud', 'airpod', 'logitech']:
+        brand = ['galaxy', 'freebud', 'airpod', 'logitech']
+        for earphone in brand:
             WER_one = []
             for s in sentences:
                 gt = ground_truth[s]
-                path = os.path.join('exp7', earphone, s)
+                path = os.path.join('exp7/measurement', earphone, s)
                 if earphone == 'logitech':
                     files = os.listdir(path)
                 else:
@@ -83,18 +84,16 @@ if __name__ == "__main__":
                 WER = []
                 for i in range(N):
                     text = asr_model.transcribe_file(os.path.join(path, files[i])).split()
-                    print(wer(gt, text), wer(text, gt))
                     WER.append(wer(gt, text))
                 WER_one.append(sum(WER) / len(WER))
             plt_WER.append(WER_one)
-        x = np.arange(len(sentences))
-        width = 0.15
-        plt.bar(x, plt_WER[0], width=width, label='galaxy', fc='b')
-        plt.bar(x + width, plt_WER[1], width=width, label='freebud', fc='r')
-        plt.bar(x + 2 * width, plt_WER[2], width=width, label='airpod', fc='g')
-        plt.bar(x + 3 * width, plt_WER[3], width=width, label='logitech', fc='y')
-        plt.xticks(x + width * 1.5, sentences)
-        plt.legend()
+
+        fig, ax = plt.subplots(1, figsize=(5, 4))
+        wer = np.mean(plt_WER, axis=1)
+        x = np.arange(len(brand))
+        width = 0.4
+        plt.bar(x, wer, width=width, fc='b')
+        plt.xticks(x, brand, fontsize=12)
         plt.title('Word Error Rate')
         plt.ylabel('WER/%')
         plt.savefig('wer_pesq.eps', dpi=300)
@@ -126,9 +125,9 @@ if __name__ == "__main__":
                 axs[0].imshow(np.abs(Zxx1[freq_bin_low:freq_bin_high, start:end]), extent=[0, 1, 800, 100], aspect='auto')
                 axs[1].imshow(np.abs(Zxx2[freq_bin_low:freq_bin_high, start:end]), extent=[0, 1, 800, 100], aspect='auto')
                 axs[2].imshow(imu1[freq_bin_low:, start:end], extent=[0, 1, 800, 100], aspect='auto')
-                axs[0].set_xlabel('Mic')
-                axs[1].set_xlabel('Mic')
-                axs[2].set_xlabel('Acc')
+                axs[0].set_xlabel('Ground Truth')
+                axs[1].set_xlabel('Mic, EarSense')
+                axs[2].set_xlabel('Acc, EarSense')
                 fig.text(0.45, 0.022, 'Time (Second)', va='center')
                 fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
                 plt.savefig('compare.eps', dpi=300)
@@ -150,15 +149,16 @@ if __name__ == "__main__":
                 Zxx1, Zxx2, imu1, imu2 = data_extract(path, files_mic1, files_mic2, files_imu1, files_imu2, i)
                 imu1 = synchronize(imu1, imu1, np.abs(Zxx1[freq_bin_low:freq_bin_high, :]))
 
-                fig, axs = plt.subplots(1, 2, figsize=(5, 3))
-                fig.subplots_adjust(top=0.97, right=0.97, bottom=0.14, wspace=0.2, hspace=0)
+                fig, axs = plt.subplots(1, 2, figsize=(5, 4))
+                fig.subplots_adjust(top=0.97, right=0.97, bottom=0.14, wspace=0.25, hspace=0)
 
                 for ax in axs:
                     ax.xaxis.label.set_color('white')
                     ax.xaxis.set_label_coords(0.5, 0.08)
                     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-                axs[0].imshow(np.abs(Zxx1[freq_bin_high: 2 * freq_bin_high, start:end]), extent=[0, 1, 2 * 800, 800], aspect='auto')
-                axs[1].imshow(imu1[freq_bin_low:, start:end], extent=[0, 1, 800, 100], aspect='auto')
+                imu1 = np.vstack((imu1, np.zeros(imu1.shape)))
+                axs[0].imshow(np.abs(Zxx1[freq_bin_low: 2 * freq_bin_high, start:end]), extent=[0, 1, 1600, 100], aspect='auto')
+                axs[1].imshow(imu1[freq_bin_low:, start:end], extent=[0, 1, 1600, 100], aspect='auto')
                 axs[0].set_xlabel('Mic')
                 axs[1].set_xlabel('Acc')
                 fig.text(0.45, 0.022, 'Time (Second)', va='center')

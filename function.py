@@ -18,36 +18,32 @@ if __name__ == "__main__":
             d[name]['v'] = []
         d[name]['r'].append(npzs['response'])
         d[name]['v'].append(npzs['variance'])
-
-    iterated = {}
-    max_iteration = 5
-    X = []
+    candidate = ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]
+    X1 = []
+    X2 = []
     Y = []
-    candidate = ["liang", "wu", "he", "hou", "zhao", "shi"]
-    color_map = {"liang":'b', "wu":'g', "he":'r', "hou":'y', "zhao":'k', "shi":'w'}
     fig, ax = plt.subplots(1, sharex=True, figsize=(5, 4))
     for i in range(len(candidate)):
         name = candidate[i]
         response = d[name]['r']
         variance = d[name]['v']
-        iterated_response, iterated_variance = np.zeros((function_length)), np.zeros((function_length))
         for j in range(len(response)):
-            select = response[j] > 0
-            iterated_response[select] = 0.5 * response[j][select] + 0.5 * iterated_response[select]
-            iterated_variance[select] = 0.5 * variance[j][select] + 0.5 * iterated_variance[select]
-            if (j + 1) % max_iteration == 0:
-                X.append(iterated_response)
-                Y.append(i)
-                #plt.plot(np.arange(0, 801, 25), iterated_variance)
-                iterated_response, iterated_variance = np.zeros((function_length)), np.zeros((function_length))
+            normalization = np.max(response[j])
+            X1.append(response[j]/normalization)
+            X2.append(variance[j]/normalization)
+            Y.append(i)
+        # X1 = np.mean(X1, axis=0)
+        # X2 = np.mean(X2, axis=0)
+    #     plt.errorbar(np.arange(0, 801, 25), X1, X2, fmt='-o', label=candidate[i], capsize=4)
+    # plt.legend()
     # plt.xlabel('Frequency (Hz)')
     # plt.ylabel(r'Ratio ($S_{Acc}/S_{Mic}$)')
-    # plt.savefig('transfer.eps')
+    # plt.savefig('transfer_variance.eps')
     # plt.show()
 
-    X = np.array(X)
+    X1 = np.array(X1)
     Y = np.array(Y)
     clf = SVC(decision_function_shape='ovr')
-    print(X.shape, Y.shape)
-    clf.fit(X, Y)
-    print(accuracy_score(Y, clf.predict(X)))
+    print(X1.shape, Y.shape)
+    clf.fit(X1, Y)
+    print(accuracy_score(Y, clf.predict(X1)))

@@ -5,19 +5,21 @@ from pesq import pesq
 import torch
 import torch.nn as nn
 import torch.utils.data as Data
-from data import NoisyCleanSet, IMUSPEECHSet, read_transfer_function
-from unet import UNet, ExtendNet
-from A2net import A2net
-from A2netU import A2netU
+from data import NoisyCleanSet, IMUSPEECHSet
+
 from A2netcomplex import A2net_m, A2net_p
-from evaluation import wer
 from torch.nn.utils.rnn import pad_sequence
 import pyrubberband
+from jiwer import cer
+from evaluation import wer
 from speechbrain.pretrained import EncoderDecoderASR, SpectralMaskEnhancement
+from speechbrain.pretrained import SepformerSeparation as separator
 import librosa
 import numpy as np
+import pickle
 import matplotlib.pyplot as plt
 import torchaudio
+import os
 
 
 seg_len_mic = 640
@@ -27,7 +29,8 @@ overlap_imu = 32
 rate_mic = 16000
 rate_imu = 1600
 length = 5
-stride = 1
+stride = 3
+
 freq_bin_high = 8 * (int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1)
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
@@ -37,6 +40,7 @@ sentences = [["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET
                     ["WE", "WANT", "TO", "IMPROVE", "SPEECH", "QUALITY", "IN", "THIS", "PROJECT"],
                     ["BUT", "WE", "DON'T", "HAVE", "ENOUGH", "DATA", "TO", "TRAIN", "OUR", "MODEL"],
                     ["TRANSFER", "FUNCTION", "CAN", "BE", "A", "GOOD", "HELPER", "TO", "GENERATE", "DATA"]]
+
 def groundtruth(text):
     error_rate = 1000
     for gt in sentences:
@@ -46,46 +50,6 @@ def groundtruth(text):
             gt_text = gt
     return error_rate, gt_text
 
-def HBE(stft, r):
-    stft = librosa.phase_vocoder(stft, 1/r, hop_length=seg_len_mic-overlap_mic)
-    # plt.imshow(np.abs(stft[:, :]), aspect='auto')
-    # plt.show()
-    _, t = signal.istft(stft, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-    #t = librosa.griffinlim(stft, n_iter=5, hop_length=seg_len_mic - overlap_mic, win_length=seg_len_mic)
-    t = t[::r]
-    stft = librosa.stft(t, n_fft=seg_len_mic, hop_length=seg_len_mic - overlap_mic)
-
-    return stft[(r-1) * freq_bin_limit:r * freq_bin_limit, :]
-
-
-def harmonic_bandwidth_extension(x, y):
-    values = []
-    for b in range(len(x)):
-        gt = y[b, 0].numpy()
-        gt_phase = np.angle(gt)
-
-        x_LF = x[b, 0].numpy()
-        x_LF = np.exp(1j * gt_phase[:freq_bin_limit, :]) * x_LF
-        x_LF = np.pad(x_LF, ((0, int(seg_len_mic/2) + 1 - freq_bin_limit), (0, 0)))
-
-        _, gt_audio = signal.istft(gt, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-        for r in [2]:
-            x_LF[(r-1) * freq_bin_limit:r * freq_bin_limit, :] = 0.01 * HBE(x_LF, r)
-            # recover_audio = librosa.griffinlim(gt, n_iter=0, hop_length=seg_len_mic-overlap_mic, win_length=seg_len_mic )
-        _, recover_audio = signal.istft(x_LF, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-        recover_audio = recover_audio * 0.0037
-        gt_audio = gt_audio * 0.0037
-        value = pesq(16000, recover_audio, gt_audio, 'nb')
-        print(value)
-        if value > 0:
-            values.append(value)
-        # sf.write('result.wav', recover_audio, 16000)
-        # sf.write('ground_truth.wav', gt_audio, 16000)
-        fig, axs = plt.subplots(2)
-        axs[0].imshow(np.abs(x_LF[:2*freq_bin_limit, :]), aspect='auto')
-        axs[1].imshow(np.abs(gt[:, :]), aspect='auto')
-        plt.show()
-    return values
 def batch_ASR(audio_files, asr_model):
     sigs = []
     lens = []
@@ -95,29 +59,21 @@ def batch_ASR(audio_files, asr_model):
         lens.append(snt.shape[1])
 
     batch = pad_sequence(sigs, batch_first=True, padding_value=0.0)
-
     lens = torch.Tensor(lens) / batch.shape[1]
     text = asr_model.transcribe_batch(batch, lens)[0]
-    text1, text2, text3, text4, text5, text6 = text
-    text1 = text1.split()
-    text2 = text2.split()
-    text3 = text3.split()
-    text4 = text4.split()
-    text5 = text5.split()
-    text6 = text6.split()
-    return text1, text2, text3, text4, text5, text6
-def measurement(x, noise, y,  model, extra_model, audio_model, enhance_model, asr_model):
+    text = [t.split() for t in text]
+    return text
+def towav(name, predict):
+    predict = np.pad(predict, ((0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
+    _, recover_audio = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+    sf.write(name, recover_audio * 0.1, 16000)
+    return recover_audio
+def measurement_all(x, noise, y, model, baseline_model, asr_model, device, num_sentence):
     # Note that x can be magnitude, y need to have phase
-    x_abs, noise_abs, y_abs = x.to(dtype=torch.float), torch.abs(noise).to(dtype=torch.float), torch.abs(y)
-    #x_abs, noise_abs = x.to(dtype=torch.float), noise.to(dtype=torch.float)
-    predict1 = model(x_abs, noise_abs)
-    predict2, _ = extra_model(x_abs, noise_abs)
-    predict3 = audio_model(x_abs, noise_abs)
-    #print(Loss(noise_abs, y_abs).item(), Loss(predict1, y_abs).item())
+    x_abs, noise_abs, y_abs = x.to(device=device, dtype=torch.float), torch.abs(noise).to(device=device, dtype=torch.float), torch.abs(y)
+    predict, _ = model(x_abs, noise_abs)
+    predict = predict.cpu().numpy()
 
-    predict1 = predict1.numpy()
-    predict2 = predict2.numpy()
-    predict3 = predict3.numpy()
     y = y.numpy()
     noise = noise.numpy()
     values = []
@@ -125,136 +81,166 @@ def measurement(x, noise, y,  model, extra_model, audio_model, enhance_model, as
     for b in range(len(x)):
         gt = y[b, 0]
         n = noise[b, 0]
-        predict1 = predict1[b, 0]
-        predict2 = predict2[b, 0]
-        predict3 = predict3[b, 0]
-
+        predict = predict[b, 0]
         phase = np.angle(n)
-        gt_abs = np.abs(gt)
-        n_abs = np.abs(n)
 
-        n = np.pad(n, ((0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
-        _, ori_audio = signal.istft(n, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
-        gt = np.pad(gt, ((0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
-        _, gt_audio = signal.istft(gt, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+        ori_audio = towav('ori_audio.wav', n)
+        gt_audio = towav('ground_truth.wav', gt)
+        recover_audio = towav('extra.wav', np.exp(1j * phase[:freq_bin_high, :]) * predict)
 
-        predict1 = np.exp(1j * phase[:freq_bin_high, :]) * predict1
-        predict1 = np.pad(predict1, ((0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
-        _, recover_audio1 = signal.istft(predict1, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+        # baseline - enhancement
+        # noisy = enhance_model.load_audio("ori_audio.wav").unsqueeze(0)
+        # enhanced = enhance_model.enhance_batch(noisy, lengths=torch.tensor([1.])).cpu()
+        # torchaudio.save('baseline.wav', enhanced, 16000)
 
-        predict2 = np.exp(1j * phase[:freq_bin_high, :]) * predict2
-        predict2 = np.pad(predict2, ((0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
-        _, recover_audio2 = signal.istft(predict2, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+        # baseline - separation
+        est_sources = baseline_model.separate_file(path='ori_audio.wav')
+        est_source1, est_source2 = est_sources[:, :, 0].detach().cpu(), est_sources[:, :, 1].detach().cpu()
+        torchaudio.save("source1.wav", est_source1, 8000)
+        torchaudio.save("source2.wav", est_source2, 8000)
 
-        predict3 = np.exp(1j * phase[:freq_bin_high, :]) * predict3
-        predict3 = np.pad(predict3, ((0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
-        _, recover_audio3 = signal.istft(predict3, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+        value1 = pesq(16000, recover_audio, gt_audio, 'nb')
+        value2 = pesq(16000, est_source1.numpy()[0], gt_audio, 'nb')
+        value3 = pesq(16000, est_source2.numpy()[0], gt_audio, 'nb')
+        value4 = pesq(16000, ori_audio, gt_audio, 'nb')
 
-        recover_audio1 = recover_audio1 * 0.1
-        recover_audio2 = recover_audio2 * 0.1
-        recover_audio3 = recover_audio3 * 0.1
-        gt_audio = gt_audio * 0.1
-        ori_audio = ori_audio * 0.1
+        values.append([value1, value2, value3, value4])
+        audio_files = ['extra.wav', 'source1.wav', 'source2.wav', 'ori_audio.wav', 'ground_truth.wav']
+        text1, text2, text3, text4, text5 = batch_ASR(audio_files, asr_model)
+        text = sentences[num_sentence-1]
+        #error_rate, text = groundtruth(text5)
+        error_list = [wer(text, text5), wer(text, text1), wer(text, text2), wer(text, text3), wer(text, text4)]
+        error.append(error_list)
+    return values, error
+def save_audio(x, noise, y, model, enhance_model, device, count):
+    # Note that x can be magnitude, y need to have phase
+    x_abs, noise_abs, y_abs = x.to(device=device, dtype=torch.float), torch.abs(noise).to(device=device, dtype=torch.float), torch.abs(y)
+    predict1, _ = model(x_abs, noise_abs)
+    predict1 = predict1.cpu().numpy()
 
-        sf.write('vanilla.wav', recover_audio1, 16000)
-        sf.write('extra.wav', recover_audio2, 16000)
-        sf.write('single.wav', recover_audio3, 16000)
-        sf.write('ground_truth.wav', gt_audio, 16000)
-        sf.write('ori_truth.wav', ori_audio, 16000)
+    y = y.numpy()
+    noise = noise.numpy()
+    for b in range(len(x)):
+        gt = y[b, 0]
+        n = noise[b, 0]
+        phase = np.angle(n)
+        predict1 = predict1[b, 0]
 
-        # baseline
-        noisy = enhance_model.load_audio("ori_truth.wav").unsqueeze(0)
+        gt_audio = towav('ground_truth.wav', gt)
+        ori_audio = towav('ori_audio.wav', n)
+        recover_audio = towav('extra.wav', np.exp(1j * phase[:freq_bin_high, :]) * predict1)
+
+
+        noisy = enhance_model.load_audio('ori_audio.wav').unsqueeze(0)
         enhanced = enhance_model.enhance_batch(noisy, lengths=torch.tensor([1.])).cpu()
         torchaudio.save('baseline.wav', enhanced, 16000)
 
-        value1 = pesq(16000, recover_audio1, gt_audio, 'nb')
-        value2 = pesq(16000, recover_audio2, gt_audio, 'nb')
-        value3 = pesq(16000, recover_audio3, gt_audio, 'nb')
-        value4 = pesq(16000, enhanced.numpy()[0], gt_audio, 'nb')
-        value5 = pesq(16000, ori_audio, gt_audio, 'nb')
+        value1 = pesq(16000, recover_audio, gt_audio, 'nb')
+        value2 = pesq(16000, enhanced.numpy()[0], gt_audio, 'nb')
 
-        if value5 < 4:
-            # only collect when there is noise
-            print(value1, value2, value3, value4, value5)
-            values.append([value1, value2, value3, value4, value5])
-            audio_files = ['vanilla.wav', 'extra.wav', 'single.wav', 'baseline.wav', 'ori_truth.wav', 'ground_truth.wav']
-            text1, text2, text3, text4, text5, text6 = batch_ASR(audio_files, asr_model)
-            error_rate, text = groundtruth(text6)
-            error_list = [error_rate, wer(text, text1), wer(text, text2), wer(text, text3), wer(text, text4), wer(text, text5)]
-            error.append(error_list)
-            print(error_list)
+        if (value1 - value2) > 0:
+            print(value1, value2)
+            sf.write('result/' + str(count) + '_ground_truth.wav', gt_audio * 0.1, 16000)
+            sf.write('result/' + str(count) + '_ori_audio.wav', ori_audio * 0.1, 16000)
+            sf.write('result/' + str(count) + '_model.wav', recover_audio * 0.1, 16000)
+            sf.write('result/' + str(count) + '_baseline.wav', enhanced.numpy()[0], 16000)
+            count += 1
+    return count
 
-            # text5 = asr_model.transcribe_file('ori_truth.wav').split()
-            # text6 = asr_model.transcribe_file('ground_truth.wav').split()
-            # error_rate, text = groundtruth(text6)
-            # error_list = [error_rate, 0, 0, 0, wer(text, text5)]
-            # error.append(error_list)
-            # print(error_list)
+def test(ckpt, target, flag):
+    if flag == 0:
+        file = open("noise_paras.pkl", "rb")
+        paras = pickle.load(file)
+        dataset = IMUSPEECHSet('noise_imuexp7.json', 'noise_gtexp7.json', 'noise_wavexp7.json', person=[target], simulate=False, phase=True, minmax=paras[target])
+    elif flag == 1:
+        file = open("clean_paras.pkl", "rb")
+        paras = pickle.load(file)
+        dataset = IMUSPEECHSet('clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json', person=[target], phase=True, minmax=paras[target])
+    elif flag == 2:
+        file = open("mobile_paras.pkl", "rb")
+        paras = pickle.load(file)
+        dataset = IMUSPEECHSet('mobile_imuexp7.json', 'mobile_wavexp7.json', 'mobile_wavexp7.json', person=[target], phase=True, minmax=paras[target])
+    else:
+        file = open("field_paras.pkl", "rb")
+        paras = pickle.load(file)
+        dataset = IMUSPEECHSet('field_imuexp7.json', 'field_gtexp7.json', 'field_wavexp7.json', person=[target], simulate=False, phase=True, minmax=paras[target])
 
-            # fig, axs = plt.subplots(3)
-            # axs[0].imshow(n_abs[:4 * freq_bin_limit, :], aspect='auto')
-            # axs[1].imshow(np.abs(predict1[:4 * freq_bin_limit, :]), aspect='auto')
-            # axs[2].imshow(gt_abs[:4 * freq_bin_limit, :], aspect='auto')
-            # plt.show()
-    return values, error
+    BATCH_SIZE = 1
+    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    model = A2net_m(extra_supervision=True).to(device)
+    model.load_state_dict(ckpt)
+
+    asr_model = EncoderDecoderASR.from_hparams(source="../pretrained_models/asr-transformer-transformerlm-librispeech",
+                                               savedir="../pretrained_models/asr-transformer-transformerlm-librispeech",
+                                               run_opts={"device": "cuda"})
+    # baseline_model = SpectralMaskEnhancement.from_hparams(source="../pretrained_models/metricgan-plus-voicebank",
+    #                                                      savedir="../pretrained_models/metricgan-plus-voicebank",
+    #                                                      run_opts={"device": "cuda"})
+    baseline_model = separator.from_hparams(source="../speechbrain/sepformer-whamr", savedir='../pretrained_models/sepformer-whamr',
+                                   run_opts={"device": "cuda"})
+    test_loader = Data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=False)
+    PESQ = []
+    WER = []
+    with torch.no_grad():
+        for num_sentence, x, noise, y in test_loader:
+            values, error = measurement_all(x, noise, y, model, baseline_model, asr_model, device, num_sentence)
+            print(error)
+            PESQ += values
+            WER += error
+    return PESQ, WER
+
 if __name__ == "__main__":
     BATCH_SIZE = 1
-
-    # model = A2net_m()
-    # model.load_state_dict(torch.load("vanilla/he_0.0015024848786803584.pth"))
-    # extra_model = A2net_m(extra_supervision=True)
-    # extra_model.load_state_dict(torch.load("imu_extra/he_0.0014843073828766744.pth"))
-    # audio_model = A2net_m(audio=True)
-    # audio_model.load_state_dict(torch.load("audio/he_0.003179994955038031.pth"))
-
-    model = A2net_m()
-    model.load_state_dict(torch.load("vanilla/hou_0.0015416461663941541.pth"))
-    extra_model = A2net_m(extra_supervision=True)
-    extra_model.load_state_dict(torch.load("imu_extra/hou_0.001500579536271592.pth"))
-    audio_model = A2net_m(audio=True)
-    audio_model.load_state_dict(torch.load("audio/hou_0.0035039723850786688.pth"))
-
-    # model = A2net_m()
-    # model.load_state_dict(torch.load("vanilla/shuai_0.0015271187643520535.pth"))
-    # extra_model = A2net_m(extra_supervision=True)
-    # extra_model.load_state_dict(torch.load("imu_extra/shuai_0.0014795155419657627.pth"))
-    # audio_model = A2net_m(audio=True)
-    # audio_model.load_state_dict(torch.load("audio/shuai_0.0018135160906240344.pth"))
-
-    # model = A2net_m()
-    # model.load_state_dict(torch.load("vanilla/shi_0.0019689142626399796.pth"))
-    # extra_model = A2net_m(extra_supervision=True)
-    # extra_model.load_state_dict(torch.load("imu_extra/shi_0.0020512066238249343.pth"))
-    # audio_model = A2net_m(audio=True)
-    # audio_model.load_state_dict(torch.load("audio/shi_0.001915329974144697.pth"))
-
+    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    model = A2net_m(extra_supervision=True).to(device)
     asr_model = EncoderDecoderASR.from_hparams(source="../pretrained_models/asr-transformer-transformerlm-librispeech",
                                                savedir="../pretrained_models/asr-transformer-transformerlm-librispeech",
                                                run_opts={"device": "cuda"})
     enhance_model = SpectralMaskEnhancement.from_hparams(source="../pretrained_models/metricgan-plus-voicebank",
                                                          savedir="../pretrained_models/metricgan-plus-voicebank",
                                                          run_opts={"device": "cuda"})
+    for target in ["he", "hou"]:
+        # file = open("noise_paras.pkl", "rb")
+        # paras = pickle.load(file)
 
-    clean_paras = {'he': (0.0235, 0.1, 0.1), 'hou': (0.029, 0.13, 0.13)}
-    noise_paras = {'he': (0.0225, 0.138, 0.125), 'hou': (0.026, 0.14, 0.19), 'shi':(0.0116, 0.12, 0.043), 'shuai': (0.0087, 0.053, 0.051)}
-    for c in ['hou']:
-        #dataset = IMUSPEECHSet('clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json', person=c, phase=True, minmax=clean_paras[c])
-        dataset = IMUSPEECHSet('noise_imuexp7.json', 'noise_gtexp7.json', 'noise_wavexp7.json', person=c, simulate=False, phase=True, minmax=noise_paras[c])
+        # file = open("clean_paras.pkl", "rb")
+        # paras = pickle.load(file)
+        # dataset = IMUSPEECHSet('clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json', person=[target],  phase=True, minmax=paras[target])
 
+        file = open("mobile_paras.pkl", "rb")
+        paras = pickle.load(file)
+        dataset = IMUSPEECHSet('mobile_imuexp7.json', 'mobile_wavexp7.json', 'mobile_wavexp7.json', person=[target], phase=True, minmax=paras[target])
+
+        for f in os.listdir('checkpoint/move'):
+            if f.split('_')[0] == target and f[-3:] == 'pth':
+                model.load_state_dict(torch.load('checkpoint/move/' + f))
         test_loader = Data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=False)
-
-        PESQ = []
+        count = 0
         WER = []
+        PESQ = []
         with torch.no_grad():
-            for x, noise, y in test_loader:
-                #values = harmonic_bandwidth_extension(x, y)
-                values, error = measurement(x, noise, y, model, extra_model, audio_model, enhance_model, asr_model)
-                PESQ += values
-                WER += error
-        PESQ = np.mean(PESQ, axis=0)
-        WER = np.mean(WER, axis=0)
-        print('processing finished')
-        print(PESQ)
-        print(WER)
+            for num_sentence, x, noise, y in test_loader:
+                # count = save_audio(x, noise, y, model, enhance_model, device, count)
+                # print(count)
+                noise = noise.numpy()
+                y = y.numpy()
+                for b in range(len(x)):
+                    gt = y[b, 0]
+                    n = noise[b, 0]
+                    gt_audio = towav('ground_truth.wav', gt)
+                    ori_audio = towav('ori_audio.wav', n)
+                    noisy = enhance_model.load_audio('ori_audio.wav').unsqueeze(0)
+                    enhanced = enhance_model.enhance_batch(noisy, lengths=torch.tensor([1.])).cpu()
+                    torchaudio.save('baseline.wav', enhanced, 16000)
+
+                    value = pesq(16000, enhanced.numpy()[0], gt_audio, 'nb')
+                    audio_files = ['baseline.wav']
+                    text1 = batch_ASR(audio_files, asr_model)
+                    text = sentences[num_sentence-1]
+                    WER.append(wer(text, text1))
+                    PESQ.append(value)
+        np.savez(target + '_baseline.npz', WER=WER, PESQ=PESQ)
+
+
 

@@ -2,10 +2,12 @@ import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 from speechbrain.pretrained import EncoderDecoderASR, SpectralMaskEnhancement
+from speechbrain.pretrained import SepformerSeparation as separator
 from DL.evaluation import wer
 import torch
 import torchaudio
 from torch.nn.utils.rnn import pad_sequence
+import torch.nn as nn
 import soundfile as sf
 # This is baseline for 1. Noise suppression 2. beamforming: webrtc, coherence based 3. facebook denoiser 4. Speech brain
 # basically this script is only for checking
@@ -30,15 +32,15 @@ if __name__ == "__main__":
     # below is ASR, trained on Librispeech, available for batch inference, need admin for cache
 
 
-    asr_model = EncoderDecoderASR.from_hparams(source="pretrained_models/asr-transformer-transformerlm-librispeech",
-                                               savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
-                                               run_opts={"device":"cuda"})
-
-    text1 = asr_model.transcribe_file(r'exp7/hou/s1/noise/新录音 312.wav').split()
-    text2 = asr_model.transcribe_file(r'exp7/airpod/s1/新录音 312.wav').split()
-    gt = ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"]
-    print(wer(text1, gt))
-    print(wer(text2, gt))
+    # asr_model = EncoderDecoderASR.from_hparams(source="pretrained_models/asr-transformer-transformerlm-librispeech",
+    #                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
+    #                                            run_opts={"device":"cuda"})
+    #
+    # text1 = asr_model.transcribe_file(r'exp7/hou/s1/noise/新录音 312.wav').split()
+    # text2 = asr_model.transcribe_file(r'exp7/airpod/s1/新录音 312.wav').split()
+    # gt = ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"]
+    # print(wer(text1, gt))
+    # print(wer(text2, gt))
 
     #
     # audio_1 = 'D://audioproject\exp6\he\clean\mic_1639205708.8325815.wav'
@@ -83,3 +85,17 @@ if __name__ == "__main__":
     #
     #     mae = np.abs(ref - y).mean()
     #     return mae
+
+    model = separator.from_hparams(source="speechbrain/sepformer-whamr", savedir='pretrained_models/sepformer-whamr', run_opts={"device":"cuda"})
+    # for custom file, change path
+    est_sources = model.separate_file(path='test.wav')
+    torchaudio.save("source1hat.wav", est_sources[:, :, 0].detach().cpu(), 8000)
+    torchaudio.save("source2hat.wav", est_sources[:, :, 1].detach().cpu(), 8000)
+
+    asr_model = EncoderDecoderASR.from_hparams(source="pretrained_models/asr-transformer-transformerlm-librispeech",
+                                               savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
+                                               run_opts={"device":"cuda"})
+    text1 = asr_model.transcribe_file("source1hat.wav").split()
+    text2 = asr_model.transcribe_file("source2hat.wav").split()
+    print(text1)
+    print(text2)
