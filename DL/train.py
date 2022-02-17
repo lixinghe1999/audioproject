@@ -119,8 +119,8 @@ if __name__ == "__main__":
             ckpt = torch.load("five_second/imu_extra/0.0014658941369513438_0.012233901943545789.pth")
             #ckpt = torch.load("0.0013659113688340792.pth")
 
-            ckpt = train_all(train_dataset, 5, 0.001, 32, Loss, device, ckpt)
-            ckpt = train_all(user_dataset, 2, 0.0001, 4, Loss, device, ckpt)
+            ckpt = train_all(train_dataset, 5, 0.01, 32, Loss, device, ckpt)
+            ckpt = train_all(user_dataset, 2, 0.001, 4, Loss, device, ckpt)
             # for f in os.listdir('checkpoint/5min'):
             #     if f.split('_')[0] == target and f[-3:] == 'pth':
             #         ckpt = torch.load('checkpoint/5min/' + f)

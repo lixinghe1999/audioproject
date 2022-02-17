@@ -9,8 +9,6 @@ from data import NoisyCleanSet, IMUSPEECHSet
 
 from A2netcomplex import A2net_m, A2net_p
 from torch.nn.utils.rnn import pad_sequence
-import pyrubberband
-from jiwer import cer
 from evaluation import wer
 from speechbrain.pretrained import EncoderDecoderASR, SpectralMaskEnhancement
 from speechbrain.pretrained import SepformerSeparation as separator
