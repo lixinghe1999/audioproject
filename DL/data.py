@@ -140,7 +140,7 @@ class Audioset:
                 out = signal.filtfilt(b, a, out)
             return out, file
 class NoisyCleanSet:
-    def __init__(self, transfer_function, variance, json_path1, json_path2, phase=False, alpha=(1, 1)):
+    def __init__(self, transfer_function, variance, json_path1, json_path2, phase=False, alpha=(1, 1), ratio=1):
         """__init__. n
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -159,6 +159,7 @@ class NoisyCleanSet:
         self.variance = variance
         self.alpha = alpha
         self.phase = phase
+        self.ratio = ratio
         self.length = len(self.noise_set)
 
     def __getitem__(self, index):
@@ -176,7 +177,7 @@ class NoisyCleanSet:
             return torch.from_numpy(synthetic(np.abs(speech)/self.alpha[0], self.transfer_function, self.variance)/self.alpha[1]),\
                    torch.from_numpy(np.abs(noise)/self.alpha[2]), torch.from_numpy(np.abs(speech)/self.alpha[3])
     def __len__(self):
-        return len(self.clean_set)
+        return int(len(self.clean_set) * self.ratio)
 class IMUSPEECHSet:
     def __init__(self, imu_path, wav_path, noise_path, ratio=1, simulate=True, person=['he'], phase=False, minmax=(1, 1, 1)):
         """__init__.
@@ -245,14 +246,15 @@ def norm(name, jsons, simulate, candidate):
 
 if __name__ == "__main__":
 
-    # audio_files = []
-    # for path in [r"../dataset/background", r"../dataset/music", r"../dataset/test-clean"]:
-    #     g = os.walk(path)
-    #     for path, dir_list, file_list in g:
-    #         for file_name in file_list:
-    #             if file_name[-3:] not in ['txt', 'mp3']:
-    #                 audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
-    # json.dump(audio_files, open('background.json', 'w'), indent=4)
+    audio_files = []
+    #for path in [r"../dataset/background", r"../dataset/music", r"../dataset/test-clean"]:
+    for path in [r"../dataset/train-clean-360"]:
+        g = os.walk(path)
+        for path, dir_list, file_list in g:
+            for file_name in file_list:
+                if file_name[-3:] not in ['txt', 'mp3']:
+                    audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
+    json.dump(audio_files, open('speech360.json', 'w'), indent=4)
 
 
 

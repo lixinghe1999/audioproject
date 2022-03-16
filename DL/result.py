@@ -183,7 +183,6 @@ def test(ckpt, target, flag):
     with torch.no_grad():
         for num_sentence, x, noise, y in test_loader:
             values, error = measurement_all(x, noise, y, model, baseline_model, asr_model, device, num_sentence)
-            print(error)
             PESQ += values
             WER += error
     return PESQ, WER

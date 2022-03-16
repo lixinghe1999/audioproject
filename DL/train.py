@@ -4,13 +4,13 @@ import torch.utils.data as Data
 import torchaudio
 import torch.nn as nn
 from data import NoisyCleanSet, read_transfer_function, IMUSPEECHSet
-from A2netcomplex import A2net_m, A2net_p
+# from A2netcomplex import A2net_m, A2net_p
+from A2net import A2net
 import numpy as np
 from result import test
 from tqdm import tqdm
 import argparse
 import pickle
-import os
 
 def train_extra(train_loader, test_loader, device, model, Loss, optimizer, scheduler):
     for x, noise, y in tqdm(train_loader):
@@ -19,6 +19,7 @@ def train_extra(train_loader, test_loader, device, model, Loss, optimizer, sched
             predict1, predict2 = model(x, noise)
             loss1 = Loss(predict1, y)
             loss2 = Loss(predict2, y[:, :, :33, :])
+            #loss = loss1 + 0.05 * loss2
             loss = loss1
             optimizer.zero_grad()
             loss.backward()
@@ -48,12 +49,12 @@ def train_all(train_dataset, EPOCH, lr, BATCH_SIZE, Loss, device, ckpt):
                                    pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
-    model = A2net_m(extra_supervision=True).to(device)
+    model = A2net().to(device)
     model.load_state_dict(ckpt)
-    optimizer = torch.optim.AdamW([{'params': model.IMU_branch.parameters(), 'lr': lr},{'params': model.Audio_branch.parameters(), 'lr': 0},
-                                   {'params': model.Residual_block.parameters(), 'lr': lr}])
-    #optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
+    # optimizer = torch.optim.AdamW([{'params': model.IMU_branch.parameters(), 'lr': lr}, {'params': model.Audio_branch.parameters(), 'lr': 0},
+    #                                {'params': model.Residual_block.parameters(), 'lr': lr}])
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     loss_best = 1
     for e in range(EPOCH):
         ckpt, loss1, loss2 = train_extra(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
@@ -72,20 +73,21 @@ if __name__ == "__main__":
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     Loss = nn.L1Loss()
     if args.mode == 0:
-        BATCH_SIZE = 32
-        lr = 0.01
+        BATCH_SIZE = 64
+        lr = 0.0001
         EPOCH = 20
-        model = A2net_m(extra_supervision=True).to(device)
+        model = A2net().to(device)
+        model.load_state_dict(torch.load("0.0012766318234215194.pth"))
 
         loss_curve = []
         transfer_function, variance = read_transfer_function('../transfer_function')
-        train_dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1))
-        test_dataset = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1))
+        train_dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=0.5)
+        test_dataset = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=0.5)
 
         train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
         test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
         loss_best = 1
         for e in range(EPOCH):
             ckpt, loss1, loss2 = train_extra(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
@@ -116,11 +118,11 @@ if __name__ == "__main__":
 
             user_dataset = IMUSPEECHSet('clean_train_imuexp7.json', 'clean_train_wavexp7.json', 'clean_train_wavexp7.json', person=target, minmax=norm_clean[target], ratio=1)
 
-            ckpt = torch.load("five_second/imu_extra/0.0014658941369513438_0.012233901943545789.pth")
-            #ckpt = torch.load("0.0013659113688340792.pth")
+            #ckpt = torch.load("five_second/imu_extra/0.0014658941369513438_0.012233901943545789.pth")
+            ckpt = torch.load("0.0012076120789667282.pth")
 
-            ckpt = train_all(train_dataset, 5, 0.01, 32, Loss, device, ckpt)
-            ckpt = train_all(user_dataset, 2, 0.001, 4, Loss, device, ckpt)
+            ckpt = train_all(train_dataset, 5, 0.001, 32, Loss, device, ckpt)
+            ckpt = train_all(user_dataset, 2, 0.0001, 4, Loss, device, ckpt)
             # for f in os.listdir('checkpoint/5min'):
             #     if f.split('_')[0] == target and f[-3:] == 'pth':
             #         ckpt = torch.load('checkpoint/5min/' + f)

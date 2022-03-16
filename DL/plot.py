@@ -62,25 +62,25 @@ if __name__ == "__main__":
     # plt.savefig('wer_all.eps', dpi=300)
     # plt.show()
 
-    # folder = 'checkpoint/5min'
-    # files = os.listdir(folder)
-    # files = [f for f in files if f[-3:] == 'npz']
-    # ratio = []
-    # for i in range(len(files)):
-    #     f = files[i]
-    #     npz = np.load(os.path.join(folder, f))
-    #     x1, x2 = npz['PESQ'], npz['WER']
-    #     x2 = wer_process(x2)
-    #     ratio.append(np.mean(x2, axis=0))
-    # x = np.arange(len(ratio))
-    # ratio = np.array(ratio)
-    # ratio = 100 * (ratio[:, -1] - ratio[:, 0]) / ratio[:, -1]
-    # fig, ax = plt.subplots(1, figsize=(5, 4))
-    # plt.bar(x, ratio)
-    # plt.xticks([])
-    # plt.ylabel('Ratio/%')
-    # plt.savefig('wer_each.eps', dpi=300)
-    # plt.show()
+    folder = 'checkpoint/new'
+    files = os.listdir(folder)
+    files = [f for f in files if f[-3:] == 'npz']
+    ratio = []
+    for i in range(len(files)):
+        f = files[i]
+        npz = np.load(os.path.join(folder, f))
+        x1, x2 = npz['PESQ'], npz['WER']
+        x2 = wer_process(x2)
+        ratio.append(np.mean(x2, axis=0))
+    x = np.arange(len(ratio))
+    ratio = np.array(ratio)
+    ratio = 100 * (ratio[:, -1] - ratio[:, 0]) / ratio[:, -1]
+    fig, ax = plt.subplots(1, figsize=(5, 4))
+    plt.bar(x, ratio)
+    plt.xticks([])
+    plt.ylabel('Ratio/%')
+    plt.savefig('wer_each.eps', dpi=300)
+    plt.show()
 
     # folder = 'checkpoint/earphones'
     # files = os.listdir(folder)
@@ -135,53 +135,53 @@ if __name__ == "__main__":
     # plt.savefig('wer_noise.eps', dpi=300)
     # plt.show()
 
-    # folders = ['5min', '2.5min', '1min']
-    # plt_ratio = []
-    # plt_var = []
-    # for folder in folders:
-    #     files = os.listdir('checkpoint/' + folder)
-    #     files = [f for f in files if f[-3:] == 'npz']
-    #     ratio = []
-    #     for i in range(len(files)):
-    #         f = files[i]
-    #         npz = np.load(os.path.join('checkpoint/', folder, f))
-    #         x1, x2 = npz['PESQ'], npz['WER']
-    #         x2 = wer_process(x2)
-    #         ratio.append(np.mean(x2, axis=0))
-    #     ratio = np.array(ratio)
-    #     ratio = 100 * (ratio[:, -1] - ratio[:, 0]) / ratio[:, -1]
-    #     plt_ratio.append(np.mean(ratio))
-    #     plt_var.append(np.std(ratio))
-    # x = np.arange(len(folders))
-    # width = 0.3
-    # fig, ax = plt.subplots(1, figsize=(5, 4))
-    # plt.bar(x, plt_ratio, width=width)
-    # plt.xticks(x, folders)
-    # plt.ylabel('Ratio/%')
-    # plt.savefig('wer_calibration.eps', dpi=300)
-    # plt.show()
-
-    folder = 'checkpoint/field'
-    files = os.listdir(folder)
-    files = [f for f in files if f[-3:] == 'npz']
-    WER = []
-    for i in range(len(files)):
-        f = files[i]
-        npz = np.load(os.path.join(folder, f))
-        x1, x2 = npz['PESQ'], npz['WER']
-        x2 = wer_process(x2)
-        select = x2[:, -1] > 0
-        a = np.mean(x2[select, :], axis=0)
-        WER.append((a[-1] - a[0])/a[-1])
-    print(WER)
+    folders = ['new', '5min', '2.5min', '1min']
+    plt_ratio = []
+    plt_var = []
+    for folder in folders:
+        files = os.listdir('checkpoint/' + folder)
+        files = [f for f in files if f[-3:] == 'npz']
+        ratio = []
+        for i in range(len(files)):
+            f = files[i]
+            npz = np.load(os.path.join('checkpoint/', folder, f))
+            x1, x2 = npz['PESQ'], npz['WER']
+            x2 = wer_process(x2)
+            ratio.append(np.mean(x2, axis=0))
+        ratio = np.array(ratio)
+        ratio = 100 * (ratio[:, -1] - ratio[:, 0]) / ratio[:, -1]
+        plt_ratio.append(np.mean(ratio))
+        plt_var.append(np.std(ratio))
+    x = np.arange(len(folders))
+    width = 0.3
     fig, ax = plt.subplots(1, figsize=(5, 4))
-    name = ['corridor', 'meeting', 'office', 'stair']
-    x = np.arange(len(name))
-    for i in range(len(x)):
-        plt.bar(x[i], WER[i], width=0.5, label=name[i])
-    plt.xticks([])
-    plt.ylabel(u'Δ WER/%')
-    plt.legend()
-    plt.savefig('wer_field.eps', dpi=300)
+    plt.bar(x, plt_ratio, width=width)
+    plt.xticks(x, folders)
+    plt.ylabel('Ratio/%')
+    plt.savefig('wer_calibration.eps', dpi=300)
     plt.show()
+
+    # folder = 'checkpoint/field'
+    # files = os.listdir(folder)
+    # files = [f for f in files if f[-3:] == 'npz']
+    # WER = []
+    # for i in range(len(files)):
+    #     f = files[i]
+    #     npz = np.load(os.path.join(folder, f))
+    #     x1, x2 = npz['PESQ'], npz['WER']
+    #     x2 = wer_process(x2)
+    #     select = x2[:, -1] > 0
+    #     a = np.mean(x2[select, :], axis=0)
+    #     WER.append((a[-1] - a[0])/a[-1])
+    # print(WER)
+    # fig, ax = plt.subplots(1, figsize=(5, 4))
+    # name = ['corridor', 'meeting', 'office', 'stair']
+    # x = np.arange(len(name))
+    # for i in range(len(x)):
+    #     plt.bar(x[i], WER[i], width=0.5, label=name[i])
+    # plt.xticks([])
+    # plt.ylabel(u'Δ WER/%')
+    # plt.legend()
+    # plt.savefig('wer_field.eps', dpi=300)
+    # plt.show()
 
