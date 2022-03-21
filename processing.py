@@ -9,14 +9,14 @@ import argparse
 from skimage.transform import resize
 from skimage import filters
 import time
-seg_len_mic = 640
-overlap_mic = 320
-seg_len_imu = 64
-overlap_imu = 32
-# seg_len_mic = 2560
-# overlap_mic = 2240
-# seg_len_imu = 256
-# overlap_imu = 224
+# seg_len_mic = 640
+# overlap_mic = 320
+# seg_len_imu = 64
+# overlap_imu = 32
+seg_len_mic = 2560
+overlap_mic = 2240
+seg_len_imu = 256
+overlap_imu = 224
 rate_mic = 16000
 rate_imu = 1600
 T = 30
@@ -25,14 +25,6 @@ stride = 3
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(segment * rate_mic/(seg_len_mic-overlap_mic)) + 1
 time_stride = int(stride * rate_mic/(seg_len_mic-overlap_mic))
-def synchronize(x, y):
-    y = y[:freq_bin_high, :]
-    x_t = np.sum(x, axis=0)
-    y_t = np.sum(y, axis=0)
-    corr = signal.correlate(y_t, x_t, 'full')
-    shift = np.argmax(corr) - time_bin
-    x = np.roll(x, shift, axis=1)
-    return x
 
 def noise_extraction():
     noise_list = os.listdir('dataset/noise/')
@@ -53,24 +45,23 @@ def estimate_response(Zxx, imu):
         if np.sum(select[i, :]) > 0:
             new_response[i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
             new_variance[i] = np.std(Zxx_ratio[i, :], where=select[i, :])
-    # fig, axs = plt.subplots(5)
-    # axs[0].imshow(imu1, aspect='auto')
-    # axs[1].imshow(select2, aspect='auto')
-    # axs[2].imshow(select3, aspect='auto')
-    # axs[3].imshow(select, aspect='auto')
-    # axs[4].plot(new_response, 'b')
-    # axs[4].plot(new_variance, 'r')
-    # plt.show()
     return new_response, new_variance
+def transfer_function(j, imu, Zxx, response, variance):
+    clip1 = imu[:, j * time_stride:j * time_stride + time_bin]
+    clip2 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
+    new_response, new_variance = estimate_response(clip2, clip1)
+    response = 0.25 * new_response + 0.75 * response
+    variance = 0.25 * new_variance + 0.75 * variance
+    return response, variance
 
-# def filter_function(response):
-#     m = np.max(response)
-#     n1 = np.mean(response[-5:])
-#     n2 = np.mean(response)
-#     if m > 30 or n1 > 3 or n2 < 2:
-#         return False
-#     else:
-#         return True
+def error(imu, Zxx, response, variance):
+    num_time = np.shape(imu)[1]
+    full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
+    for j in range(num_time):
+        full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
+    augmentedZxx = Zxx[:freq_bin_high, :num_time] * full_response
+    e = np.mean(np.abs(augmentedZxx - imu)) / np.max(imu)
+    return e
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -83,7 +74,7 @@ if __name__ == "__main__":
         for name in ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
             print(name)
             count = 0
-            error = []
+            e = []
             path = 'exp7/' + name + '/train/'
             files = os.listdir(path)
             N = int(len(files)/4)
@@ -93,42 +84,34 @@ if __name__ == "__main__":
             files_mic2 = files[3*N:]
             for index in range(N):
                 i = index
-                response, variance = np.zeros(freq_bin_high), np.zeros(freq_bin_high)
+                r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high)
                 wave, Zxx, phase = micplot.load_stereo(path + files_mic1[i], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
                 data1, imu1 = imuplot.read_data(path + files_imu1[i], seg_len_imu, overlap_imu, rate_imu)
                 data2, imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
                 for j in range(int((T - segment) / stride) + 1):
-                    clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
-                    #clip2 = imu2[:, j * time_stride:j * time_stride + time_bin]
-                    clip3 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
-                    clip1 = synchronize(clip1, clip3)
-                    #clip2 = synchronize(clip2, clip3)
-                    new_response, new_variance = estimate_response(clip3, clip1)
-                    # new_response2, new_variance2 = estimate_response(clip3, clip2)
-
-                    response = 0.2 * new_response + 0.8 * response
-                    variance = 0.2 * new_variance + 0.8 * variance
-
+                    r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
+                    r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
                     # augmentedZxx += noise_extraction()
                     # fig, axs = plt.subplots(2, sharex=True, figsize=(5, 3))
                     # axs[0].imshow(augmentedZxx, extent=[0, 5, 800, 0], aspect='auto')
-                    # axs[1].imshow(clip1, extent=[0, 5, 800, 0], aspect='auto')
+                    # axs[1].imshow(clip1, esdcaedsrfsrefwrfsxtent=[0, 5, 800, 0], aspect='auto')
                     # fig.text(0.45, 0.022, 'Time (Second)', va='center')
                     # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
                     # plt.savefig('synthetic_compare.eps')
                     # plt.show()
-                num_time = np.shape(imu1)[1]
-                full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
-                for j in range(time_bin):
-                    full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
-                augmentedZxx = Zxx[:freq_bin_high, :num_time] * full_response
-                e = np.mean(np.abs(augmentedZxx - imu1)) / np.max(imu1)
-                error.append(e)
+                e.append(error(imu1, Zxx, r1, v1))
+                e.append(error(imu2, Zxx, r2, v2))
                 np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
-                         response=response, variance=variance)
+                         response=r1, variance=v1)
                 count += 1
-            print(sum(error)/len(error))
-        plt.show()
+                np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
+                         response=r2, variance=v2)
+                count += 1
+                # np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
+                #          response=np.hstack((r1, r2)), variance=np.hstack((v1, v2)))
+                # count += 1
+            print(sum(e)/len(e))
+        #plt.show()
     elif args.mode == 1:
         count = 0
         Mean = []

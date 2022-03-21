@@ -3,47 +3,37 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
-function_length = 33
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
+
+function_length = 129
 if __name__ == "__main__":
 
     functions = os.listdir('transfer_function')
-    d = {}
-    for f in functions:
+    num = len(functions)
+    ratio = 0.2
+    X1 = np.empty((num, function_length))
+    X2 = np.empty((num, function_length))
+    Y = np.empty((num,))
+    candidate = {'yan':1, 'he':2, 'hou':3, 'shi':4, 'shuai':5, 'wu':6, 'liang':7, '1':8, '2':9, '3':10, '4':11, '5':12, '6':13, '7':14, '8':15}
+    for i, f in enumerate(functions):
         npzs = np.load('transfer_function/' + f)
         name = f.split('_')[1]
-        if name not in d:
-            d[name] = {}
-            d[name]['r'] = []
-            d[name]['v'] = []
-        d[name]['r'].append(npzs['response'])
-        d[name]['v'].append(npzs['variance'])
-    candidate = ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]
-    X1 = []
-    X2 = []
-    Y = []
-    fig, ax = plt.subplots(1, sharex=True, figsize=(5, 4))
-    for i in range(len(candidate)):
-        name = candidate[i]
-        response = d[name]['r']
-        variance = d[name]['v']
-        for j in range(len(response)):
-            normalization = np.max(response[j])
-            X1.append(response[j]/normalization)
-            X2.append(variance[j]/normalization)
-            Y.append(i)
-        # X1 = np.mean(X1, axis=0)
-        # X2 = np.mean(X2, axis=0)
-    #     plt.errorbar(np.arange(0, 801, 25), X1, X2, fmt='-o', label=candidate[i], capsize=4)
-    # plt.legend()
-    # plt.xlabel('Frequency (Hz)')
-    # plt.ylabel(r'Ratio ($S_{Acc}/S_{Mic}$)')
-    # plt.savefig('transfer_variance.eps')
-    # plt.show()
+        index = candidate[name]
+        m = np.max(npzs['response'])
+        if m > 0:
+            X1[i, :] = npzs['response']/m
+            X2[i, :] = npzs['variance']/m
+            Y[i] = index
+        else:
+            X1[i, :] = npzs['response']
+            X2[i, :] = npzs['variance']
+            Y[i] = index
 
-    X1 = np.array(X1)
-    Y = np.array(Y)
-    clf = SVC(decision_function_shape='ovr')
-    print(X1.shape, Y.shape)
-    clf.fit(X1, Y)
-    print(accuracy_score(Y, clf.predict(X1)))
+
+    X_train, X_test, y_train, y_test = train_test_split(X1, Y, test_size=ratio, stratify=Y, random_state=1)
+    print(X1.shape)
+    clf = SVC(kernel='linear')
+    clf.fit(X_train, y_train)
+    print(accuracy_score(y_test, clf.predict(X_test)))
