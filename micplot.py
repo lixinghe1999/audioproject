@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal as signal
 import soundfile as sf
-import audioread
 from pesq import pesq
 from dtw import *
 import random
@@ -25,7 +24,7 @@ def normalization(wave_data, rate=16000, T=5):
     return wave_data
 def frequencydomain(wave_data, seg_len=2560, overlap=2240, rate=16000, mfcc=False):
     if mfcc:
-        Zxx = librosa.feature.melspectrogram(wave_data, sr=rate, n_fft=seg_len, hop_length=seg_len-overlap)
+        Zxx = librosa.feature.melspectrogram(wave_data, sr=rate, n_fft=seg_len, hop_length=seg_len-overlap, power=1)
         return Zxx, None
     else:
         f, t, Zxx = signal.stft(wave_data, nperseg=seg_len, noverlap=overlap, fs=rate)
@@ -52,40 +51,12 @@ def load_stereo(name, T, seg_len=2560, overlap=2240, rate=16000, normalize=False
     Zxx, phase = frequencydomain(wave, seg_len=seg_len, overlap=overlap, rate=rate, mfcc=mfcc)
     return wave, Zxx, phase
 
-def offset(in1, in2):
-    # generally in1 will be longer than in2
-    corr = signal.correlate(in1, in2, 'valid')
-    shift = np.argmax(corr)
-    return shift
 def save_wav(audio, name):
     sf.write(name, audio.astype('int16'), 16000, subtype='PCM_16')
-
-if __name__ == "__main__":
-    # test directional microphone
-    # path1 = '前.m4a'
-    # path2 = '后.m4a'
-    # wave1, wave2, Zxx1, Zxx2, phase1, phase2 = load_audio(path1, path2, normalize=False)
-    # plt.plot(wave1, 'b')
-    # plt.plot(wave2, 'r')
-    # plt.show()
-
-    # test the time synchronization
-    path1 = '录音 (26).m4a'
-    wave1, wave2, Zxx1, Zxx2, phase1, phase2 = load_stereo(path1, 30, normalize=True)
-    path2 = 'mic_1639207419.358194.wav'
-    wave3, wave4, Zxx3, Zxx4, phase3, phase4 = load_stereo(path2, 30, normalize=True)
-    wave3 = np.clip(wave3, -0.02, 0.02)
-    start = 10000
-    length = 30000
-    wave3 = wave3[start: start+length]
-    shift = offset(wave1, wave3)
-    print(shift)
-    print(pesq(16000, wave1[shift:shift+length], wave3, 'nb'))
-    fig, axs = plt.subplots(3)
-    axs[0].plot(wave1, 'r')
-    axs[1].plot(wave3, 'b')
-    axs[2].plot(wave1[shift:shift+length], 'r')
-    plt.show()
-
+def MFCC(Zxx, rate):
+    mels = librosa.feature.melspectrogram(S=Zxx, sr=rate, n_mels=64)
+    log_mels = librosa.core.amplitude_to_db(mels, ref=np.max)
+    mfcc = librosa.feature.mfcc(S=log_mels, sr=rate, n_mfcc=20)
+    return mfcc
 
 

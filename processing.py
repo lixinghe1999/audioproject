@@ -1,14 +1,10 @@
-import matplotlib.pyplot
 import matplotlib.pyplot as plt
 import os
 import imuplot
 import micplot
-import scipy.signal as signal
 import numpy as np
 import argparse
-from skimage.transform import resize
 from skimage import filters
-import time
 # seg_len_mic = 640
 # overlap_mic = 320
 # seg_len_imu = 64
@@ -23,6 +19,7 @@ T = 30
 segment = 5
 stride = 3
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
+#freq_bin_high = 128
 time_bin = int(segment * rate_mic/(seg_len_mic-overlap_mic)) + 1
 time_stride = int(stride * rate_mic/(seg_len_mic-overlap_mic))
 
@@ -37,8 +34,7 @@ def estimate_response(Zxx, imu):
     select1 = Zxx > 1 * filters.threshold_otsu(Zxx)
     select2 = imu > 1 * filters.threshold_otsu(imu)
     select = select2 & select1
-    Zxx_ratio1 = np.divide(imu, Zxx, out=np.zeros_like(imu), where=select)
-    Zxx_ratio = Zxx_ratio1
+    Zxx_ratio = np.divide(imu, Zxx, out=np.zeros_like(imu), where=select)
     new_variance = np.zeros(freq_bin_high)
     new_response = np.zeros(freq_bin_high)
     for i in range(freq_bin_high):
@@ -63,6 +59,11 @@ def error(imu, Zxx, response, variance):
     e = np.mean(np.abs(augmentedZxx - imu)) / np.max(imu)
     return e
 
+def spectral_subtraction(imu):
+    noise = np.mean(imu[:, 340:380], axis=1)
+    imu = (imu.transpose() - noise).transpose()
+    return imu
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--mode', action="store", type=int, default=0, required=False, help='mode of processing, 0-time segment, 1-mic denoising')
@@ -71,47 +72,49 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.mode == 0:
-        for name in ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
-            print(name)
+        candidate = ["liang", "he", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8"]
+        for i in range(len(candidate)):
             count = 0
             e = []
-            path = 'exp7/' + name + '/train/'
-            files = os.listdir(path)
-            N = int(len(files)/4)
-            files_imu1 = files[:N]
-            files_imu2 = files[N:2*N]
-            files_mic1 = files[2*N:3*N]
-            files_mic2 = files[3*N:]
-            for index in range(N):
-                i = index
-                r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high)
-                wave, Zxx, phase = micplot.load_stereo(path + files_mic1[i], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
-                data1, imu1 = imuplot.read_data(path + files_imu1[i], seg_len_imu, overlap_imu, rate_imu)
-                data2, imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
-                for j in range(int((T - segment) / stride) + 1):
-                    r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
-                    r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
-                    # augmentedZxx += noise_extraction()
-                    # fig, axs = plt.subplots(2, sharex=True, figsize=(5, 3))
-                    # axs[0].imshow(augmentedZxx, extent=[0, 5, 800, 0], aspect='auto')
-                    # axs[1].imshow(clip1, esdcaedsrfsrefwrfsxtent=[0, 5, 800, 0], aspect='auto')
-                    # fig.text(0.45, 0.022, 'Time (Second)', va='center')
-                    # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
-                    # plt.savefig('synthetic_compare.eps')
-                    # plt.show()
-                e.append(error(imu1, Zxx, r1, v1))
-                e.append(error(imu2, Zxx, r2, v2))
-                np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
-                         response=r1, variance=v1)
-                count += 1
-                np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
-                         response=r2, variance=v2)
-                count += 1
-                # np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
-                #          response=np.hstack((r1, r2)), variance=np.hstack((v1, v2)))
-                # count += 1
+            for folder in ['/train/', '/noise_train/']:
+                path = 'exp7/' + candidate[i] + folder
+                files = os.listdir(path)
+                N = int(len(files)/4)
+                files_imu1 = files[:N]
+                files_imu2 = files[N:2*N]
+                files_mic1 = files[2*N:3*N]
+                files_mic2 = files[3*N:]
+                for index in range(N):
+                    r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high)
+                    wave, Zxx, phase = micplot.load_stereo(path + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
+
+                    mfcc = np.mean(micplot.MFCC(Zxx, rate_mic), axis=1)
+                    data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
+                    data2, imu2 = imuplot.read_data(path + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
+
+                    for j in range(int((T - segment) / stride) + 1):
+                        r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
+                        r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
+                        # augmentedZxx += noise_extraction()
+                        # fig, axs = plt.subplots(2, sharex=True, figsize=(5, 3))
+                        # axs[0].imshow(augmentedZxx, extent=[0, 5, 800, 0], aspect='auto')
+                        # axs[1].imshow(clip1, esdcaedsrfsrefwrfsxtent=[0, 5, 800, 0], aspect='auto')
+                        # fig.text(0.45, 0.022, 'Time (Second)', va='center')
+                        # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
+                        # plt.savefig('synthetic_compare.eps')
+                        # plt.show()
+                    e.append(error(imu1, Zxx, r1, v1))
+                    e.append(error(imu2, Zxx, r2, v2))
+                    # np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
+                    #          response=r1, variance=v1, mfcc=mfcc)
+                    # count += 1
+                    # np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
+                    #          response=r2, variance=v2, mfcc=mfcc)
+                    # count += 1
+                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
+                             r1 = r1, r2=r2, v1=v1, v2=v2, mfcc=mfcc)
+                    count += 1
             print(sum(e)/len(e))
-        #plt.show()
     elif args.mode == 1:
         count = 0
         Mean = []

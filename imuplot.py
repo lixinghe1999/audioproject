@@ -22,7 +22,7 @@ def read_data(file,seg_len=256, overlap=224, rate=1600, mfcc=False):
     if mfcc:
         Zxx = []
         for i in range(3):
-            Zxx.append(librosa.feature.melspectrogram(data[:, i], sr=rate, n_fft=seg_len, hop_length=seg_len-overlap))
+            Zxx.append(librosa.feature.melspectrogram(data[:, i], sr=rate, n_fft=seg_len, hop_length=seg_len-overlap, power=1))
         Zxx = np.array(Zxx)
         Zxx = np.linalg.norm(Zxx, axis=0)
     else:
