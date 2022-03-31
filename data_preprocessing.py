@@ -1,11 +1,5 @@
 import os
-import librosa
-import numpy as np
-import matplotlib.pyplot as plt
-import soundfile as sf
-import scipy.signal as signal
 from imuplot import calibrate
-from datetime import datetime
 
 import imuplot
 import micplot
@@ -20,13 +14,13 @@ if __name__ == "__main__":
     #synchronize airpods and microphone
     source = 'exp7/raw'
     target = 'exp7'
-    sentences = ['s1', 's2', 's3', 's4']
-    cls = ['noise', 'clean', 'mobile']
-    T = 5
-    # sentences = ['noise_train', 'train']
-    # cls = ['']
-    # T = 30
-    for folder in ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
+    # sentences = ['s1', 's2', 's3', 's4']
+    # cls = ['noise', 'clean', 'mobile']
+    # T = 5
+    sentences = ['noise_train', 'train']
+    cls = ['']
+    T = 30
+    for folder in ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9']:
         print(folder)
         for s in sentences:
             for c in cls:

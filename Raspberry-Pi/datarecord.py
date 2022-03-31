@@ -12,47 +12,30 @@ import argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--time', action = "store",type=int, default = 5, required=False, help='time of data recording')
-    parser.add_argument('--compass', action="store", type=int, default = 0, required=False, help='use compass')
-    parser.add_argument('--acctype', action="store", type=int, default=0, required=False, help='gy or bmi')
+    parser.add_argument('--mode', action = "store", type=int, default=0, required=False, help='whether have microphone')
+    parser.add_argument('--device', action="store", type=int, default=2, required=False, help='device number of microphone')
     args = parser.parse_args()
 
-    #gyaccframe = args.time * 3000
     bmiaccframe = args.time * 1600
-    #gyroframe = args.time * 1600
-    #compassframe = args.time * 15
     micframe = args.time * 16000
-    if args.acctype == 0:
-        stream = open_mic_stream(2)
+    device = args.device
+    if args.mode == 0:
+        stream = open_mic_stream(device)
         thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, 0))
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, 1))
-        #thread3 = Process(target=bmi160_gyrosave, args=('bmigryo1', bmiaccframe, port[1]))
-        #thread4 = Process(target=bmi160_gyrosave, args=('bmigryo2', bmiaccframe, port[0]))
         thread = Process(target=voice_record, args=('mic', stream, micframe))
         thread1.start()
         thread2.start()
         thread.start()
-        #thread3.start()
-        #thread4.start()
-
         thread1.join()
         thread2.join()
         thread.join()
-        #thread3.join()
-        #thread4.join()
-    elif args.acctype == 1:
-        thread1 = Process(target=gy85_accsave, args=('gyacc', gyaccframe, port))
-        thread2 = Process(target=voice_record, args=('mic1', open_mic_stream(1), micframe))
-        thread3 = Process(target=voice_record, args=('mic2', open_mic_stream(2), micframe))
+    else:
+        thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, 0))
+        thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, 1))
         thread1.start()
         thread2.start()
-        thread3.start()
         thread1.join()
         thread2.join()
-        thread3.join()
-    else:
-        thread1 = Process(target=bmi160_accsave, args=('bmiacc', bmiaccframe, port))
-        thread1.start()
-        thread1.join()
-    # if args.compass == 1:
-    #     thread4 = Process(target=gy85_compasssave, args=(compassframe,))
+
 

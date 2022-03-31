@@ -17,7 +17,7 @@ rate_mic = 16000
 rate_imu = 1600
 T = 30
 segment = 5
-stride = 3
+stride = 5
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 #freq_bin_high = 128
 time_bin = int(segment * rate_mic/(seg_len_mic-overlap_mic)) + 1
@@ -33,7 +33,9 @@ def noise_extraction():
 def estimate_response(Zxx, imu):
     select1 = Zxx > 1 * filters.threshold_otsu(Zxx)
     select2 = imu > 1 * filters.threshold_otsu(imu)
+
     select = select2 & select1
+    #select = select2
     Zxx_ratio = np.divide(imu, Zxx, out=np.zeros_like(imu), where=select)
     new_variance = np.zeros(freq_bin_high)
     new_response = np.zeros(freq_bin_high)
@@ -41,6 +43,13 @@ def estimate_response(Zxx, imu):
         if np.sum(select[i, :]) > 0:
             new_response[i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
             new_variance[i] = np.std(Zxx_ratio[i, :], where=select[i, :])
+    # fig, axs = plt.subplots(5, figsize=(5, 3))
+    # axs[0].imshow(Zxx, aspect='auto')
+    # axs[1].imshow(imu, aspect='auto')
+    # axs[2].imshow(select, aspect='auto')
+    # axs[3].imshow(Zxx_ratio, aspect='auto')
+    # axs[4].plot(new_response)
+    # plt.show()
     return new_response, new_variance
 def transfer_function(j, imu, Zxx, response, variance):
     clip1 = imu[:, j * time_stride:j * time_stride + time_bin]
@@ -48,6 +57,8 @@ def transfer_function(j, imu, Zxx, response, variance):
     new_response, new_variance = estimate_response(clip2, clip1)
     response = 0.25 * new_response + 0.75 * response
     variance = 0.25 * new_variance + 0.75 * variance
+    plt.plot(response)
+    plt.show()
     return response, variance
 
 def error(imu, Zxx, response, variance):
@@ -72,7 +83,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.mode == 0:
-        candidate = ["liang", "he", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8"]
+        candidate = ["liang", "he", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
         for i in range(len(candidate)):
             count = 0
             e = []
@@ -88,32 +99,20 @@ if __name__ == "__main__":
                     r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high)
                     wave, Zxx, phase = micplot.load_stereo(path + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
 
-                    mfcc = np.mean(micplot.MFCC(Zxx, rate_mic), axis=1)
+
                     data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
                     data2, imu2 = imuplot.read_data(path + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
 
                     for j in range(int((T - segment) / stride) + 1):
+                        mfcc = np.mean(micplot.MFCC(Zxx[:, j * time_stride:j * time_stride + time_bin], rate_mic), axis=1)
                         r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
                         r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
-                        # augmentedZxx += noise_extraction()
-                        # fig, axs = plt.subplots(2, sharex=True, figsize=(5, 3))
-                        # axs[0].imshow(augmentedZxx, extent=[0, 5, 800, 0], aspect='auto')
-                        # axs[1].imshow(clip1, esdcaedsrfsrefwrfsxtent=[0, 5, 800, 0], aspect='auto')
-                        # fig.text(0.45, 0.022, 'Time (Second)', va='center')
-                        # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
-                        # plt.savefig('synthetic_compare.eps')
-                        # plt.show()
-                    e.append(error(imu1, Zxx, r1, v1))
-                    e.append(error(imu2, Zxx, r2, v2))
-                    # np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
-                    #          response=r1, variance=v1, mfcc=mfcc)
-                    # count += 1
-                    # np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
-                    #          response=r2, variance=v2, mfcc=mfcc)
-                    # count += 1
-                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
-                             r1 = r1, r2=r2, v1=v1, v2=v2, mfcc=mfcc)
-                    count += 1
+
+                        e.append(error(imu1, Zxx, r1, v1))
+                        e.append(error(imu2, Zxx, r2, v2))
+                        np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
+                                 r1=r1, r2=r2, v1=v1, v2=v2, mfcc=mfcc)
+                        count += 1
             print(sum(e)/len(e))
     elif args.mode == 1:
         count = 0
