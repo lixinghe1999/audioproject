@@ -4,23 +4,22 @@ import torch.utils.data as Data
 import torchaudio
 import torch.nn as nn
 from data import NoisyCleanSet, read_transfer_function, IMUSPEECHSet
-# from A2netcomplex import A2net_m, A2net_p
 from A2net import A2net
 import numpy as np
-from result import test
+from result import baseline, vibvoice
 from tqdm import tqdm
 import argparse
 import pickle
 
-def train_extra(train_loader, test_loader, device, model, Loss, optimizer, scheduler):
+def cal_loss(train_loader, test_loader, device, model, Loss, optimizer, scheduler):
     for x, noise, y in tqdm(train_loader):
             x, noise, y = x.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float), y.to(
                 device=device, dtype=torch.float)
             predict1, predict2 = model(x, noise)
             loss1 = Loss(predict1, y)
             loss2 = Loss(predict2, y[:, :, :33, :])
-            #loss = loss1 + 0.05 * loss2
-            loss = loss1
+            loss = loss1 + 0.05 * loss2
+            #loss = loss1
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -38,7 +37,7 @@ def train_extra(train_loader, test_loader, device, model, Loss, optimizer, sched
     return model.state_dict(), val_loss[0], val_loss[1]
 
 
-def train_all(train_dataset, EPOCH, lr, BATCH_SIZE, Loss, device, ckpt):
+def train(train_dataset, EPOCH, lr, BATCH_SIZE, Loss, device, ckpt):
 
     length = len(train_dataset)
     train_size = int(0.8 * length)
@@ -51,13 +50,11 @@ def train_all(train_dataset, EPOCH, lr, BATCH_SIZE, Loss, device, ckpt):
 
     model = A2net().to(device)
     model.load_state_dict(ckpt)
-    # optimizer = torch.optim.AdamW([{'params': model.IMU_branch.parameters(), 'lr': lr}, {'params': model.Audio_branch.parameters(), 'lr': 0},
-    #                                {'params': model.Residual_block.parameters(), 'lr': lr}])
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     loss_best = 1
     for e in range(EPOCH):
-        ckpt, loss1, loss2 = train_extra(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
+        ckpt, loss1, loss2 = cal_loss(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
         if loss1 < loss_best:
             ckpt_best = ckpt
             loss_best = loss1
@@ -72,25 +69,23 @@ if __name__ == "__main__":
 
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     Loss = nn.L1Loss()
+    model = A2net().to(device)
     if args.mode == 0:
         BATCH_SIZE = 64
-        lr = 0.0001
+        lr = 0.001
         EPOCH = 20
-        model = A2net().to(device)
-        model.load_state_dict(torch.load("0.0012766318234215194.pth"))
-
-        loss_curve = []
         transfer_function, variance = read_transfer_function('../transfer_function')
-        train_dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=0.5)
-        test_dataset = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=0.5)
+        train_dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
+        test_dataset = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
 
         train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
         test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
         loss_best = 1
+        loss_curve = []
         for e in range(EPOCH):
-            ckpt, loss1, loss2 = train_extra(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
+            ckpt, loss1, loss2 = cal_loss(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
             loss_curve.append(loss1)
             if loss1 < loss_best:
                 ckpt_best = ckpt
@@ -121,12 +116,9 @@ if __name__ == "__main__":
             #ckpt = torch.load("five_second/imu_extra/0.0014658941369513438_0.012233901943545789.pth")
             ckpt = torch.load("0.0012076120789667282.pth")
 
-            ckpt = train_all(train_dataset, 5, 0.001, 32, Loss, device, ckpt)
-            ckpt = train_all(user_dataset, 2, 0.0001, 4, Loss, device, ckpt)
-            # for f in os.listdir('checkpoint/5min'):
-            #     if f.split('_')[0] == target and f[-3:] == 'pth':
-            #         ckpt = torch.load('checkpoint/5min/' + f)
-            PESQ, WER = test(ckpt, target, 0)
+            ckpt = train(train_dataset, 5, 0.001, 32, Loss, device, ckpt)
+            ckpt = train(user_dataset, 2, 0.0001, 4, Loss, device, ckpt)
+            PESQ, WER = vibvoice(ckpt, target, 0)
             mean_PESQ = np.mean(PESQ, axis=0)
             mean_WER = np.mean(WER, axis=0)
             best = mean_WER[1]
@@ -139,7 +131,7 @@ if __name__ == "__main__":
         # test on real noise
         ckpt = torch.load("checkpoint/5min/he_70.05555555555556.pth")
         for target in ['office', 'corridor', 'stair']:
-            PESQ, WER = test(ckpt, target, 3)
+            PESQ, WER = vibvoice(ckpt, target, 3)
             mean_PESQ = np.mean(PESQ, axis=0)
             mean_WER = np.mean(WER, axis=0)
             best = mean_WER[1]
@@ -157,8 +149,8 @@ if __name__ == "__main__":
             train_dataset = IMUSPEECHSet('clean_train_imuexp7.json', 'clean_train_wavexp7.json', 'clean_train_wavexp7.json', person=[target],
                                          minmax=norm_clean[target])
             ckpt = torch.load("five_second/imu_extra/0.0014658941369513438_0.012233901943545789.pth")
-            ckpt = train_all(train_dataset, 10, 0.0001, 4, Loss, device, ckpt)
-            PESQ, WER = test(ckpt, target, 1)
+            ckpt = train(train_dataset, 10, 0.0001, 4, Loss, device, ckpt)
+            PESQ, WER = vibvoice(ckpt, target, 1)
             mean_PESQ = np.mean(PESQ, axis=0)
             mean_WER = np.mean(WER, axis=0)
             best = mean_WER[1]
@@ -167,7 +159,7 @@ if __name__ == "__main__":
             print(mean_PESQ)
             print(mean_WER)
 
-            PESQ, WER = test(ckpt, target, 2)
+            PESQ, WER = vibvoice(ckpt, target, 2)
             mean_PESQ = np.mean(PESQ, axis=0)
             mean_WER = np.mean(WER, axis=0)
             best = mean_WER[1]
@@ -183,8 +175,8 @@ if __name__ == "__main__":
         for target in candidate:
             train_dataset = IMUSPEECHSet('noise_train_imuexp7.json', 'noise_train_gtexp7.json', 'noise_train_wavexp7.json', simulate=False, person=[target], minmax=norm_noise[target])
             ckpt = torch.load("five_second/imu_extra/0.0014658941369513438_0.012233901943545789.pth")
-            ckpt = train_all(train_dataset, 10, 0.0001, 4, Loss, device, ckpt)
-            PESQ, WER = test(ckpt, target, 0)
+            ckpt = train(train_dataset, 10, 0.0001, 4, Loss, device, ckpt)
+            PESQ, WER = vibvoice(ckpt, target, 0)
             mean_PESQ = np.mean(PESQ, axis=0)
             mean_WER = np.mean(WER, axis=0)
             best = mean_WER[1]

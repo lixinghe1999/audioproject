@@ -19,7 +19,7 @@ def normalization(wave_data, rate=16000, T=5):
     b, a = signal.butter(4, 100, 'highpass', fs=rate)
     wave_data = signal.filtfilt(b, a, wave_data)
     if len(wave_data) >= T * rate:
-        return wave_data
+        return wave_data[:T * rate]
     wave_data = np.pad(wave_data, (0, T * rate - len(wave_data)), 'constant', constant_values=(0, 0))
     return wave_data
 def frequencydomain(wave_data, seg_len=2560, overlap=2240, rate=16000, mfcc=False):

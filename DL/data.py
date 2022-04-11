@@ -15,7 +15,6 @@ import pickle
 import torchaudio
 from skimage import filters
 import matplotlib.pyplot as plt
-from A2netcomplex import A2net_m, A2net_p
 import scipy.signal as signal
 import librosa
 # seg_len_mic = 2560
@@ -31,14 +30,15 @@ overlap_imu = 32
 rate_mic = 16000
 rate_imu = 1600
 length = 5
-stride = 3
-N = 75
+stride = 4
+N = len(os.listdir('../transfer_function'))
+
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
 def spectrogram(audio):
     Zxx = signal.stft(audio, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1]
-    Zxx = Zxx[:8 * freq_bin_high, :]
+    Zxx = Zxx[: 8 * freq_bin_high, :]
     Zxx = np.expand_dims(Zxx, 0)
     return Zxx
 
@@ -68,7 +68,7 @@ def synthetic(clean, transfer_function, variance):
         response[:, j] += np.random.normal(0, v_norm, (freq_bin_high))
     noisy = clean[:, :freq_bin_high, :] * response
     background_noise = noise_extraction()
-    noisy += 2 * background_noise
+    noisy += 1 * background_noise
     return noisy
 def read_data(file, seg_len=256, overlap=224, rate=1600, offset=0, duration=length):
     fileobject = open(file, 'r')
@@ -88,7 +88,7 @@ def read_data(file, seg_len=256, overlap=224, rate=1600, offset=0, duration=leng
 
 
 class Audioset:
-    def __init__(self, files=None, pad=True, imu=False):
+    def __init__(self, files=None, pad=False, imu=False):
         """
         files should be a list [(file, length)]
         """
@@ -165,7 +165,11 @@ class NoisyCleanSet:
     def __getitem__(self, index):
         speech, _ = self.clean_set[index]
         noise, _ = self.noise_set[np.random.randint(0, self.length)]
-        noise = noise * (np.random.random()/5 + 0.5) + speech
+        if np.max(noise)==0:
+            print(1)
+        ratio = np.max(speech) / np.max(noise)
+        noise = noise * ratio * (np.random.random()/5 + 0.5) + speech
+        #noise = noise * (np.random.random()/5 + 0.5) + speech
         noise = spectrogram(noise)
         speech = spectrogram(speech)
 
@@ -246,15 +250,15 @@ def norm(name, jsons, simulate, candidate):
 
 if __name__ == "__main__":
 
-    audio_files = []
-    #for path in [r"../dataset/background", r"../dataset/music", r"../dataset/test-clean"]:
-    for path in [r"../dataset/train-clean-360"]:
-        g = os.walk(path)
-        for path, dir_list, file_list in g:
-            for file_name in file_list:
-                if file_name[-3:] not in ['txt', 'mp3']:
-                    audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
-    json.dump(audio_files, open('speech360.json', 'w'), indent=4)
+    # audio_files = []
+    # #for path in [r"../dataset/background", r"../dataset/music", r"../dataset/test-clean"]:
+    # for path in [r"../dataset/train-clean-360"]:
+    #     g = os.walk(path)
+    #     for path, dir_list, file_list in g:
+    #         for file_name in file_list:
+    #             if file_name[-3:] not in ['txt', 'mp3']:
+    #                 audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
+    # json.dump(audio_files, open('speech360.json', 'w'), indent=4)
 
 
 
@@ -283,7 +287,6 @@ if __name__ == "__main__":
     #             wav = file_list[3 * N:]
     #             #wav.sort(key=lambda x: int(x[4:-5]))
     #             for i in range(N):
-    #                 # have 2 IMUs, but now only use one
     #                 imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i])).readlines())])
     #                 wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
     #                 gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
@@ -328,14 +331,7 @@ if __name__ == "__main__":
         x = x.numpy()[0, 0]
         noise = noise.numpy()[0, 0]
         y = y.numpy()[0, 0]
-    #     x_mean.append(np.max(x))
-    #     noise_mean.append(np.max(noise))
-    #     y_mean.append(np.max(y))
-    #     if step > 1000:
-    #         break
-    # print(np.mean(x_mean))
-    # print(np.mean(noise_mean))
-    # print(np.mean(y_mean))
+        print(np.max(x), np.max(noise), np.max(y))
         fig, axs = plt.subplots(3, 1)
         axs[0].imshow(x, aspect='auto')
         axs[1].imshow(noise[:2 * freq_bin_high, :], aspect='auto')
