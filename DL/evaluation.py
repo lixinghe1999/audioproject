@@ -1,7 +1,6 @@
-import librosa
-from pesq import pesq
+
 import numpy as np
-import jiwer
+
 
 sentences = [["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
                     ["WE", "WANT", "TO", "IMPROVE", "SPEECH", "QUALITY", "IN", "THIS", "PROJECT"],
