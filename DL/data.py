@@ -266,7 +266,6 @@ if __name__ == "__main__":
         person = ["liang", "he", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
         for folder, name in zip(['noise_train', 'train', 'mobile', 'clean', 'noise'],
                                ['noise_train', 'clean_train', 'mobile', 'clean', 'noise']):
-
         #person = ['office', 'corridor', 'stair']
         #for folder, name in zip(['noise'], ['field']):
             g = os.walk(r"../exp7")
@@ -276,7 +275,9 @@ if __name__ == "__main__":
             for path, dir_list, file_list in g:
                 N = int(len(file_list) / 4)
                 if N > 0:
+                    print(p)
                     p = path.split('\\')
+
                     if p[-1] != folder or p[1] not in person:
                         # only collect some type of data
                         continue
