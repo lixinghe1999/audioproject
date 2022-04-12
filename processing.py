@@ -79,6 +79,38 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.mode == 0:
+        candidate = ["he", "liang", "hou", "shi", "shuai", "wu", "zhao", "shen"]
+        for i in range(6, len(candidate)):
+            count = 0
+            e = []
+            path = 'exp6/' + candidate[i] + '/clean/'
+            files = os.listdir(path)
+            N = int(len(files) / 4)
+            files_imu1 = files[:N]
+            files_imu2 = files[N:2 * N]
+            files_mic1 = files[2 * N:3 * N]
+            files_mic2 = files[3 * N:]
+            for index in range(N):
+                r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(
+                    freq_bin_high), np.zeros(freq_bin_high)
+                wave, Zxx, phase = micplot.load_stereo(path + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
+                data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
+                data2, imu2 = imuplot.read_data(path + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
+                imu1 = synchronization(Zxx, imu1)
+                imu2 = synchronization(Zxx, imu2)
+                for j in range(int((T - segment) / stride) + 1):
+                    mfcc = np.mean(micplot.MFCC(Zxx[:, j * time_stride:j * time_stride + time_bin], rate_mic),
+                                   axis=1)
+                    r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
+                    r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
+                    e.append(error(imu1, Zxx, r1, v1))
+                    e.append(error(imu2, Zxx, r2, v2))
+                np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=r1, variance=v1)
+                count += 1
+                np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=r1, variance=v1)
+                count += 1
+            print(sum(e) / len(e))
+    elif args.mode == 1:
         candidate = ["he", "liang", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
         for i in range(len(candidate)):
             count = 0
@@ -91,8 +123,8 @@ if __name__ == "__main__":
                 files_imu2 = files[N:2*N]
                 files_mic1 = files[2*N:3*N]
                 files_mic2 = files[3*N:]
+                r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high)
                 for index in range(N):
-                    r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high)
                     wave, Zxx, phase = micplot.load_stereo(path + files_mic2[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
                     data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
                     data2, imu2 = imuplot.read_data(path + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
@@ -107,14 +139,15 @@ if __name__ == "__main__":
                         # np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
                         #          r1=r1, r2=r2, v1=v1, v2=v2, mfcc=mfcc)
                         # count += 1
-                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
-                                      response=r1, variance=v1)
+                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=r1, variance=v1)
                     count += 1
-                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
-                                       response=r2, variance=v2)
+                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=r2, variance=v2)
                     count += 1
+                    # plt.plot(r1)
+                    # plt.plot(r2)
+                    # plt.show()
             print(sum(e)/len(e))
-    elif args.mode == 1:
+    elif args.mode == 2:
         for loc in ['box', 'human']:
             candidate = os.listdir(os.path.join('attack', loc))
             for i in range(len(candidate)):

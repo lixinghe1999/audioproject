@@ -13,7 +13,7 @@ import torch.utils.data as Data
 import pickle
 import argparse
 import torchaudio
-torchaudio.set_audio_backend("sox_io")
+#torchaudio.set_audio_backend("sox_io")
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
@@ -315,10 +315,10 @@ if __name__ == "__main__":
         norm('clean_paras.pkl', ['clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json'], True, ['he', 'hou'])
 
         norm('mobile_paras.pkl', ['mobile_imuexp7.json', 'mobile_wavexp7.json', 'mobile_wavexp7.json'], True, ['he', 'hou'])
-    else:
+    elif args.mode == 3:
         transfer_function, variance = read_transfer_function('../transfer_function')
-        #dataset_train = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(28, 1, 1, 1))
-        dataset_train = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1))
+        dataset_train = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'devclean.json', alpha=(1, 0.1, 0.1, 0.1))
+        #dataset_train = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1))
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         x_mean = []
         noise_mean = []
@@ -333,4 +333,11 @@ if __name__ == "__main__":
             axs[1].imshow(noise[:2 * freq_bin_high, :], aspect='auto')
             axs[2].imshow(y[:2 * freq_bin_high, :], aspect='auto')
             plt.show()
+    else:
+        transfer_function, variance = read_transfer_function('../transfer_function')
+        for i in range(19):
+            index = np.random.randint(0, N)
+            plt.plot(transfer_function[index, :])
+            plt.show()
+
 
