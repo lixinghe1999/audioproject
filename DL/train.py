@@ -6,7 +6,7 @@ import torch.nn as nn
 from data import NoisyCleanSet, read_transfer_function, IMUSPEECHSet
 from A2net import A2net
 import numpy as np
-from result import baseline, vibvoice
+from result import baseline, vibvoice, test
 from tqdm import tqdm
 import argparse
 import pickle
@@ -53,6 +53,7 @@ def train(train_dataset, EPOCH, lr, BATCH_SIZE, Loss, device, ckpt):
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     loss_best = 1
+    ckpt_best = ckpt
     for e in range(EPOCH):
         ckpt, loss1, loss2 = cal_loss(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
         if loss1 < loss_best:
@@ -103,6 +104,7 @@ if __name__ == "__main__":
 
         source = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         candidate = ["he", "shi",  "hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai"]
+        #candidate = ["he"]
         for target in candidate:
             support = [x for x in source if x != target]
             datasets = []
@@ -113,17 +115,15 @@ if __name__ == "__main__":
 
             user_dataset = IMUSPEECHSet('clean_train_imuexp7.json', 'clean_train_wavexp7.json', 'clean_train_wavexp7.json', person=target, minmax=norm_clean[target], ratio=1)
 
-            #ckpt = torch.load("five_second/imu_extra/0.0014658941369513438_0.012233901943545789.pth")
-            ckpt = torch.load("0.0012076120789667282.pth")
-
+            #ckpt = torch.load("checkpoint/5min/he_70.05555555555556.pth")
+            ckpt = torch.load("0.0015525378760437227.pth")
             ckpt = train(train_dataset, 5, 0.001, 32, Loss, device, ckpt)
             ckpt = train(user_dataset, 2, 0.0001, 4, Loss, device, ckpt)
             PESQ, WER = vibvoice(ckpt, target, 0)
-            mean_PESQ = np.mean(PESQ, axis=0)
-            mean_WER = np.mean(WER, axis=0)
-            best = mean_WER[1]
-            torch.save(ckpt, target + '_' + str(best) + '.pth')
-            np.savez(target + '_' + str(best) + '.npz', PESQ=PESQ, WER=WER)
+            mean_PESQ = np.mean(PESQ)
+            mean_WER = np.mean(WER)
+            torch.save(ckpt, target + '_' + str(mean_WER) + '.pth')
+            np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, WER=WER)
             print(target)
             print(mean_PESQ)
             print(mean_WER)

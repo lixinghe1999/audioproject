@@ -10,10 +10,10 @@ import math
 import numpy as np
 import torch
 import torch.utils.data as Data
-import torch.nn as nn
 import pickle
+import argparse
 import torchaudio
-from skimage import filters
+
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
@@ -121,7 +121,6 @@ class Audioset:
     def __getitem__(self, index):
         for info, examples in zip(self.files, self.num_examples):
             file, _ = info
-
             if index >= examples:
                 index -= examples
                 continue
@@ -165,8 +164,6 @@ class NoisyCleanSet:
     def __getitem__(self, index):
         speech, _ = self.clean_set[index]
         noise, _ = self.noise_set[np.random.randint(0, self.length)]
-        if np.max(noise)==0:
-            print(1)
         ratio = np.max(speech) / np.max(noise)
         noise = noise * ratio * (np.random.random()/5 + 0.5) + speech
         #noise = noise * (np.random.random()/5 + 0.5) + speech
@@ -249,116 +246,90 @@ def norm(name, jsons, simulate, candidate):
     file.close()
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', action="store", type=int, default=0, required=False,
+                        help='mode of processing, 0-generate pretrain json, 1-generate json, \
+                             2-normalization, 3-visualzation')
+    args = parser.parse_args()
+    if args.mode == 0:
+        audio_files = []
+        for path in [r"../dataset/background", r"../dataset/music", r"../dataset/test-clean"]:
+            g = os.walk(path)
+            for path, dir_list, file_list in g:
+                for file_name in file_list:
+                    if file_name[-3:] not in ['txt', 'mp3']:
+                        audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
+        json.dump(audio_files, open('speech360.json', 'w'), indent=4)
+    elif args.mode == 1:
+        person = ["liang", "he", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
+        for folder, name in zip(['noise_train', 'train', 'mobile', 'clean', 'noise'],
+                               ['noise_train', 'clean_train', 'mobile', 'clean', 'noise']):
 
-    # audio_files = []
-    # #for path in [r"../dataset/background", r"../dataset/music", r"../dataset/test-clean"]:
-    # for path in [r"../dataset/train-clean-360"]:
-    #     g = os.walk(path)
-    #     for path, dir_list, file_list in g:
-    #         for file_name in file_list:
-    #             if file_name[-3:] not in ['txt', 'mp3']:
-    #                 audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
-    # json.dump(audio_files, open('speech360.json', 'w'), indent=4)
+        #person = ['office', 'corridor', 'stair']
+        #for folder, name in zip(['noise'], ['field']):
+            g = os.walk(r"../exp7")
+            imu_files = []
+            wav_files = []
+            gt_files = []
+            for path, dir_list, file_list in g:
+                N = int(len(file_list) / 4)
+                if N > 0:
+                    p = path.split('\\')
+                    if p[-1] != folder or p[1] not in person:
+                        # only collect some type of data
+                        continue
+                    imu1 = file_list[: N]
+                    imu2 = file_list[N: 2 * N]
+                    gt = file_list[2 * N: 3 * N]
+                    wav = file_list[3 * N:]
 
+                    for i in range(N):
+                        imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i])).readlines())])
+                        wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
+                        gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
 
+                        imu_files.append([os.path.join(path, imu2[i]), len(open(os.path.join(path, imu2[i])).readlines())])
+                        wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
+                        gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
+                json.dump(imu_files, open(name + '_imuexp7.json', 'w'), indent=4)
+                json.dump(wav_files, open(name + '_wavexp7.json', 'w'), indent=4)
+                json.dump(gt_files, open(name + '_gtexp7.json', 'w'), indent=4)
+    elif args.mode ==2:
+        # field = ['office', 'corridor', 'stair']
+        #
+        # norm('field_paras.pkl', ['field_imuexp7.json', 'field_gtexp7.json', 'field_wavexp7.json'], False, field)
+        #
+        # norm('field_train_paras.pkl', ['field_train_imuexp7.json', 'field_train_gtexp7.json', 'field_train_wavexp7.json'],False, ['canteen', 'station'])
 
+        candidate_all = ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
 
-    # person = ["liang", "he", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
-    # for folder, name in zip([ 'noise_train', 'train', 'mobile', 'clean', 'noise'],
-    #                        ['noise_train', 'clean_train', 'mobile', 'clean', 'noise']):
-    #
-    # person = ['office', 'corridor', 'stair']
-    # for folder, name in zip(['noise'], ['field']):
-    #     g = os.walk(r"../exp7")
-    #     imu_files = []
-    #     wav_files = []
-    #     gt_files = []
-    #     for path, dir_list, file_list in g:
-    #         N = int(len(file_list) / 4)
-    #         if N > 0:
-    #             p = path.split('\\')
-    #
-    #             if p[-1] != folder or p[1] not in person:
-    #                 # only collect some type of data
-    #                 continue
-    #             imu1 = file_list[: N]
-    #             imu2 = file_list[N: 2 * N]
-    #             gt = file_list[2 * N: 3 * N]
-    #             wav = file_list[3 * N:]
-    #             #wav.sort(key=lambda x: int(x[4:-5]))
-    #             for i in range(N):
-    #                 imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i])).readlines())])
-    #                 wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
-    #                 gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
-    #
-    #                 imu_files.append([os.path.join(path, imu2[i]), len(open(os.path.join(path, imu2[i])).readlines())])
-    #                 wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
-    #                 gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
-    #         json.dump(imu_files, open(name + '_imuexp7.json', 'w'), indent=4)
-    #         json.dump(wav_files, open(name + '_wavexp7.json', 'w'), indent=4)
-    #         json.dump(gt_files, open(name + '_gtexp7.json', 'w'), indent=4)
+        candidate = ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]
 
-    # field = ['office', 'corridor', 'stair']
-    #
-    # norm('field_paras.pkl', ['field_imuexp7.json', 'field_gtexp7.json', 'field_wavexp7.json'], False, field)
+        norm('noise_train_paras.pkl', ['noise_train_imuexp7.json', 'noise_train_gtexp7.json', 'noise_train_wavexp7.json'], False, candidate_all)
 
-    # norm('field_train_paras.pkl', ['field_train_imuexp7.json', 'field_train_gtexp7.json', 'field_train_wavexp7.json'],False, ['canteen', 'station'])
+        norm('clean_train_paras.pkl', ['clean_train_imuexp7.json', 'clean_train_wavexp7.json', 'clean_train_wavexp7.json'], True, candidate)
 
-    # candidate_all = ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
-    #
-    # candidate = ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]
-    #
-    # norm('noise_train_paras.pkl', ['noise_train_imuexp7.json', 'noise_train_gtexp7.json', 'noise_train_wavexp7.json'], False, candidate_all)
-    #
-    # norm('clean_train_paras.pkl', ['clean_train_imuexp7.json', 'clean_train_wavexp7.json', 'clean_train_wavexp7.json'], True, candidate)
-    #
-    # norm('noise_paras.pkl', ['noise_imuexp7.json', 'noise_gtexp7.json', 'noise_wavexp7.json'], False, candidate_all)
-    #
-    # norm('clean_paras.pkl', ['clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json'], True, ['he', 'hou'])
-    #
-    # norm('mobile_paras.pkl', ['mobile_imuexp7.json', 'mobile_wavexp7.json', 'mobile_wavexp7.json'], True, ['he', 'hou'])
+        norm('noise_paras.pkl', ['noise_imuexp7.json', 'noise_gtexp7.json', 'noise_wavexp7.json'], False, candidate_all)
 
+        norm('clean_paras.pkl', ['clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json'], True, ['he', 'hou'])
 
+        norm('mobile_paras.pkl', ['mobile_imuexp7.json', 'mobile_wavexp7.json', 'mobile_wavexp7.json'], True, ['he', 'hou'])
+    else:
+        transfer_function, variance = read_transfer_function('../transfer_function')
+        #dataset_train = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(28, 1, 1, 1))
+        dataset_train = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1))
+        loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
+        x_mean = []
+        noise_mean = []
+        y_mean = []
+        for step, (x, noise, y) in enumerate(loader):
+            x = x.numpy()[0, 0]
+            noise = noise.numpy()[0, 0]
+            y = y.numpy()[0, 0]
+            print(np.max(x), np.max(noise), np.max(y))
+            fig, axs = plt.subplots(3, 1)
+            axs[0].imshow(x, aspect='auto')
+            axs[1].imshow(noise[:2 * freq_bin_high, :], aspect='auto')
+            axs[2].imshow(y[:2 * freq_bin_high, :], aspect='auto')
+            plt.show()
 
-    transfer_function, variance = read_transfer_function('../transfer_function')
-    #dataset_train = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(28, 1, 1, 1))
-    dataset_train = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1))
-    loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=True)
-    x_mean = []
-    noise_mean = []
-    y_mean = []
-    for step, (x, noise, y) in enumerate(loader):
-        x = x.numpy()[0, 0]
-        noise = noise.numpy()[0, 0]
-        y = y.numpy()[0, 0]
-        print(np.max(x), np.max(noise), np.max(y))
-        fig, axs = plt.subplots(3, 1)
-        axs[0].imshow(x, aspect='auto')
-        axs[1].imshow(noise[:2 * freq_bin_high, :], aspect='auto')
-        axs[2].imshow(y[:2 * freq_bin_high, :], aspect='auto')
-        plt.show()
-
-    # candidate = ['office', 'corridor', 'stair']
-    # count = 0
-    # for target in candidate:
-    #     x_mean = []
-    #     noise_mean = []
-    #     y_mean = []
-    #     dataset_train = IMUSPEECHSet('field_imuexp7.json', 'field_gtexp7.json', 'field_wavexp7.json', simulate=False, person=[target], minmax=(1, 1, 1))
-    #     #dataset_train = IMUSPEECHSet('noise_train_imuexp7.json', 'noise_train_gtexp7.json', 'noise_train_wavexp7.json', simulate=False, person=[target], minmax=(1, 1, 1))
-    #     #dataset_train = IMUSPEECHSet('clean_train_imuexp7.json', 'clean_train_wavexp7.json', 'background.json', person=[target], minmax=(1, 1, 1))
-    #     #dataset_train = IMUSPEECHSet('noise_imuexp7.json', 'noise_gtexp7.json', 'noise_wavexp7.json', simulate=False, person=[target], minmax=(1, 1, 1))
-    #     #dataset_train = IMUSPEECHSet('clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json', person=[target], minmax=(1, 1, 1))
-    #     #dataset_train = IMUSPEECHSet('mobile_imuexp7.json', 'mobile_wavexp7.json', 'mobile_wavexp7.json', person=[target], minmax=(1, 1, 1))
-    #     loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=True)
-    #     for step, (x, noise,  y) in enumerate(loader):
-    #         x = x.numpy()[0, 0]
-    #         noise = noise.numpy()[0, 0]
-    #         y = y.numpy()[0, 0]
-    #         y = np.mean(noise) / np.mean(y) * y
-    #         error = np.mean(np.abs(noise - y)) / np.max(noise)
-    #         fig, axs = plt.subplots(3, 1)
-    #         axs[0].imshow(x, aspect='auto')
-    #         axs[1].imshow(noise[:2*freq_bin_high, : ], aspect='auto')
-    #         axs[2].imshow(y[:2*freq_bin_high,:], aspect='auto')
-    #         plt.show()
