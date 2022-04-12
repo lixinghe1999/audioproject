@@ -12,13 +12,11 @@ from torch.nn.utils.rnn import pad_sequence
 from evaluation import wer
 from speechbrain.pretrained import EncoderDecoderASR, SpectralMaskEnhancement
 from speechbrain.pretrained import SepformerSeparation as separator
-import librosa
 import numpy as np
 import pickle
-import matplotlib.pyplot as plt
+
 import torchaudio
-import os
-import pydub
+
 
 
 seg_len_mic = 640
