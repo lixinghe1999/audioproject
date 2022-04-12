@@ -259,7 +259,7 @@ if __name__ == "__main__":
                 for file_name in file_list:
                     if file_name[-3:] not in ['txt', 'mp3']:
                         audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
-        json.dump(audio_files, open('speech360.json', 'w'), indent=4)
+        json.dump(audio_files, open('background.json', 'w'), indent=4)
     elif args.mode == 1:
         person = ["liang", "he", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
         for folder, name in zip(['noise_train', 'train', 'mobile', 'clean', 'noise'],
