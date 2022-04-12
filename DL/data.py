@@ -13,7 +13,7 @@ import torch.utils.data as Data
 import pickle
 import argparse
 import torchaudio
-
+torchaudio.set_audio_backend("sox_io")
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
