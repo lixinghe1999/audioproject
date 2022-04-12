@@ -83,7 +83,7 @@ if __name__ == "__main__":
         for i in range(len(candidate)):
             count = 0
             e = []
-            for folder in ['/train/', '/noise_train/']:
+            for folder in ['/train/']:
                 path = 'exp7/' + candidate[i] + folder
                 files = os.listdir(path)
                 N = int(len(files)/4)

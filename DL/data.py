@@ -13,7 +13,7 @@ import torch.utils.data as Data
 import pickle
 import argparse
 import torchaudio
-torchaudio.set_audio_backend("sox_io")
+#torchaudio.set_audio_backend("sox_io")
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
@@ -295,7 +295,7 @@ if __name__ == "__main__":
                 json.dump(imu_files, open(name + '_imuexp7.json', 'w'), indent=4)
                 json.dump(wav_files, open(name + '_wavexp7.json', 'w'), indent=4)
                 json.dump(gt_files, open(name + '_gtexp7.json', 'w'), indent=4)
-    elif args.mode ==2:
+    elif args.mode == 2:
         # field = ['office', 'corridor', 'stair']
         #
         # norm('field_paras.pkl', ['field_imuexp7.json', 'field_gtexp7.json', 'field_wavexp7.json'], False, field)

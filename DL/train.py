@@ -6,7 +6,7 @@ import torch.nn as nn
 from data import NoisyCleanSet, read_transfer_function, IMUSPEECHSet
 from A2net import A2net
 import numpy as np
-from result import baseline, vibvoice, test
+from result import baseline, vibvoice
 from tqdm import tqdm
 import argparse
 import pickle
@@ -37,29 +37,31 @@ def cal_loss(train_loader, test_loader, device, model, Loss, optimizer, schedule
     return model.state_dict(), val_loss[0], val_loss[1]
 
 
-def train(train_dataset, EPOCH, lr, BATCH_SIZE, Loss, device, ckpt):
+def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, ckpt=False):
 
-    length = len(train_dataset)
-    train_size = int(0.8 * length)
-    validate_size = length - train_size
-    train_dataset, test_dataset = torch.utils.data.random_split(train_dataset, [train_size, validate_size],
-                                                                torch.Generator().manual_seed(0))
+    length = len(dataset)
+    test_size = min(int(0.2 * length), 2000)
+    train_size = length - test_size
+    train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size], torch.Generator().manual_seed(0))
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True,
                                    pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
-    model = A2net().to(device)
-    model.load_state_dict(ckpt)
+    model = nn.DataParallel(A2net()).to(device)
+    if ckpt:
+        model.load_state_dict(ckpt)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     loss_best = 1
     ckpt_best = ckpt
+    loss_curve = []
     for e in range(EPOCH):
         ckpt, loss1, loss2 = cal_loss(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
+        loss_curve.append(loss1)
         if loss1 < loss_best:
             ckpt_best = ckpt
             loss_best = loss1
-    return ckpt_best
+    return ckpt_best, loss_curve
 
 
 if __name__ == "__main__":
@@ -70,30 +72,37 @@ if __name__ == "__main__":
 
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     Loss = nn.L1Loss()
-    model = A2net().to(device)
+
     if args.mode == 0:
         BATCH_SIZE = 64
         lr = 0.001
         EPOCH = 20
         transfer_function, variance = read_transfer_function('../transfer_function')
-        train_dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
-        test_dataset = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
 
-        train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
-        test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
-        optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
-        loss_best = 1
-        loss_curve = []
-        for e in range(EPOCH):
-            ckpt, loss1, loss2 = cal_loss(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
-            loss_curve.append(loss1)
-            if loss1 < loss_best:
-                ckpt_best = ckpt
-                loss_best = loss1
-                torch.save(ckpt_best, str(loss_best) + '.pth')
+        dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
+        ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
+
+        # train_dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
+        # test_dataset = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
+        # train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
+        # test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+        #
+        # model = A2net().to(device)
+        # optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
+        # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+        # loss_best = 1
+        # loss_curve = []
+        # for e in range(EPOCH):
+        #     ckpt, loss1, loss2 = cal_loss(train_loader, test_loader, device, model, Loss, optimizer, scheduler)
+        #     loss_curve.append(loss1)
+        #     if loss1 < loss_best:
+        #         ckpt_best = ckpt
+        #         loss_best = loss1
+        #         torch.save(ckpt_best, str(loss_best) + '.pth')
+        # plt.plot(loss_curve)
+        # plt.savefig('loss.png')
 
     elif args.mode == 1:
         # train one by one
@@ -122,6 +131,7 @@ if __name__ == "__main__":
             PESQ, WER = vibvoice(ckpt, target, 0)
             mean_PESQ = np.mean(PESQ)
             mean_WER = np.mean(WER)
+
             torch.save(ckpt, target + '_' + str(mean_WER) + '.pth')
             np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, WER=WER)
             print(target)
