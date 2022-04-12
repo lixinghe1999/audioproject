@@ -275,10 +275,8 @@ if __name__ == "__main__":
             for path, dir_list, file_list in g:
                 N = int(len(file_list) / 4)
                 if N > 0:
-                    print(path)
-                    p = path.split('\\')
-                    print(p)
-                    if p[-1] != folder or p[1] not in person:
+                    p = path.split('/')
+                    if p[-1] != folder or p[2] not in person:
                         # only collect some type of data
                         continue
                     imu1 = file_list[: N]
