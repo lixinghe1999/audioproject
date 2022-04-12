@@ -68,7 +68,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    Loss = nn.L1Loss()
+    Loss = nn.MSELoss()
 
     if args.mode == 0:
         BATCH_SIZE = 64
