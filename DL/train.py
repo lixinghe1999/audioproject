@@ -10,6 +10,8 @@ from result import baseline, vibvoice
 from tqdm import tqdm
 import argparse
 import pickle
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 def cal_loss(train_loader, test_loader, device, model, Loss, optimizer, scheduler):
     for x, noise, y in tqdm(train_loader):
@@ -76,7 +78,7 @@ if __name__ == "__main__":
     if args.mode == 0:
         BATCH_SIZE = 64
         lr = 0.001
-        EPOCH = 20
+        EPOCH = 30
         transfer_function, variance = read_transfer_function('../transfer_function')
 
         dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
