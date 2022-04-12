@@ -275,9 +275,9 @@ if __name__ == "__main__":
             for path, dir_list, file_list in g:
                 N = int(len(file_list) / 4)
                 if N > 0:
-                    print(p)
+                    print(path)
                     p = path.split('\\')
-
+                    print(p)
                     if p[-1] != folder or p[1] not in person:
                         # only collect some type of data
                         continue
