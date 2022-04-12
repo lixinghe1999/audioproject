@@ -194,7 +194,7 @@ class IMUSPEECHSet:
         select = []
         for i in range(len(imu)):
             x1, _ = imu[i]
-            if x1.split('\\')[1] in person:
+            if x1.split('/')[2] in person:
                 select.append(i)
         with open(wav_path, 'r') as f:
             wav = json.load(f)
