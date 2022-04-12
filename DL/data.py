@@ -194,7 +194,7 @@ class IMUSPEECHSet:
         select = []
         for i in range(len(imu)):
             x1, _ = imu[i]
-            if x1.split('/')[2] in person:
+            if x1.replace('\\', '/').split('/')[2] in person:
                 select.append(i)
         with open(wav_path, 'r') as f:
             wav = json.load(f)
@@ -275,7 +275,7 @@ if __name__ == "__main__":
             for path, dir_list, file_list in g:
                 N = int(len(file_list) / 4)
                 if N > 0:
-                    p = path.split('/')
+                    p = path.replace('\\', '/').split('/')
                     if p[-1] != folder or p[2] not in person:
                         # only collect some type of data
                         continue
