@@ -38,7 +38,7 @@ def cal_loss(train_loader, test_loader, device, model, Loss, optimizer, schedule
     return model.state_dict(), val_loss[0], val_loss[1]
 
 
-def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model):
+def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=True):
 
     length = len(dataset)
     test_size = min(int(0.2 * length), 2000)
@@ -58,6 +58,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model):
         if loss1 < loss_best:
             ckpt_best = ckpt
             loss_best = loss1
+            if save_all:
+                torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
     return ckpt_best, loss_curve
 
 
@@ -79,8 +81,8 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'devclean.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
         model = nn.DataParallel(A2net()).to(device)
         #model = A2net().to(device)
-        ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model)
-        torch.save(ckpt_best, str(loss_curve[-1]) + '.pth')
+        ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=True)
+
         plt.plot(loss_curve)
         plt.savefig('loss.png')
 
