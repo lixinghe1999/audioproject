@@ -68,7 +68,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    Loss = nn.MSELoss()
+    Loss = nn.L1Loss()
 
     if args.mode == 0:
         BATCH_SIZE = 64
@@ -80,6 +80,7 @@ if __name__ == "__main__":
         model = nn.DataParallel(A2net()).to(device)
         #model = A2net().to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model)
+        torch.save(ckpt_best, str(loss_curve[-1]) + '.pth')
         plt.plot(loss_curve)
         plt.savefig('loss.png')
 
@@ -100,22 +101,23 @@ if __name__ == "__main__":
                 datasets.append(IMUSPEECHSet('noise_train_imuexp7.json', 'noise_train_gtexp7.json', 'noise_train_wavexp7.json', simulate=False, person=[c], minmax=norm_noise[c]))
             train_dataset = Data.ConcatDataset(datasets)
             user_dataset = IMUSPEECHSet('clean_train_imuexp7.json', 'clean_train_wavexp7.json', 'clean_train_wavexp7.json', person=target, minmax=norm_clean[target], ratio=1)
-            model = A2net().to(device)
+            model = nn.DataParallel(A2net()).to(device)
             # ckpt = {key.replace("module.", ""): value for key, value in ckpt.items()
             # ckpt = {'module.' + key: value for key, value in ckpt.items()}
 
             #ckpt = torch.load("checkpoint/5min/he_70.05555555555556.pth")
-            ckpt = torch.load("0.0012076120789667282.pth")
+            ckpt = torch.load("0.0009952496056939708.pth")
             model.load_state_dict(ckpt)
             ckpt, _ = train(train_dataset, 5, 0.001, 32, Loss, device, model)
             model.load_state_dict(ckpt)
             ckpt, _ = train(user_dataset, 2, 0.0001, 4, Loss, device, model)
-            PESQ, WER = vibvoice(ckpt, target, 0)
+            model.load_state_dict(ckpt)
+            PESQ, SNR, WER = vibvoice(model, target, 0)
             mean_PESQ = np.mean(PESQ)
             mean_WER = np.mean(WER)
 
             torch.save(ckpt, target + '_' + str(mean_WER) + '.pth')
-            np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, WER=WER)
+            np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, SNR=SNR, WER=WER)
             print(target)
             print(mean_PESQ)
             print(mean_WER)

@@ -46,7 +46,11 @@ def wer(r, h):
     #alignedPrint(list, r, h, result)
     return result
 
-
+def snr(gt, est):
+    n = gt - est
+    power_n = np.mean(np.abs(n)**2)
+    power_gt = np.mean(np.abs(gt) ** 2)
+    return 10*np.log10(power_gt/power_n)
 ## we evaluate WER and PESQ in this script
 if __name__ == "__main__":
     # r = ['we', 'like', 'python']
