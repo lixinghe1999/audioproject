@@ -1,10 +1,7 @@
 
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal as signal
 import soundfile as sf
-from pesq import pesq
-from dtw import *
 import random
 import librosa
 # contain many audio related function
@@ -31,14 +28,12 @@ def frequencydomain(wave_data, seg_len=2560, overlap=2240, rate=16000, mfcc=Fals
         phase = np.exp(1j * np.angle(Zxx))
         Zxx = np.abs(Zxx)
         return Zxx, phase
-def load_audio(name1, name2, T, seg_len=2560, overlap=2240, rate=16000, normalize=False, dtw=False):
+def load_audio(name1, name2, T, seg_len=2560, overlap=2240, rate=16000, normalize=False):
     wave1, sr = librosa.load(name1, sr=rate)
     wave2, sr = librosa.load(name2, sr=rate)
     if normalize:
         wave1 = normalization(wave1, rate, T)
         wave2 = normalization(wave2, rate, T)
-    if dtw:
-        wave1 = wave1[DTW(wave1, wave2)]
 
     Zxx1, phase1 = frequencydomain(wave1, seg_len=seg_len, overlap=overlap, rate=rate)
     Zxx2, phase2 = frequencydomain(wave2, seg_len=seg_len, overlap=overlap, rate=rate)
