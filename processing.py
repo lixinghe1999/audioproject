@@ -56,8 +56,8 @@ def transfer_function(j, imu, Zxx, response, variance):
     # axs[1].imshow(clip2, aspect='auto')
     # plt.show()
     new_response, new_variance = estimate_response(clip2, clip1)
-    response = 0.25 * new_response + 0.75 * response
-    variance = 0.25 * new_variance + 0.75 * variance
+    response = 0.2 * new_response + 0.8 * response
+    variance = 0.2 * new_variance + 0.8 * variance
     return response, variance
 
 def error(imu, Zxx, response, variance):
@@ -155,7 +155,6 @@ if __name__ == "__main__":
         for name in ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
             print(name)
             count = 0
-            error = []
             path = 'exp7/' + name + '/train/'
             files = os.listdir(path)
             N = int(len(files) / 4)
@@ -165,38 +164,36 @@ if __name__ == "__main__":
             files_mic2 = files[3 * N:]
             for index in range(N):
                 i = index
-                response, variance = np.zeros(freq_bin_high), np.zeros(freq_bin_high)
+                r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high)
                 wave, Zxx, phase = micplot.load_stereo(path + files_mic1[i], T, seg_len_mic, overlap_mic, rate_mic,normalize=True)
                 data1, imu1 = imuplot.read_data(path + files_imu1[i], seg_len_imu, overlap_imu, rate_imu)
                 data2, imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
                 for j in range(int((T - segment) / stride) + 1):
                     clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
-                    # clip2 = imu2[:, j * time_stride:j * time_stride + time_bin]
+                    clip2 = imu2[:, j * time_stride:j * time_stride + time_bin]
                     clip3 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
-                    new_response, new_variance = estimate_response(clip3, clip1)
-                    # new_response2, new_variance2 = estimate_response(clip3, clip2)
 
-                    response = 0.2 * new_response + 0.8 * response
-                    variance = 0.2 * new_variance + 0.8 * variance
+                    r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
+                    r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
 
-                num_time = np.shape(imu1)[1]
-                full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
-                for j in range(time_bin):
-                    full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
-                augmentedZxx = Zxx[:freq_bin_high, :num_time] * full_response
-                e = np.mean(np.abs(augmentedZxx - imu1)) / np.max(imu1)
-                error.append(e)
+                # num_time = np.shape(imu1)[1]
+                # full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
+                # for j in range(time_bin):
+                #     full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
+                # augmentedZxx = Zxx[:freq_bin_high, :num_time] * full_response
+                # e = np.mean(np.abs(augmentedZxx - imu1)) / np.max(imu1)
+                # error.append(e)
                 np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
-                         response=response, variance=variance)
+                         response=r1, variance=v1)
                 count += 1
-            print(sum(error) / len(error))
+                np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
+                         response=r2, variance=v2)
         plt.show()
     elif args.mode == 2:
         candidate = ["he", "liang", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
         for i in range(len(candidate)):
             count = 0
-            e = []
-            for folder in ['/train/']:
+            for folder in ['/train/', '/noise_train/']:
                 path = 'exp7/' + candidate[i] + folder
                 files = os.listdir(path)
                 N = int(len(files)/4)

@@ -48,8 +48,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=False):
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
-    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
+    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()

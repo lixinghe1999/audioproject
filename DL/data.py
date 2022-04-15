@@ -13,7 +13,7 @@ import torch.utils.data as Data
 import pickle
 import argparse
 import torchaudio
-#torchaudio.set_audio_backend("sox_io")
+torchaudio.set_audio_backend("sox_io")
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
@@ -30,7 +30,7 @@ overlap_imu = 32
 rate_mic = 16000
 rate_imu = 1600
 length = 5
-stride = 4
+stride = 5
 N = len(os.listdir('../transfer_function'))
 
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
