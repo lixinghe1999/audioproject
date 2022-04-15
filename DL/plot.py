@@ -27,7 +27,49 @@ def another_baseline(folder):
     metric = WER
 
     return metric
+def load_baseline(path):
+    files = os.listdir(path)
+    baseline = []
+    for f in files:
+        npz = np.load(os.path.join(path, f))
+        values = [np.mean(npz['PESQ'], axis=0), np.mean(npz['SNR'], axis=0), np.mean(npz['WER'], axis=0)]
+        baseline.append(values)
+    return baseline
+def load_vibvoice(path):
+    files = os.listdir(path)
+    vibvoice = []
+    for f in files:
+        if f[-3:] == 'pth':
+            continue
+        npz = np.load(os.path.join(path, f))
+        values = [npz['PESQ'], npz['SNR'], npz['WER']]
+        vibvoice.append(values)
+    return vibvoice
+
 if __name__ == "__main__":
+    baseline = load_baseline('checkpoint/baseline/noise')
+    vibvoice = load_vibvoice('checkpoint/try')
+    metric = []
+    for i in range(15):
+        print(baseline[i])
+        print(vibvoice[i])
+    folder = 'checkpoint/5min'
+    files = os.listdir(folder)
+    files = [f for f in files if f[-3:] == 'npz']
+    for i in range(len(files)):
+        f = files[i]
+        npz = np.load(os.path.join(folder, f))
+        x1, x2 = npz['PESQ'], npz['WER']
+        x1 = pesq_process(x1)
+        x2 = wer_process(x2)
+        if i == 0:
+            PESQ = x1
+            WER = x2
+        else:
+            PESQ = np.vstack([PESQ, x1])
+            WER = np.vstack([WER, x2])
+    metric = WER
+
     # m = another_baseline('checkpoint/baseline/noise')
     # folder = 'checkpoint/5min'
     # files = os.listdir(folder)
@@ -135,31 +177,31 @@ if __name__ == "__main__":
     # plt.savefig('wer_noise.eps', dpi=300)
     # plt.show()
 
-    folders = ['new', '5min', '2.5min', '1min', 'nopretrain']
-    plt_ratio = []
-    plt_var = []
-    for folder in folders:
-        files = os.listdir('checkpoint/' + folder)
-        files = [f for f in files if f[-3:] == 'npz']
-        ratio = []
-        for i in range(len(files)):
-            f = files[i]
-            npz = np.load(os.path.join('checkpoint/', folder, f))
-            x1, x2 = npz['PESQ'], npz['WER']
-            x2 = wer_process(x2)
-            ratio.append(np.mean(x2, axis=0))
-        ratio = np.array(ratio)
-        ratio = 100 * (ratio[:, -1] - ratio[:, 0]) / ratio[:, -1]
-        plt_ratio.append(np.mean(ratio))
-        plt_var.append(np.std(ratio))
-    x = np.arange(len(folders))
-    width = 0.3
-    fig, ax = plt.subplots(1, figsize=(5, 4))
-    plt.bar(x, plt_ratio, width=width)
-    plt.xticks(x, folders)
-    plt.ylabel('Ratio/%')
-    plt.savefig('wer_calibration.eps', dpi=300)
-    plt.show()
+    # folders = ['new', '5min', '2.5min', '1min', 'nopretrain']
+    # plt_ratio = []
+    # plt_var = []
+    # for folder in folders:
+    #     files = os.listdir('checkpoint/' + folder)
+    #     files = [f for f in files if f[-3:] == 'npz']
+    #     ratio = []
+    #     for i in range(len(files)):
+    #         f = files[i]
+    #         npz = np.load(os.path.join('checkpoint/', folder, f))
+    #         x1, x2 = npz['PESQ'], npz['WER']
+    #         x2 = wer_process(x2)
+    #         ratio.append(np.mean(x2, axis=0))
+    #     ratio = np.array(ratio)
+    #     ratio = 100 * (ratio[:, -1] - ratio[:, 0]) / ratio[:, -1]
+    #     plt_ratio.append(np.mean(ratio))
+    #     plt_var.append(np.std(ratio))
+    # x = np.arange(len(folders))
+    # width = 0.3
+    # fig, ax = plt.subplots(1, figsize=(5, 4))
+    # plt.bar(x, plt_ratio, width=width)
+    # plt.xticks(x, folders)
+    # plt.ylabel('Ratio/%')
+    # plt.savefig('wer_calibration.eps', dpi=300)
+    # plt.show()
 
     # folder = 'checkpoint/field'
     # files = os.listdir(folder)

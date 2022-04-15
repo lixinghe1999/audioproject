@@ -19,7 +19,7 @@ rate_mic = 16000
 rate_imu = 1600
 T = 30
 segment = 5
-stride = 5
+stride = 3
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(segment * rate_mic/(seg_len_mic-overlap_mic)) + 1
 time_stride = int(stride * rate_mic/(seg_len_mic-overlap_mic))
@@ -69,6 +69,14 @@ def error(imu, Zxx, response, variance):
     e = np.mean(np.abs(augmentedZxx - imu)) / np.max(imu)
     return e
 
+def filter_function(response):
+    m = np.max(response)
+    n1 = np.mean(response[-5:])
+    n2 = np.mean(response)
+    if m > 30 or n1 > 3 or n2 < 2:
+        return False
+    else:
+        return True
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -79,11 +87,76 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.mode == 0:
-        candidate = ["he", "liang", "hou", "shi", "shuai", "wu", "zhao", "shen"]
-        for i in range(6, len(candidate)):
+        candidate = ["liang", "wu", "he", "hou", "zhao", "shi"]
+        # "shen", "shuai"
+        for i in range(len(candidate)):
+            name = candidate[i]
             count = 0
-            e = []
-            path = 'exp6/' + candidate[i] + '/clean/'
+            error = []
+            path = 'exp6/' + name + '/clean/'
+            files = os.listdir(path)
+            N = int(len(files) / 4)
+            files_imu1 = files[:N]
+            files_imu2 = files[N:2 * N]
+            files_mic1 = files[2 * N:3 * N]
+            files_mic2 = files[3 * N:]
+
+            for index in range(N):
+                response, variance = np.zeros(freq_bin_high), np.zeros(freq_bin_high)
+                wave, Zxx, phase = micplot.load_stereo(path + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic,
+                                                       normalize=True)
+                data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
+                # data2, imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
+                for j in range(int((T - segment) / stride) + 1):
+                    clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
+                    # clip2 = imu2[:, j * time_stride:j * time_stride + time_  bin]
+                    clip3 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
+                    clip1 = synchronization(clip3, clip1)
+                    # clip2 = synchronize(clip2, clip3)
+                    new_response, new_variance = estimate_response(clip3, clip1)
+                    # new_response2, new_variance2 = estimate_response(clip3, clip2)
+
+                    if filter_function(new_response):
+                        response = 0.5 * new_response + 0.5 * response
+                        variance = 0.5 * new_variance + 0.5 * variance
+
+                    full_response = np.tile(np.expand_dims(new_response, axis=1), (1, time_bin))
+                    for j in range(time_bin):
+                        full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
+                    augmentedZxx = clip3 * full_response
+                    e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
+                    error.append(e)
+                    # augmentedZxx += noise_extraction()
+                    # fig, axs = plt.subplots(2, sharex=True, figsize=(5, 3))
+                    # axs[0].imshow(augmentedZxx, extent=[0, 5, 800, 0], aspect='auto')
+                    # axs[1].imshow(clip1, extent=[0, 5, 800, 0], aspect='auto')
+                    # fig.text(0.45, 0.022, 'Time (Second)', va='center')
+                    # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
+                    # plt.savefig('synthetic_compare.eps')
+                    # plt.show()
+
+                full_response = np.tile(np.expand_dims(response, axis=1), (1, 1501))
+                for j in range(time_bin):
+                    full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
+                augmentedZxx = Zxx[:freq_bin_high, :] * full_response
+                e = np.mean(np.abs(augmentedZxx - imu1)) / np.max(imu1)
+
+                if e < 0.05 and filter_function(response):
+                    # print(e)
+                    # plt.plot(response)
+                    # plt.plot(variance)
+                    # plt.show()
+                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
+                             response=response, variance=variance)
+                    count += 1
+            print(sum(error)/len(error))
+        plt.show()
+    elif args.mode == 1:
+        for name in ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
+            print(name)
+            count = 0
+            error = []
+            path = 'exp7/' + name + '/train/'
             files = os.listdir(path)
             N = int(len(files) / 4)
             files_imu1 = files[:N]
@@ -91,26 +164,34 @@ if __name__ == "__main__":
             files_mic1 = files[2 * N:3 * N]
             files_mic2 = files[3 * N:]
             for index in range(N):
-                r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(
-                    freq_bin_high), np.zeros(freq_bin_high)
-                wave, Zxx, phase = micplot.load_stereo(path + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
-                data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
-                data2, imu2 = imuplot.read_data(path + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
-                imu1 = synchronization(Zxx, imu1)
-                imu2 = synchronization(Zxx, imu2)
+                i = index
+                response, variance = np.zeros(freq_bin_high), np.zeros(freq_bin_high)
+                wave, Zxx, phase = micplot.load_stereo(path + files_mic1[i], T, seg_len_mic, overlap_mic, rate_mic,normalize=True)
+                data1, imu1 = imuplot.read_data(path + files_imu1[i], seg_len_imu, overlap_imu, rate_imu)
+                data2, imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
                 for j in range(int((T - segment) / stride) + 1):
-                    mfcc = np.mean(micplot.MFCC(Zxx[:, j * time_stride:j * time_stride + time_bin], rate_mic),
-                                   axis=1)
-                    r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
-                    r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
-                    e.append(error(imu1, Zxx, r1, v1))
-                    e.append(error(imu2, Zxx, r2, v2))
-                np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=r1, variance=v1)
+                    clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
+                    # clip2 = imu2[:, j * time_stride:j * time_stride + time_bin]
+                    clip3 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
+                    new_response, new_variance = estimate_response(clip3, clip1)
+                    # new_response2, new_variance2 = estimate_response(clip3, clip2)
+
+                    response = 0.2 * new_response + 0.8 * response
+                    variance = 0.2 * new_variance + 0.8 * variance
+
+                num_time = np.shape(imu1)[1]
+                full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
+                for j in range(time_bin):
+                    full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
+                augmentedZxx = Zxx[:freq_bin_high, :num_time] * full_response
+                e = np.mean(np.abs(augmentedZxx - imu1)) / np.max(imu1)
+                error.append(e)
+                np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
+                         response=response, variance=variance)
                 count += 1
-                np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=r1, variance=v1)
-                count += 1
-            print(sum(e) / len(e))
-    elif args.mode == 1:
+            print(sum(error) / len(error))
+        plt.show()
+    elif args.mode == 2:
         candidate = ["he", "liang", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
         for i in range(len(candidate)):
             count = 0
@@ -136,18 +217,11 @@ if __name__ == "__main__":
                         r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
                         e.append(error(imu1, Zxx, r1, v1))
                         e.append(error(imu2, Zxx, r2, v2))
-                        # np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
-                        #          r1=r1, r2=r2, v1=v1, v2=v2, mfcc=mfcc)
-                        # count += 1
-                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=r1, variance=v1)
-                    count += 1
-                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=r2, variance=v2)
-                    count += 1
-                    # plt.plot(r1)
-                    # plt.plot(r2)
-                    # plt.show()
+                        np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
+                                 r1=r1, r2=r2, v1=v1, v2=v2, mfcc=mfcc)
+                        count += 1
             print(sum(e)/len(e))
-    elif args.mode == 2:
+    elif args.mode == 3:
         for loc in ['box', 'human']:
             candidate = os.listdir(os.path.join('attack', loc))
             for i in range(len(candidate)):

@@ -38,7 +38,7 @@ def cal_loss(train_loader, test_loader, device, model, Loss, optimizer, schedule
     return model.state_dict(), val_loss[0], val_loss[1]
 
 
-def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=True):
+def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=False):
 
     length = len(dataset)
     test_size = min(int(0.2 * length), 2000)
@@ -49,6 +49,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=True):
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()
@@ -74,11 +75,11 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         BATCH_SIZE = 64
-        lr = 0.001
-        EPOCH = 30
+        lr = 0.01
+        EPOCH = 20
         transfer_function, variance = read_transfer_function('../transfer_function')
 
-        dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'devclean.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
+        dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
         model = nn.DataParallel(A2net()).to(device)
         #model = A2net().to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=True)
@@ -95,7 +96,6 @@ if __name__ == "__main__":
 
         source = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         candidate = ["he", "shi",  "hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai"]
-        #candidate = ["he"]
         for target in candidate:
             support = [x for x in source if x != target]
             datasets = []
@@ -105,10 +105,14 @@ if __name__ == "__main__":
             user_dataset = IMUSPEECHSet('clean_train_imuexp7.json', 'clean_train_wavexp7.json', 'clean_train_wavexp7.json', person=target, minmax=norm_clean[target], ratio=1)
             model = nn.DataParallel(A2net()).to(device)
             # ckpt = {key.replace("module.", ""): value for key, value in ckpt.items()
-            # ckpt = {'module.' + key: value for key, value in ckpt.items()}
-
             #ckpt = torch.load("checkpoint/5min/he_70.05555555555556.pth")
-            ckpt = torch.load("0.0009952496056939708.pth")
+            ckpt = torch.load('pretrain/0.0015338603807322215.pth')
+            #ckpt = {'module.' + key: value for key, value in ckpt.items()}
+
+            #
+            # pth_file = 'pretrain/' + os.listdir('pretrain')[-1]
+            # ckpt = torch.load(pth_file)
+
             model.load_state_dict(ckpt)
             ckpt, _ = train(train_dataset, 5, 0.001, 32, Loss, device, model)
             model.load_state_dict(ckpt)

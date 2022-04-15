@@ -13,7 +13,7 @@ import torch.utils.data as Data
 import pickle
 import argparse
 import torchaudio
-torchaudio.set_audio_backend("sox_io")
+#torchaudio.set_audio_backend("sox_io")
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
@@ -68,7 +68,7 @@ def synthetic(clean, transfer_function, variance):
         response[:, j] += np.random.normal(0, v_norm, (freq_bin_high))
     noisy = clean[:, :freq_bin_high, :] * response
     background_noise = noise_extraction()
-    noisy += 1 * background_noise
+    noisy += 2 * background_noise
     return noisy
 def read_data(file, seg_len=256, overlap=224, rate=1600, offset=0, duration=length):
     fileobject = open(file, 'r')
