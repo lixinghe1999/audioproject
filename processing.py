@@ -170,11 +170,11 @@ if __name__ == "__main__":
                 data2, imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
                 for j in range(int((T - segment) / stride) + 1):
                     clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
-                    clip2 = imu2[:, j * time_stride:j * time_stride + time_bin]
+                    #clip2 = imu2[:, j * time_stride:j * time_stride + time_bin]
                     clip3 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
 
                     r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
-                    r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
+                    #r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
 
                 # num_time = np.shape(imu1)[1]
                 # full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
@@ -186,8 +186,8 @@ if __name__ == "__main__":
                 np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
                          response=r1, variance=v1)
                 count += 1
-                np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
-                         response=r2, variance=v2)
+                # np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
+                #          response=r2, variance=v2)
         plt.show()
     elif args.mode == 2:
         candidate = ["he", "liang", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "9"]

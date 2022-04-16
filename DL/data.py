@@ -30,7 +30,7 @@ overlap_imu = 32
 rate_mic = 16000
 rate_imu = 1600
 length = 5
-stride = 5
+stride = 3
 N = len(os.listdir('../transfer_function'))
 
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
