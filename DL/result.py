@@ -29,7 +29,7 @@ rate_imu = 1600
 length = 5
 stride = 4
 
-freq_bin_high = 8 * (int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1)
+freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
 freq_bin_limit = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1

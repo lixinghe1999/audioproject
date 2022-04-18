@@ -193,6 +193,7 @@ if __name__ == "__main__":
         candidate = ["he", "liang", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
         for i in range(len(candidate)):
             count = 0
+            e = []
             for folder in ['/train/', '/noise_train/']:
                 path = 'exp7/' + candidate[i] + folder
                 files = os.listdir(path)

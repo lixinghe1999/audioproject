@@ -48,7 +48,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=False):
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=0.00001)
     loss_best = 1
     loss_curve = []
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         BATCH_SIZE = 64
-        lr = 0.01
+        lr = 0.005
         EPOCH = 30
         transfer_function, variance = read_transfer_function('../transfer_function')
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
             model = nn.DataParallel(A2net()).to(device)
             # ckpt = {key.replace("module.", ""): value for key, value in ckpt.items()
             #ckpt = torch.load("checkpoint/5min/he_70.05555555555556.pth")
-            ckpt = torch.load('pretrain/0.0014384415080712643.pth')
+            ckpt = torch.load('pretrain/0.0014942875871109583.pth')
             #ckpt = {'module.' + key: value for key, value in ckpt.items()}
 
             #
@@ -114,7 +114,7 @@ if __name__ == "__main__":
             # ckpt = torch.load(pth_file)
 
             model.load_state_dict(ckpt)
-            ckpt, _ = train(train_dataset, 5, 0.001, 32, Loss, device, model)
+            ckpt, _ = train(train_dataset, 5, 0.0005, 16, Loss, device, model)
             model.load_state_dict(ckpt)
             ckpt, _ = train(user_dataset, 2, 0.0001, 4, Loss, device, model)
             model.load_state_dict(ckpt)
