@@ -80,7 +80,7 @@ if __name__ == "__main__":
         transfer_function, variance = read_transfer_function('../transfer_function')
 
         dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
-        model = nn.DataParallel(A2net()).to(device)
+        model = nn.DataParallel(A2net(), device_ids=[0,2,3]).to(device)
         #model = A2net().to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=True)
 
