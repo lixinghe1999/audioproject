@@ -25,50 +25,32 @@ def another_baseline(folder):
             PESQ = np.hstack([PESQ, x1])
             WER = np.hstack([WER, x2])
     metric = WER
-
     return metric
-def load_baseline(path):
+
+def load(path):
     files = os.listdir(path)
-    baseline = []
-    for f in files:
-        npz = np.load(os.path.join(path, f))
-        values = [np.mean(npz['PESQ'], axis=0), np.mean(npz['SNR'], axis=0), np.mean(npz['WER'], axis=0)]
-        baseline.append(values)
-    return baseline
-def load_vibvoice(path):
-    files = os.listdir(path)
-    vibvoice = []
+    result = []
     for f in files:
         if f[-3:] == 'pth':
             continue
         npz = np.load(os.path.join(path, f))
-        values = [npz['PESQ'], npz['SNR'], npz['WER']]
-        vibvoice.append(values)
-    return vibvoice
+        values = np.hstack([npz['PESQ'], npz['SNR'], npz['WER']])
+        result.append(values)
+    result = np.array(result)
+    result = result.reshape((-1, result.shape[-1]))
+    return result
 
+def average(vibvoice, baseline):
+    PESQ = np.hstack([np.mean(vibvoice[:, 0]), np.mean(baseline[:, :3], axis=0)])
+    SNR = np.hstack([np.mean(vibvoice[:, 1]), np.mean(baseline[:, 3:6], axis=0)])
+    WER = np.hstack([np.mean(vibvoice[:, 2]), np.mean(baseline[:, 6:9], axis=0)]) - np.mean(baseline[:, -1])
+    return PESQ, SNR, WER
 if __name__ == "__main__":
-    baseline = load_baseline('checkpoint/baseline/noise')
-    vibvoice = load_vibvoice('checkpoint/try')
-    metric = []
-    for i in range(15):
-        print(baseline[i])
-        print(vibvoice[i])
-    folder = 'checkpoint/5min'
-    files = os.listdir(folder)
-    files = [f for f in files if f[-3:] == 'npz']
-    for i in range(len(files)):
-        f = files[i]
-        npz = np.load(os.path.join(folder, f))
-        x1, x2 = npz['PESQ'], npz['WER']
-        x1 = pesq_process(x1)
-        x2 = wer_process(x2)
-        if i == 0:
-            PESQ = x1
-            WER = x2
-        else:
-            PESQ = np.vstack([PESQ, x1])
-            WER = np.vstack([WER, x2])
-    metric = WER
+    baseline = load('checkpoint/baseline/noise')
+    vibvoice = load('checkpoint/4-18')
+
+
+
 
     # m = another_baseline('checkpoint/baseline/noise')
     # folder = 'checkpoint/5min'

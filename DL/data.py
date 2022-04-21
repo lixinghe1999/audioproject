@@ -13,7 +13,7 @@ import torch.utils.data as Data
 import pickle
 import argparse
 import torchaudio
-torchaudio.set_audio_backend("sox_io")
+#torchaudio.set_audio_backend("sox_io")
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
@@ -214,8 +214,8 @@ class IMUSPEECHSet:
         speech, file = self.wav_set[index]
         if self.simulate:
             noise, _ = self.noise_set[np.random.randint(0, self.length)]
-            ratio = np.random.random()/5 + 0.5
-            noise = ratio * noise + speech
+            ratio = np.max(speech) / np.max(noise)
+            noise = noise * ratio * (np.random.random() / 5 + 0.5) + speech
         else:
             noise, _ = self.noise_set[index]
         speech = spectrogram(speech)

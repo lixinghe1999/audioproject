@@ -18,7 +18,7 @@ class IMU_branch(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
         self.conv4 = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(3, 2)),
+            nn.MaxPool2d(kernel_size=(3, 1)),
             nn.Conv2d(64, 128, kernel_size=(5, 3), padding=(4, 1), dilation=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
@@ -27,8 +27,7 @@ class IMU_branch(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
         self.conv6 = nn.Sequential(
-            nn.ConvTranspose2d(64, 32, kernel_size=(1, 2), stride=(1, 2)),
-            nn.Conv2d(32, 32, kernel_size=(3, 3), padding=(1, 1)),
+            nn.Conv2d(64, 32, kernel_size=(3, 3), padding=(1, 1)),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
         self.conv7 = nn.Sequential(
@@ -47,7 +46,7 @@ class IMU_branch(nn.Module):
         x = self.conv5(x_mid)
         x = self.conv6(x)
         x = self.conv7(x)
-        x = F.pad(x, [1, 2, 0, 0])
+        x = F.pad(x, [0, 1, 0, 0])
         return x_mid, x
 
 class Audio_branch(nn.Module):
@@ -65,7 +64,7 @@ class Audio_branch(nn.Module):
             nn.ReLU(inplace=True)
             )
         self.conv3 = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(2, 2)),
+            nn.MaxPool2d(kernel_size=(2, 1)),
             nn.Conv2d(32, 64, kernel_size=5, padding=4, dilation=2),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True)
@@ -107,7 +106,7 @@ class Residual_Block(nn.Module):
             nn.Conv2d(64, 64, kernel_size=5, padding=4, dilation=2),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
-        self.up3 = nn.ConvTranspose2d(64, 32, kernel_size=(2, 2), stride=(2, 2))
+        self.up3 = nn.ConvTranspose2d(64, 32, kernel_size=(2, 1), stride=(2, 1))
         self.r4 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=5, padding=4, dilation=2),
             nn.BatchNorm2d(32),
@@ -119,7 +118,7 @@ class Residual_Block(nn.Module):
         x = self.up2(self.r2(x) + x)
         x = self.up3(self.r3(x) + x)
         x = self.up4(self.r4(x) + x)
-        x = F.pad(x, [1, 2, 0, 0])
+        x = F.pad(x, [0, 1, 0, 0])
         return self.final(x)
 
 class A2net(nn.Module):

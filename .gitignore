@@ -6,7 +6,6 @@
 /field_voice_isolation/
 /speechbrain/
 /transfer_function/
-
 /SepFormer/checkpoint/
 /SepFormer/logs/
 /SepFormer/result/

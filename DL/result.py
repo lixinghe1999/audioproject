@@ -29,11 +29,10 @@ rate_imu = 1600
 length = 5
 stride = 4
 
-freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
+freq_bin_high = 8 * (int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1)
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
 freq_bin_limit = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
-Loss = nn.L1Loss()
 sentences = [["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
                     ["WE", "WANT", "TO", "IMPROVE", "SPEECH", "QUALITY", "IN", "THIS", "PROJECT"],
                     ["BUT", "WE", "DON'T", "HAVE", "ENOUGH", "DATA", "TO", "TRAIN", "OUR", "MODEL"],
@@ -167,7 +166,7 @@ def data_para(target, flag):
     elif flag == 1:
         file = open("clean_paras.pkl", "rb")
         paras = pickle.load(file)
-        dataset = IMUSPEECHSet('clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json', person=[target],
+        dataset = IMUSPEECHSet('clean_imuexp7.json', 'clean_wavexp7.json', 'background.json', person=[target],
                                phase=True, minmax=paras[target])
     elif flag == 2:
         file = open("mobile_paras.pkl", "rb")
