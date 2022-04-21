@@ -9,16 +9,12 @@ Authors
  * Titouan Parcollet 2020
 """
 
-import math
 import torch
-import logging
-import functools
+
 import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
+
 from itertools import permutations
-from speechbrain.dataio.dataio import length_to_mask
-from speechbrain.decoders.ctc import filter_ctc_output
 import librosa
 
 
@@ -180,73 +176,23 @@ class PitWrapper(nn.Module):
 
 
 
+class MixerMSE(nn.Module):
 
+    def __init__(self):
 
-def compute_masked_loss(
-    loss_fn,
-    predictions,
-    targets,
-    length=None,
-    label_smoothing=0.0,
-    reduction="mean",
-):
-    """Compute the true average loss of a set of waveforms of unequal length.
+        super(MixerMSE, self).__init__()
 
-    Arguments
-    ---------
-    loss_fn : function
-        A function for computing the loss taking just predictions and targets.
-        Should return all the losses, not a reduction (e.g. reduction="none").
-    predictions : torch.Tensor
-        First argument to loss function.
-    targets : torch.Tensor
-        Second argument to loss function.
-    length : torch.Tensor
-        Length of each utterance to compute mask. If None, global average is
-        computed and returned.
-    label_smoothing: float
-        The proportion of label smoothing. Should only be used for NLL loss.
-        Ref: Regularizing Neural Networks by Penalizing Confident Output
-        Distributions. https://arxiv.org/abs/1701.06548
-    reduction : str
-        One of 'mean', 'batch', 'batchmean', 'none' where 'mean' returns a
-        single value and 'batch' returns one per item in the batch and
-        'batchmean' is sum / batch_size and 'none' returns all.
-    """
-    mask = torch.ones_like(targets)
-    if length is not None:
-        length_mask = length_to_mask(
-            length * targets.shape[1], max_len=targets.shape[1],
-        )
+        self.criterion1 = nn.MSELoss()
 
-        # Handle any dimensionality of input
-        while len(length_mask.shape) < len(mask.shape):
-            length_mask = length_mask.unsqueeze(-1)
-        length_mask = length_mask.type(mask.dtype)
-        mask *= length_mask
+        self.criterion2 = nn.MSELoss()
 
-    # Compute, then reduce loss
-    loss = loss_fn(predictions, targets) * mask
-    N = loss.size(0)
-    if reduction == "mean":
-        loss = loss.sum() / torch.sum(mask)
-    elif reduction == "batchmean":
-        loss = loss.sum() / N
-    elif reduction == "batch":
-        loss = loss.reshape(N, -1).sum(1) / mask.reshape(N, -1).sum(1)
+    def forward(self, x, target):
 
-    if label_smoothing == 0:
+        loss = self.criterion1(x[0, 0, :], target[0, 0, :]) + self.criterion2(x[0, 1, :], target[0, 1, :])
+
         return loss
-    else:
-        loss_reg = torch.mean(predictions, dim=1) * mask
-        if reduction == "mean":
-            loss_reg = torch.sum(loss_reg) / torch.sum(mask)
-        elif reduction == "batchmean":
-            loss_reg = torch.sum(loss_reg) / targets.shape[0]
-        elif reduction == "batch":
-            loss_reg = loss_reg.sum(1) / mask.sum(1)
 
-        return -label_smoothing * loss_reg + (1 - label_smoothing) * loss
+
 
 
 def get_si_snr_with_pitwrapper(source, estimate_source):

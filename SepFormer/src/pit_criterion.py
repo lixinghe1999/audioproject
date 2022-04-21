@@ -7,21 +7,6 @@ import librosa
 EPS = 1e-8
 
 
-class MixerMSE(nn.Module):
-
-    def __init__(self):
-
-        super(MixerMSE, self).__init__()
-
-        self.criterion1 = nn.MSELoss()
-
-        self.criterion2 = nn.MSELoss()
-
-    def forward(self, x, target):
-
-        loss = self.criterion1(x[0, 0, :], target[0, 0, :]) + self.criterion2(x[0, 1, :], target[0, 1, :])
-
-        return loss
 
 
 def cal_loss_no(source, estimate_source, source_lengths):
