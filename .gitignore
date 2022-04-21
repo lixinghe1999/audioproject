@@ -7,6 +7,4 @@
 /speechbrain/
 /transfer_function/
 /SepFormer/checkpoint/
-/SepFormer/logs/
 /SepFormer/result/
-/SepFormer/config/

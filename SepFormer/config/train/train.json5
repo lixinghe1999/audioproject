@@ -1,0 +1,107 @@
+{
+  "seed": 0,
+
+  "train_dataset":
+  {
+    "train_dir": "./dataset/json/tr",
+    "batch_size": 1,
+    "sample_rate": 8000,
+    "segment": 4,
+  },
+
+  "validation_dataset":
+  {
+    "validation_dir": "./dataset/json/cv",
+    "batch_size": 1,
+    "sample_rate": 8000,
+    "segment": 4,
+    "cv_max_len": 8,
+  },
+
+  "train_loader":
+  {
+   "batch_size": 1,
+   "shuffle": true,
+   "num_workers": 4,
+  },
+
+  "validation_loader":
+  {
+    "batch_size": 1,
+    "shuffle": true,
+    "num_workers": 4,
+  },
+
+  "model":
+  {
+    "type": "sepformer",
+
+    "sepformer":
+    {
+      "N": 256,
+      "C": 2,
+      "L": 16,
+      "H": 8,
+      "K": 250,
+      "Global_B": 2,
+      "Local_B": 8,
+    },
+  },
+
+  "train":
+  {
+    "use_cuda": false,
+    "epochs": 100,
+    "half_lr": true,
+    "early_stop": true,
+    "max_norm": 5,
+  },
+
+  "optimizer":
+  {
+    "type": "adamp",
+
+    "sgd":
+    {
+      "lr": 0.125,
+      "momentum": 0.0,
+      "l2": 0.0,
+    },
+
+    "adam":
+    {
+      "lr": 0.0125,
+      "beta1": 0.9,
+      "beta2": 0.999
+    },
+
+    "sgdp":
+    {
+      "lr":0.1,
+      "weight_decay":1e-5,
+      "momentum":0.9,
+      "nesterov":true
+    },
+
+    "adamp":
+    {
+      "lr":0.00001,
+      "beta1":0.9,
+      "beta2":0.999,
+      "weight_decay":1e-2,
+    }
+  },
+
+  "save_load":
+  {
+    "save_folder": "./checkpoint/",
+    "checkpoint": true,
+    "continue_from": "",
+    "model_path": "final.pth",
+  },
+
+  "logging":
+  {
+    "print_freq": 20,
+  }
+}

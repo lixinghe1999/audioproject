@@ -1,0 +1,26 @@
+{
+  "model_path": "checkpoint/epoch1.pth",
+
+  "out_dir": "./result",
+
+  "use_cuda": false,
+
+  "sample_rate": 8000,
+
+  "batch_size": 1,
+
+  "validation_dataset":
+  {
+    "validation_dir": "./dataset/json/tr",
+    "batch_size": 1,
+    "sample_rate": 8000,
+    "segment": 4,
+    "cv_max_len": 8,
+  },
+   "validation_loader":
+  {
+    "batch_size": 1,
+    "shuffle": false,
+    "num_workers": 0,
+  }
+}
