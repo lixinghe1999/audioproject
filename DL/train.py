@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
         dataset = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1), ratio=1)
         model = nn.DataParallel(A2net()).to(device)
-        ckpt = torch.load('pretrain/0.0017711903237795923.pth')
+        # ckpt = torch.load('pretrain/0.0017711903237795923.pth')
         #model = A2net().to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=True)
 
@@ -126,20 +126,11 @@ if __name__ == "__main__":
             PESQ, SNR, WER = vibvoice(model, target, 0)
             mean_WER = np.mean(WER)
 
-            torch.save(ckpt, target + '_' + str(mean_WER) + '.pth')
+            #torch.save(ckpt, target + '_' + str(mean_WER) + '.pth')
             np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, SNR=SNR, WER=WER)
             print(target, mean_WER)
-    elif args.mode == 2:
-        # test on real noise
-        ckpt = torch.load("checkpoint/5min/he_70.05555555555556.pth")
-        for target in ['office', 'corridor', 'stair']:
-            PESQ, WER = vibvoice(ckpt, target, 3)
-            mean_PESQ = np.mean(PESQ)
-            mean_WER = np.mean(WER)
-            np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, WER=WER)
-            print(target, mean_PESQ, mean_WER)
 
-    elif args.mode == 3:
+    elif args.mode == 2:
         # synthetic dataset
         file = open("clean_train_paras.pkl", "rb")
         norm_clean = pickle.load(file)
@@ -164,6 +155,17 @@ if __name__ == "__main__":
             # mean_WER = np.mean(WER)
             # np.savez(target + '_' + str(mean_WER) + '_mobile.npz', PESQ=PESQ, SNR=SNR, WER=WER)
             # print(target, mean_PESQ, mean_WER)
+            
+    elif args.mode == 3:
+        # test on real noise
+        ckpt = torch.load("checkpoint/5min/he_70.05555555555556.pth")
+        for target in ['office', 'corridor', 'stair']:
+            PESQ, WER = vibvoice(ckpt, target, 3)
+            mean_PESQ = np.mean(PESQ)
+            mean_WER = np.mean(WER)
+            np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, WER=WER)
+            print(target, mean_PESQ, mean_WER)
+
     else:
         # micro-benchmark for the three earphones
         file = open("noise_train_paras.pkl", "rb")

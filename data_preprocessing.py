@@ -29,12 +29,12 @@ if __name__ == "__main__":
         #synchronize airpods and microphone
         source = 'exp7/raw'
         target = 'exp7'
-        # sentences = ['s1', 's2', 's3', 's4']
-        # cls = ['noise', 'clean', 'mobile']
-        # T = 5
-        sentences = ['noise_train', 'train']
-        cls = ['']
-        T = 30
+        sentences = ['s1', 's2', 's3', 's4']
+        cls = ['noise', 'clean', 'mobile']
+        T = 5
+        # sentences = ['noise_train', 'train']
+        # cls = ['']
+        # T = 30
         for folder in ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9']:
             print(folder)
             for s in sentences:
@@ -64,6 +64,8 @@ if __name__ == "__main__":
                             shift = np.argmax(signal.correlate(mic, airpods)) - np.shape(airpods)
                             airpods = np.roll(airpods, shift)[-T * 16000:]
                             airpods = np.pad(airpods, (0, T*16000-len(airpods)))
+                            airpods = airpods / np.max(airpods)
+                            mic = mic / np.max(mic)
                             f1 = files_mic1[i][:-4] + '.wav'
                             f2 = files_mic2[i][:-4] + '.wav'
                             sf.write(os.path.join(target, folder, s, c, f1), mic, 16000)

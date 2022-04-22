@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.utils.data as Data
 from data import NoisyCleanSet, IMUSPEECHSet
 from A2net import A2net
-
+from SepFormer.model import dual_path
 from torch.nn.utils.rnn import pad_sequence
 from evaluation import wer, snr
 from speechbrain.pretrained import EncoderDecoderASR, SpectralMaskEnhancement
