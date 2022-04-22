@@ -41,13 +41,31 @@ def load(path):
     return result
 
 def average(vibvoice, baseline):
+    select = baseline[:, -1] < 100
+    vibvoice = vibvoice[select, :]
+    baseline = baseline[select, :]
     PESQ = np.hstack([np.mean(vibvoice[:, 0]), np.mean(baseline[:, :3], axis=0)])
     SNR = np.hstack([np.mean(vibvoice[:, 1]), np.mean(baseline[:, 3:6], axis=0)])
     WER = np.hstack([np.mean(vibvoice[:, 2]), np.mean(baseline[:, 6:9], axis=0)]) - np.mean(baseline[:, -1])
     return PESQ, SNR, WER
+def plot(x, y, name):
+    fig, ax = plt.subplots(1, figsize=(5, 4))
+    index = np.arange(len(x))
+    for i in range(len(x)):
+        plt.bar(index[i], y[i], width=0.5, label=x[i])
+    plt.xticks([])
+    plt.ylabel(u'Δ WER/%')
+    plt.ylim([0, 100])
+    plt.legend()
+    plt.savefig(name, dpi=300)
+    #plt.show()
 if __name__ == "__main__":
     baseline = load('checkpoint/baseline/noise')
-    vibvoice = load('checkpoint/4-18')
+    vibvoice = load('checkpoint/new_5min')
+    PESQ, SNR, WER = average(vibvoice, baseline)
+    plot(['VibVoice', 'SepFormer', 'MetricGAN', 'vendor'], WER, 'wer_overall.eps')
+
+
 
 
 

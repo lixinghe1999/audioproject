@@ -35,7 +35,7 @@ if __name__ == "__main__":
         # sentences = ['noise_train', 'train']
         # cls = ['']
         # T = 30
-        for folder in ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9']:
+        for folder in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9']:
             print(folder)
             for s in sentences:
                 for c in cls:
@@ -61,11 +61,9 @@ if __name__ == "__main__":
 
                             mic = librosa.load(os.path.join(path, files_mic1[i]), sr=16000)[0]
                             airpods = librosa.load(os.path.join(path, files_mic2[i]), sr=16000)[0]
-                            shift = np.argmax(signal.correlate(mic, airpods)) - np.shape(airpods)
+                            shift = np.argmax(signal.correlate(mic, airpods)) - np.shape(mic)
                             airpods = np.roll(airpods, shift)[-T * 16000:]
-                            airpods = np.pad(airpods, (0, T*16000-len(airpods)))
-                            airpods = airpods / np.max(airpods)
-                            mic = mic / np.max(mic)
+                            airpods = np.pad(airpods, (0, T * 16000 - len(airpods)))
                             f1 = files_mic1[i][:-4] + '.wav'
                             f2 = files_mic2[i][:-4] + '.wav'
                             sf.write(os.path.join(target, folder, s, c, f1), mic, 16000)

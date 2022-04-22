@@ -47,10 +47,31 @@ def wer(r, h):
     return result
 
 def snr(gt, est):
+    # ordinary snr
     n = gt - est
-    power_n = np.mean(np.abs(n)**2)
+    power_n = np.mean(np.abs(n) ** 2)
     power_gt = np.mean(np.abs(gt) ** 2)
-    return 10*np.log10(power_gt/power_n)
+    return 10 * np.log10(power_gt / power_n)
+
+    # implement SI-SNR
+    # EPS = 1e-8
+    #
+    # zero_mean_target = gt - np.mean(gt)
+    # zero_mean_estimate = est - np.mean(est)
+    #
+    # s_target = zero_mean_target  # [T, B, C]
+    # s_estimate = zero_mean_estimate  # [T, B, C]
+    # # s_target = <s', s>s / ||s||^2
+    # dot = np.sum(s_estimate * s_target)
+    # s_target_energy = np.sum(s_target ** 2) + EPS  # [1, B, C]
+    # proj = dot * s_target / s_target_energy  # [T, B, C]
+    # # e_noise = s' - s_target
+    # e_noise = s_estimate - proj  # [T, B, C]
+    # # SI-SNR = 10 * log_10(||s_target||^2 / ||e_noise||^2)
+    # si_snr_beforelog = np.sum(proj ** 2) / (np.sum(e_noise ** 2) + EPS)
+    # si_snr = 10 * np.log10(si_snr_beforelog + EPS)  # [B, C]
+    # return si_snr
+
 ## we evaluate WER and PESQ in this script
 if __name__ == "__main__":
     # r = ['we', 'like', 'python']

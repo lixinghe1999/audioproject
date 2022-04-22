@@ -152,10 +152,10 @@ if __name__ == "__main__":
             print(sum(error)/len(error))
         plt.show()
     elif args.mode == 1:
-        for name in ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
+        for name in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
             print(name)
             count = 0
-            path = 'exp7/' + name + '/train/'
+            path = 'exp7/' + name + '/noise_train/'
             files = os.listdir(path)
             N = int(len(files) / 4)
             files_imu1 = files[:N]
@@ -175,7 +175,10 @@ if __name__ == "__main__":
 
                     r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
                     #r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
-
+                    fig, axs = plt.subplots(2, sharex=True, figsize=(5, 3))
+                    axs[0].imshow(clip1, extent=[0, 5, 800, 0], aspect='auto')
+                    axs[1].imshow(clip3, extent=[0, 5, 800, 0], aspect='auto')
+                    plt.show()
                 # num_time = np.shape(imu1)[1]
                 # full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
                 # for j in range(time_bin):

@@ -140,7 +140,7 @@ class Audioset:
                 out = signal.filtfilt(b, a, out)
             return out, file
 class NoisyCleanSet:
-    def __init__(self, transfer_function, variance, json_path1, json_path2, phase=False, alpha=(1, 1), ratio=1):
+    def __init__(self, json_path1, json_path2, phase=False, alpha=[1, 0.1, 0.1, 0.1], ratio=1):
         """__init__. n
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -155,6 +155,7 @@ class NoisyCleanSet:
             noise = json.load(f)
         self.clean_set = Audioset(clean)
         self.noise_set = Audioset(noise)
+        transfer_function, variance = read_transfer_function('../transfer_function')
         self.transfer_function = transfer_function
         self.variance = variance
         self.alpha = alpha
@@ -167,7 +168,6 @@ class NoisyCleanSet:
         noise, _ = self.noise_set[np.random.randint(0, self.length)]
         ratio = np.max(speech) / np.max(noise)
         noise = noise * ratio * (np.random.random()/5 + 0.5) + speech
-        #noise = noise * (np.random.random()/5 + 0.5) + speech
         noise = spectrogram(noise)
         speech = spectrogram(speech)
 
@@ -181,7 +181,7 @@ class NoisyCleanSet:
     def __len__(self):
         return int(len(self.clean_set) * self.ratio)
 class IMUSPEECHSet:
-    def __init__(self, imu_path, wav_path, noise_path, ratio=1, simulate=True, person=['he'], phase=False, minmax=(1, 1, 1)):
+    def __init__(self, imu_path, wav_path, noise_path, ratio=1, simulate=True, person=[], phase=False, minmax=(1, 1, 1)):
         """__init__.
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -193,10 +193,13 @@ class IMUSPEECHSet:
         with open(imu_path, 'r') as f:
             imu = json.load(f)
         select = []
-        for i in range(len(imu)):
-            x1, _ = imu[i]
-            if x1.replace('\\', '/').split('/')[2] in person:
-                select.append(i)
+        if len(person) != 0:
+            for i in range(len(imu)):
+                x1, _ = imu[i]
+                if x1.replace('\\', '/').split('/')[2] in person:
+                    select.append(i)
+        else:
+            select = range(len(imu))
         with open(wav_path, 'r') as f:
             wav = json.load(f)
         with open(noise_path, 'r') as f:
@@ -234,12 +237,12 @@ def norm(name, jsons, simulate, candidate):
         noise_mean = []
         y_mean = []
         dataset_train = IMUSPEECHSet(jsons[0], jsons[1], jsons[2], simulate=simulate, person=[target], minmax=(1, 1, 1))
-        loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=True)
+        loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
             x_mean.append(np.max(x.numpy(), axis=(0, 1, 2, 3)))
             noise_mean.append(np.max(noise.numpy(), axis=(0, 1, 2, 3)))
             y_mean.append(np.max(y.numpy(), axis=(0, 1, 2, 3)))
-        dict[target] = (np.mean(x_mean), np.mean(noise_mean), np.mean(y_mean))
+        dict[target] = [np.mean(x_mean), np.mean(noise_mean), np.mean(y_mean)]
         print(target)
         print(dict[target])
     file = open(name, "wb")
@@ -265,8 +268,7 @@ if __name__ == "__main__":
         json.dump(audio_files, open('background.json', 'w'), indent=4)
     elif args.mode == 1:
         person = ["liang", "he", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
-        for folder, name in zip(['noise_train', 'train', 'mobile', 'clean', 'noise'],
-                               ['noise_train', 'clean_train', 'mobile', 'clean', 'noise']):
+        for folder, name in zip(['noise_train', 'train', 'mobile', 'clean', 'noise'], ['noise_train', 'clean_train', 'mobile', 'clean', 'noise']):
         #person = ['office', 'corridor', 'stair']
         #for folder, name in zip(['noise'], ['field']):
             g = os.walk(r"../exp7")
@@ -316,11 +318,12 @@ if __name__ == "__main__":
         norm('clean_paras.pkl', ['clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json'], True, ['he', 'hou'])
 
         norm('mobile_paras.pkl', ['mobile_imuexp7.json', 'mobile_wavexp7.json', 'mobile_wavexp7.json'], True, ['he', 'hou'])
+
     elif args.mode == 3:
         transfer_function, variance = read_transfer_function('../transfer_function')
-        dataset_train = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'devclean.json', alpha=(1, 0.1, 0.1, 0.1))
-        #dataset_train = NoisyCleanSet(transfer_function, variance, 'devclean.json', 'background.json', alpha=(1, 0.1, 0.1, 0.1))
-        loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
+        #dataset_train = NoisyCleanSet(transfer_function, variance, 'speech100.json', 'devclean.json', alpha=(1, 0.1, 0.1, 0.1))
+        dataset_train = IMUSPEECHSet('noise_train_imuexp7.json', 'noise_train_gtexp7.json', 'noise_train_wavexp7.json', simulate=False, person=['hou'])
+        loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=True)
         x_mean = []
         noise_mean = []
         y_mean = []
@@ -331,9 +334,17 @@ if __name__ == "__main__":
             print(np.max(x), np.max(noise), np.max(y))
             fig, axs = plt.subplots(3, 1)
             axs[0].imshow(x, aspect='auto')
-            axs[1].imshow(noise[:2 * freq_bin_high, :], aspect='auto')
-            axs[2].imshow(y[:2 * freq_bin_high, :], aspect='auto')
+            axs[1].imshow(noise[:1 * freq_bin_high, :], aspect='auto')
+            axs[2].imshow(y[:1 * freq_bin_high, :], aspect='auto')
             plt.show()
+            x_mean.append(np.max(x))
+            noise_mean.append(np.max(noise))
+            y_mean.append(np.max(y))
+            if step > 1000:
+                break
+        print(sum(x_mean)/len(x_mean))
+        print(sum(noise_mean) / len(noise_mean))
+        print(sum(y_mean) / len(y_mean))
     else:
         transfer_function, variance = read_transfer_function('../transfer_function')
         for i in range(19):

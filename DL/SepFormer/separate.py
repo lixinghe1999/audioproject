@@ -1,15 +1,32 @@
 import argparse
 import os
 import librosa
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from dataset.data_loader import MyDataset
 import soundfile as sf
-from model.sepformer import Sepformer
+
 from model.dual_path import SepformerWrapper
 from src.utils import remove_pad
 import json5
 import time
+
+class SepFormer:
+    def __init__(self, model_path='SepFormer/checkpoint/pretrain.pth'):
+        self.model = SepformerWrapper()
+        self.model.load_state_dict(torch.load(model_path))
+        if torch.cuda.is_available():
+            self.model.cuda()
+    def separate_file(self, path):
+        with torch.no_grad():
+            data = librosa.load(path, sr=8000)[0]
+            data = torch.from_numpy(np.expand_dims(data, axis=0))
+            if torch.cuda.is_available():
+                data = data.cuda()
+
+            estimate_source = self.model(data)  # 将数据放入模型
+            return estimate_source
 
 
 def main(config):

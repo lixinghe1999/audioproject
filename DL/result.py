@@ -1,4 +1,6 @@
-# utilize all the result before, generate audio and then use evaluation
+# utilize all the result before, generate audio and then use evaluation\
+import sys
+sys.path.append('SepFormer')
 import scipy.signal as signal
 import soundfile as sf
 from pesq import pesq
@@ -7,8 +9,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as Data
 from data import NoisyCleanSet, IMUSPEECHSet
+from SepFormer.separate import SepFormer
 from A2net import A2net
-from SepFormer.model import dual_path
+
 from torch.nn.utils.rnn import pad_sequence
 from evaluation import wer, snr
 from speechbrain.pretrained import EncoderDecoderASR, SpectralMaskEnhancement
@@ -80,11 +83,10 @@ def measurement_vibvoice(x, noise, y, model, asr_model, device, num_sentence):
         audio_files = ['vibvoice.wav']
         [text1] = batch_ASR(audio_files, asr_model)
         text = sentences[num_sentence-1]
-        error_list = wer(text, text1)
-        WER.append(error_list)
+        WER.append(wer(text, text1))
     return PESQ, SNR, WER
 
-def measurement_baseline(x, noise, y, baseline_model1, baseline_model2, asr_model, num_sentence):
+def measurement_baseline(noise, y, baseline_model1, baseline_model2, asr_model, num_sentence):
     # Note that x can be magnitude, y need to have phase
     y = y.numpy()
     noise = noise.numpy()
@@ -166,13 +168,17 @@ def data_para(target, flag):
     elif flag == 1:
         file = open("clean_paras.pkl", "rb")
         paras = pickle.load(file)
-        dataset = IMUSPEECHSet('clean_imuexp7.json', 'clean_wavexp7.json', 'background.json', person=[target],
+        dataset = IMUSPEECHSet('clean_imuexp7.json', 'clean_wavexp7.json', 'clean_wavexp7.json', person=[target],
                                phase=True, minmax=paras[target])
     elif flag == 2:
         file = open("mobile_paras.pkl", "rb")
         paras = pickle.load(file)
         dataset = IMUSPEECHSet('mobile_imuexp7.json', 'mobile_wavexp7.json', 'mobile_wavexp7.json', person=[target],
                                phase=True, minmax=paras[target])
+    elif flag == 3:
+        file = open("clean_paras.pkl", "rb")
+        paras = pickle.load(file)
+        dataset = NoisyCleanSet('clean_wavexp7.json', 'clean_wavexp7.json', alpha= 1 + paras[target])
     else:
         file = open("field_paras.pkl", "rb")
         paras = pickle.load(file)
@@ -189,15 +195,16 @@ def baseline(target, flag):
     baseline_model1 = SpectralMaskEnhancement.from_hparams(source="../pretrained_models/metricgan-plus-voicebank",
                                                          savedir="../pretrained_models/metricgan-plus-voicebank",
                                                          run_opts={"device": "cuda"})
-    baseline_model2 = separator.from_hparams(source="../speechbrain/sepformer-whamr", savedir='../pretrained_models/sepformer-whamr',
-                                   run_opts={"device": "cuda"})
+    # baseline_model2 = separator.from_hparams(source="../speechbrain/sepformer-whamr", savedir='../pretrained_models/sepformer-whamr',
+    #                                run_opts={"device": "cuda"})
+    baseline_model2 = SepFormer(model_path='SepFormer/checkpoint/pretrain.pth')
     test_loader = Data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=False)
     PESQ = []
     SNR = []
     WER = []
     with torch.no_grad():
         for num_sentence, x, noise, y in test_loader:
-            a, b, c = measurement_baseline(x, noise, y, baseline_model1, baseline_model2, asr_model, num_sentence)
+            a, b, c = measurement_baseline(noise, y, baseline_model1, baseline_model2, asr_model, num_sentence)
             PESQ.append(a)
             SNR.append(b)
             WER.append(c)
@@ -224,11 +231,11 @@ def vibvoice(model, target, flag):
 
 if __name__ == "__main__":
     # 0-noise, 1-clean, 2-mobile, 3-field
-    #candidate = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-    candidate = ["he", "hou"]
-    folder = 'checkpoint/baseline/mobile/'
+    candidate = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+    #candidate = ["he", "hou"]
+    folder = 'checkpoint/baseline/new_noise/'
     for target in candidate:
-        PESQ, SNR, WER = baseline(target, 2)
+        PESQ, SNR, WER = baseline(target, 0)
         mean_PESQ = np.mean(PESQ, axis=0)
         mean_SNR = np.mean(SNR, axis=0)
         mean_WER = np.mean(WER, axis=0)
