@@ -309,11 +309,11 @@ if __name__ == "__main__":
                     wav = file_list[3 * N:]
 
                     for i in range(N):
-                        imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i])).readlines())])
+                        imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i]), encoding='utf-8').readlines())])
                         wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
                         gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
 
-                        imu_files.append([os.path.join(path, imu2[i]), len(open(os.path.join(path, imu2[i])).readlines())])
+                        imu_files.append([os.path.join(path, imu2[i]), len(open(os.path.join(path, imu2[i]), encoding='utf-8').readlines())])
                         wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
                         gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
                 json.dump(imu_files, open(name + '_imuexp7.json', 'w'), indent=4)
