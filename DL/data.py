@@ -283,13 +283,14 @@ if __name__ == "__main__":
     if args.mode == 0:
         audio_files = []
         #for path in [r"../dataset/dev-clean", r"../dataset/music", r"../dataset/background"]:
-        for path in [r"../dataset/train-clean-100"]:
+        #for path in [r"../dataset/train-clean-100"]:
+        for path in [r"../dataset/dev-clean"]:
             g = os.walk(path)
             for path, dir_list, file_list in g:
                 for file_name in file_list:
                     if file_name[-3:] not in ['txt', 'mp3']:
                         audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
-        json.dump(audio_files, open('json/speech100.json', 'w'), indent=4)
+        json.dump(audio_files, open('json/speech.json', 'w'), indent=4)
     elif args.mode == 1:
         person = ["liang", "he", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
         for folder, name in zip(['noise_train', 'train', 'mobile', 'clean', 'noise'], ['json/noise_train', 'json/clean_train', 'json/mobile', 'json/clean', 'json/noise']):
@@ -342,7 +343,7 @@ if __name__ == "__main__":
         norm('mobile_paras.pkl', ['json/mobile_imuexp7.json', 'json/mobile_wavexp7.json', 'json/mobile_wavexp7.json'], True, ['he', 'hou'])
 
     elif args.mode == 3:
-        dataset_train = NoisyCleanSet('json/speech100.json', 'json/devclean.json', alpha=(1, 0.002, 0.002, 0.002))
+        dataset_train = NoisyCleanSet('json/speech100.json', 'json/devclean.json', alpha=(1, 0.06, 0.1, 0.1))
         #dataset_train = IMUSPEECHSet('json/noise_train_imuexp7.json', 'json/noise_train_gtexp7.json', 'json/noise_train_wavexp7.json', simulate=False, person=['he'])
         #dataset_train = IMUSPEECHSet('json/noise_imuexp7.json', 'json/noise_gtexp7.json', 'json/noise_wavexp7.json', simulate=False, person=['airpod'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=True)
@@ -350,16 +351,16 @@ if __name__ == "__main__":
         noise_mean = []
         y_mean = []
         for step, (x, noise, y) in enumerate(loader):
-            x = x.numpy()[0, 0]
-            noise = noise.numpy()[0, 0]
-            y = y.numpy()[0, 0]
+            x = np.abs(x.numpy()[0, 0])
+            noise = np.abs(noise.numpy()[0, 0])
+            y = np.abs(y.numpy()[0, 0])
             # print(np.max(x), np.max(noise), np.max(y))
-            fig, axs = plt.subplots(3, 1)
-
-            axs[0].imshow(x, aspect='auto')
-            axs[1].imshow(np.abs(noise[:freq_bin_high,:]), aspect='auto')
-            axs[2].imshow(np.abs(y[:freq_bin_high,:]), aspect='auto')
-            plt.show()
+            # fig, axs = plt.subplots(3, 1)
+            #
+            # axs[0].imshow(x, aspect='auto')
+            # axs[1].imshow(np.abs(noise[:freq_bin_high,:]), aspect='auto')
+            # axs[2].imshow(np.abs(y[:freq_bin_high,:]), aspect='auto')
+            # plt.show()
             x_mean.append(np.max(x))
             noise_mean.append(np.max(noise))
             y_mean.append(np.max(y))
