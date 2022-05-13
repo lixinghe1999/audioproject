@@ -78,7 +78,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 128
         lr = 0.0001
         EPOCH = 10
-        dataset = NoisyCleanSet('json/speech100.json', 'json/dev.json', alpha=(1, 0.06, 0.1, 0.1), ratio=1)
+        dataset = NoisyCleanSet('json/speech100.json', 'json/speech.json', alpha=(1, 0.06, 0.1, 0.1), ratio=1)
 
         model = nn.DataParallel(A2net()).to(device)
         ckpt = torch.load('pretrain/0.07013357034884393.pth')
