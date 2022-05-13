@@ -310,9 +310,9 @@ if __name__ == "__main__":
 
                     for i in range(N):
                         print(os.path.join(path, imu1[i]))
-                        imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i])).readlines())])
+                        imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i]), encoding='windows-1254').readlines())])
                         wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
-                        gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
+                        gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i]), encoding='windows-1254').num_frames])
 
                         imu_files.append([os.path.join(path, imu2[i]), len(open(os.path.join(path, imu2[i])).readlines())])
                         wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
