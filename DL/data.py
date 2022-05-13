@@ -287,6 +287,7 @@ if __name__ == "__main__":
             g = os.walk(path)
             for path, dir_list, file_list in g:
                 for file_name in file_list:
+                    print(file_name)
                     if file_name[-3:] not in ['txt', 'mp3']:
                         audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
         json.dump(audio_files, open('json/speech100.json', 'w'), indent=4)
