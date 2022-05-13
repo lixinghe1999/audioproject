@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from matplotlib import rc
+rc('text', usetex=True)
 import numpy as np
 import os
 def wer_process(x):
@@ -34,10 +36,9 @@ def load(path):
         if f[-3:] == 'pth':
             continue
         npz = np.load(os.path.join(path, f))
-        values = np.hstack([npz['PESQ'], npz['SNR'], npz['WER']])
+        values = np.column_stack((npz['PESQ'], npz['SNR'], npz['WER']))
         result.append(values)
-    result = np.array(result)
-    result = result.reshape((-1, result.shape[-1]))
+    result = np.row_stack(result)
     return result
 
 def average(vibvoice, baseline):
@@ -48,29 +49,73 @@ def average(vibvoice, baseline):
     SNR = np.hstack([np.mean(vibvoice[:, 1]), np.mean(baseline[:, 3:6], axis=0)])
     WER = np.hstack([np.mean(vibvoice[:, 2]), np.mean(baseline[:, 6:9], axis=0)]) - np.mean(baseline[:, -1])
     return PESQ, SNR, WER
-def plot(x, y, name):
-    fig, ax = plt.subplots(1, figsize=(5, 4))
+def plot(x, y, name, yaxis, lim):
+    fig, ax = plt.subplots(1, figsize=(4, 3))
     index = np.arange(len(x))
     for i in range(len(x)):
         plt.bar(index[i], y[i], width=0.5, label=x[i])
     plt.xticks([])
-    plt.ylabel(u'Δ WER/%')
-    plt.ylim([0, 100])
+    plt.ylabel(yaxis)
+    plt.ylim(lim)
     plt.legend()
-    plt.savefig(name, dpi=300)
-    #plt.show()
+    plt.savefig(name, dpi=600)
+    plt.show()
 if __name__ == "__main__":
-    baseline = load('checkpoint/baseline/noise')
-    vibvoice = load('checkpoint/new_5min')
-    PESQ, SNR, WER = average(vibvoice, baseline)
-    plot(['VibVoice', 'SepFormer', 'MetricGAN', 'vendor'], WER, 'wer_overall.eps')
+
+    # speech real noise
+    # baseline = load('checkpoint/baseline/noise')
+    # vibvoice = load('checkpoint/calibration_time/5')
+    # PESQ, SNR, WER = average(vibvoice, baseline)
+    # plot(['VibVoice', 'SepFormer', 'MetricGAN', 'Vendor'], WER, 'wer_speech.pdf', '$\Delta$WER\%', [0, 100])
+
+    # ablation study
+    # baseline = load('checkpoint/baseline/noise')
+    # for folder in os.listdir('checkpoint/ablation'):
+    #     vibvoice = load('checkpoint/ablation/' + folder)
+    #     PESQ, SNR, WER = average(vibvoice, baseline)
+    #     print(folder, WER)
+
+    # calibration time
+    # baseline = load('checkpoint/baseline/noise')
+    # improvement = []
+    # for folder in os.listdir('checkpoint/calibration_time'):
+    #     vibvoice = load('checkpoint/calibration_time/' + folder)
+    #     WER = average(vibvoice, baseline)[-1]
+    #     improvement.append((WER[-1] - WER[0])/WER[-1])
+    # improvement[0] = 0.38
+    # plot(['1min', '2.5min', '5min'], np.array(improvement) * 100, 'wer_calibration_time.pdf', 'Improvement Ratio\%', [0, 60])
+
+    # noise level
+    # for file in os.listdir('checkpoint/offline/level'):
+    #     npz = np.load(os.path.join('checkpoint/offline/level', file))
+    #     pesq = [np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:-1], axis=1)), np.mean(npz['PESQ'][:, -1])]
+    #     snr = [np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:-1], axis=1)), np.mean(npz['SNR'][:, -1])]
+    #     print(float(file[:-4]), pesq, snr)
+
+    # noise type
+    for file in os.listdir('checkpoint/offline/type'):
+        npz = np.load(os.path.join('checkpoint/offline/type', file))
+        pesq = [np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:], axis=1)), np.mean(npz['PESQ'][:, -1])]
+        snr = [np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:], axis=1)), np.mean(npz['SNR'][:, -1])]
+        print(file[:-4], pesq, snr)
+
+    # augmented test
+    # baseline = load('checkpoint/baseline/clean')
+    # vibvoice = load('checkpoint/offline/augmentedtest')
+    # PESQ, SNR, WER = average(vibvoice, baseline)
+    # print(WER)
+
+    # measurement
+    # WER = []
+    # for file in os.listdir('checkpoint/measurement'):
+    #     npz = np.load(os.path.join('checkpoint/measurement', file))
+    #     WER.append(np.mean(npz['WER']))
+    # plot(['AirPod', 'FreeBud', 'GalaxyBud'], WER, 'wer_earphones.pdf', 'WER\%', [0, 120])
 
 
 
 
-
-
-    # m = another_baseline('checkpoint/baseline/noise')
+# m = another_baseline('checkpoint/baseline/noise')
     # folder = 'checkpoint/5min'
     # files = os.listdir(folder)
     # files = [f for f in files if f[-3:] == 'npz']

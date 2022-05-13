@@ -1,10 +1,14 @@
 import matplotlib.pyplot as plt
+# from matplotlib import rc
+# rc('text', usetex=True)
+# plt.rcParams.update({'font.size': 12})
 import os
 import imuplot
 import micplot
 import numpy as np
 import argparse
 import scipy.signal as signal
+import scipy.stats as stats
 from skimage import filters
 
 seg_len_mic = 640
@@ -31,7 +35,7 @@ def noise_extraction():
     index = np.random.randint(0, noise_clip.shape[1] - time_bin)
     return noise_clip[:, index:index + time_bin]
 def synchronization(Zxx, imu):
-    in1 = np.sum(Zxx, axis=0)
+    in1 = np.sum(Zxx[:freq_bin_high, :], axis=0)
     in2 = np.sum(imu, axis=0)
     shift = np.argmax(signal.correlate(in1, in2)) - len(in2)
     return np.roll(imu, shift, axis=1)
@@ -46,20 +50,26 @@ def estimate_response(Zxx, imu):
         if np.sum(select[i, :]) > 0:
             new_response[i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
             new_variance[i] = np.std(Zxx_ratio[i, :], where=select[i, :])
-
     return new_response, new_variance
 def transfer_function(j, imu, Zxx, response, variance):
     clip1 = imu[:, j * time_stride:j * time_stride + time_bin]
     clip2 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
-    # fig, axs = plt.subplots(2, figsize=(5, 3))
-    # axs[0].imshow(clip1, aspect='auto')
-    # axs[1].imshow(clip2, aspect='auto')
-    # plt.show()
     new_response, new_variance = estimate_response(clip2, clip1)
-    response = 0.2 * new_response + 0.8 * response
-    variance = 0.2 * new_variance + 0.8 * variance
+    if filter_function(new_response):
+        response = 0.5 * new_response + 0.5 * response
+        variance = 0.5 * new_variance + 0.5 * variance
     return response, variance
-
+def ratio_accumulate(Zxx, imu, Zxx_valid):
+    Zxx = Zxx[:freq_bin_high, :]
+    select1 = Zxx > 1 * filters.threshold_otsu(Zxx)
+    select2 = imu > 1 * filters.threshold_otsu(imu)
+    select = select2 & select1
+    Zxx_ratio = np.divide(imu, Zxx, out=np.zeros_like(imu), where=select)
+    for i in range(freq_bin_high):
+        if np.sum(select[i, :]) > 0:
+            new_Zxx = Zxx_ratio[i, select[i, :]].tolist()
+            Zxx_valid[i] = Zxx_valid[i] + new_Zxx
+    return Zxx_valid
 def error(imu, Zxx, response, variance):
     num_time = np.shape(imu)[1]
     full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
@@ -90,6 +100,7 @@ if __name__ == "__main__":
         candidate = ["liang", "wu", "he", "hou", "zhao", "shi"]
         # "shen", "shuai"
         for i in range(len(candidate)):
+            Zxx_valid = [[]] * freq_bin_high
             name = candidate[i]
             count = 0
             error = []
@@ -101,56 +112,67 @@ if __name__ == "__main__":
             files_mic1 = files[2 * N:3 * N]
             files_mic2 = files[3 * N:]
 
+
             for index in range(N):
                 response, variance = np.zeros(freq_bin_high), np.zeros(freq_bin_high)
-                wave, Zxx, phase = micplot.load_stereo(path + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic,
-                                                       normalize=True)
+                wave, Zxx, phase = micplot.load_stereo(path + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
                 data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
+                imu1 = synchronization(Zxx, imu1)
                 # data2, imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
-                for j in range(int((T - segment) / stride) + 1):
-                    clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
-                    # clip2 = imu2[:, j * time_stride:j * time_stride + time_  bin]
-                    clip3 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
-                    clip1 = synchronization(clip3, clip1)
-                    # clip2 = synchronize(clip2, clip3)
-                    new_response, new_variance = estimate_response(clip3, clip1)
-                    # new_response2, new_variance2 = estimate_response(clip3, clip2)
-
-                    if filter_function(new_response):
-                        response = 0.5 * new_response + 0.5 * response
-                        variance = 0.5 * new_variance + 0.5 * variance
-
-                    full_response = np.tile(np.expand_dims(new_response, axis=1), (1, time_bin))
-                    for j in range(time_bin):
-                        full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
-                    augmentedZxx = clip3 * full_response
-                    e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
-                    error.append(e)
-                    # augmentedZxx += noise_extraction()
-                    # fig, axs = plt.subplots(2, sharex=True, figsize=(5, 3))
-                    # axs[0].imshow(augmentedZxx, extent=[0, 5, 800, 0], aspect='auto')
-                    # axs[1].imshow(clip1, extent=[0, 5, 800, 0], aspect='auto')
-                    # fig.text(0.45, 0.022, 'Time (Second)', va='center')
-                    # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
-                    # plt.savefig('synthetic_compare.eps')
+                # Zxx = librosa.feature.melspectrogram(S=Zxx, sr=rate_mic, n_mels=264)
+                # imu1 = librosa.feature.melspectrogram(S=imu1, sr=rate_imu, n_mels=33)
+                Zxx_valid = ratio_accumulate(Zxx, imu1, Zxx_valid)
+            values = []
+            for j in range(freq_bin_high):
+                if len(Zxx_valid[j]) > 100:
+                    distribution = np.array(Zxx_valid[j])
+                    np.savetxt('distribution/' + str(i) + '_' + str(j) + '.csv', distribution, delimiter = ',')
+                    #distribution = distribution[distribution<15]
+                    # mean = np.mean(distribution)
+                    # std = np.std(distribution)
+                    # values.append(stats.kstest(distribution, 'norm', (mean, std))[-1])
+                    # #values.append(stats.kstest(sample+1, sample)[-1])
+                    # print(values[-1])
+                    # plt.hist(distribution, bins=30)
                     # plt.show()
+            #print(np.mean(values))
 
-                full_response = np.tile(np.expand_dims(response, axis=1), (1, 1501))
-                for j in range(time_bin):
-                    full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
-                augmentedZxx = Zxx[:freq_bin_high, :] * full_response
-                e = np.mean(np.abs(augmentedZxx - imu1)) / np.max(imu1)
+                # for j in range(int((T - segment) / stride) + 1):
+                #
+                #     response, variance = transfer_function(j, imu1, Zxx, response, variance)
+                #     #response, variance = transfer_function(j, imu2, Zxx, response, variance)
+                #
+                #     clip3 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
+                #     clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
+                #
+                #     full_response = np.tile(np.expand_dims(response, axis=1), (1, time_bin))
+                #     for j in range(time_bin):
+                #         full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
+                #     augmentedZxx = clip3 * full_response
+                #     e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
+                #     error.append(e)
+                #     augmentedZxx += noise_extraction()
+                #
+                #     fig, axs = plt.subplots(2, figsize=(5, 3))
+                #     axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                #     axs[0].set_xticks([])
+                #     axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                #     fig.text(0.44, 0.022, 'Time (Sec)', va='center')
+                #     fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
+                #     plt.savefig('synthetic_compare.pdf')
+                #     plt.show()
 
-                if e < 0.05 and filter_function(response):
-                    # print(e)
-                    # plt.plot(response)
-                    # plt.plot(variance)
-                    # plt.show()
-                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
-                             response=response, variance=variance)
-                    count += 1
-            print(sum(error)/len(error))
-        plt.show()
+                # full_response = np.tile(np.expand_dims(response, axis=1), (1, 1501))
+                # for j in range(time_bin):
+                #     full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
+                # augmentedZxx = Zxx[:freq_bin_high, :] * full_response
+                # e = np.mean(np.abs(augmentedZxx - imu1)) / np.max(imu1)
+                #
+                # if e < 0.05 and filter_function(response):
+                #     np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
+                #              response=response, variance=variance)
+                #     count += 1
+            #print(sum(error)/len(error))
     elif args.mode == 1:
         for name in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
             print(name)

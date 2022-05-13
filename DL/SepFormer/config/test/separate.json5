@@ -1,5 +1,5 @@
 {
-  "model_path": "checkpoint/epoch1.pth",
+  "model_path": "checkpoint/pretrain.pth",
 
   "out_dir": "./result",
 

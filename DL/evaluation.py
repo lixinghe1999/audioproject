@@ -72,27 +72,18 @@ def snr(gt, est):
     # si_snr = 10 * np.log10(si_snr_beforelog + EPS)  # [B, C]
     # return si_snr
 
-## we evaluate WER and PESQ in this script
+
 if __name__ == "__main__":
-    # r = ['we', 'like', 'python']
-    # h = ['wu', 'like', 'cython', 'but', 'we', 'just', 'want', 'to', 'but', 'we', 'just', 'want', 'to']
-    # print(wer(r, h))
-    f = open('survey.txt', 'r',encoding='UTF-8')
+    # we evaluate WER and PESQ in this script
+    f = open('survey/survey.txt', 'r', encoding='UTF-8')
     lines = f.readlines()
     WER = []
     for i in range(len(lines)):
         hy = lines[i].upper().split()
         if len(hy) < 3:
-            print(hy)
             continue
         gt = sentences[i // int(len(lines) / len(sentences))]
         WER.append(wer(gt, hy))
     print(np.mean(WER))
-    # ground_truth = "hello world"
-    # hypothesis = "hello duck see what happen so I like it that"
-    #
-    # wer = jiwer.wer(ground_truth, hypothesis)
-    # mer = jiwer.mer(ground_truth, hypothesis)
-    # wil = jiwer.wil(ground_truth, hypothesis)
-    # print(wer, mer, wil)
+
 

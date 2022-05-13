@@ -1,17 +1,16 @@
 import matplotlib.pyplot as plt
-import os
-import torch
+import matplotlib.patches as patches
+from matplotlib import rc
+
+rc('text', usetex=True)
+plt.rcParams.update({'font.size': 12})
 import imuplot
 from DL.evaluation import wer
 import os
-from pesq import pesq
-import torchaudio
-import micplot
-import soundfile as sf
+
 import librosa
 import numpy as np
 import scipy.signal as signal
-from matplotlib.ticker import MaxNLocator
 from speechbrain.pretrained import EncoderDecoderASR
 import argparse
 # seg_len_mic = 640
@@ -40,20 +39,55 @@ def synchronize(x, x_t, y_t):
     x = np.roll(x, shift, axis=1)
 
     return x
-def data_extract(path, files_mic1, files_mic2, files_imu1, files_imu2, i):
-    wave_1 = librosa.load(os.path.join(path, files_mic1[i]), sr=rate_mic)[0]
-    wave_2 = librosa.load(os.path.join(path, files_mic2[i]), sr=rate_mic)[0]
+def data_extract(path, files_mic1, files_mic2, files_imu1, files_imu2):
+    wave_1 = librosa.load(os.path.join(path, files_mic1), sr=rate_mic)[0]
+    wave_2 = librosa.load(os.path.join(path, files_mic2), sr=rate_mic)[0]
 
-    b, a = signal.butter(4, 100, 'highpass', fs=16000)
-    wave_1 = signal.filtfilt(b, a, wave_1)
-    wave_2 = signal.filtfilt(b, a, wave_2)
+    # b, a = signal.butter(4, 100, 'highpass', fs=16000)
+    # wave_1 = signal.filtfilt(b, a, wave_1)
+    # wave_2 = signal.filtfilt(b, a, wave_2)
 
     Zxx1 = signal.stft(wave_1, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1]
     Zxx2 = signal.stft(wave_2, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1]
 
-    data1, imu1 = imuplot.read_data(os.path.join(path, files_imu1[i]), seg_len_imu, overlap_imu, rate_imu)
-    data2, imu2 = imuplot.read_data(os.path.join(path, files_imu2[i]), seg_len_imu, overlap_imu, rate_imu)
+    data1, imu1 = imuplot.read_data(os.path.join(path, files_imu1), seg_len_imu, overlap_imu, rate_imu, filter=True)
+    data2, imu2 = imuplot.read_data(os.path.join(path, files_imu2), seg_len_imu, overlap_imu, rate_imu, filter=True)
     return Zxx1, Zxx2, imu1, imu2
+def draw(Zxx, imu, start, stop, n, vmax):
+    fig, axs = plt.subplots(1, 2, figsize=(4, 2))
+    plt.subplots_adjust(left=0.14, bottom=0.12, right=1, top=0.92, wspace=-0.03, hspace=0)
+    spectrogram1 = np.abs(Zxx[: freq_bin_high, int(start * 50): int(stop * 50)])
+    spectrogram2 = np.abs(imu[: freq_bin_high, int(start * 50): int(stop * 50)])
+
+    axs[0].locator_params(axis='x', nbins=1)
+    axs[0].set_yticks([0, 100, 400, 800])
+    # rect = patches.Rectangle((1.05, 200), 0.7, 550, linewidth=1, edgecolor='w', facecolor='none')
+    # axs[0].add_patch(rect)
+    axs[0].axline((0, 100), (2, 100), color='w')
+    im1 = axs[0].imshow(spectrogram1, extent=[0, stop - start, 0, 800],
+                        aspect='auto', origin='lower', vmin=0, vmax=vmax[0])
+    cb1 = fig.colorbar(im1, ticks=[], ax=axs[0], aspect=50)
+    cb1.ax.text(2.5, 0.05, '0', transform=cb1.ax.transAxes, va='top', ha='center')
+    cb1.ax.text(1.1, 1, str(vmax[0]), transform=cb1.ax.transAxes, va='bottom', ha='center')
+
+    axs[1].locator_params(axis='x', nbins=1)
+    axs[1].set_yticks([])
+    axs[1].axline((0,100), (2, 100), color='w')
+    im2 = axs[1].imshow(spectrogram2, extent=[0, stop - start, 0, 800],
+                        aspect='auto', origin='lower', vmin=0, vmax=vmax[1])
+    cb2 = fig.colorbar(im2, ticks=[], ax=axs[1], aspect=50)
+    cb2.ax.text(2.5, 0.05, '0', transform=cb2.ax.transAxes, va='top', ha='center')
+    cb2.ax.text(1.1, 1, str(vmax[1]), transform=cb2.ax.transAxes, va='bottom', ha='center')
+
+    fig.text(0.2, 0.95, 'Microphone', va='center')
+    fig.text(0.65, 0.95, 'Acceleration', va='center')
+    fig.text(0.2, 0.04, 'Time(Sec)', va='center')
+    fig.text(0.65, 0.04, 'Time(Sec)', va='center')
+    fig.text(0.01, 0.50, 'Frequency(Hz)', va='center', rotation='vertical')
+    plt.savefig(n, dpi=600)
+    #plt.show()
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -61,109 +95,55 @@ if __name__ == "__main__":
                         help='mode of processing, 0-WER, 1-spectrogram compare, 2-low, high frequency')
     args = parser.parse_args()
     if args.mode == 0:
-        ground_truth = {'s1': ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
-                        's2': ["WE", "WANT", "TO", "IMPROVE", "SPEECH", "QUALITY", "IN", "THIS", "PROJECT"],
-                        's3': ["BUT", "WE", "DON'T", "HAVE", "ENOUGH", "DATA", "TO", "TRAIN", "OUR", "MODEL"],
-                        's4': ["TRANSFER", "FUNCTION", "CAN", "BE", "A", "GOOD", "HELPER", "TO", "GENERATE", "DATA"]}
-        sentences = ['s1', 's2', 's3', 's4']
-        plt_WER = []
-        brand = ['galaxy', 'freebud', 'airpod', 'logitech']
-        for earphone in brand:
-            WER_one = []
-            for s in sentences:
-                gt = ground_truth[s]
-                path = os.path.join('exp7/measurement', earphone, s)
-                if earphone == 'logitech':
-                    files = os.listdir(path)
-                else:
-                    files = os.listdir(path)[1::2]
-                N = len(files)
-                asr_model = EncoderDecoderASR.from_hparams(source="pretrained_models/asr-transformer-transformerlm-librispeech",
-                                                           savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
-                                                           run_opts={"device": "cuda"})
-                WER = []
-                for i in range(N):
-                    text = asr_model.transcribe_file(os.path.join(path, files[i])).split()
-                    WER.append(wer(gt, text))
-                WER_one.append(sum(WER) / len(WER))
-            plt_WER.append(WER_one)
+        functions = os.listdir('transfer_function')
+        collect1 = {}
+        collect2 = {}
+        for f in functions:
+            r = np.load('transfer_function/' + f)['response']
+            v = np.load('transfer_function/' + f)['variance']
+            id = int(f.split('_')[0])
+            if id not in collect1:
+                collect1[id] = r
+                collect2[id] = v
+            else:
+                collect1[id] = np.column_stack([collect1[id], r])
+                collect2[id] = np.column_stack([collect2[id], r])
 
-        fig, ax = plt.subplots(1, figsize=(5, 4))
-        wer = np.mean(plt_WER, axis=1)
-        x = np.arange(len(brand))
-        width = 0.4
-        plt.bar(x, wer, width=width, fc='b')
-        plt.xticks(x, brand, fontsize=12)
-        plt.title('Word Error Rate')
-        plt.ylabel('WER/%')
-        plt.savefig('wer_pesq.eps', dpi=300)
+        fig, axs = plt.subplots(1, figsize=(5, 3))
+        for i in range(2):
+            response = np.mean(collect1[i], axis=1)
+            variance = np.mean(collect2[i], axis=1)
+            #plt.plot(response)
+            plt.errorbar(range(33), response, yerr=variance/3, fmt='-o', label='volunteer'+str(i))
+        plt.xticks([0, 7, 15, 23, 31], [0, 200, 400, 600, 800])
+        plt.legend()
 
-    elif args.mode == 1:
-        start = 50
-        end = 100
-        sentences = ['s1', 's2', 's3', 's4']
-        for s in sentences:
-            path = os.path.join('exp7/hou', s, 'mobile')
-            files = os.listdir(path)
-            N = int(len(files) / 4)
-            files_imu1 = files[:N]
-            files_imu2 = files[N:2 * N]
-            files_mic1 = files[2 * N:3 * N]
-            files_mic2 = files[3 * N:]
-            files_mic2.sort(key=lambda x: int(x[4:-4]))
-            for i in range(N):
-                Zxx1, Zxx2, imu1, imu2 = data_extract(path, files_mic1, files_mic2, files_imu1, files_imu2, i)
-                imu1 = synchronize(imu1, imu1, np.abs(Zxx1[freq_bin_low:freq_bin_high, :]))
+        fig.text(0.4, 0.02, 'Frequency(Hz)', va='center')
+        fig.text(0.02, 0.575, '${S_Acc}/{S_Mic}$', va='center', rotation='vertical')
+        plt.savefig('transfer_variance.pdf', dpi=600)
+        plt.show()
 
-                fig, axs = plt.subplots(1, 3, sharey=True, figsize=(5, 3))
-                fig.subplots_adjust(top=0.97, right=0.97, bottom=0.14, wspace=0.1, hspace=0)
-
-                for ax in axs:
-                    ax.xaxis.label.set_color('white')
-                    ax.xaxis.set_label_coords(0.5, 0.08)
-                    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-                axs[0].imshow(np.abs(Zxx1[freq_bin_low:freq_bin_high, start:end]), extent=[0, 1, 800, 100], aspect='auto')
-                axs[1].imshow(np.abs(Zxx2[freq_bin_low:freq_bin_high, start:end]), extent=[0, 1, 800, 100], aspect='auto')
-                axs[2].imshow(imu1[freq_bin_low:, start:end], extent=[0, 1, 800, 100], aspect='auto')
-                axs[0].set_xlabel('Ground Truth')
-                axs[1].set_xlabel('Mic, EarSense')
-                axs[2].set_xlabel('Acc, EarSense')
-                fig.text(0.45, 0.022, 'Time (Second)', va='center')
-                fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
-                plt.savefig('compare.eps', dpi=300)
-                plt.show()
     else:
-        start = 50
-        end = 100
-        sentences = ['s1', 's2', 's3', 's4']
-        for s in sentences:
-            path = os.path.join('exp7/hou', s, 'mobile')
-            files = os.listdir(path)
-            N = int(len(files) / 4)
-            files_imu1 = files[:N]
-            files_imu2 = files[N:2 * N]
-            files_mic1 = files[2 * N:3 * N]
-            files_mic2 = files[3 * N:]
-            files_mic2.sort(key=lambda x: int(x[4:-4]))
-            for i in range(N):
-                Zxx1, Zxx2, imu1, imu2 = data_extract(path, files_mic1, files_mic2, files_imu1, files_imu2, i)
-                imu1 = synchronize(imu1, imu1, np.abs(Zxx1[freq_bin_low:freq_bin_high, :]))
+        path = os.path.join('exp7/measurement/')
+        files = os.listdir(path)
+        N = int(len(files) / 4)
+        files_imu1 = files[:N]
+        files_imu2 = files[N:2 * N]
+        files_mic1 = files[2 * N:3 * N]
+        files_mic2 = files[3 * N:]
+        files_mic2.sort(key=lambda x: int(x[4:-4]))
+        crop = [[0.5, 2.5], [1.5, 3.5], [0.5, 2.5], [1, 3]]
+        name = ['clean', 'noise', 'move', 'notalk']
+        #vmax = [[[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]]]
+        vmax = [[0.05, 0.02], [0.05, 0.02], [0.05, 0.02], [0.05, 0.02]]
+        for i in range(1, 4):
+            select = [1, 5, 6, 13]
+            v = vmax[i]
+            start = crop[i][0]
+            stop = crop[i][1]
+            n = name[i]
+            i = select[i]
 
-                fig, axs = plt.subplots(1, 2, figsize=(5, 4))
-                fig.subplots_adjust(top=0.97, right=0.97, bottom=0.14, wspace=0.25, hspace=0)
-
-                for ax in axs:
-                    ax.xaxis.label.set_color('white')
-                    ax.xaxis.set_label_coords(0.5, 0.08)
-                    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-                imu1 = np.vstack((imu1, np.zeros(imu1.shape)))
-                axs[0].imshow(np.abs(Zxx1[freq_bin_low: 2 * freq_bin_high, start:end]), extent=[0, 1, 1600, 100], aspect='auto')
-                axs[1].imshow(imu1[freq_bin_low:, start:end], extent=[0, 1, 1600, 100], aspect='auto')
-                axs[0].set_xlabel('Mic')
-                axs[1].set_xlabel('Acc')
-                fig.text(0.45, 0.022, 'Time (Second)', va='center')
-                fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
-                plt.savefig('compare.eps', dpi=300)
-                plt.show()
-
+            Zxx1, Zxx2, imu1, imu2 = data_extract(path, files_mic1[i], files_mic2[i], files_imu1[i], files_imu2[i])
+            draw(Zxx2, imu1, start, stop, n + '.pdf', v)
 
