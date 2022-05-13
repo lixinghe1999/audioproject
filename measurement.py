@@ -26,7 +26,7 @@ overlap_imu = 224
 rate_mic = 16000
 rate_imu = 1600
 T = 5
-freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
+freq_bin_high = int(2 * rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_limit = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(T*rate_mic/(seg_len_mic-overlap_mic)) + 1
@@ -47,22 +47,23 @@ def data_extract(path, files_mic1, files_mic2, files_imu1, files_imu2):
     # wave_1 = signal.filtfilt(b, a, wave_1)
     # wave_2 = signal.filtfilt(b, a, wave_2)
 
-    Zxx1 = signal.stft(wave_1, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1]
-    Zxx2 = signal.stft(wave_2, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1]
+    Zxx1 = np.abs(signal.stft(wave_1, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1])
+    Zxx2 = np.abs(signal.stft(wave_2, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1])
 
     data1, imu1 = imuplot.read_data(os.path.join(path, files_imu1), seg_len_imu, overlap_imu, rate_imu, filter=True)
     data2, imu2 = imuplot.read_data(os.path.join(path, files_imu2), seg_len_imu, overlap_imu, rate_imu, filter=True)
+    imu1 = np.pad(imu1, ((0, 128), (0, 0)))
+    imu2 = np.pad(imu2, ((0, 128), (0, 0)))
     return Zxx1, Zxx2, imu1, imu2
 def draw(Zxx, imu, start, stop, n, vmax):
     fig, axs = plt.subplots(1, 2, figsize=(4, 2))
     plt.subplots_adjust(left=0.14, bottom=0.12, right=1, top=0.92, wspace=-0.03, hspace=0)
-    spectrogram1 = np.abs(Zxx[: freq_bin_high, int(start * 50): int(stop * 50)])
-    spectrogram2 = np.abs(imu[: freq_bin_high, int(start * 50): int(stop * 50)])
+    spectrogram1 = Zxx[: freq_bin_high, int(start * 50): int(stop * 50)]
+    spectrogram2 = imu[: freq_bin_high, int(start * 50): int(stop * 50)]
 
     axs[0].locator_params(axis='x', nbins=1)
     axs[0].set_yticks([0, 100, 400, 800])
-    # rect = patches.Rectangle((1.05, 200), 0.7, 550, linewidth=1, edgecolor='w', facecolor='none')
-    # axs[0].add_patch(rect)
+
     axs[0].axline((0, 100), (2, 100), color='w')
     im1 = axs[0].imshow(spectrogram1, extent=[0, stop - start, 0, 800],
                         aspect='auto', origin='lower', vmin=0, vmax=vmax[0])
@@ -70,6 +71,8 @@ def draw(Zxx, imu, start, stop, n, vmax):
     cb1.ax.text(2.5, 0.05, '0', transform=cb1.ax.transAxes, va='top', ha='center')
     cb1.ax.text(1.1, 1, str(vmax[0]), transform=cb1.ax.transAxes, va='bottom', ha='center')
 
+    rect = patches.Rectangle((1.05, 200), 0.7, 550, linewidth=1, edgecolor='w', facecolor='none')
+    axs[1].add_patch(rect)
     axs[1].locator_params(axis='x', nbins=1)
     axs[1].set_yticks([])
     axs[1].axline((0,100), (2, 100), color='w')
@@ -136,7 +139,7 @@ if __name__ == "__main__":
         name = ['clean', 'noise', 'move', 'notalk']
         #vmax = [[[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]]]
         vmax = [[0.05, 0.02], [0.05, 0.02], [0.05, 0.02], [0.05, 0.02]]
-        for i in range(1, 4):
+        for i in range(4):
             select = [1, 5, 6, 13]
             v = vmax[i]
             start = crop[i][0]
