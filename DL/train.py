@@ -111,11 +111,11 @@ if __name__ == "__main__":
             # ckpt = {'module.' + k: v for k, v in ckpt.items()}
             # print(pth_file)
 
-            model.load_state_dict(ckpt)
-            ckpt, _ = train(train_dataset, 5, 0.001, 32, Loss, device, model)
-            model.load_state_dict(ckpt)
-            ckpt, _ = train(user_dataset, 2, 0.0001, 4, Loss, device, model)
-            model.load_state_dict(ckpt)
+            # model.load_state_dict(ckpt)
+            # ckpt, _ = train(train_dataset, 5, 0.001, 32, Loss, device, model)
+            # model.load_state_dict(ckpt)
+            # ckpt, _ = train(user_dataset, 2, 0.0001, 4, Loss, device, model)
+            # model.load_state_dict(ckpt)
 
             file = open(pkl_folder + "noise_paras.pkl", "rb")
             paras = pickle.load(file)
