@@ -309,6 +309,7 @@ if __name__ == "__main__":
                     wav = file_list[3 * N:]
 
                     for i in range(N):
+                        f = open(os.path.join(path, imu1[i]), encoding='utf-8')
                         imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i]), encoding='utf-8').readlines())])
                         wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
                         gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
