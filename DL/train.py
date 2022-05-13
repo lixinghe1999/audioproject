@@ -75,8 +75,8 @@ if __name__ == "__main__":
     pkl_folder = "pkl/stft/"
     #Loss = nn.MSELoss()
     if args.mode == 0:
-        BATCH_SIZE = 64
-        lr = 0.001
+        BATCH_SIZE = 256
+        lr = 0.0002
         EPOCH = 30
         dataset = NoisyCleanSet('json/speech100.json', 'json/all_noise.json', alpha=(1, 0.002, 0.002, 0.002), ratio=1)
         model = nn.DataParallel(A2net()).to(device)
