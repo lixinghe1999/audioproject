@@ -78,7 +78,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 64
         lr = 0.001
         EPOCH = 30
-        dataset = NoisyCleanSet('json/speech100.json', 'json/all_noise.json', alpha=(1, 0.06, 0.1, 0.1), ratio=1)
+        dataset = NoisyCleanSet('json/speech100.json', 'json/all_noise.json', alpha=(0.06, 0.1, 0.1), ratio=1)
 
         model = nn.DataParallel(A2net()).to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=True)
@@ -103,9 +103,9 @@ if __name__ == "__main__":
             train_dataset = Data.ConcatDataset(datasets)
             user_dataset = IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/clean_train_wavexp7.json', ratio=1, person=[target], minmax=norm_clean[target])
             model = nn.DataParallel(A2net()).to(device)
-            #ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
+            ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
             #ckpt = torch.load('pretrain/mel/0.0034707123340922408.pth')
-            ckpt = torch.load('pretrain/0.0010216500031674514.pth')
+            #ckpt = torch.load('pretrain/0.0013937646290287375.pth')
             # for f in os.listdir('checkpoint/5min'):
             #     if f[-3:] == 'pth' and f[:len(target)] == target:
             #         pth_file = f

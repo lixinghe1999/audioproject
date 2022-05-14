@@ -1,19 +1,13 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-# author: adefossez and adiyoss
 import os
 import json
 import math
 import numpy as np
 import torch
 import torch.utils.data as Data
+import scipy.stats as stats
 import pickle
 import argparse
 import torchaudio
-#torchaudio.set_audio_backend("sox_io")
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
@@ -49,6 +43,16 @@ def melspectrogram(stft, filters, sample):
         mel.append(np.expand_dims(m, 0))
     return mel
 
+def read_gamma_transfer_function(path):
+    transfer_function = []
+    pkls = os.listdir(path)
+    for file in pkls:
+        my_file = os.path.join(path, file)
+        with open(my_file, 'rb') as f:
+            parameters = pickle.load(f)
+            transfer_function.append(parameters)
+    return transfer_function
+
 def read_transfer_function(path):
     npzs = os.listdir(path)
     transfer_function = np.zeros((len(npzs), freq_bin_high))
@@ -58,6 +62,7 @@ def read_transfer_function(path):
         transfer_function[i, :] = npz['response']
         variance[i, :] = npz['variance']
     return transfer_function, variance
+
 def noise_extraction():
     noise_list = os.listdir('../dataset/noise/')
     index = np.random.randint(0, len(noise_list))
@@ -65,14 +70,33 @@ def noise_extraction():
     index = np.random.randint(0, noise_clip.shape[1] - time_bin)
     return noise_clip[:, index:index + time_bin]
 
+def gamma_synthetic(clean, transfer_function):
+    index = np.random.randint(0, N)
+    parameters = transfer_function[index]
+    response = np.empty((freq_bin_high, time_bin))
+    for i in range(freq_bin_high):
+        p = parameters[i]
+        if len(p) == 2:
+            # normal distribution
+            response[i, :] = stats.norm.rvs(p[0], p[1], size=time_bin)
+        else:
+            # gamma distribution
+            response[i, :] = stats.gamma.rvs(p[0], loc=p[1], scale=p[2], size=time_bin)
+    response = response / np.max(response, axis=0)
+
+    noisy = clean[:, :freq_bin_high, :] * response
+    background_noise = noise_extraction()
+    noisy += 1 * background_noise
+    return noisy
+
 def synthetic(clean, transfer_function, variance):
     index = np.random.randint(0, N)
     f = transfer_function[index, :]
     f_norm = f / np.max(f)
     v_norm = variance[index, :] / np.max(f)
     response = np.tile(np.expand_dims(f_norm, axis=1), (1, time_bin))
-    # for j in range(time_bin):
-    #     response[:, j] += np.random.normal(0, v_norm, (freq_bin_high))
+    for j in range(time_bin):
+        response[:, j] += np.random.normal(0, v_norm, (freq_bin_high))
     noisy = clean[:, :freq_bin_high, :] * response
     background_noise = noise_extraction()
     noisy += 2 * background_noise
@@ -151,7 +175,7 @@ class Audioset:
                 out = signal.filtfilt(b, a, out)
             return out, file
 class NoisyCleanSet:
-    def __init__(self, json_path1, json_path2, phase=False, alpha=[1, 0.1, 0.1, 0.1], ratio=1):
+    def __init__(self, json_path1, json_path2, phase=False, alpha=[0.1, 0.1, 0.1], ratio=1):
         """__init__. n
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -167,8 +191,9 @@ class NoisyCleanSet:
         self.clean_set = Audioset(clean)
         self.noise_set = Audioset(noise)
         transfer_function, variance = read_transfer_function(function_pool)
-        self.transfer_function = transfer_function
         self.variance = variance
+        #transfer_function = read_gamma_transfer_function(function_pool)
+        self.transfer_function = transfer_function
         self.alpha = alpha
         self.phase = phase
         self.ratio = ratio
@@ -183,9 +208,10 @@ class NoisyCleanSet:
         speech = spectrogram(speech)
         # use mel-spectrogram instead
         # [noise, speech] = melspectrogram([np.abs(noise), np.abs(speech)], filters=[264, 264], sample=[16000, 16000])
-        imu = synthetic(np.abs(speech) / self.alpha[0], self.transfer_function, self.variance) / self.alpha[1]
-        noise = noise / self.alpha[2]
-        speech = speech / self.alpha[3]
+        imu = synthetic(np.abs(speech), self.transfer_function, self.variance) / self.alpha[0]
+        #imu = gamma_synthetic(np.abs(speech), self.transfer_function) / self.alpha[0]
+        noise = noise / self.alpha[1]
+        speech = speech / self.alpha[2]
         noise = noise[:, :8 * freq_bin_high, :]
         speech = speech[:, :8 * freq_bin_high, :]
         if self.phase:
@@ -341,7 +367,7 @@ if __name__ == "__main__":
         norm('mobile_paras.pkl', ['json/mobile_imuexp7.json', 'json/mobile_wavexp7.json', 'json/mobile_wavexp7.json'], True, ['he', 'hou'])
 
     elif args.mode == 3:
-        dataset_train = NoisyCleanSet('json/speech100.json', 'json/speech.json', alpha=(1, 0.06, 0.1, 0.1))
+        dataset_train = NoisyCleanSet('json/speech100.json', 'json/speech.json', alpha=(0.06, 0.1, 0.1))
         #dataset_train = IMUSPEECHSet('json/noise_train_imuexp7.json', 'json/noise_train_gtexp7.json', 'json/noise_train_wavexp7.json', simulate=False, person=['he'])
         #dataset_train = IMUSPEECHSet('json/noise_imuexp7.json', 'json/noise_gtexp7.json', 'json/noise_wavexp7.json', simulate=False, person=['airpod'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=True)
@@ -352,13 +378,13 @@ if __name__ == "__main__":
             x = np.abs(x.numpy()[0, 0])
             noise = np.abs(noise.numpy()[0, 0])
             y = np.abs(y.numpy()[0, 0])
-            # print(np.max(x), np.max(noise), np.max(y))
-            # fig, axs = plt.subplots(3, 1)
-            #
-            # axs[0].imshow(x, aspect='auto')
-            # axs[1].imshow(np.abs(noise[:freq_bin_high,:]), aspect='auto')
-            # axs[2].imshow(np.abs(y[:freq_bin_high,:]), aspect='auto')
-            # plt.show()
+            print(np.max(x), np.max(noise), np.max(y))
+            fig, axs = plt.subplots(3, 1)
+            axs[0].imshow(x, aspect='auto')
+            axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
+            axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
+            plt.show()
+
             x_mean.append(np.max(x))
             noise_mean.append(np.max(noise))
             y_mean.append(np.max(y))
@@ -368,7 +394,7 @@ if __name__ == "__main__":
         print(sum(noise_mean) / len(noise_mean))
         print(sum(y_mean) / len(y_mean))
     else:
-        transfer_function, variance = read_transfer_function('../transfer_function')
+        transfer_function, variance = read_transfer_function('../gamma_transfer_function')
         for i in range(19):
             index = np.random.randint(0, N)
             plt.plot(transfer_function[index, :])

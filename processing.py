@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 # from matplotlib import rc
 # rc('text', usetex=True)
 # plt.rcParams.update({'font.size': 12})
+import pickle
 import os
 import imuplot
 import micplot
@@ -44,21 +45,17 @@ def estimate_response(Zxx, imu):
     select2 = imu > 1 * filters.threshold_otsu(imu)
     select = select2 & select1
     Zxx_ratio = np.divide(imu, Zxx, out=np.zeros_like(imu), where=select)
-    new_variance = np.zeros(freq_bin_high)
-    new_response = np.zeros(freq_bin_high)
+    response = np.zeros((2, freq_bin_high))
     for i in range(freq_bin_high):
         if np.sum(select[i, :]) > 0:
-            new_response[i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
-            new_variance[i] = np.std(Zxx_ratio[i, :], where=select[i, :])
-    return new_response, new_variance
-def transfer_function(j, imu, Zxx, response, variance):
-    clip1 = imu[:, j * time_stride:j * time_stride + time_bin]
-    clip2 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
-    new_response, new_variance = estimate_response(clip2, clip1)
-    if filter_function(new_response):
+            response[0, i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
+            response[1, i] = np.std(Zxx_ratio[i, :], where=select[i, :])
+    return response
+def transfer_function(clip1, clip2, response):
+    new_response = estimate_response(clip2, clip1)
+    if filter_function(new_response[0, :]):
         response = 0.5 * new_response + 0.5 * response
-        variance = 0.5 * new_variance + 0.5 * variance
-    return response, variance
+    return response
 def ratio_accumulate(Zxx, imu, Zxx_valid):
     Zxx = Zxx[:freq_bin_high, :]
     select1 = Zxx > 1 * filters.threshold_otsu(Zxx)
@@ -70,6 +67,19 @@ def ratio_accumulate(Zxx, imu, Zxx_valid):
             new_Zxx = Zxx_ratio[i, select[i, :]].tolist()
             Zxx_valid[i] = Zxx_valid[i] + new_Zxx
     return Zxx_valid
+def ratio_gamma(Zxx_valid):
+    parameters = []
+    for j in range(freq_bin_high):
+        distribution = np.array(Zxx_valid[j])
+        if len(distribution) > 20:
+            fit_alpha, fit_loc, fit_beta = stats.gamma.fit(distribution)
+            parameters.append([fit_alpha, fit_loc, fit_beta])
+        elif len(distribution) > 0:
+            mean, std = np.mean(distribution), np.std(distribution)
+            parameters.append([mean, std])
+        else:
+            parameters.append([0, 0])
+    return parameters
 def error(imu, Zxx, response, variance):
     num_time = np.shape(imu)[1]
     full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
@@ -112,56 +122,39 @@ if __name__ == "__main__":
             files_mic1 = files[2 * N:3 * N]
             files_mic2 = files[3 * N:]
 
-
             for index in range(N):
-                response, variance = np.zeros(freq_bin_high), np.zeros(freq_bin_high)
+                response = np.zeros((2, freq_bin_high))
                 wave, Zxx, phase = micplot.load_stereo(path + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
                 data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
-                imu1 = synchronization(Zxx, imu1)
                 # data2, imu2 = imuplot.read_data(path + files_imu2[i], seg_len_imu, overlap_imu, rate_imu)
                 # Zxx = librosa.feature.melspectrogram(S=Zxx, sr=rate_mic, n_mels=264)
                 # imu1 = librosa.feature.melspectrogram(S=imu1, sr=rate_imu, n_mels=33)
-                Zxx_valid = ratio_accumulate(Zxx, imu1, Zxx_valid)
-            values = []
-            for j in range(freq_bin_high):
-                if len(Zxx_valid[j]) > 100:
-                    distribution = np.array(Zxx_valid[j])
-                    np.savetxt('distribution/' + str(i) + '_' + str(j) + '.csv', distribution, delimiter = ',')
-                    #distribution = distribution[distribution<15]
-                    # mean = np.mean(distribution)
-                    # std = np.std(distribution)
-                    # values.append(stats.kstest(distribution, 'norm', (mean, std))[-1])
-                    # #values.append(stats.kstest(sample+1, sample)[-1])
-                    # print(values[-1])
-                    # plt.hist(distribution, bins=30)
-                    # plt.show()
-            #print(np.mean(values))
 
-                # for j in range(int((T - segment) / stride) + 1):
-                #
-                #     response, variance = transfer_function(j, imu1, Zxx, response, variance)
-                #     #response, variance = transfer_function(j, imu2, Zxx, response, variance)
-                #
-                #     clip3 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
-                #     clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
-                #
-                #     full_response = np.tile(np.expand_dims(response, axis=1), (1, time_bin))
-                #     for j in range(time_bin):
-                #         full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
-                #     augmentedZxx = clip3 * full_response
-                #     e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
-                #     error.append(e)
-                #     augmentedZxx += noise_extraction()
-                #
-                #     fig, axs = plt.subplots(2, figsize=(5, 3))
-                #     axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
-                #     axs[0].set_xticks([])
-                #     axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
-                #     fig.text(0.44, 0.022, 'Time (Sec)', va='center')
-                #     fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
-                #     plt.savefig('synthetic_compare.pdf')
-                #     plt.show()
+                for j in range(int((T - segment) / stride) + 1):
+                    clip2 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
+                    clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
+                    clip1 = synchronization(clip2, clip1)
 
+                    # store gamma distribution parameters
+                    Zxx_valid = ratio_accumulate(clip2, clip1, Zxx_valid)
+
+                    response = transfer_function(clip1, clip2, response)
+                    full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
+                    for j in range(time_bin):
+                        full_response[:, j] += stats.norm.rvs(response[0, :], response[1, :])
+                    augmentedZxx = clip2 * full_response
+                    e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
+                    error.append(e)
+                    augmentedZxx += noise_extraction()
+
+                    fig, axs = plt.subplots(2, figsize=(5, 3))
+                    axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                    axs[0].set_xticks([])
+                    axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                    fig.text(0.44, 0.022, 'Time (Sec)', va='center')
+                    fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
+                    plt.savefig('synthetic_compare.pdf')
+                    plt.show()
                 # full_response = np.tile(np.expand_dims(response, axis=1), (1, 1501))
                 # for j in range(time_bin):
                 #     full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
@@ -172,7 +165,10 @@ if __name__ == "__main__":
                 #     np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
                 #              response=response, variance=variance)
                 #     count += 1
-            #print(sum(error)/len(error))
+            parameters = ratio_gamma(Zxx_valid)
+            my_file = 'gamma/' + str(i) + '.pkl'
+            with open(my_file, 'wb') as f:
+                pickle.dump(parameters, f)
     elif args.mode == 1:
         for name in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
             print(name)
