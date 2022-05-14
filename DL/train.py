@@ -102,7 +102,7 @@ if __name__ == "__main__":
                 datasets.append(IMUSPEECHSet('json/noise_train_imuexp7.json', 'json/noise_train_gtexp7.json', 'json/noise_train_wavexp7.json', simulate=False, person=[c], minmax=norm_noise[c]))
             train_dataset = Data.ConcatDataset(datasets)
             user_dataset = IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/clean_train_wavexp7.json', ratio=1, person=[target], minmax=norm_clean[target])
-            model = nn.DataParallel(A2net()).to(device)
+            model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
             ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
             #ckpt = torch.load('pretrain/mel/0.0034707123340922408.pth')
             #ckpt = torch.load('pretrain/0.0013937646290287375.pth')
