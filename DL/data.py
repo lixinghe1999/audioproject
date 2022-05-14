@@ -25,7 +25,7 @@ rate_mic = 16000
 rate_imu = 1600
 length = 5
 stride = 5
-function_pool = '../transfer_function'
+function_pool = '../gamma_transfer_function'
 N = len(os.listdir(function_pool))
 
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
@@ -190,9 +190,9 @@ class NoisyCleanSet:
             noise = json.load(f)
         self.clean_set = Audioset(clean)
         self.noise_set = Audioset(noise)
-        transfer_function, variance = read_transfer_function(function_pool)
-        self.variance = variance
-        #transfer_function = read_gamma_transfer_function(function_pool)
+        # transfer_function, variance = read_transfer_function(function_pool)
+        # self.variance = variance
+        transfer_function = read_gamma_transfer_function(function_pool)
         self.transfer_function = transfer_function
         self.alpha = alpha
         self.phase = phase
@@ -208,8 +208,8 @@ class NoisyCleanSet:
         speech = spectrogram(speech)
         # use mel-spectrogram instead
         # [noise, speech] = melspectrogram([np.abs(noise), np.abs(speech)], filters=[264, 264], sample=[16000, 16000])
-        imu = synthetic(np.abs(speech), self.transfer_function, self.variance) / self.alpha[0]
-        #imu = gamma_synthetic(np.abs(speech), self.transfer_function) / self.alpha[0]
+        #imu = synthetic(np.abs(speech), self.transfer_function, self.variance) / self.alpha[0]
+        imu = gamma_synthetic(np.abs(speech), self.transfer_function) / self.alpha[0]
         noise = noise / self.alpha[1]
         speech = speech / self.alpha[2]
         noise = noise[:, :8 * freq_bin_high, :]

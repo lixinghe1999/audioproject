@@ -71,11 +71,13 @@ def ratio_gamma(Zxx_valid):
     parameters = []
     for j in range(freq_bin_high):
         distribution = np.array(Zxx_valid[j])
-        if len(distribution) > 20:
+        if len(distribution) > 100:
             fit_alpha, fit_loc, fit_beta = stats.gamma.fit(distribution)
+            print(fit_alpha, fit_loc, fit_beta)
             parameters.append([fit_alpha, fit_loc, fit_beta])
         elif len(distribution) > 0:
             mean, std = np.mean(distribution), np.std(distribution)
+            print(mean, std)
             parameters.append([mean, std])
         else:
             parameters.append([0, 0])
@@ -138,23 +140,23 @@ if __name__ == "__main__":
                     # store gamma distribution parameters
                     Zxx_valid = ratio_accumulate(clip2, clip1, Zxx_valid)
 
-                    response = transfer_function(clip1, clip2, response)
-                    full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
-                    for j in range(time_bin):
-                        full_response[:, j] += stats.norm.rvs(response[0, :], response[1, :])
-                    augmentedZxx = clip2 * full_response
-                    e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
-                    error.append(e)
-                    augmentedZxx += noise_extraction()
-
-                    fig, axs = plt.subplots(2, figsize=(5, 3))
-                    axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
-                    axs[0].set_xticks([])
-                    axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
-                    fig.text(0.44, 0.022, 'Time (Sec)', va='center')
-                    fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
-                    plt.savefig('synthetic_compare.pdf')
-                    plt.show()
+                    # response = transfer_function(clip1, clip2, response)
+                    # full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
+                    # for j in range(time_bin):
+                    #     full_response[:, j] += stats.norm.rvs(response[0, :], response[1, :])
+                    # augmentedZxx = clip2 * full_response
+                    # e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
+                    # error.append(e)
+                    # augmentedZxx += noise_extraction()
+                    #
+                    # fig, axs = plt.subplots(2, figsize=(5, 3))
+                    # axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                    # axs[0].set_xticks([])
+                    # axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                    # fig.text(0.44, 0.022, 'Time (Sec)', va='center')
+                    # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
+                    # plt.savefig('synthetic_compare.pdf')
+                    # plt.show()
                 # full_response = np.tile(np.expand_dims(response, axis=1), (1, 1501))
                 # for j in range(time_bin):
                 #     full_response[:, j] += np.random.normal(0, variance, (freq_bin_high))
@@ -166,7 +168,7 @@ if __name__ == "__main__":
                 #              response=response, variance=variance)
                 #     count += 1
             parameters = ratio_gamma(Zxx_valid)
-            my_file = 'gamma/' + str(i) + '.pkl'
+            my_file = 'gamma_transfer_function/' + str(i) + '.pkl'
             with open(my_file, 'wb') as f:
                 pickle.dump(parameters, f)
     elif args.mode == 1:

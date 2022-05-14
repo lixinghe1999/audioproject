@@ -103,9 +103,9 @@ if __name__ == "__main__":
             train_dataset = Data.ConcatDataset(datasets)
             user_dataset = IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/clean_train_wavexp7.json', ratio=1, person=[target], minmax=norm_clean[target])
             model = nn.DataParallel(A2net()).to(device)
-            ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
+            #ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
             #ckpt = torch.load('pretrain/mel/0.0034707123340922408.pth')
-            #ckpt = torch.load('pretrain/0.0013937646290287375.pth')
+            ckpt = torch.load('pretrain/0.001415764829289401.pth')
             # for f in os.listdir('checkpoint/5min'):
             #     if f[-3:] == 'pth' and f[:len(target)] == target:
             #         pth_file = f

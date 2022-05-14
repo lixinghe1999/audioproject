@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     #speech real noise
     baseline = load('checkpoint/baseline/noise')
-    vibvoice = load('checkpoint/calibration_time/5')
+    vibvoice = load('checkpoint/new_5min')
     PESQ, SNR, WER = average(vibvoice, baseline)
     plot(['VibVoice', 'SepFormer', 'MetricGAN', 'Vendor'], WER, 'wer_speech.pdf', '$\Delta$WER\%', [0, 80])
 
