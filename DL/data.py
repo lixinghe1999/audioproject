@@ -323,9 +323,7 @@ if __name__ == "__main__":
                 json.dump(gt_files, open(name + '_gtexp7.json', 'w'), indent=4)
     elif args.mode == 2:
         # field = ['office', 'corridor', 'stair']
-        #
         # norm('field_paras.pkl', ['field_imuexp7.json', 'field_gtexp7.json', 'field_wavexp7.json'], False, field)
-        #
         # norm('field_train_paras.pkl', ['field_train_imuexp7.json', 'field_train_gtexp7.json', 'field_train_wavexp7.json'],False, ['canteen', 'station'])
 
         candidate_all = ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
@@ -343,7 +341,7 @@ if __name__ == "__main__":
         norm('mobile_paras.pkl', ['json/mobile_imuexp7.json', 'json/mobile_wavexp7.json', 'json/mobile_wavexp7.json'], True, ['he', 'hou'])
 
     elif args.mode == 3:
-        dataset_train = NoisyCleanSet('json/speech100.json', 'json/devclean.json', alpha=(1, 0.06, 0.1, 0.1))
+        dataset_train = NoisyCleanSet('json/speech100.json', 'json/speech.json', alpha=(1, 0.06, 0.1, 0.1))
         #dataset_train = IMUSPEECHSet('json/noise_train_imuexp7.json', 'json/noise_train_gtexp7.json', 'json/noise_train_wavexp7.json', simulate=False, person=['he'])
         #dataset_train = IMUSPEECHSet('json/noise_imuexp7.json', 'json/noise_gtexp7.json', 'json/noise_wavexp7.json', simulate=False, person=['airpod'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=True)

@@ -61,9 +61,10 @@ def draw(Zxx, imu, start, stop, n, vmax):
     spectrogram1 = Zxx[: 2 * freq_bin_high, int(start * 50): int(stop * 50)]
     spectrogram2 = imu[: 2 * freq_bin_high, int(start * 50): int(stop * 50)]
 
+    rect = patches.Rectangle((1.05, 200), 0.7, 550, linewidth=1, edgecolor='w', facecolor='none')
+    axs[0].add_patch(rect)
     axs[0].locator_params(axis='x', nbins=1)
     axs[0].set_yticks([0, 100, 400, 800, 1600])
-
     axs[0].axline((0, 100), (2, 100), color='w')
     im1 = axs[0].imshow(spectrogram1, extent=[0, stop - start, 0, 1600],
                         aspect='auto', origin='lower', vmin=0, vmax=vmax[0])
@@ -71,11 +72,10 @@ def draw(Zxx, imu, start, stop, n, vmax):
     cb1.ax.text(2.5, 0.05, '0', transform=cb1.ax.transAxes, va='top', ha='center')
     cb1.ax.text(1.1, 1, str(vmax[0]), transform=cb1.ax.transAxes, va='bottom', ha='center')
 
-    # rect = patches.Rectangle((1.05, 200), 0.7, 550, linewidth=1, edgecolor='w', facecolor='none')
-    # axs[1].add_patch(rect)
+
     axs[1].locator_params(axis='x', nbins=1)
     axs[1].set_yticks([])
-    axs[1].axline((0,100), (2, 100), color='w')
+    axs[1].axline((0, 100), (2, 100), color='w')
     im2 = axs[1].imshow(spectrogram2, extent=[0, stop - start, 0, 1600],
                         aspect='auto', origin='lower', vmin=0, vmax=vmax[1])
     cb2 = fig.colorbar(im2, ticks=[], ax=axs[1], aspect=50)
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         name = ['clean', 'noise', 'move', 'notalk']
         #vmax = [[[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]]]
         vmax = [[0.05, 0.02], [0.05, 0.02], [0.05, 0.02], [0.05, 0.02]]
-        for i in range(1, 4):
+        for i in [1]:
             select = [1, 5, 6, 13]
             v = vmax[i]
             start = crop[i][0]
