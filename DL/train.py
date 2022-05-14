@@ -78,7 +78,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 64
         lr = 0.001
         EPOCH = 30
-        dataset = NoisyCleanSet('json/speech100.json', 'json/allnoise.json', alpha=(1, 0.06, 0.1, 0.1), ratio=1)
+        dataset = NoisyCleanSet('json/speech100.json', 'json/all_noise.json', alpha=(1, 0.06, 0.1, 0.1), ratio=1)
 
         model = nn.DataParallel(A2net()).to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=True)
