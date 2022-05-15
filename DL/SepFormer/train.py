@@ -3,7 +3,6 @@ import torch
 from dataset.data_loader import MyDataset
 from torch.utils.data import DataLoader
 from src.trainer import Trainer
-from model.sepformer import Sepformer
 from model.dual_path import SepformerWrapper
 import json5
 import numpy as np
@@ -37,13 +36,6 @@ def main(config):
 
     # 模型
     if config["model"]["type"] == "sepformer":
-        # model = Sepformer(N=config["model"]["sepformer"]["N"],
-        #                   C=config["model"]["sepformer"]["C"],
-        #                   L=config["model"]["sepformer"]["L"],
-        #                   H=config["model"]["sepformer"]["H"],
-        #                   K=config["model"]["sepformer"]["K"],
-        #                   Global_B=config["model"]["sepformer"]["Global_B"],
-        #                   Local_B=config["model"]["sepformer"]["Local_B"])
         model = SepformerWrapper()
         model.load_state_dict(torch.load('checkpoint/pretrain.pth'))
     else:

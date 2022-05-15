@@ -20,7 +20,7 @@
 
   "train_loader":
   {
-   "batch_size": 1,
+   "batch_size": 4,
    "shuffle": true,
    "num_workers": 4,
   },

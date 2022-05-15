@@ -71,13 +71,14 @@ def ratio_gamma(Zxx_valid):
     parameters = []
     for j in range(freq_bin_high):
         distribution = np.array(Zxx_valid[j])
-        if len(distribution) > 100:
+        if len(distribution) > 300:
             fit_alpha, fit_loc, fit_beta = stats.gamma.fit(distribution)
-            print(fit_alpha, fit_loc, fit_beta)
+            #print(fit_alpha, fit_loc, fit_beta)
+            #print(stats.kstest(distribution, 'gamma', (fit_alpha, fit_loc, fit_beta))[-1])
             parameters.append([fit_alpha, fit_loc, fit_beta])
         elif len(distribution) > 0:
             mean, std = np.mean(distribution), np.std(distribution)
-            print(mean, std)
+            #print(mean, std)
             parameters.append([mean, std])
         else:
             parameters.append([0, 0])

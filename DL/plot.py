@@ -3,31 +3,6 @@ from matplotlib import rc
 rc('text', usetex=True)
 import numpy as np
 import os
-def wer_process(x):
-    x = x - x[:, 0][:, None]
-    baseline = np.min(x[:, 2:4], axis=1)
-    x = np.vstack([x[:, 1], baseline, x[:, 4]])
-    return x.T
-
-def pesq_process(x):
-    baseline = np.max(x[:, 1:3], axis=1)
-    x = np.vstack([x[:, 0], baseline, x[:, 3]])
-    return x.T
-
-def another_baseline(folder):
-    files = os.listdir(folder)
-    for i in range(len(files)):
-        f = files[i]
-        npz = np.load(os.path.join(folder, f))
-        x1, x2 = npz['PESQ'], npz['WER'][:, 1] - npz['WER'][:, 0]
-        if i == 0:
-            PESQ = x1
-            WER = x2
-        else:
-            PESQ = np.hstack([PESQ, x1])
-            WER = np.hstack([WER, x2])
-    metric = WER
-    return metric
 
 def load(path):
     files = os.listdir(path)
@@ -63,10 +38,10 @@ def plot(x, y, name, yaxis, lim):
 if __name__ == "__main__":
 
     #speech real noise
-    baseline = load('checkpoint/baseline/noise')
-    vibvoice = load('checkpoint/new_5min')
-    PESQ, SNR, WER = average(vibvoice, baseline)
-    plot(['VibVoice', 'SepFormer', 'MetricGAN', 'Vendor'], WER, 'wer_speech.pdf', '$\Delta$WER\%', [0, 80])
+    # baseline = load('checkpoint/baseline/noise')
+    # vibvoice = load('checkpoint/new_5min')
+    # PESQ, SNR, WER = average(vibvoice, baseline)
+    # plot(['VibVoice', 'SepFormer', 'MetricGAN', 'Vendor'], WER, 'wer_speech.pdf', '$\Delta$WER\%', [0, 80])
 
     # ablation study
     # baseline = load('checkpoint/baseline/noise')
@@ -86,18 +61,20 @@ if __name__ == "__main__":
     # plot(['1min', '2.5min', '5min'], np.array(improvement) * 100, 'wer_calibration_time.pdf', 'Improvement Ratio\%', [0, 60])
 
     # noise level
-    # for file in os.listdir('checkpoint/offline/level'):
-    #     npz = np.load(os.path.join('checkpoint/offline/level', file))
-    #     pesq = [np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:-1], axis=1)), np.mean(npz['PESQ'][:, -1])]
-    #     snr = [np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:-1], axis=1)), np.mean(npz['SNR'][:, -1])]
-    #     print(float(file[:-4]), pesq, snr)
+    # for file in os.listdir('checkpoint/offline/new_level'):
+    #     npz = np.load(os.path.join('checkpoint/offline/new_level', file))
+    #     pesq = [np.mean(npz['PESQ'][:, -1]), np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:-1], axis=1))]
+    #     snr = [np.mean(npz['SNR'][:, -1]), np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:-1], axis=1))]
+    #     lsd = [np.mean(npz['LSD'][:, -1]), np.mean(npz['LSD'][:, 0]), np.mean(np.min(npz['LSD'][:, 1:-1], axis=1))]
+    #     print(float(file[:-4]), pesq, snr, lsd)
 
     # noise type
-    # for file in os.listdir('checkpoint/offline/type'):
-    #     npz = np.load(os.path.join('checkpoint/offline/type', file))
-    #     pesq = [np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:], axis=1)), np.mean(npz['PESQ'][:, -1])]
-    #     snr = [np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:], axis=1)), np.mean(npz['SNR'][:, -1])]
-    #     print(file[:-4], pesq, snr)
+    for file in os.listdir('checkpoint/offline/new_type'):
+        npz = np.load(os.path.join('checkpoint/offline/new_type', file))
+        pesq = [np.mean(npz['PESQ'][:, -1]), np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:], axis=1))]
+        snr = [np.mean(npz['SNR'][:, -1]), np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:], axis=1))]
+        lsd = [np.mean(npz['LSD'][:, -1]), np.mean(npz['LSD'][:, 0]), np.mean(np.min(npz['LSD'][:, 1:], axis=1))]
+        print(file[:-4], pesq, snr, lsd)
 
     # augmented test
     # baseline = load('checkpoint/baseline/clean')

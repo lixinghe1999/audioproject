@@ -47,34 +47,11 @@ class MyDataset(Dataset):
             offset = self.stride * index
             duration = self.duration
             mix_data, _ = librosa.load(mix_path[0], offset=offset, duration=duration, sr=self.sr)
-            #mix_data = np.pad(mix_data, (0, duration * self.sr - mix_data.shape[-1]))
             length = len(mix_data)
 
             s1_data, _ = librosa.load(path=s1_path[0], offset=offset, duration=duration, sr=self.sr)
-            #s1_data = np.pad(s1_data, (0, duration * self.sr - s1_data.shape[-1]))
             s2_data, _ = librosa.load(path=s2_path[0], offset=offset, duration=duration, sr=self.sr)
-            #s2_data = np.pad(s2_data, (0, duration * self.sr - s2_data.shape[-1]))
-
             s_data = np.stack((s1_data, s2_data), axis=0)
             return mix_data, length, s_data
 
 
-
-if __name__ == "__main__":
-
-    dataset = MyDataset(data_dir="C:/Users/86188/Desktop/Speech_Separation/dataset/min/tr/",
-                        sr=8000)
-
-    data_loader = DataLoader(dataset=dataset,
-                             batch_size=1,
-                             shuffle=False,
-                             num_workers=8,
-                             drop_last=True)
-
-    for (i, data) in enumerate(data_loader):
-
-        if i >= 1:
-            break
-
-        mix, length, s = data
-        print(mix.shape, length, s.shape)

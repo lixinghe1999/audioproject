@@ -13,7 +13,7 @@ from SepFormer.separate import SepFormer
 from A2net import A2net
 
 from torch.nn.utils.rnn import pad_sequence
-from evaluation import wer, snr
+from evaluation import wer, snr, lsd
 from speechbrain.pretrained import EncoderDecoderASR, SpectralMaskEnhancement
 from speechbrain.pretrained import SepformerSeparation as separator
 import numpy as np
@@ -168,14 +168,9 @@ def save_audio(x, noise, y, model, enhance_model, device, count):
 
 def baseline(dataset):
     BATCH_SIZE = 1
-    asr_model = EncoderDecoderASR.from_hparams(source="../pretrained_models/asr-transformer-transformerlm-librispeech",
-                                               savedir="../pretrained_models/asr-transformer-transformerlm-librispeech",
-                                               run_opts={"device": "cuda"})
-    baseline_model1 = SpectralMaskEnhancement.from_hparams(source="../pretrained_models/metricgan-plus-voicebank",
-                                                         savedir="../pretrained_models/metricgan-plus-voicebank",
-                                                         run_opts={"device": "cuda"})
-    baseline_model2 = separator.from_hparams(source="../speechbrain/sepformer-whamr", savedir='../pretrained_models/sepformer-whamr',
-                                   run_opts={"device": "cuda"})
+    asr_model = EncoderDecoderASR.from_hparams(source="../pretrained_models/asr-transformer-transformerlm-librispeech",savedir="../pretrained_models/asr-transformer-transformerlm-librispeech",run_opts={"device": "cuda"})
+    baseline_model1 = SpectralMaskEnhancement.from_hparams(source="../pretrained_models/metricgan-plus-voicebank",savedir="../pretrained_models/metricgan-plus-voicebank",run_opts={"device": "cuda"})
+    baseline_model2 = separator.from_hparams(source="../speechbrain/sepformer-whamr", savedir='../pretrained_models/sepformer-whamr',run_opts={"device": "cuda"})
     # baseline_model2 = SepFormer(model_path='SepFormer/checkpoint/pretrain.pth')
     test_loader = Data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=False)
     PESQ = []
@@ -192,9 +187,7 @@ def baseline(dataset):
 def vibvoice(model, dataset):
     BATCH_SIZE = 1
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    asr_model = EncoderDecoderASR.from_hparams(source="../pretrained_models/asr-transformer-transformerlm-librispeech",
-                                               savedir="../pretrained_models/asr-transformer-transformerlm-librispeech",
-                                               run_opts={"device": "cuda"})
+    asr_model = EncoderDecoderASR.from_hparams(source="../pretrained_models/asr-transformer-transformerlm-librispeech",savedir="../pretrained_models/asr-transformer-transformerlm-librispeech",run_opts={"device": "cuda"})
     test_loader = Data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=False)
     PESQ = []
     SNR = []
@@ -215,6 +208,7 @@ def offline_evaluation(model, dataset):
     test_loader = Data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=False)
     PESQ = []
     SNR = []
+    LSD = []
     with torch.no_grad():
         for x, noise, y in test_loader:
             predict, _ = model(x.to(device=device, dtype=torch.float), torch.abs(noise).to(device=device,dtype=torch.float))
@@ -255,7 +249,14 @@ def offline_evaluation(model, dataset):
             value3 = snr(gt_audio, enhanced.numpy()[0])
             value4 = snr(gt_audio, ori_audio)
             SNR.append([value1, value2, value3, value4])
-    return PESQ, SNR
+
+            value1 = lsd(gt_audio, recover_audio)
+            value2 = min(lsd(gt_audio, est_source1.numpy()[0]), lsd(gt_audio, est_source2.numpy()[0]))
+            value3 = lsd(gt_audio, enhanced.numpy()[0])
+            value4 = lsd(gt_audio, ori_audio)
+            LSD.append([value1, value2, value3, value4])
+            print(LSD[-1])
+    return PESQ, SNR, LSD
 
 if __name__ == "__main__":
     # 0-noise, 1-clean, 2-mobile, 3-field
