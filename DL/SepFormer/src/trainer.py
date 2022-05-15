@@ -56,8 +56,8 @@ class Trainer(object):
 
             tr_loss = self._run_one_epoch(epoch)  # 训练模型
 
-            gc.collect()
-            torch.cuda.empty_cache()
+            # gc.collect()
+            # torch.cuda.empty_cache()
 
 
             end_time = time.time()  # 训练结束时间
