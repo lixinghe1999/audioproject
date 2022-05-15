@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--in-dir',
                         type=str,
-                        default="../../../dataset/bss",
+                        default="./bss",
                         help='Directory path of wsj0 including tr, cv and tt')
 
     parser.add_argument('--out-dir',
