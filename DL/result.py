@@ -260,7 +260,7 @@ def offline_evaluation(model, dataset):
 
 if __name__ == "__main__":
     # 0-noise, 1-clean, 2-mobile, 3-field
-    pkl_folder = 'pkl/stft'
+    pkl_folder = 'pkl/stft/'
     file = open(pkl_folder + "noise_paras.pkl", "rb")
     paras = pickle.load(file)
 
