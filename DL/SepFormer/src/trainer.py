@@ -25,7 +25,6 @@ class Trainer(object):
         # save and load model
         self.save_folder = config["save_load"]["save_folder"]  # 模型保存路径
         self.checkpoint = config["save_load"]["checkpoint"]  # 是否保存每一个训练模型
-        self.continue_from = config["save_load"]["continue_from"]  # 是否接着原来训练进度进行
         self.model_path = config["save_load"]["model_path"]  # 模型保存格式
 
         # logging
@@ -43,29 +42,9 @@ class Trainer(object):
         self.val_no_improve = 0
 
 
-        self._reset()
+        self.start_epoch = 0
 
         self.MixerMSE = MixerMSE()
-
-    def _reset(self):
-        if self.continue_from:
-            # 接着原来进度训练
-            print('Loading checkpoint model %s' % self.continue_from)
-            package = torch.load(self.save_folder + self.continue_from)
-
-            if isinstance(self.model, torch.nn.DataParallel):
-                self.model = self.model.module
-
-            self.model.load_state_dict(package['state_dict'])
-            self.optimizer.load_state_dict(package['optim_dict'])
-
-            self.start_epoch = int(package.get('epoch', 1))
-
-            self.tr_loss[:self.start_epoch] = package['tr_loss'][:self.start_epoch]
-            self.cv_loss[:self.start_epoch] = package['cv_loss'][:self.start_epoch]
-        else:
-            # 重新训练
-            self.start_epoch = 0
 
     def train(self):
         for epoch in range(self.start_epoch, self.epochs):
@@ -167,6 +146,7 @@ class Trainer(object):
                 padded_mixture = padded_mixture.cuda()
                 #mixture_lengths = mixture_lengths.cuda()
                 padded_source = padded_source.cuda()
+                print(padded_mixture.shape, padded_source.shape)
 
             estimate_source = self.model(padded_mixture)  # 将数据放入模型
             # loss, max_snr, estimate_source, reorder_estimate_source = cal_loss_pit(padded_source,estimate_source,mixture_lengths)

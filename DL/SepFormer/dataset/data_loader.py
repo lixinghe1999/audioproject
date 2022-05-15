@@ -38,7 +38,8 @@ class MyDataset(Dataset):
                 examples = (file[1] - self.duration * self.sr) // (self.stride *self.sr) + 1
             self.num_examples.append(examples)
     def __len__(self):
-        return sum(self.num_examples)
+        #return sum(self.num_examples)
+        return 20
     def __getitem__(self, index):
         for mix_path, s1_path, s2_path, examples in zip(self.mix_list, self.s1_list, self.s2_list, self.num_examples):
             if index >= examples:

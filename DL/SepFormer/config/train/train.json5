@@ -96,7 +96,6 @@
   {
     "save_folder": "./checkpoint/",
     "checkpoint": true,
-    "continue_from": "",
     "model_path": "final.pth",
   },
 
