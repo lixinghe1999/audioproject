@@ -40,8 +40,6 @@ class Trainer(object):
         self.best_val_loss = float("inf")
         self.halving = False
         self.val_no_improve = 0
-
-
         self.start_epoch = 0
 
         self.MixerMSE = MixerMSE()
@@ -58,7 +56,6 @@ class Trainer(object):
 
             # gc.collect()
             # torch.cuda.empty_cache()
-
 
             end_time = time.time()  # 训练结束时间
             run_time = end_time - start_time  # 训练时间

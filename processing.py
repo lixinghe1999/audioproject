@@ -69,19 +69,40 @@ def ratio_accumulate(Zxx, imu, Zxx_valid):
     return Zxx_valid
 def ratio_gamma(Zxx_valid):
     parameters = []
+    count = 0
     for j in range(freq_bin_high):
         distribution = np.array(Zxx_valid[j])
-        if len(distribution) > 300:
+        distribution = distribution[distribution < 30]
+        if len(distribution) > 100:
+
             fit_alpha, fit_loc, fit_beta = stats.gamma.fit(distribution)
+            # sample = stats.gamma.rvs(fit_alpha, loc=fit_loc, scale=fit_beta, size=1000)
+            # fig, axs = plt.subplots(2, 1)
+            # axs[0].hist(distribution, bins=30)
+            # axs[1].hist(sample, bins=30)
+            # plt.show()
             #print(fit_alpha, fit_loc, fit_beta)
-            #print(stats.kstest(distribution, 'gamma', (fit_alpha, fit_loc, fit_beta))[-1])
-            parameters.append([fit_alpha, fit_loc, fit_beta])
-        elif len(distribution) > 0:
+            pvalue = stats.kstest(distribution, 'gamma', (fit_alpha, fit_loc, fit_beta))[-1]
+            if pvalue > 0.05:
+                count += 1
+                parameters.append([fit_alpha, fit_loc, fit_beta])
+            else:
+                mean, std = np.mean(distribution), np.std(distribution)
+                pvalue = stats.kstest(distribution, 'norm', (mean, std))[-1]
+                if pvalue > 0.05:
+                    count += 1
+                parameters.append([mean, std])
+
+        elif len(distribution) > 1:
             mean, std = np.mean(distribution), np.std(distribution)
-            #print(mean, std)
+            pvalue = stats.kstest(distribution, 'norm', (mean, std))[-1]
+            if pvalue > 0.05:
+                count += 1
             parameters.append([mean, std])
         else:
             parameters.append([0, 0])
+            count +=1
+    print(count)
     return parameters
 def error(imu, Zxx, response, variance):
     num_time = np.shape(imu)[1]
@@ -110,8 +131,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.mode == 0:
-        candidate = ["liang", "wu", "he", "hou", "zhao", "shi"]
-        # "shen", "shuai"
+        candidate = ["liang", "wu", "he", "hou", "zhao", "shi", "shen", "shuai"]
+        #
         for i in range(len(candidate)):
             Zxx_valid = [[]] * freq_bin_high
             name = candidate[i]

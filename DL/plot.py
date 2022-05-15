@@ -61,20 +61,20 @@ if __name__ == "__main__":
     # plot(['1min', '2.5min', '5min'], np.array(improvement) * 100, 'wer_calibration_time.pdf', 'Improvement Ratio\%', [0, 60])
 
     # noise level
-    # for file in os.listdir('checkpoint/offline/new_level'):
-    #     npz = np.load(os.path.join('checkpoint/offline/new_level', file))
-    #     pesq = [np.mean(npz['PESQ'][:, -1]), np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:-1], axis=1))]
-    #     snr = [np.mean(npz['SNR'][:, -1]), np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:-1], axis=1))]
-    #     lsd = [np.mean(npz['LSD'][:, -1]), np.mean(npz['LSD'][:, 0]), np.mean(np.min(npz['LSD'][:, 1:-1], axis=1))]
-    #     print(float(file[:-4]), pesq, snr, lsd)
-
-    # noise type
-    for file in os.listdir('checkpoint/offline/new_type'):
-        npz = np.load(os.path.join('checkpoint/offline/new_type', file))
+    for file in os.listdir('checkpoint/offline/new_level'):
+        npz = np.load(os.path.join('checkpoint/offline/new_level', file))
         pesq = [np.mean(npz['PESQ'][:, -1]), np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:], axis=1))]
         snr = [np.mean(npz['SNR'][:, -1]), np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:], axis=1))]
         lsd = [np.mean(npz['LSD'][:, -1]), np.mean(npz['LSD'][:, 0]), np.mean(np.min(npz['LSD'][:, 1:], axis=1))]
-        print(file[:-4], pesq, snr, lsd)
+        print(float(file[:-4]), pesq, snr, lsd)
+
+    # noise type
+    # for file in os.listdir('checkpoint/offline/new_type'):
+    #     npz = np.load(os.path.join('checkpoint/offline/new_type', file))
+    #     pesq = [np.mean(npz['PESQ'][:, -1]), np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:], axis=1))]
+    #     snr = [np.mean(npz['SNR'][:, -1]), np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:], axis=1))]
+    #     lsd = [np.mean(npz['LSD'][:, -1]), np.mean(npz['LSD'][:, 0]), np.mean(np.min(npz['LSD'][:, 1:], axis=1))]
+    #     print(file[:-4], pesq, snr, lsd)
 
     # augmented test
     # baseline = load('checkpoint/baseline/clean')

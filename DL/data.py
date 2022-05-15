@@ -264,7 +264,7 @@ class IMUSPEECHSet:
         if self.simulate:
             noise, _ = self.noise_set[np.random.randint(0, self.length)]
             ratio = np.max(speech) / np.max(noise)
-            noise = noise * ratio * (np.random.random() / 5 + 0.5) + speech
+            noise = noise * ratio * (np.random.random() / 5 + 0.7) + speech
         else:
             noise, _ = self.noise_set[index]
         speech = spectrogram(speech)
