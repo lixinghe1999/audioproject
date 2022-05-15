@@ -78,12 +78,12 @@ class Trainer(object):
                 print('Saving checkpoint model to %s' % file_path)
 
             print('Cross validation Start...')
-            start_time = time.time()  # 验证开始时间
-            with torch.no_grad():
-                val_loss = self._run_one_epoch(epoch, cross_valid=True)  # 验证模型
-
-            end_time = time.time()  # 验证结束时间
-            run_time = end_time - start_time  # 训练时间
+            # start_time = time.time()  # 验证开始时间
+            # with torch.no_grad():
+            #     val_loss = self._run_one_epoch(epoch, cross_valid=True)  # 验证模型
+            #
+            # end_time = time.time()  # 验证结束时间
+            # run_time = end_time - start_time  # 训练时间
 
             print('-' * 85)
             print('End of Epoch {0} | Time {1:.2f}s | ''Valid Loss {2:.3f}'.format(epoch+1, run_time, val_loss))
