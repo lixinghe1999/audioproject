@@ -70,10 +70,8 @@ class Trainer(object):
             if self.checkpoint:
                 # 保存每一个训练模型
                 file_path = os.path.join(self.save_folder, 'epoch%d.pth' % (epoch + 1))
-
-                if self.continue_from == "":
-                    if isinstance(self.model, torch.nn.DataParallel):
-                        self.model = self.model.module
+                if isinstance(self.model, torch.nn.DataParallel):
+                    self.model = self.model.module
 
                 torch.save(self.model.state_dict(), file_path)
 
