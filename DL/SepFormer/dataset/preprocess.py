@@ -40,15 +40,19 @@ def mix(wav, index1):
     if len(wav2) > len(wav1):
         mixture = wav1 + wav2[:len(wav1)] * ratio
     else:
-        wav1[:len(wav2)] += wav2 * ratio
-        mixture = wav1
+        mixture = wav1.copy()
+        mixture[:len(wav2)] += wav2 * ratio
     return wav1, wav2, mixture
 
-def dataset(in_path, out_path):
+def dataset(in_path, out_path1, out_path2):
     wav = []
     for f in os.listdir(in_path):
         wav.append(os.path.join(in_path, f))
     for i in range(len(wav)):
+        if i > 20:
+            out_path = out_path1
+        else:
+            out_path = out_path2
         wav1, wav2, mixture = mix(wav, i)
         sf.write(os.path.join(out_path, 's1', str(i) + '.wav'), wav1, 8000)
         sf.write(os.path.join(out_path, 's2', str(i) + '.wav'), wav2, 8000)
@@ -58,7 +62,7 @@ def dataset(in_path, out_path):
 if __name__ == "__main__":
 
     # generate mix dataset
-    #wav = dataset('bss/raw', 'bss/tr')
+    #wav = dataset('bss/raw', 'bss/tr', 'bss/cv')
 
     parser = argparse.ArgumentParser("WSJ0 data preprocessing")
 

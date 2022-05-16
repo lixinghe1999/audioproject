@@ -65,7 +65,6 @@ def main(config):
 
             estimate_source = model(mixture)  # 将数据放入模型
             loss = MSE(estimate_source.permute(0, 2, 1), source)
-
             for j in range(len(mixture)):
                 estimate_source = estimate_source.cpu()
                 mixture = mixture.cpu()
