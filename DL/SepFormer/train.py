@@ -2,7 +2,7 @@ import argparse
 import torch
 from dataset.data_loader import MyDataset
 from torch.utils.data import DataLoader
-from src.trainer import Trainer
+from DL.SepFormer.trainer import Trainer
 from model.dual_path import SepformerWrapper
 import json5
 import numpy as np

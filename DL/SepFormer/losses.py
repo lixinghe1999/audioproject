@@ -336,8 +336,8 @@ def get_mask(source, source_lengths):
 
 
 if __name__ == "__main__":
-    s1 = librosa.load('s1.wav', sr=8000)[0]
-    s2 = librosa.load('s2.wav', sr=8000)[0]
+    s1 = librosa.load('src/s1.wav', sr=8000)[0]
+    s2 = librosa.load('src/s2.wav', sr=8000)[0]
     source = np.stack((s1, s2), axis=1)
     estimate_source = np.stack((s2 * 1, s1 * 1), axis=1)
     source = torch.from_numpy(np.expand_dims(source, axis=0))
