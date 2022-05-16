@@ -105,7 +105,7 @@ if __name__ == "__main__":
             model = nn.DataParallel(A2net()).to(device)
             #ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
             #ckpt = torch.load('pretrain/mel/0.0034707123340922408.pth')
-            ckpt = torch.load('pretrain/0.0014650488665211014.pth')
+            ckpt = torch.load('pretrain/0.0014294200555013958.pth')
             # for f in os.listdir('checkpoint/5min'):
             #     if f[-3:] == 'pth' and f[:len(target)] == target:
             #         pth_file = f

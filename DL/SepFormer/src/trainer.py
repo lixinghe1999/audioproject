@@ -2,10 +2,7 @@ import os
 import time
 import torch
 #from src.pit_criterion import cal_loss_pit, cal_loss_no
-from src.losses import get_si_snr_with_pitwrapper, MixerMSE
-
-import gc
-
+from losses import get_si_snr_with_pitwrapper, MixerMSE
 
 class Trainer(object):
     def __init__(self, data, model, optimizer, config):
@@ -139,14 +136,13 @@ class Trainer(object):
             # 是否使用 GPU 训练
             if torch.cuda.is_available():
                 padded_mixture = padded_mixture.cuda()
-                #mixture_lengths = mixture_lengths.cuda()
                 padded_source = padded_source.cuda()
                 print(padded_mixture.shape, padded_source.shape)
 
             estimate_source = self.model(padded_mixture)  # 将数据放入模型
+            loss = self.MixerMSE(estimate_source.permute(0, 2, 1), padded_source)
             # loss, max_snr, estimate_source, reorder_estimate_source = cal_loss_pit(padded_source,estimate_source,mixture_lengths)
             # loss, max_snr, estimate_source, reorder_estimate_source = cal_loss_no(padded_source,estimate_source,mixture_lengths)
-            loss = self.MixerMSE(estimate_source.permute(0, 2, 1), padded_source)
             #loss = -get_si_snr_with_pitwrapper(estimate_source, padded_source.permute(0,2,1))
             if not cross_valid:
                 self.optimizer.zero_grad()

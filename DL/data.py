@@ -83,6 +83,8 @@ def gamma_synthetic(clean, transfer_function):
             # gamma distribution
             response[i, :] = stats.gamma.rvs(p[0], loc=p[1], scale=p[2], size=time_bin)
     response = response / np.max(response, axis=0)
+    plt.plot(np.mean(response,axis=1))
+    plt.show()
 
     noisy = clean[:, :freq_bin_high, :] * response
     background_noise = noise_extraction()
