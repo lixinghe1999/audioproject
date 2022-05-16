@@ -130,7 +130,6 @@ class Trainer(object):
             if torch.cuda.is_available():
                 padded_mixture = padded_mixture.cuda()
                 padded_source = padded_source.cuda()
-                print(padded_mixture.shape, padded_source.shape)
 
             estimate_source = self.model(padded_mixture)  # 将数据放入模型
             loss = self.MixerMSE(estimate_source.permute(0, 2, 1), padded_source)
