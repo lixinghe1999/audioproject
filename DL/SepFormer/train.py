@@ -35,7 +35,7 @@ def main(config):
     data = {"tr_loader": tr_loader, "cv_loader": cv_loader}
 
     # 模型
-    if config["model"]["type"] == "sepformer":
+    if config["model"] == "sepformer":
         model = SepformerWrapper()
         model.load_state_dict(torch.load('checkpoint/pretrain.pth'))
     else:

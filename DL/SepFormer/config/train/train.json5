@@ -4,7 +4,6 @@
   "train_dataset":
   {
     "train_dir": "./dataset/json/tr",
-    "batch_size": 1,
     "sample_rate": 8000,
     "segment": 4,
   },
@@ -12,10 +11,8 @@
   "validation_dataset":
   {
     "validation_dir": "./dataset/json/cv",
-    "batch_size": 1,
     "sample_rate": 8000,
     "segment": 4,
-    "cv_max_len": 8,
   },
 
   "train_loader":
@@ -28,25 +25,11 @@
   "validation_loader":
   {
     "batch_size": 1,
-    "shuffle": true,
+    "shuffle": false,
     "num_workers": 4,
   },
 
-  "model":
-  {
-    "type": "sepformer",
-
-    "sepformer":
-    {
-      "N": 256,
-      "C": 2,
-      "L": 16,
-      "H": 8,
-      "K": 250,
-      "Global_B": 2,
-      "Local_B": 8,
-    },
-  },
+  "model": 'sepformer',
 
   "train":
   {

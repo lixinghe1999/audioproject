@@ -64,57 +64,57 @@ class Trainer(object):
                 torch.save(self.model.state_dict(), file_path)
                 print('Saving checkpoint model to %s' % file_path)
 
-            #print('Cross validation Start...')
-            # start_time = time.time()  # 验证开始时间
-            # with torch.no_grad():
-            #     val_loss = self._run_one_epoch(epoch, cross_valid=True)  # 验证模型
-            #
-            # end_time = time.time()  # 验证结束时间
-            # run_time = end_time - start_time  # 训练时间
+            print('Cross validation Start...')
+            start_time = time.time()  # 验证开始时间
+            with torch.no_grad():
+                val_loss = self._run_one_epoch(epoch, cross_valid=True)  # 验证模型
 
-            # print('-' * 85)
-            # print('End of Epoch {0} | Time {1:.2f}s | ''Valid Loss {2:.3f}'.format(epoch+1, run_time, val_loss))
-            # print('-' * 85)
-            #
-            # # 是否调整学习率
-            # if self.half_lr:
-            #     # 验证损失是否提升
-            #     if val_loss >= self.prev_val_loss:
-            #         self.val_no_improve += 1  # 统计没有提升的次数
-            #
-            #         # 如果训练 3 个 epoch 没有提升，学习率减半
-            #         if self.val_no_improve >= 3:
-            #             self.halving = True
-            #
-            #         # 如果训练 10 个 epoch 没有提升, 结束训练
-            #         if self.val_no_improve >= 10 and self.early_stop:
-            #             print("No improvement for 10 epochs, early stopping.")
-            #             break
-            #     else:
-            #         self.val_no_improve = 0
-            #
-            # if self.halving:
-            #     optime_state = self.optimizer.state_dict()
-            #     optime_state['param_groups'][0]['lr'] = optime_state['param_groups'][0]['lr']/2.0
-            #     self.optimizer.load_state_dict(optime_state)
-            #     print('Learning rate adjusted to: {lr:.6f}'.format(lr=optime_state['param_groups'][0]['lr']))
-            #     self.halving = False
-            #
-            # self.prev_val_loss = val_loss  # 当前损失
-            #
-            # self.tr_loss[epoch] = tr_loss
-            # self.cv_loss[epoch] = val_loss
-            #
-            # # 保存最好的模型
-            # if val_loss < self.best_val_loss:
-            #
-            #     self.best_val_loss = val_loss  # 最小的验证损失值
-            #
-            #     file_path = os.path.join(self.save_folder, self.model_path)
-            #
-            #     torch.save(self.model.state_dict(), file_path)
-            #
-            #     print("Find better validated model, saving to %s" % file_path)
+            end_time = time.time()  # 验证结束时间
+            run_time = end_time - start_time  # 训练时间
+
+            print('-' * 85)
+            print('End of Epoch {0} | Time {1:.2f}s | ''Valid Loss {2:.3f}'.format(epoch+1, run_time, val_loss))
+            print('-' * 85)
+
+            # 是否调整学习率
+            if self.half_lr:
+                # 验证损失是否提升
+                if val_loss >= self.prev_val_loss:
+                    self.val_no_improve += 1  # 统计没有提升的次数
+
+                    # 如果训练 3 个 epoch 没有提升，学习率减半
+                    if self.val_no_improve >= 3:
+                        self.halving = True
+
+                    # 如果训练 10 个 epoch 没有提升, 结束训练
+                    if self.val_no_improve >= 10 and self.early_stop:
+                        print("No improvement for 10 epochs, early stopping.")
+                        break
+                else:
+                    self.val_no_improve = 0
+
+            if self.halving:
+                optime_state = self.optimizer.state_dict()
+                optime_state['param_groups'][0]['lr'] = optime_state['param_groups'][0]['lr']/2.0
+                self.optimizer.load_state_dict(optime_state)
+                print('Learning rate adjusted to: {lr:.6f}'.format(lr=optime_state['param_groups'][0]['lr']))
+                self.halving = False
+
+            self.prev_val_loss = val_loss  # 当前损失
+
+            self.tr_loss[epoch] = tr_loss
+            self.cv_loss[epoch] = val_loss
+
+            # 保存最好的模型
+            if val_loss < self.best_val_loss:
+
+                self.best_val_loss = val_loss  # 最小的验证损失值
+
+                file_path = os.path.join(self.save_folder, self.model_path)
+
+                torch.save(self.model.state_dict(), file_path)
+
+                print("Find better validated model, saving to %s" % file_path)
 
     def _run_one_epoch(self, epoch, cross_valid=False):
 
