@@ -139,7 +139,7 @@ class Trainer(object):
             if not cross_valid:
                 self.optimizer.zero_grad()
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_norm)
+                #torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_norm)
                 self.optimizer.step()
 
             total_loss += loss.item()
