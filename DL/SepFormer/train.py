@@ -37,7 +37,7 @@ def main(config):
     # 模型
     if config["model"] == "sepformer":
         model = SepformerWrapper()
-        model.load_state_dict(torch.load('checkpoint/pretrain.pth'))
+        model.load_state_dict(torch.load('checkpoint/final.pth'))
     else:
         print("No loaded model!")
 

@@ -32,7 +32,7 @@ class SepFormer:
 def main(config):
     MSE = MixerMSE()
     model = SepformerWrapper()
-    model = torch.nn.DataParallel(model)
+    #model = torch.nn.DataParallel(model)
     model.load_state_dict(torch.load(config["model_path"]))
 
     if torch.cuda.is_available():

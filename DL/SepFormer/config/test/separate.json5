@@ -1,5 +1,5 @@
 {
-  "model_path": "checkpoint/final.pth",
+  "model_path": "checkpoint/pretrain.pth",
 
   "out_dir": "./result",
 
@@ -11,11 +11,10 @@
 
   "validation_dataset":
   {
-    "validation_dir": "./dataset/json/tr",
+    "validation_dir": "./dataset/json/cv",
     "batch_size": 1,
     "sample_rate": 8000,
-    "segment": 4,
-    "cv_max_len": 8,
+    "segment": 5,
   },
    "validation_loader":
   {
