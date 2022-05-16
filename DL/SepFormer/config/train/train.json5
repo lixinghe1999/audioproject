@@ -5,14 +5,14 @@
   {
     "train_dir": "./dataset/json/tr",
     "sample_rate": 8000,
-    "segment": 4,
+    "segment": 5,
   },
 
   "validation_dataset":
   {
     "validation_dir": "./dataset/json/cv",
     "sample_rate": 8000,
-    "segment": 4,
+    "segment": 5,
   },
 
   "train_loader":

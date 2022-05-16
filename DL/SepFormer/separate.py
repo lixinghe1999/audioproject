@@ -32,7 +32,7 @@ class SepFormer:
 def main(config):
     MSE = MixerMSE()
     model = SepformerWrapper()
-    #model = torch.nn.DataParallel(model)
+    model = torch.nn.DataParallel(model)
     model.load_state_dict(torch.load(config["model_path"]))
 
     if torch.cuda.is_available():
@@ -42,7 +42,6 @@ def main(config):
     eval_dataset = MyDataset(data_dir=config["validation_dataset"]["validation_dir"],
                            sr=config["validation_dataset"]["sample_rate"],
                              duration=config["validation_dataset"]["segment"])
-    print(len(eval_dataset))
 
     eval_loader = DataLoader(eval_dataset,
                            batch_size=config["validation_loader"]["batch_size"],
@@ -66,7 +65,6 @@ def main(config):
 
             estimate_source = model(mixture)  # 将数据放入模型
             loss = MSE(estimate_source.permute(0, 2, 1), source)
-            print(loss.item())
 
             for j in range(len(mixture)):
                 estimate_source = estimate_source.cpu()

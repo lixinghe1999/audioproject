@@ -133,7 +133,6 @@ class Trainer(object):
 
             estimate_source = self.model(padded_mixture)  # 将数据放入模型
             loss = self.MixerMSE(estimate_source.permute(0, 2, 1), padded_source)
-            print(loss.item())
             # loss, max_snr, estimate_source, reorder_estimate_source = cal_loss_pit(padded_source,estimate_source,mixture_lengths)
             # loss, max_snr, estimate_source, reorder_estimate_source = cal_loss_no(padded_source,estimate_source,mixture_lengths)
             #loss = -get_si_snr_with_pitwrapper(estimate_source, padded_source.permute(0,2,1))
