@@ -135,7 +135,7 @@ class Trainer(object):
             #loss = self.MixerMSE(estimate_source.permute(0, 2, 1), padded_source)
             # loss, max_snr, estimate_source, reorder_estimate_source = cal_loss_pit(padded_source,estimate_source,mixture_lengths)
             # loss, max_snr, estimate_source, reorder_estimate_source = cal_loss_no(padded_source,estimate_source,mixture_lengths)
-            loss = -get_si_snr_with_pitwrapper(estimate_source, padded_source.permute(0, 2, 1))
+            loss = -get_si_snr_with_pitwrapper(estimate_source, padded_source.permute(0, 2, 1)).mean()
             if not cross_valid:
                 self.optimizer.zero_grad()
                 loss.backward()
