@@ -37,13 +37,14 @@ def main(config):
     # 模型
     if config["model"] == "sepformer":
         model = SepformerWrapper()
+        if torch.cuda.is_available():
+            model = torch.nn.DataParallel(model)
+            model.cuda()
         model.load_state_dict(torch.load('checkpoint/final.pth'))
     else:
         print("No loaded model!")
 
-    if torch.cuda.is_available():
-        model = torch.nn.DataParallel(model)
-        model.cuda()
+
 
     if config["optimizer"]["type"] == "sgd":
         optimize = torch.optim.SGD(
