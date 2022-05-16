@@ -38,9 +38,9 @@ def main(config):
     if config["model"] == "sepformer":
         model = SepformerWrapper()
         if torch.cuda.is_available():
-            model = torch.nn.DataParallel(model)
             model.cuda()
-        model.load_state_dict(torch.load('checkpoint/final.pth'))
+        model.load_state_dict(torch.load('checkpoint/pretrain.pth'))
+        model = torch.nn.DataParallel(model)
     else:
         print("No loaded model!")
 
