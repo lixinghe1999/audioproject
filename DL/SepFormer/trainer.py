@@ -45,10 +45,7 @@ class Trainer(object):
         for epoch in range(self.start_epoch, self.epochs):
             print("Train Start...")
 
-            self.model.train()  # 将模型设置为训练模式
-
             start_time = time.time()  # 训练起始时间
-
             tr_loss = self._run_one_epoch(epoch)  # 训练模型
 
             # gc.collect()
@@ -61,15 +58,11 @@ class Trainer(object):
             print('End of Epoch {0} | Time {1:.2f}s | Train Loss {2:.3f}'.format(epoch+1, run_time, tr_loss))
             print('-' * 85)
 
-            # if self.checkpoint:
-            #     # 保存每一个训练模型
-            #     file_path = os.path.join(self.save_folder, 'epoch%d.pth' % (epoch + 1))
-            #     if isinstance(self.model, torch.nn.DataParallel):
-            #         self.model = self.model.module
-            #
-            #     torch.save(self.model.state_dict(), file_path)
-            #
-            #     print('Saving checkpoint model to %s' % file_path)
+            if self.checkpoint:
+                # 保存每一个训练模型
+                file_path = os.path.join(self.save_folder, 'epoch%d.pth' % (epoch + 1))
+                torch.save(self.model.state_dict(), file_path)
+                print('Saving checkpoint model to %s' % file_path)
 
             #print('Cross validation Start...')
             # start_time = time.time()  # 验证开始时间
