@@ -1,5 +1,5 @@
 {
-  "model_path": "checkpoint/pretrain.pth",
+  "model_path": "checkpoint/final.pth",
 
   "out_dir": "./result",
 

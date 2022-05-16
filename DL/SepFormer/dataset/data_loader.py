@@ -47,11 +47,10 @@ class MyDataset(Dataset):
             offset = self.stride * index
             duration = self.duration
             mix_data, _ = librosa.load(mix_path[0], offset=offset, duration=duration, sr=self.sr)
-            length = len(mix_data)
 
             s1_data, _ = librosa.load(path=s1_path[0], offset=offset, duration=duration, sr=self.sr)
             s2_data, _ = librosa.load(path=s2_path[0], offset=offset, duration=duration, sr=self.sr)
             s_data = np.stack((s1_data, s2_data), axis=0)
-            return mix_data, length, s_data
+            return mix_data, s_data
 
 
