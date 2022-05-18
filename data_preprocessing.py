@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False)
     args = parser.parse_args()
     if args.mode == 0:
-        #synchronize airpods and microphone
+        # synchronize airpods and microphone
         source = 'exp7/raw'
         target = 'exp7'
         sentences = ['s1', 's2', 's3', 's4']
@@ -40,11 +40,7 @@ if __name__ == "__main__":
         # sentences = ['noise_train', 'train']
         # cls = ['']
         # T = 30
-        # sentences = ['']
-        # cls = ['']
-        # T = 5
         for folder in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9', 'airpod',]:
-        #for folder in ['measurement']:
             print(folder)
             for s in sentences:
                 for c in cls:

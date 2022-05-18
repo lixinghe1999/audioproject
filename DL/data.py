@@ -11,6 +11,7 @@ import torchaudio
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
+from scipy import interpolate
 # seg_len_mic = 2560
 # overlap_mic = 2240
 # seg_len_imu = 256
@@ -25,8 +26,9 @@ rate_mic = 16000
 rate_imu = 1600
 length = 5
 stride = 5
-function_pool = '../gamma_transfer_function'
-N = len(os.listdir(function_pool))
+function_pool = '../transfer_function'
+#N = len(os.listdir(function_pool))
+N = 300
 
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
@@ -61,7 +63,18 @@ def read_transfer_function(path):
         npz = np.load(path + '/' + npzs[i])
         transfer_function[i, :] = npz['response']
         variance[i, :] = npz['variance']
-    return transfer_function, variance
+    new_transfer_function = np.zeros((N, freq_bin_high))
+    new_variance = np.zeros((N, freq_bin_high))
+    for j in range(freq_bin_high):
+        x = np.linspace(0, 1, len(npzs))
+        freq_r = np.sort(transfer_function[:, j])
+        freq_v = np.sort(variance[:, j])
+        f1 = interpolate.interp1d(x, freq_r)
+        f2 = interpolate.interp1d(x, freq_v)
+        xnew = np.linspace(0, 1, N)
+        new_transfer_function[:, j] = f1(xnew)
+        new_variance[:, j] = f2(xnew)
+    return new_transfer_function, new_variance
 
 def noise_extraction():
     noise_list = os.listdir('../dataset/noise/')
@@ -192,9 +205,9 @@ class NoisyCleanSet:
             noise = json.load(f)
         self.clean_set = Audioset(clean)
         self.noise_set = Audioset(noise)
-        # transfer_function, variance = read_transfer_function(function_pool)
-        # self.variance = variance
-        transfer_function = read_gamma_transfer_function(function_pool)
+        transfer_function, variance = read_transfer_function(function_pool)
+        self.variance = variance
+        #transfer_function = read_gamma_transfer_function(function_pool)
         self.transfer_function = transfer_function
         self.alpha = alpha
         self.phase = phase
@@ -210,8 +223,8 @@ class NoisyCleanSet:
         speech = spectrogram(speech)
         # use mel-spectrogram instead
         # [noise, speech] = melspectrogram([np.abs(noise), np.abs(speech)], filters=[264, 264], sample=[16000, 16000])
-        #imu = synthetic(np.abs(speech), self.transfer_function, self.variance) / self.alpha[0]
-        imu = gamma_synthetic(np.abs(speech), self.transfer_function) / self.alpha[0]
+        imu = synthetic(np.abs(speech), self.transfer_function, self.variance) / self.alpha[0]
+        #imu = gamma_synthetic(np.abs(speech), self.transfer_function) / self.alpha[0]
         noise = noise / self.alpha[1]
         speech = speech / self.alpha[2]
         noise = noise[:, :8 * freq_bin_high, :]
@@ -396,7 +409,7 @@ if __name__ == "__main__":
         print(sum(noise_mean) / len(noise_mean))
         print(sum(y_mean) / len(y_mean))
     else:
-        transfer_function, variance = read_transfer_function('../gamma_transfer_function')
+        transfer_function, variance = read_transfer_function('../transfer_function')
         for i in range(19):
             index = np.random.randint(0, N)
             plt.plot(transfer_function[index, :])
