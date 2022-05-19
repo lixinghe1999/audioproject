@@ -49,10 +49,10 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, Loss, device, model, save_all=False):
                 Loss_all.append(loss1.item())
         val_loss = np.mean(Loss_all, axis=0)
         scheduler.step()
-        loss_curve.append(loss1)
+        loss_curve.append(val_loss)
         if val_loss < loss_best:
             ckpt_best = model.state_dict()
-            loss_best = loss1
+            loss_best = val_loss
             if save_all:
                 torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
     return ckpt_best, loss_curve
