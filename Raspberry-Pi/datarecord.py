@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     bmiaccframe = args.time * 1600
     micframe = args.time * 16000
-    camframe = args.time * 20
+    camframe = args.time * 15
     device = args.device
     if args.mode == 0:
         stream = open_mic_stream(device)
