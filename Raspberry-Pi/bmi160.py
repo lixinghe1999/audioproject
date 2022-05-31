@@ -2,7 +2,7 @@ import time
 from BMI160_i2c import Driver
 def bmi160_accsave(name, num, port):
     sensor = Driver(0x69, port)#change address if needed
-    sensor.set_accel_rate(12)
+    sensor.set_accel_rate(11)
     a = 0
     acc = ''
     time_start = time.time()
