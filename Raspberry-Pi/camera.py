@@ -11,7 +11,8 @@ def webcam_save(name, duration):
 	# 	time.sleep(0.04)
 	# 	cv2.imwrite(name + '_' + str(time.time()) + '.jpg', image)
 	t_start = time.time()
-	out = cv2.VideoWriter(name + '_' + str(t_start) + '.avi', -1, 20.0, (640, 480))
+	fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+	out = cv2.VideoWriter(name + '_' + str(t_start) + '.mp4', fourcc, 20.0, (640, 480))
 	while(cap.isOpened()):
 		ret, frame = cap.read()
 		if ret==True:
