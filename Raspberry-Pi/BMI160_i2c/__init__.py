@@ -8,7 +8,7 @@ from BMI160_i2c.sleep import sleep_us, sleep_ms
 
 from struct import unpack
 from smbus2 import SMBus, i2c_msg
-
+import subprocess
 class Driver:
 
   # Power on and prepare for general usage.
@@ -17,7 +17,7 @@ class Driver:
   # to default range settings, namely +/- 2g and +/- 250 degrees/sec.
   def __init__(self, addr=0x68, bus=1):
     self.addr = addr
-    
+    self.bus_num = bus
     # Initialize the i2c bus driver
     self.bus = SMBus(bus)
     
@@ -1905,7 +1905,12 @@ class Driver:
     self.bus.i2c_rdwr(write)
 
   def _reg_read(self, reg):
-    return self._regs_read(reg, 1)[0]
+    try:
+      return self._regs_read(reg, 1)[0]
+    except IOError:
+      subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
+      return self._regs_read(reg, 1)[0]
+
 
   def _regs_read(self, reg, n):
     write = i2c_msg.write(self.addr, [reg])
