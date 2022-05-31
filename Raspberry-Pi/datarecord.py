@@ -1,6 +1,6 @@
 
 from bmi160 import bmi160_accsave, bmi160_gyrosave
-from gy85 import gy85_gyrosave, gy85_compasssave, gy85_accsave
+
 from mic import open_mic_stream, voice_record
 from camera import webcam_save
 
