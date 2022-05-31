@@ -8,8 +8,9 @@ def webcam_save(name, num):
 	out = cv2.VideoWriter(name + '_' + str(t_start) + '.mp4', fourcc, 20.0, (640, 480))
 	for i in range(num):
 		ret, frame = cap.read()
-		print(i)
+		#print(i)
 		out.write(frame)
+	print(num / (time.time() - t_start))
 	cv2.destroyAllWindows()
 	cap.release()
 	out.release()
