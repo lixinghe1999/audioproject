@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--time', action = "store",type=int, default = 5, required=False, help='time of data recording')
     parser.add_argument('--mode', action = "store", type=int, default=0, required=False, help='whether have microphone')
-    parser.add_argument('--device', action="store", type=int, default=2, required=False, help='device number of microphone')
+    parser.add_argument('--device', action="store", type=int, default=0, required=False, help='device number of microphone')
     args = parser.parse_args()
 
     bmiaccframe = args.time * 1600
