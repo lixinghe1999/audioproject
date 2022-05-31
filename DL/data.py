@@ -190,7 +190,7 @@ class Audioset:
                 out = signal.filtfilt(b, a, out)
             return out, file
 class NoisyCleanSet:
-    def __init__(self, json_path1, json_path2, phase=False, norm=[[1, 1], [1, 1], [1, 1]], ratio=1):
+    def __init__(self, json_path1, json_path2, phase=False, norm=[1, 1, 1], ratio=1):
         """__init__. n
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -225,12 +225,9 @@ class NoisyCleanSet:
         # [noise, speech] = melspectrogram([np.abs(noise), np.abs(speech)], filters=[264, 264], sample=[16000, 16000])
         imu = synthetic(np.abs(speech), self.transfer_function, self.variance)
         # imu = gamma_synthetic(np.abs(speech), self.transfer_function) / self.alpha[0]
-        # imu = imu / self.alpha[0]
-        # noise = noise / self.alpha[1]
-        # speech = speech / self.alpha[2]
-        imu = (imu - self.norm[0][0]) / self.norm[0][1]
-        noise = (noise - self.norm[1][0]) / self.norm[1][1]
-        speech = (speech - self.norm[2][0]) / self.norm[2][1]
+        imu = imu / self.norm[0]
+        noise = noise / self.norm[1]
+        speech = speech / self.norm[2]
         noise = noise[:, :8 * freq_bin_high, :]
         speech = speech[:, :8 * freq_bin_high, :]
         if self.phase:
@@ -241,7 +238,7 @@ class NoisyCleanSet:
     def __len__(self):
         return int(len(self.clean_set) * self.ratio)
 class IMUSPEECHSet:
-    def __init__(self, imu_path, wav_path, noise_path, ratio=1, simulate=True, person=[], phase=False, norm=[[1, 1], [1, 1], [1, 1]]):
+    def __init__(self, imu_path, wav_path, noise_path, ratio=1, simulate=True, person=[], phase=False, norm=[1, 1, 1]):
         """__init__.
 
         :param json_dir: directory containing both clean.json and noisy.json
@@ -289,9 +286,9 @@ class IMUSPEECHSet:
         speech = spectrogram(speech)
         noise = spectrogram(noise)
         #[imu, noise, speech] = melspectrogram([imu, np.abs(noise), np.abs(speech)], filters=[33, 264, 264], sample=[1600, 16000, 16000])
-        imu = (imu - self.norm[0][0]) / self.norm[0][1]
-        noise = (noise - self.norm[1][0]) / self.norm[1][1]
-        speech = (speech - self.norm[2][0])/ self.norm[2][1]
+        imu = imu / self.norm[0]
+        noise = noise / self.norm[1]
+        speech = speech / self.norm[2]
         noise = noise[:, :8 * freq_bin_high, :]
         speech = speech[:, :8 * freq_bin_high, :]
         if self.phase:
@@ -306,16 +303,16 @@ def norm(name, jsons, simulate, candidate):
         x_mean = []
         noise_mean = []
         y_mean = []
-        dataset_train = IMUSPEECHSet(jsons[0], jsons[1], jsons[2], simulate=simulate, person=[target], minmax=(1, 1, 1))
+        dataset_train = IMUSPEECHSet(jsons[0], jsons[1], jsons[2], simulate=simulate, person=[target])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
             x = x.numpy()
             noise = np.abs(noise.numpy())
             y = np.abs(y.numpy())
-            x_mean.append([np.mean(x), np.std(x)])
-            noise_mean.append([np.mean(noise), np.std(noise)])
-            y_mean.append([np.mean(y), np.std(y)])
-        dict[target] = [np.mean(x_mean, axis=0).tolist(), np.mean(noise_mean, axis=0).tolist(), np.mean(y_mean, axis=0).tolist()]
+            x_mean.append(np.max(x))
+            noise_mean.append(np.max(noise))
+            y_mean.append(np.max(y))
+        dict[target] = [np.mean(x_mean), np.mean(noise_mean), np.mean(y_mean)]
         print(target)
         print(dict[target])
     file = open(name, "wb")
@@ -389,10 +386,8 @@ if __name__ == "__main__":
         norm('mobile_paras.pkl', ['json/mobile_imuexp7.json', 'json/mobile_wavexp7.json', 'json/mobile_wavexp7.json'], True, ['he', 'hou'])
 
     elif args.mode == 3:
-        dataset_train = NoisyCleanSet('json/speech100.json', 'json/speech.json',
-                                      norm=[[0.0037, 0.005], [0.0011, 0.0036], [0.00075, 0.0030]], ratio=1)
-                                        #norm = [[0, 1], [0, 1], [0, 1]])
-        #dataset_train = IMUSPEECHSet('json/noise_train_imuexp7.json', 'json/noise_train_gtexp7.json', 'json/noise_train_wavexp7.json', simulate=False, person=['4'])
+        # dataset_train = NoisyCleanSet('json/speech100.json', 'json/speech.json')
+        dataset_train = IMUSPEECHSet('json/noise_train_imuexp7.json', 'json/noise_train_gtexp7.json', 'json/noise_train_wavexp7.json', simulate=False, person=['he'])
         #dataset_train = IMUSPEECHSet('json/noise_imuexp7.json', 'json/noise_gtexp7.json', 'json/noise_wavexp7.json', simulate=False, person=['4'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=True)
         x_mean = []
@@ -406,15 +401,15 @@ if __name__ == "__main__":
             noise_mean.append([np.mean(noise), np.std(noise)])
             y_mean.append([np.mean(y), np.std(y)])
 
-            # fig, axs = plt.subplots(3, 1)
-            # axs[0].imshow(x, aspect='auto')
-            # axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
-            # axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
-            # plt.show()
+            fig, axs = plt.subplots(3, 1)
+            axs[0].imshow(x, aspect='auto')
+            axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
+            axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
+            plt.show()
             # x_mean.append(np.max(x))
             # noise_mean.append(np.max(noise))
             # y_mean.append(np.max(y))
-            if step > 1000:
+            if step >= 0:
                 break
         print([np.mean(x_mean, axis=0).tolist(), np.mean(noise_mean, axis=0).tolist(), np.mean(y_mean, axis=0).tolist()])
         # print(sum(x_mean)/len(x_mean))

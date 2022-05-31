@@ -92,16 +92,16 @@ if __name__ == "__main__":
         candidate = ["he", "shi", "hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai"]
         #candidate = ['hou']
         for target in candidate:
-            #source = [x for x in source if x != target]
+            source = [x for x in source if x != target]
             datasets = []
             for c in source:
                 datasets.append(IMUSPEECHSet('json/noise_train_imuexp7.json', 'json/noise_train_gtexp7.json', 'json/noise_train_wavexp7.json', simulate=False, person=[c], norm=norm_noise[c]))
             train_dataset = Data.ConcatDataset(datasets)
             user_dataset = IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/clean_train_wavexp7.json', ratio=1, person=[target], norm=norm_clean[target])
             model = nn.DataParallel(A2net()).to(device)
-            ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
+            #ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
             #ckpt = torch.load('pretrain/mel/0.0034707123340922408.pth')
-            #ckpt = torch.load('pretrain/0.0013922161087975837.pth')
+            ckpt = torch.load('pretrain/0.06400973408017308.pth')
             # for f in os.listdir('checkpoint/5min'):
             #     if f[-3:] == 'pth' and f[:len(target)] == target:
             #         pth_file = f

@@ -2,7 +2,7 @@
 from bmi160 import bmi160_accsave, bmi160_gyrosave
 from gy85 import gy85_gyrosave, gy85_compasssave, gy85_accsave
 from mic import open_mic_stream, voice_record
-
+from camera import webcam_save
 
 from multiprocessing import Process
 import argparse
@@ -24,12 +24,17 @@ if __name__ == "__main__":
         thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, 0))
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, 1))
         thread = Process(target=voice_record, args=('mic', stream, micframe))
+        thread_camera = Process(target=webcam_save, args=('cam', args.time))
+
         thread1.start()
         thread2.start()
         thread.start()
+        thread_camera.start()
+
         thread1.join()
         thread2.join()
         thread.join()
+        thread_camera.join()
     else:
         thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, 0))
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, 1))
