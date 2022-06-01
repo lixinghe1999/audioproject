@@ -1915,7 +1915,7 @@ class Driver:
     read = i2c_msg.read(self.addr, n)
     try:
       self.bus.i2c_rdwr(write, read)
-    except IOError:
+    except IOError or OSError:
       subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
       self.bus.i2c_rdwr(write, read)
     result = list(read)
