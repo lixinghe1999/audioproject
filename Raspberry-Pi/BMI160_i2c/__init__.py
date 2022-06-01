@@ -1905,18 +1905,19 @@ class Driver:
     self.bus.i2c_rdwr(write)
 
   def _reg_read(self, reg):
-    try:
-      return self._regs_read(reg, 1)[0]
-    except IOError:
-      subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
-      return self._regs_read(reg, 1)[0]
+    return self._regs_read(reg, 1)[0]
+
 
 
   def _regs_read(self, reg, n):
     write = i2c_msg.write(self.addr, [reg])
     sleep_us(2)
     read = i2c_msg.read(self.addr, n)
-    self.bus.i2c_rdwr(write, read)
+    try:
+      self.bus.i2c_rdwr(write, read)
+    except IOError:
+      subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
+      self.bus.i2c_rdwr(write, read)
     result = list(read)
     #print('< ', result)
     return result
