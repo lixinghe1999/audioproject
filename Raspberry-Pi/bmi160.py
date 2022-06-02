@@ -2,7 +2,7 @@ import time
 from BMI160_i2c import Driver
 def bmi160_accsave(name, num, port):
     sensor = Driver(0x69, port)#change address if needed
-    sensor.set_accel_rate(12)
+    sensor.set_accel_rate(11)
     a = 0
     acc = ''
     time_start = time.time()
@@ -15,10 +15,10 @@ def bmi160_accsave(name, num, port):
         else:
             accwriter.write(acc)
             acc = ''
-    print('port:', port, num / (time.time() - time_start))
+    print('ACC port:', port, num / (time.time() - time_start))
 def bmi160_gyrosave(name, num, port):
     sensor = Driver(0x69, port)# change address if needed
-    sensor.set_gyro_rate(12)
+    sensor.set_gyro_rate(11)
     a = 0
     gryo = ''
     time_start = time.time()
@@ -31,7 +31,7 @@ def bmi160_gyrosave(name, num, port):
         else:
             accwriter.write(gryo)
             gryo = ''
-    print(num/(time.time() - time_start))
+    print('GYRO port:', port, num/(time.time() - time_start))
 
 if __name__ == "__main__":
     bmi160_accsave('acc.txt', 8000, 1)

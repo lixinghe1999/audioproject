@@ -16,8 +16,8 @@ if __name__ == "__main__":
     parser.add_argument('--device', action="store", type=int, default=0, required=False, help='device number of microphone')
     args = parser.parse_args()
 
-    bmiaccframe = args.time * 1600
-    bmigyroframe = args.time * 1600
+    bmiaccframe = args.time * 800
+    bmigyroframe = args.time * 800
     micframe = args.time * 16000
     camframe = args.time * 15
     device = args.device
