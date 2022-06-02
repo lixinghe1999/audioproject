@@ -1903,18 +1903,21 @@ class Driver:
   def _reg_write(self, reg, data):
     write = i2c_msg.write(self.addr, [reg, data])
     #self.bus.i2c_rdwr(write)
-    try:
-      self.bus.i2c_rdwr(write)
-    except:
-      subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
-      #self._reg_write(reg, data)
+    while True:
+      try:
+        self.bus.i2c_rdwr(write)
+        break
+      except:
+        subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
+        #self._reg_write(reg, data)
 
   def _reg_read(self, reg):
-    try:
-      return self._regs_read(reg, 1)[0]
-    except:
-      subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
-      #return self._reg_read(reg)
+    while True:
+      try:
+        return self._regs_read(reg, 1)[0]
+      except:
+        subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
+        #return self._reg_read(reg)
 
 
 
