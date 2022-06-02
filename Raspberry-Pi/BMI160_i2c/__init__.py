@@ -1909,26 +1909,24 @@ class Driver:
         break
       except:
         subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
-        #self._reg_write(reg, data)
 
   def _reg_read(self, reg):
-    while True:
-      try:
-        return self._regs_read(reg, 1)[0]
-      except:
-        subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
-        #return self._reg_read(reg)
-
+    return self._regs_read(reg, 1)[0]
 
 
   def _regs_read(self, reg, n):
     write = i2c_msg.write(self.addr, [reg])
     sleep_us(2)
     read = i2c_msg.read(self.addr, n)
-    self.bus.i2c_rdwr(write, read)
-    result = list(read)
-    #print('< ', result)
-    return result
+    while True:
+      try:
+        self.bus.i2c_rdwr(write, read)
+        result = list(read)
+        # print('< ', result)
+        return result
+      except:
+        subprocess.call(['i2cdetect', '-y', str(self.bus_num)])
+
 
   def close(self):
     self.bus.close()
