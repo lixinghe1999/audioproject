@@ -17,6 +17,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     bmiaccframe = args.time * 1600
+    bmigyroframe = args.time * 1600
     micframe = args.time * 16000
     camframe = args.time * 15
     device = args.device
@@ -26,16 +27,22 @@ if __name__ == "__main__":
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, 1))
         thread = Process(target=voice_record, args=('mic', stream, micframe))
         thread_camera = Process(target=webcam_save, args=('cam', camframe))
+        thread3 = Process(target=bmi160_gyrosave, args=('bmigyro1', bmiaccframe, 0))
+        thread4 = Process(target=bmi160_gyrosave, args=('bmigyro2', bmiaccframe, 1))
 
         thread1.start()
         thread2.start()
         thread.start()
         thread_camera.start()
+        thread3.start()
+        thread4.start()
 
         thread1.join()
         thread2.join()
         thread.join()
         thread_camera.join()
+        thread3.join()
+        thread4.join()
     else:
         thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, 0))
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, 1))
