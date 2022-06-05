@@ -13,6 +13,7 @@ def bmi160_accsave(name, num, port):
             print(a)
             data = sensor.getAcceleration()
             acc = acc + str(data[0]) + ' ' + str(data[1]) + ' ' + str(data[2]) + ' ' + str(time.time()) + '\n'
+            print(acc)
         else:
             accwriter.write(acc)
             acc = ''
