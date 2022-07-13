@@ -13,7 +13,7 @@ from tqdm import tqdm
 import argparse
 import pickle
 from evaluation import wer, snr, lsd
-from pesq import pesq
+from pesq import pesq_batch
 
 device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 Loss = nn.L1Loss()
@@ -36,31 +36,27 @@ freq_bin_limit = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
 def sample_evaluation(x, noise, y, audio_only=False):
     x = x.to(device=device, dtype=torch.float)
-    noise = torch.abs(noise).to(device=device, dtype=torch.float)
+    magnitude = torch.abs(noise).to(device=device, dtype=torch.float)
+    phase = torch.angle(noise).to(device=device, dtype=torch.float)
     y = y.to(device=device)
     if audio_only:
-        predict1 = model(noise)
-        predict1 = np.exp(1j * y.angle()[:freq_bin_high, :]) * predict1
+        predict1 = model(magnitude)
+        predict1 = torch.exp(1j * phase[:, :freq_bin_high, :]) * predict1
     else:
-        predict1, predict2 = model(x, noise)
-        predict1 = np.exp(1j * y.angle()[:freq_bin_high, :]) * predict1
+        predict1, predict2 = model(x, magnitude)
+        predict1 = torch.exp(1j * phase[:, :freq_bin_high, :]) * predict1
 
-    predict = np.pad(predict1, ((0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
-    _, recover_audio = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+    predict = predict1.cpu().numpy()
+    predict = np.pad(predict, ((0, 0), (0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
+    _, predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
-    value1 = pesq(16000, noise, y, 'nb')
-    value2 = pesq(16000, predict1, y, 'nb')
-    PESQ = [value1, value2]
+    y = y.cpu().numpy()
+    y = np.pad(y, ((0, 0), (0, 0),(0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
+    _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
-    value1 = snr(y, noise)
-    value2 = snr(y, predict1)
-    SNR = [value1, value2]
-
-    value1 = lsd(y, noise)
-    value2 = lsd(y, predict1)
-    LSD = [value1, value2]
-
-    return PESQ, SNR, LSD
+    predict = np.squeeze(predict, axis=1)
+    y = np.squeeze(y, axis=1)
+    return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0)), snr(y, predict), lsd(y, predict)], axis=1)
 def sample(x, noise, y, audio_only=False):
     x = x.to(device=device, dtype=torch.float)
     noise = torch.abs(noise).to(device=device, dtype=torch.float)
@@ -88,25 +84,29 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
+        Loss_list = []
         for i, (x, noise, y) in enumerate(train_loader):
             loss = sample(x, noise, y, audio_only=True)
+            Loss_list.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if i % 50 == 0:
-                print("training loss", loss.item())
-        Loss_all = []
+            if i % 200 == 0:
+                print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
+        Metric = []
         with torch.no_grad():
             for x, noise, y in test_loader:
-                loss = sample(x, noise, y, audio_only=True)
-                Loss_all.append(loss.item())
-        val_loss = np.mean(Loss_all, axis=0)
-        print(val_loss)
+                metric = sample_evaluation(x, noise, y, audio_only=True)
+                Metric.append(metric)
+        avg_metric = np.mean(Metric, axis=(0, 1))
+        print(avg_metric)
         scheduler.step()
-        loss_curve.append(val_loss)
-        if val_loss < loss_best:
+
+        mean_lost = np.mean(Loss_list)
+        loss_curve.append(mean_lost)
+        if mean_lost < loss_best:
             ckpt_best = model.state_dict()
-            loss_best = val_loss
+            loss_best = mean_lost
             if save_all:
                 torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
     return ckpt_best, loss_curve
