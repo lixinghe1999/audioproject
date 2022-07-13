@@ -14,7 +14,7 @@ import pickle
 
 
 device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-Loss = nn.L1Loss()
+Loss = nn.MSELoss()
 def sample(x, noise, y, audio_only=False):
     x = x.to(device=device, dtype=torch.float)
     noise = torch.abs(noise).to(device=device, dtype=torch.float)
@@ -44,11 +44,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
-        for x, noise, y in tqdm(train_loader):
+        for i, x, noise, y in enumerate(train_loader):
             loss = sample(x, noise, y, audio_only=True)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            if i%20 == 0:
+                print(loss.item())
         Loss_all = []
         with torch.no_grad():
             for x, noise, y in test_loader:
@@ -74,7 +76,7 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         BATCH_SIZE = 32
-        lr = 0.001
+        lr = 0.01
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
 
