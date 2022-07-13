@@ -7,25 +7,69 @@ from dataset import NoisyCleanSet
 from fullsubnet import Model
 from A2net import A2net
 import numpy as np
+import scipy.signal as signal
 from result import subjective_evaluation, objective_evaluation
 from tqdm import tqdm
 import argparse
 import pickle
-
+from evaluation import wer, snr, lsd
+from pesq import pesq
 
 device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 Loss = nn.MSELoss()
-def sample(x, noise, y, audio_only=False):
+
+seg_len_mic = 640
+overlap_mic = 320
+seg_len_imu = 64
+overlap_imu = 32
+rate_mic = 16000
+rate_imu = 1600
+length = 5
+stride = 4
+
+freq_bin_high = 8 * (int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1)
+freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
+time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
+freq_bin_limit = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
+
+
+
+def sample_evaluation(x, noise, y, audio_only=False):
     x = x.to(device=device, dtype=torch.float)
     noise = torch.abs(noise).to(device=device, dtype=torch.float)
     y = y.to(device=device)
     if audio_only:
         predict1 = model(noise)
-        y = torch.cat([y.abs().to(dtype=torch.float), y.angle().to(dtype=torch.float)], dim=1)
+        predict1 = np.exp(1j * y.angle()[:freq_bin_high, :]) * predict1
+    else:
+        predict1, predict2 = model(x, noise)
+        predict1 = np.exp(1j * y.angle()[:freq_bin_high, :]) * predict1
+
+    predict = np.pad(predict1, ((0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
+    _, recover_audio = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+
+    value1 = pesq(16000, noise, y, 'nb')
+    value2 = pesq(16000, predict1, y, 'nb')
+    PESQ = [value1, value2]
+
+    value1 = snr(y, noise)
+    value2 = snr(y, predict1)
+    SNR = [value1, value2]
+
+    value1 = lsd(y, noise)
+    value2 = lsd(y, predict1)
+    LSD = [value1, value2]
+
+    return PESQ, SNR, LSD
+def sample(x, noise, y, audio_only=False):
+    x = x.to(device=device, dtype=torch.float)
+    noise = torch.abs(noise).to(device=device, dtype=torch.float)
+    y = y.abs().to(device=device, dtype=torch.float)
+    if audio_only:
+        predict1 = model(noise)
         loss = Loss(predict1, y)
     else:
         predict1, predict2 = model(x, noise)
-        y = y.abs().to(dtype=torch.float)
         loss1 = Loss(predict1, y)
         loss2 = Loss(predict2, y[:, :, :33, :])
         loss = loss1 + 0.05 * loss2
