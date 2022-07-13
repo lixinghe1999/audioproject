@@ -21,7 +21,10 @@ def sample(x, noise, y, audio_only=False):
     y = y.to(device=device)
     if audio_only:
         predict1 = model(noise)
+        print(predict1.shape)
+        print(y.shape)
         y = torch.cat([y.abs().to(dtype=torch.float), y.angle().to(dtype=torch.float)], dim=1)
+        print(y.shape)
         loss = Loss(predict1, y)
     else:
         predict1, predict2 = model(x, noise)
@@ -73,13 +76,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.mode == 0:
-        BATCH_SIZE = 32
+        BATCH_SIZE = 1
         lr = 0.001
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
 
         #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
-        model = nn.DataParallel(Model(num_freqs=264), device_ids=[0, 1]).to(device)
+        model = nn.DataParallel(Model(num_freqs=264), device_ids=[0]).to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
         plt.plot(loss_curve)
