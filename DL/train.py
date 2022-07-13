@@ -21,7 +21,9 @@ def sample(x, noise, y, audio_only=False):
     y = y.to(device=device)
     if audio_only:
         predict1 = model(noise)
+        print(predict1.shape)
         y = torch.cat([y.abs().to(dtype=torch.float), y.angle().to(dtype=torch.float)], dim=1)
+        print(y.shape)
         loss = Loss(predict1, y)
     else:
         predict1, predict2 = model(x, noise)
