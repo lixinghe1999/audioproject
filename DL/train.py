@@ -19,7 +19,6 @@ def sample(x, noise, y, audio_only=False):
     x = x.to(device=device, dtype=torch.float)
     noise = torch.abs(noise).to(device=device, dtype=torch.float)
     y = y.to(device=device)
-    print(x.shape, noise.shape)
     if audio_only:
         predict1 = model(noise)
         y = torch.cat([y.abs().to(dtype=torch.float), y.angle().to(dtype=torch.float)], dim=1)
