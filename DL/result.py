@@ -8,9 +8,7 @@ import torch
 import librosa
 import torch.nn.functional as F
 import torch.utils.data as Data
-from data import NoisyCleanSet, IMUSPEECHSet
-from SepFormer.separate import SepFormer
-from A2net import A2net
+
 
 from torch.nn.utils.rnn import pad_sequence
 from evaluation import wer, snr, lsd
@@ -68,68 +66,68 @@ def towav(name, predict):
     recover_audio = recover_audio/np.max(recover_audio)
     sf.write(name, recover_audio, 16000)
     return recover_audio
-def measurement_vibvoice(x, noise, y, model, asr_model, device, num_sentence):
-    # Note that x can be magnitude, y need to have phase
-    x_abs, noise_abs, y_abs = x.to(device=device, dtype=torch.float), torch.abs(noise).to(device=device, dtype=torch.float), torch.abs(y)
-    predict, _ = model(x_abs, noise_abs)
-    predict = predict.cpu().numpy()
-    y = y.numpy()
-    noise = noise.numpy()
-    gt = y[0, 0]
-    n = noise[0, 0]
-    predict = predict[0, 0]
-
-    # [recover_audio, gt_audio] = mel_audio([predict, gt], sample_rate=[16000, 16000], fft=[640, 640], names=['vibvoice.wav', 'ground_truth.wav'])
-    phase = np.angle(n)
-    gt_audio = towav('ground_truth.wav', gt)
-    recover_audio = towav('vibvoice.wav', np.exp(1j * phase[:freq_bin_high, :]) * predict)
-
-    PESQ = pesq(16000, recover_audio, gt_audio, 'nb')
-    SNR = snr(gt_audio, recover_audio)
-    audio_files = ['vibvoice.wav']
-    [text1] = batch_ASR(audio_files, asr_model)
-    text = sentences[num_sentence-1]
-    WER = wer(text, text1)
-    print(WER)
-    return PESQ, SNR, WER
-
-def measurement_baseline(noise, y, baseline_model1, baseline_model2, asr_model, num_sentence):
-    # Note that x can be magnitude, y need to have phase
-    y = y.numpy()
-    noise = noise.numpy()
-    gt = y[0, 0]
-    n = noise[0, 0]
-    ori_audio = towav('ori_audio.wav', n)
-    gt_audio = towav('ground_truth.wav', gt)
-
-    # baseline1 - enhancement
-    noisy = baseline_model1.load_audio("ori_audio.wav").unsqueeze(0)
-    enhanced = baseline_model1.enhance_batch(noisy, lengths=torch.tensor([1.])).cpu()
-    torchaudio.save('baseline.wav', enhanced, 16000)
-
-    # baseline2 - separation
-    est_sources = baseline_model2.separate_file(path='ori_audio.wav')
-    est_sources = est_sources.permute(0, 2, 1)
-    est_sources = F.interpolate(est_sources, scale_factor=(2))
-    est_source1, est_source2 = est_sources[:, 0, :].detach().cpu(), est_sources[:, 1, :].detach().cpu()
-    torchaudio.save("source1.wav", est_source1, 16000)
-    torchaudio.save("source2.wav", est_source2, 16000)
-
-    value1 = max(pesq(16000, est_source1.numpy()[0], gt_audio, 'nb'), pesq(16000, est_source2.numpy()[0], gt_audio, 'nb'))
-    value2 = pesq(16000, enhanced.numpy()[0], gt_audio, 'nb')
-    value3 = pesq(16000, ori_audio, gt_audio, 'nb')
-    PESQ = [value1, value2, value3]
-
-    value1 = max(snr(gt_audio, est_source1.numpy()[0]), snr(gt_audio, est_source2.numpy()[0]))
-    value2 = snr(gt_audio, enhanced.numpy()[0])
-    value3 = snr(gt_audio, ori_audio)
-    SNR = [value1, value2, value3]
-
-    audio_files = ['source1.wav', 'source2.wav', 'baseline.wav', 'ori_audio.wav', 'ground_truth.wav']
-    text1, text2, text3, text4, text5 = batch_ASR(audio_files, asr_model)
-    text = sentences[num_sentence-1]
-    WER = [min(wer(text, text1), wer(text, text2)), wer(text, text3), wer(text, text4), wer(text, text5)]
-    return PESQ, SNR, WER
+# def measurement_vibvoice(x, noise, y, model, asr_model, device, num_sentence):
+#     # Note that x can be magnitude, y need to have phase
+#     x_abs, noise_abs, y_abs = x.to(device=device, dtype=torch.float), torch.abs(noise).to(device=device, dtype=torch.float), torch.abs(y)
+#     predict, _ = model(x_abs, noise_abs)
+#     predict = predict.cpu().numpy()
+#     y = y.numpy()
+#     noise = noise.numpy()
+#     gt = y[0, 0]
+#     n = noise[0, 0]
+#     predict = predict[0, 0]
+#
+#     # [recover_audio, gt_audio] = mel_audio([predict, gt], sample_rate=[16000, 16000], fft=[640, 640], names=['vibvoice.wav', 'ground_truth.wav'])
+#     phase = np.angle(n)
+#     gt_audio = towav('ground_truth.wav', gt)
+#     recover_audio = towav('vibvoice.wav', np.exp(1j * phase[:freq_bin_high, :]) * predict)
+#
+#     PESQ = pesq(16000, recover_audio, gt_audio, 'nb')
+#     SNR = snr(gt_audio, recover_audio)
+#     audio_files = ['vibvoice.wav']
+#     [text1] = batch_ASR(audio_files, asr_model)
+#     text = sentences[num_sentence-1]
+#     WER = wer(text, text1)
+#     print(WER)
+#     return PESQ, SNR, WER
+#
+# def measurement_baseline(noise, y, baseline_model1, baseline_model2, asr_model, num_sentence):
+#     # Note that x can be magnitude, y need to have phase
+#     y = y.numpy()
+#     noise = noise.numpy()
+#     gt = y[0, 0]
+#     n = noise[0, 0]
+#     ori_audio = towav('ori_audio.wav', n)
+#     gt_audio = towav('ground_truth.wav', gt)
+#
+#     # baseline1 - enhancement
+#     noisy = baseline_model1.load_audio("ori_audio.wav").unsqueeze(0)
+#     enhanced = baseline_model1.enhance_batch(noisy, lengths=torch.tensor([1.])).cpu()
+#     torchaudio.save('baseline.wav', enhanced, 16000)
+#
+#     # baseline2 - separation
+#     est_sources = baseline_model2.separate_file(path='ori_audio.wav')
+#     est_sources = est_sources.permute(0, 2, 1)
+#     est_sources = F.interpolate(est_sources, scale_factor=(2))
+#     est_source1, est_source2 = est_sources[:, 0, :].detach().cpu(), est_sources[:, 1, :].detach().cpu()
+#     torchaudio.save("source1.wav", est_source1, 16000)
+#     torchaudio.save("source2.wav", est_source2, 16000)
+#
+#     value1 = max(pesq(16000, est_source1.numpy()[0], gt_audio, 'nb'), pesq(16000, est_source2.numpy()[0], gt_audio, 'nb'))
+#     value2 = pesq(16000, enhanced.numpy()[0], gt_audio, 'nb')
+#     value3 = pesq(16000, ori_audio, gt_audio, 'nb')
+#     PESQ = [value1, value2, value3]
+#
+#     value1 = max(snr(gt_audio, est_source1.numpy()[0]), snr(gt_audio, est_source2.numpy()[0]))
+#     value2 = snr(gt_audio, enhanced.numpy()[0])
+#     value3 = snr(gt_audio, ori_audio)
+#     SNR = [value1, value2, value3]
+#
+#     audio_files = ['source1.wav', 'source2.wav', 'baseline.wav', 'ori_audio.wav', 'ground_truth.wav']
+#     text1, text2, text3, text4, text5 = batch_ASR(audio_files, asr_model)
+#     text = sentences[num_sentence-1]
+#     WER = [min(wer(text, text1), wer(text, text2)), wer(text, text3), wer(text, text4), wer(text, text5)]
+#     return PESQ, SNR, WER
 
 def save_audio(x, noise, y, model, enhance_model, device, count):
     # Note that x can be magnitude, y need to have phase
@@ -166,41 +164,59 @@ def save_audio(x, noise, y, model, enhance_model, device, count):
             count += 1
     return count
 
-def baseline(dataset):
-    BATCH_SIZE = 1
-    asr_model = EncoderDecoderASR.from_hparams(source="../pretrained_models/asr-transformer-transformerlm-librispeech",savedir="../pretrained_models/asr-transformer-transformerlm-librispeech",run_opts={"device": "cuda"})
-    baseline_model1 = SpectralMaskEnhancement.from_hparams(source="../pretrained_models/metricgan-plus-voicebank",savedir="../pretrained_models/metricgan-plus-voicebank",run_opts={"device": "cuda"})
-    baseline_model2 = separator.from_hparams(source="../speechbrain/sepformer-whamr", savedir='../pretrained_models/sepformer-whamr',run_opts={"device": "cuda"})
-    # baseline_model2 = SepFormer(model_path='SepFormer/checkpoint/pretrain.pth')
-    test_loader = Data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=False)
-    PESQ = []
-    SNR = []
-    WER = []
-    with torch.no_grad():
-        for num_sentence, x, noise, y in test_loader:
-            a, b, c = measurement_baseline(noise, y, baseline_model1, baseline_model2, asr_model, num_sentence)
-            PESQ.append(a)
-            SNR.append(b)
-            WER.append(c)
-    return PESQ, SNR, WER
 
-def vibvoice(model, dataset):
+def subjective_evaluation(model, dataset):
     BATCH_SIZE = 1
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    asr_model = EncoderDecoderASR.from_hparams(source="../pretrained_models/asr-transformer-transformerlm-librispeech",savedir="../pretrained_models/asr-transformer-transformerlm-librispeech",run_opts={"device": "cuda"})
+    asr_model = EncoderDecoderASR.from_hparams(source="../pretrained_models/asr-transformer-transformerlm-librispeech",
+                                               savedir="../pretrained_models/asr-transformer-transformerlm-librispeech",
+                                               run_opts={"device": "cuda"})
+    baseline_model1 = SpectralMaskEnhancement.from_hparams(source="../pretrained_models/metricgan-plus-voicebank",
+                                                           savedir="../pretrained_models/metricgan-plus-voicebank",
+                                                           run_opts={"device": "cuda"})
+    baseline_model2 = separator.from_hparams(source="../speechbrain/sepformer-whamr",
+                                             savedir='../pretrained_models/sepformer-whamr',
+                                             run_opts={"device": "cuda"})
     test_loader = Data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=False)
-    PESQ = []
-    SNR = []
     WER = []
     with torch.no_grad():
         for num_sentence, x, noise, y in test_loader:
-            a, b, c = measurement_vibvoice(x, noise, y, model, asr_model, device, num_sentence)
-            PESQ.append(a)
-            SNR.append(b)
-            WER.append(c)
-    return PESQ, SNR, WER
+            x_abs, noise_abs, y_abs = x.to(device=device, dtype=torch.float), torch.abs(noise).to(device=device, dtype=torch.float), torch.abs(y)
+            predict, _ = model(x_abs, noise_abs)
+            predict = predict.cpu().numpy()
+            y = y.numpy()
+            noise = noise.numpy()
+            gt = y[0, 0]
+            n = noise[0, 0]
+            predict = predict[0, 0]
 
-def offline_evaluation(model, dataset):
+            phase = np.angle(n)
+            ori_audio = towav('ori_audio.wav', n)
+            gt_audio = towav('ground_truth.wav', gt)
+            recover_audio = towav('vibvoice.wav', np.exp(1j * phase[:freq_bin_high, :]) * predict)
+
+            # baseline1 - enhancement
+            noisy = baseline_model1.load_audio("ori_audio.wav").unsqueeze(0)
+            enhanced = baseline_model1.enhance_batch(noisy, lengths=torch.tensor([1.])).cpu()
+            torchaudio.save('baseline.wav', enhanced, 16000)
+
+            # baseline2 - separation
+            est_sources = baseline_model2.separate_file(path='ori_audio.wav')
+            est_sources = est_sources.permute(0, 2, 1)
+            est_sources = F.interpolate(est_sources, scale_factor=(2))
+            est_source1, est_source2 = est_sources[:, 0, :].detach().cpu(), est_sources[:, 1, :].detach().cpu()
+            torchaudio.save("source1.wav", est_source1, 16000)
+            torchaudio.save("source2.wav", est_source2, 16000)
+
+
+            audio_files = ['vibvoice.wav', 'source1.wav', 'source2.wav', 'baseline.wav', 'ori_audio.wav', 'ground_truth.wav']
+            text1, text2, text3, text4, text5, text6 = batch_ASR(audio_files, asr_model)
+            text = sentences[num_sentence - 1]
+            WER.append([wer(text, text1), min(wer(text, text2), wer(text, text3)), wer(text, text4), wer(text, text5), wer(text, text6)])
+            print(WER)
+    return WER
+
+def objective_evaluation(model, dataset):
     BATCH_SIZE = 1
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     baseline_model1 = SpectralMaskEnhancement.from_hparams(source="../pretrained_models/metricgan-plus-voicebank", savedir="../pretrained_models/metricgan-plus-voicebank",run_opts={"device": "cuda"})
