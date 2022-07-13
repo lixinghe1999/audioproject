@@ -49,8 +49,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if i%20 == 0:
-                print(loss.item())
+            if i % 50 == 0:
+                print("training loss", loss.item())
         Loss_all = []
         with torch.no_grad():
             for x, noise, y in test_loader:
