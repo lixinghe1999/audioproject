@@ -5,6 +5,7 @@ import argparse
 
 
 def update(dict, name, file_list, N, p):
+    file_list = sorted(file_list)
     imu1 = file_list[: N]
     imu2 = file_list[N: 2 * N]
     gt = file_list[2 * N: 3 * N]
