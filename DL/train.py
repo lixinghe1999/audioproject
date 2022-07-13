@@ -44,7 +44,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
-        for i, x, noise, y in enumerate(train_loader):
+        for i, (x, noise, y) in enumerate(train_loader):
             loss = sample(x, noise, y, audio_only=True)
             optimizer.zero_grad()
             loss.backward()
