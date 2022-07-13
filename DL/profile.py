@@ -13,11 +13,11 @@ def update(dict, name, file_list, N, p):
     wav_files = []
     gt_files = []
     for i in range(N):
-        imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i]), 'r').readlines())])
+        imu_files.append([os.path.join(path, imu1[i]), len(open(os.path.join(path, imu1[i]), 'rb').readlines())])
         wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
         gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
 
-        imu_files.append([os.path.join(path, imu2[i]), len(open(os.path.join(path, imu2[i]),'r').readlines())])
+        imu_files.append([os.path.join(path, imu2[i]), len(open(os.path.join(path, imu2[i]), 'rb').readlines())])
         wav_files.append([os.path.join(path, wav[i]), torchaudio.info(os.path.join(path, wav[i])).num_frames])
         gt_files.append([os.path.join(path, gt[i]), torchaudio.info(os.path.join(path, gt[i])).num_frames])
     if name in dict:
