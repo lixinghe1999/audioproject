@@ -230,12 +230,14 @@ class NoisyCleanSet:
         self.text = text
         self.ratio = ratio
         self.length = len(self.dataset[1])
+        self.snr_list = np.arange(-5, 20, 1)
 
     def __getitem__(self, index):
         speech, file = self.dataset[0][index]
         if self.simulation:
             noise, _ = self.dataset[1][np.random.randint(0, self.length)]
-            noise, speech = snr_mix(speech, noise, 0, -25, 10, rir=None, eps=1e-6)
+            snr = np.random.choice(self.snr_list)
+            noise, speech = snr_mix(speech, noise, snr, -25, 10, rir=None, eps=1e-6)
         else:
             noise, _ = self.dataset[1][index]
             noise, speech = snr_norm(speech, noise, -25, 10)
@@ -267,11 +269,11 @@ if __name__ == "__main__":
         size_all_mb = (param_size + buffer_size) / 1024 ** 2
         #print('model size: {:.3f}MB'.format(size_all_mb))
         return size_all_mb
-    mode = 1
+    mode = 0
     if mode == 0:
         # check data
-        #dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'])
-        dataset_train = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'], simulation=True, person=['he'])
+        dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
+        #dataset_train = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'], simulation=True, person=['he'])
         # dataset_train = IMUSPEECHSet('json/noise_imuexp7.json', 'json/noise_gtexp7.json', 'json/noise_wavexp7.json', simulate=False, person=['4'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
