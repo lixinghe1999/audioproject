@@ -59,7 +59,7 @@ if __name__ == "__main__":
             for path, dir_list, file_list in g:
                 N = int(len(file_list) / 4)
                 if N > 0:
-                    name = path.split('\\')[-1]
+                    name = path.split('/')[-1]
                     dict = update(dict, name, file_list, N, p)
         for name in dict:
             json.dump(dict[name][0], open('json/' + name + '_imu.json', 'w'), indent=4)
