@@ -101,10 +101,10 @@ class Model(BaseModel):
 
         # Speeding up training without significant performance degradation.
         # These will be updated to the paper later.
-        if batch_size > 1:
-            sb_input = drop_band(sb_input.permute(0, 2, 1, 3), num_groups=self.num_groups_in_drop_band)  # [B, (F_s + F_f), F//num_groups, T]
-            num_freqs = sb_input.shape[2]
-            sb_input = sb_input.permute(0, 2, 1, 3)  # [B, F//num_groups, (F_s + F_f), T]
+        # if batch_size > 1:
+        #     sb_input = drop_band(sb_input.permute(0, 2, 1, 3), num_groups=self.num_groups_in_drop_band)  # [B, (F_s + F_f), F//num_groups, T]
+        #     num_freqs = sb_input.shape[2]
+        #     sb_input = sb_input.permute(0, 2, 1, 3)  # [B, F//num_groups, (F_s + F_f), T]
 
         sb_input = sb_input.reshape(
             batch_size * num_freqs,
@@ -122,7 +122,7 @@ class Model(BaseModel):
 
 if __name__ == "__main__":
     with torch.no_grad():
-        noisy_mag = torch.rand(1, 1, 257, 251)
+        noisy_mag = torch.rand(2, 1, 257, 62)
         model = Model(
             num_freqs=257,
             look_ahead=2,
