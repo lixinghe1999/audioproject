@@ -37,7 +37,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     test_size = min(int(0.1 * length), 2000)
     train_size = length - test_size
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    print(len(train_dataset))
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
@@ -57,6 +56,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
                 loss = sample(x, noise, y, audio_only=True)
                 Loss_all.append(loss.item())
         val_loss = np.mean(Loss_all, axis=0)
+        print(val_loss)
         scheduler.step()
         loss_curve.append(val_loss)
         if val_loss < loss_best:
@@ -85,6 +85,7 @@ if __name__ == "__main__":
 
         plt.plot(loss_curve)
         plt.savefig('loss.png')
+
     elif args.mode == 1:
         # synthetic dataset
         file = open(pkl_folder + "clean_train_paras.pkl", "rb")

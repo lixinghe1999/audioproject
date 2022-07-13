@@ -1,6 +1,7 @@
 import torchaudio
 import json
 import os
+import argparse
 
 
 def update(dict, name, file_list, N, p):
@@ -32,8 +33,11 @@ def update(dict, name, file_list, N, p):
         dict[name] = [{p: imu_files}, {p: wav_files}, {p: gt_files}]
     return dict
 if __name__ == "__main__":
-    mode = 1
-    if mode == 0:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', action="store", type=int, default=0, required=False,
+                        help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
+    args = parser.parse_args()
+    if args.mode == 0:
         directory = "../dataset/"
         datasets = ['dev', 'background', 'music', 'train']
         #datasets = ['dev']
@@ -45,7 +49,7 @@ if __name__ == "__main__":
                     if file_name[-3:] in ['wav', 'lac']:
                         audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
             json.dump(audio_files, open('json/' + dataset + '.json', 'w'), indent=4)
-    elif mode == 1:
+    elif args.mode == 1:
         directory = '../dataset/our'
         person = os.listdir(directory)
         dict = {}
@@ -60,30 +64,3 @@ if __name__ == "__main__":
             json.dump(dict[name][0], open('json/' + name + '_imu.json', 'w'), indent=4)
             json.dump(dict[name][1], open('json/' + name + '_wav.json', 'w'), indent=4)
             json.dump(dict[name][2], open('json/' + name + '_gt.json', 'w'), indent=4)
-
-
-    # elif mode == 2:
-    #     # field = ['office', 'corridor', 'stair']
-    #     # norm('field_paras.pkl', ['field_imuexp7.json', 'field_gtexp7.json', 'field_wavexp7.json'], False, field)
-    #     # norm('field_train_paras.pkl', ['field_train_imuexp7.json', 'field_train_gtexp7.json', 'field_train_wavexp7.json'],False, ['canteen', 'station'])
-    #
-    #     candidate_all = ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", "airpod", "galaxy", 'freebud']
-    #
-    #     candidate = ['yan', 'he', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]
-    #
-    #     norm('noise_train_paras.pkl', ['json/noise_train_imuexp7.json', 'json/noise_train_gtexp7.json', 'json/noise_train_wavexp7.json'], False, candidate_all)
-    #
-    #     norm('clean_train_paras.pkl', ['json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/clean_train_wavexp7.json'], True, candidate)
-    #
-    #     norm('noise_paras.pkl', ['json/noise_imuexp7.json', 'json/noise_gtexp7.json', 'json/noise_wavexp7.json'], False, candidate_all)
-    #
-    #     norm('clean_paras.pkl', ['json/clean_imuexp7.json', 'json/clean_wavexp7.json', 'json/clean_wavexp7.json'], True, ['he', 'hou'])
-    #
-    #     norm('mobile_paras.pkl', ['json/mobile_imuexp7.json', 'json/mobile_wavexp7.json', 'json/mobile_wavexp7.json'], True, ['he', 'hou'])
-    #
-    # else:
-    #     transfer_function, variance = read_transfer_function('../transfer_function')
-    #     for i in range(19):
-    #         index = np.random.randint(0, N)
-    #         plt.plot(transfer_function[index, :])
-    #         plt.show()
