@@ -16,7 +16,7 @@ from evaluation import wer, snr, lsd
 from pesq import pesq
 
 device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-Loss = nn.MSELoss()
+Loss = nn.L1Loss()
 
 seg_len_mic = 640
 overlap_mic = 320
