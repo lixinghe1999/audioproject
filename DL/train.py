@@ -85,19 +85,19 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        # for i, (x, noise, y) in enumerate(train_loader):
-        #     loss = sample(x, noise, y, audio_only=True)
-        #     Loss_list.append(loss.item())
-        #     optimizer.zero_grad()
-        #     loss.backward()
-        #     optimizer.step()
-        #     if i % 500 == 0:
-        #         print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
+        for i, (x, noise, y) in enumerate(train_loader):
+            loss = sample(x, noise, y, audio_only=True)
+            Loss_list.append(loss.item())
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            if i % 300 == 0:
+                print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
         Metric = []
         with torch.no_grad():
             for x, noise, y in test_loader:
                 metric = sample_evaluation(x, noise, y, audio_only=True)
-                print(metric)
+                #print(metric)
                 Metric.append(metric)
         avg_metric = np.mean(Metric, axis=(0, 1))
         print(avg_metric)
