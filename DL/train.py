@@ -74,7 +74,7 @@ def sample(x, noise, y, audio_only=False):
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     length = len(dataset)
     test_size = min(int(0.1 * length), 2000)
-    test_size = 4
+    test_size = 200
     train_size = length - test_size
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
@@ -100,7 +100,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
                 metric = sample_evaluation(x, noise, y, audio_only=True)
                 #print(metric)
                 Metric.append(metric)
-        print(Metric)
+        #print(Metric)
         avg_metric = np.mean(np.array(Metric), axis=(0, 1))
         print(avg_metric)
         scheduler.step()
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.mode == 0:
-        BATCH_SIZE = 2
+        BATCH_SIZE = 16
         lr = 0.01
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
