@@ -100,7 +100,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
                 metric = sample_evaluation(x, noise, y, audio_only=True)
                 #print(metric)
                 Metric.append(metric)
-        #print(Metric)
+        print(Metric)
         avg_metric = np.mean(np.array(Metric), axis=(0, 1))
         print(avg_metric)
         scheduler.step()
