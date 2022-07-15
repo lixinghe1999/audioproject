@@ -96,8 +96,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Metric = []
         with torch.no_grad():
             for x, noise, y in test_loader:
-                print(1)
                 metric = sample_evaluation(x, noise, y, audio_only=True)
+                print(metric)
                 Metric.append(metric)
         avg_metric = np.mean(Metric, axis=(0, 1))
         print(avg_metric)
