@@ -126,7 +126,7 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
 
         #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
-        model = nn.DataParallel(Model(num_freqs=264), device_ids=[0]).to(device)
+        model = nn.DataParallel(Model(num_freqs=264), device_ids=[0, 1]).to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
         plt.plot(loss_curve)
