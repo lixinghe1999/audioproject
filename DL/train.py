@@ -74,6 +74,7 @@ def sample(x, noise, y, audio_only=False):
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     length = len(dataset)
     test_size = min(int(0.1 * length), 2000)
+    test_size = 4
     train_size = length - test_size
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
@@ -85,20 +86,21 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        for i, (x, noise, y) in enumerate(train_loader):
-            loss = sample(x, noise, y, audio_only=True)
-            Loss_list.append(loss.item())
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            if i % 300 == 0:
-                print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
+        # for i, (x, noise, y) in enumerate(train_loader):
+        #     loss = sample(x, noise, y, audio_only=True)
+        #     Loss_list.append(loss.item())
+        #     optimizer.zero_grad()
+        #     loss.backward()
+        #     optimizer.step()
+        #     if i % 300 == 0:
+        #         print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
         Metric = []
         with torch.no_grad():
             for x, noise, y in test_loader:
                 metric = sample_evaluation(x, noise, y, audio_only=True)
                 #print(metric)
                 Metric.append(metric)
+        print(Metric)
         avg_metric = np.mean(np.array(Metric), axis=(0, 1))
         print(avg_metric)
         scheduler.step()
@@ -120,13 +122,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.mode == 0:
-        BATCH_SIZE = 32
+        BATCH_SIZE = 2
         lr = 0.01
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
 
         #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
-        model = nn.DataParallel(Model(num_freqs=264), device_ids=[0, 1]).to(device)
+        model = nn.DataParallel(Model(num_freqs=264), device_ids=[0]).to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
         plt.plot(loss_curve)
