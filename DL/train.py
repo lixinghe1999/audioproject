@@ -51,12 +51,12 @@ def sample_evaluation(x, noise, y, audio_only=False):
     _, predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
     y = y.cpu().numpy()
-    y = np.pad(y, ((0, 0), (0, 0),(0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
+    y = np.pad(y, ((0, 0), (0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
     predict = np.squeeze(predict, axis=1)
     y = np.squeeze(y, axis=1)
-    return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0)), snr(y, predict), lsd(y, predict)], axis=1)
+    return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
 def sample(x, noise, y, audio_only=False):
     x = x.to(device=device, dtype=torch.float)
     noise = torch.abs(noise).to(device=device, dtype=torch.float)
@@ -85,17 +85,18 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        for i, (x, noise, y) in enumerate(train_loader):
-            loss = sample(x, noise, y, audio_only=True)
-            Loss_list.append(loss.item())
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            if i % 200 == 0:
-                print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
+        # for i, (x, noise, y) in enumerate(train_loader):
+        #     loss = sample(x, noise, y, audio_only=True)
+        #     Loss_list.append(loss.item())
+        #     optimizer.zero_grad()
+        #     loss.backward()
+        #     optimizer.step()
+        #     if i % 500 == 0:
+        #         print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
         Metric = []
         with torch.no_grad():
             for x, noise, y in test_loader:
+                print(1)
                 metric = sample_evaluation(x, noise, y, audio_only=True)
                 Metric.append(metric)
         avg_metric = np.mean(Metric, axis=(0, 1))
@@ -125,7 +126,7 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
 
         #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
-        model = nn.DataParallel(Model(num_freqs=264), device_ids=[0, 1]).to(device)
+        model = nn.DataParallel(Model(num_freqs=264), device_ids=[0]).to(device)
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
         plt.plot(loss_curve)
