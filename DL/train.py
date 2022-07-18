@@ -9,11 +9,13 @@ from A2net import A2net
 import numpy as np
 import scipy.signal as signal
 from result import subjective_evaluation, objective_evaluation
+from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from tqdm import tqdm
 import argparse
 import pickle
 from evaluation import wer, snr, lsd
 from pesq import pesq_batch
+from torch.cuda.amp import GradScaler
 
 device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 Loss = nn.L1Loss()
@@ -38,32 +40,42 @@ def sample_evaluation(x, noise, y, audio_only=False):
     x = x.to(device=device, dtype=torch.float)
     magnitude = torch.abs(noise).to(device=device, dtype=torch.float)
     phase = torch.angle(noise).to(device=device, dtype=torch.float)
-    y = y.to(device=device)
+    noise_real = noise.real.to(device=device, dtype=torch.float)
+    noise_imag = noise.imag.to(device=device, dtype=torch.float)
+    y = y.to(device=device).squeeze(1)
     if audio_only:
         predict1 = model(magnitude)
-        predict1 = torch.exp(1j * phase[:, :freq_bin_high, :]) * predict1
     else:
         predict1, predict2 = model(x, magnitude)
-        predict1 = torch.exp(1j * phase[:, :freq_bin_high, :]) * predict1
+
+    # either predict the spectrogram, or predict the CIRM
+    #predict1 = torch.exp(1j * phase[:, :freq_bin_high, :]) * predict1
+
+    cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
+
+    enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
+    enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
+    predict1 = torch.complex(enhanced_real, enhanced_imag)
 
     predict = predict1.cpu().numpy()
-    predict = np.pad(predict, ((0, 0), (0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
+    predict = np.pad(predict, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
     _, predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
     y = y.cpu().numpy()
-    y = np.pad(y, ((0, 0), (0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
+    y = np.pad(y, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
-    predict = np.squeeze(predict, axis=1)
-    y = np.squeeze(y, axis=1)
     return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
 def sample(x, noise, y, audio_only=False):
+    cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
+    cIRM = cIRM.to(device=device, dtype=torch.float)
+
     x = x.to(device=device, dtype=torch.float)
     noise = torch.abs(noise).to(device=device, dtype=torch.float)
     y = y.abs().to(device=device, dtype=torch.float)
     if audio_only:
         predict1 = model(noise)
-        loss = Loss(predict1, y)
+        loss = Loss(predict1, cIRM)
     else:
         predict1, predict2 = model(x, noise)
         loss1 = Loss(predict1, y)
@@ -78,7 +90,15 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
+
+    #optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
+    scaler = GradScaler()
+    optimizer = torch.optim.Adam(
+        params=model.parameters(),
+        lr=lr,
+        betas=(0.9, 0.999)
+    )
+
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     loss_best = 1
     loss_curve = []
@@ -87,10 +107,19 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Loss_list = []
         for i, (x, noise, y) in enumerate(tqdm(train_loader)):
             loss = sample(x, noise, y, audio_only=True)
+
+            scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 10)
+            scaler.step(optimizer)
+            scaler.update()
+
+            # optimizer.zero_grad()
+            # loss.backward()
+            # optimizer.step()
+
             Loss_list.append(loss.item())
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+
             if i % 300 == 0:
                 print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
         mean_lost = np.mean(Loss_list)
@@ -120,10 +149,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.mode == 0:
-        BATCH_SIZE = 32
-        lr = 0.01
-        EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
+        BATCH_SIZE = 2
+        lr = 0.001
+        EPOCH = 40
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
         #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
         model = nn.DataParallel(Model(num_freqs=264), device_ids=[0, 1]).to(device)

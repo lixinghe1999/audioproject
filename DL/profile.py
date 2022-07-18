@@ -41,7 +41,6 @@ if __name__ == "__main__":
     if args.mode == 0:
         directory = "../dataset/"
         datasets = ['dev', 'background', 'music', 'train']
-        #datasets = ['dev']
         for dataset in datasets:
             audio_files = []
             g = os.walk(directory + dataset)
@@ -50,6 +49,11 @@ if __name__ == "__main__":
                     if file_name[-3:] in ['wav', 'lac']:
                         audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
             json.dump(audio_files, open('json/' + dataset + '.json', 'w'), indent=4)
+        data = []
+        for dataset in ['dev', 'background', 'music']:
+            with open('json/' + dataset + '.json', 'r') as f:
+                data += json.load(f)
+        json.dump(data, open('json/all_noise.json', 'w'), indent=4)
     elif args.mode == 1:
         directory = '../dataset/our'
         person = os.listdir(directory)

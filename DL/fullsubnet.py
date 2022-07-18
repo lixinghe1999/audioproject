@@ -49,7 +49,7 @@ class Model(BaseModel):
 
         self.sb_model = SequenceModel(
             input_size=(sb_num_neighbors * 2 + 1) + (fb_num_neighbors * 2 + 1),
-            output_size=1,
+            output_size=2,
             hidden_size=sb_model_hidden_size,
             num_layers=2,
             bidirectional=False,
@@ -114,7 +114,7 @@ class Model(BaseModel):
 
         # [B * F, (F_s + F_f), T] => [B * F, 2, T] => [B, F, 2, T]
         sb_mask = self.sb_model(sb_input)
-        sb_mask = sb_mask.reshape(batch_size, num_freqs, 1, num_frames).permute(0, 2, 1, 3).contiguous()
+        sb_mask = sb_mask.reshape(batch_size, num_freqs, 2, num_frames).permute(0, 2, 1, 3).contiguous()
 
         output = sb_mask[:, :, :, self.look_ahead:]
         return output
@@ -122,9 +122,9 @@ class Model(BaseModel):
 
 if __name__ == "__main__":
     with torch.no_grad():
-        noisy_mag = torch.rand(2, 1, 257, 62)
+        noisy_mag = torch.rand(2, 1, 264, 151)
         model = Model(
-            num_freqs=257,
+            num_freqs=264,
             look_ahead=2,
             sequence_model="LSTM",
             fb_num_neighbors=0,

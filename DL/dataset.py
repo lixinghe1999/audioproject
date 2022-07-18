@@ -9,6 +9,7 @@ import scipy.signal as signal
 import librosa
 from scipy import interpolate
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
+
 from A2net import A2net
 from fullsubnet import Model
 seg_len_mic = 640
@@ -233,27 +234,27 @@ class NoisyCleanSet:
         self.snr_list = np.arange(-5, 20, 1)
 
     def __getitem__(self, index):
-        speech, file = self.dataset[0][index]
+        clean, file = self.dataset[0][index]
         if self.simulation:
             noise, _ = self.dataset[1][np.random.randint(0, self.length)]
             snr = np.random.choice(self.snr_list)
-            noise, speech = snr_mix(speech, noise, snr, -25, 10, rir=None, eps=1e-6)
+            noise, clean = snr_mix(clean, noise, snr, -25, 10, rir=None, eps=1e-6)
         else:
             noise, _ = self.dataset[1][index]
-            noise, speech = snr_norm(speech, noise, -25, 10)
+            noise, clean = snr_norm(clean, noise, -25, 10)
         noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
-        speech = spectrogram(speech, seg_len_mic, overlap_mic, rate_mic)
+        clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
         if self.augmentation:
-            imu = synthetic(np.abs(speech), self.transfer_function, self.variance)
+            imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
         else:
             imu, _ = self.dataset[2][index]
             imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
         noise = noise[:, :8 * freq_bin_high, :]
-        speech = speech[:, :8 * freq_bin_high, :]
+        clean = clean[:, :8 * freq_bin_high, :]
         if self.text:
-            return sentences[int(file.split('\\')[2][-1])], torch.from_numpy(imu), torch.from_numpy(noise), torch.from_numpy(speech)
+            return sentences[int(file.split('\\')[2][-1])], imu, noise, clean
         else:
-            return imu, noise, speech
+            return imu, noise, clean
     def __len__(self):
         return int(len(self.dataset[0]) * self.ratio)
 

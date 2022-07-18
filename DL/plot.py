@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-from matplotlib import rc
-rc('text', usetex=True)
+# from matplotlib import rc
+# rc('text', usetex=True)
 import numpy as np
 import os
 
@@ -69,12 +69,26 @@ if __name__ == "__main__":
     #     print(float(file[:-4]), pesq, snr, lsd)
 
     # noise type
-    for file in os.listdir('checkpoint/offline/new_type'):
+    fig, axs = plt.subplots(1, 3, figsize=(6, 3))
+    plt.subplots_adjust(left=0.1, bottom=0.2, right=0.95, wspace=0.3)
+    labels = []
+    for i, file in enumerate(os.listdir('checkpoint/offline/new_type')):
         npz = np.load(os.path.join('checkpoint/offline/new_type', file))
         pesq = [np.mean(npz['PESQ'][:, -1]), np.mean(npz['PESQ'][:, 0]), np.mean(np.max(npz['PESQ'][:, 1:-1], axis=1))]
         snr = [np.mean(npz['SNR'][:, -1]), np.mean(npz['SNR'][:, 0]), np.mean(np.max(npz['SNR'][:, 1:-1], axis=1))]
         lsd = [np.mean(npz['LSD'][:, -1]), np.mean(npz['LSD'][:, 0]), np.mean(np.min(npz['LSD'][:, 1:-1], axis=1))]
+        axs[0].bar(i, pesq[1], width=0.5, label=file[:-4])
+        axs[1].bar(i, snr[1], width=0.5, label=file[:-4])
+        axs[2].bar(i, lsd[1], width=0.5, label=file[:-4])
+        labels.append(file[:-4])
         print(file[:-4], pesq, snr, lsd)
+    titles = ['PESQ', 'SDR/dB', 'LSD/dB']
+    for i, ax in enumerate(axs):
+        ax.set_title(titles[i])
+        ax.set_xticks([])
+    fig.legend(labels, loc='lower center', ncol=3, bbox_transform=fig.transFigure)
+    plt.savefig('noise_type.pdf', dpi=300)
+    #plt.show()
 
     # augmented test
     # baseline = load('checkpoint/baseline/clean')
