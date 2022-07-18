@@ -77,7 +77,8 @@ def sample(x, noise, y, audio_only=False):
     y = y.abs()
 
     if audio_only:
-        predict1 = model(noise)
+        with autocast():
+            predict1 = model(noise)
         loss = Loss(predict1, cIRM)
     else:
         predict1, predict2 = model(x, noise)
@@ -108,23 +109,22 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        with autocast():
-            for i, (x, noise, y) in enumerate(tqdm(train_loader)):
-                loss = sample(x, noise, y, audio_only=True)
+        for i, (x, noise, y) in enumerate(tqdm(train_loader)):
+            loss = sample(x, noise, y, audio_only=True)
 
-                scaler.scale(loss).backward()
-                scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 10)
-                scaler.step(optimizer)
-                scaler.update()
+            scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 10)
+            scaler.step(optimizer)
+            scaler.update()
 
-                # optimizer.zero_grad()
-                # loss.backward()
-                # optimizer.step()
+            # optimizer.zero_grad()
+            # loss.backward()
+            # optimizer.step()
 
-                Loss_list.append(loss.item())
-                if i % 300 == 0:
-                    print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
+            Loss_list.append(loss.item())
+            if i % 300 == 0:
+                print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
         Metric = []
