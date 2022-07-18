@@ -119,7 +119,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
             # optimizer.step()
 
             Loss_list.append(loss.item())
-
             if i % 300 == 0:
                 print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
         mean_lost = np.mean(Loss_list)
@@ -149,7 +148,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.mode == 0:
-        BATCH_SIZE = 2
+        BATCH_SIZE = 32
         lr = 0.001
         EPOCH = 40
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
