@@ -68,17 +68,14 @@ def sample_evaluation(x, noise, y, audio_only=False):
     return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
 def sample(x, noise, y, audio_only=False):
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
-    # cIRM = cIRM.to(device=device, dtype=torch.float)
-    # x = x.to(device=device, dtype=torch.float)
-    # noise = torch.abs(noise).to(device=device, dtype=torch.float)
-    # y = y.abs().to(device=device, dtype=torch.float)
+    cIRM = cIRM.to(device=device, dtype=torch.float)
+    x = x.to(device=device, dtype=torch.float)
+    noise = noise.abs().to(device=device, dtype=torch.float)
+    y = y.abs().to(device=device, dtype=torch.float)
 
-    noise = noise.abs()
-    y = y.abs()
 
     if audio_only:
-        with autocast():
-            predict1 = model(noise)
+        predict1 = model(noise)
         loss = Loss(predict1, cIRM)
     else:
         predict1, predict2 = model(x, noise)
@@ -96,14 +93,14 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     #optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
-    scaler = GradScaler()
+    #scaler = GradScaler()
     optimizer = torch.optim.Adam(
         params=model.parameters(),
         lr=lr,
         betas=(0.9, 0.999)
     )
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()
@@ -112,15 +109,15 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         for i, (x, noise, y) in enumerate(tqdm(train_loader)):
             loss = sample(x, noise, y, audio_only=True)
 
-            scaler.scale(loss).backward()
-            scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 10)
-            scaler.step(optimizer)
-            scaler.update()
+            # scaler.scale(loss).backward()
+            # scaler.unscale_(optimizer)
+            # torch.nn.utils.clip_grad_norm_(model.parameters(), 10)
+            # scaler.step(optimizer)
+            # scaler.update()
 
-            # optimizer.zero_grad()
-            # loss.backward()
-            # optimizer.step()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
             Loss_list.append(loss.item())
             if i % 300 == 0:
@@ -158,8 +155,7 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
         #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
-        model = Model(num_freqs=264).cuda()
-        #model = nn.DataParallel(Model(num_freqs=264), device_ids=[0, 1]).to(device)
+        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
         plt.plot(loss_curve)
