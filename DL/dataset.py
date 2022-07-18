@@ -231,7 +231,7 @@ class NoisyCleanSet:
         self.text = text
         self.ratio = ratio
         self.length = len(self.dataset[1])
-        self.snr_list = np.arange(-5, 20, 1)
+        self.snr_list = np.arange(0, 20, 1)
 
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]

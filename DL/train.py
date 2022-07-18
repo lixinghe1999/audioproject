@@ -52,7 +52,6 @@ def sample_evaluation(x, noise, y, audio_only=False):
     #predict1 = torch.exp(1j * phase[:, :freq_bin_high, :]) * predict1
 
     cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
-
     enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
     enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
     predict1 = torch.complex(enhanced_real, enhanced_imag)
@@ -109,12 +108,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         for i, (x, noise, y) in enumerate(tqdm(train_loader)):
             loss = sample(x, noise, y, audio_only=True)
 
-            # scaler.scale(loss).backward()
-            # scaler.unscale_(optimizer)
-            # torch.nn.utils.clip_grad_norm_(model.parameters(), 10)
-            # scaler.step(optimizer)
-            # scaler.update()
-
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -132,7 +125,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
         scheduler.step()
-
 
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
@@ -163,38 +155,32 @@ if __name__ == "__main__":
 
     elif args.mode == 1:
         # synthetic dataset
-        file = open(pkl_folder + "clean_train_paras.pkl", "rb")
-        norm_clean = pickle.load(file)
-        source = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         datasets = []
-        for target in source:
-            datasets.append(
-                IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/speech.json',
-                             person=[target], minmax=norm_clean[target]))
-        train_dataset = Data.ConcatDataset(datasets)
+        dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people, simulation=True)
 
         model = nn.DataParallel(A2net()).to(device)
         ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
         model.load_state_dict(ckpt)
-        ckpt, _ = train(train_dataset, 5, 0.001, 32, Loss, device, model)
+        ckpt, loss_curve = train(dataset, 5, 0.001, 16, model)
         model.load_state_dict(ckpt)
         # change noise type
-        for target in source:
-            datasets.append(
-                IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/background.json',
-                             person=[target], minmax=norm_clean[target]))
-        train_dataset = Data.ConcatDataset(datasets)
+        # for target in source:
+        #     datasets.append(
+        #         IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/background.json',
+        #                      person=[target], minmax=norm_clean[target]))
+        # train_dataset = Data.ConcatDataset(datasets)
 
-        length = len(train_dataset)
-        test_size = min(int(0.2 * length), 2000)
-        train_size = length - test_size
-        train_dataset, test_dataset = torch.utils.data.random_split(train_dataset, [train_size, test_size],
-                                                                    torch.Generator().manual_seed(0))
-
-        # test on synthetic noise
-        PESQ, SNR, LSD = objective_evaluation(model, test_dataset)
-        mean_PESQ = np.mean(PESQ, axis=0)[0]
-        np.savez(str(mean_PESQ) + '.npz', PESQ=PESQ, SNR=SNR, LSD=LSD)
+        # length = len(train_dataset)
+        # test_size = min(int(0.2 * length), 2000)
+        # train_size = length - test_size
+        # train_dataset, test_dataset = torch.utils.data.random_split(train_dataset, [train_size, test_size],
+        #                                                             torch.Generator().manual_seed(0))
+        #
+        # # test on synthetic noise
+        # PESQ, SNR, LSD = objective_evaluation(model, test_dataset)
+        # mean_PESQ = np.mean(PESQ, axis=0)[0]
+        # np.savez(str(mean_PESQ) + '.npz', PESQ=PESQ, SNR=SNR, LSD=LSD)
 
     elif args.mode == 2:
         # train one by one
