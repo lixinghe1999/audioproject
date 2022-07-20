@@ -106,11 +106,9 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Loss_list = []
         for i, (x, noise, y) in enumerate(tqdm(train_loader)):
             loss = sample(x, noise, y, audio_only=False)
-
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
             Loss_list.append(loss.item())
             if i % 300 == 0:
                 print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
