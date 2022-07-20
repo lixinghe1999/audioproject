@@ -156,14 +156,14 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        datasets = []
         dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people, simulation=True)
 
         model = nn.DataParallel(A2net()).to(device)
-        ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
+        # ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
+        ckpt = torch.load('pretrain/0.0249880163383113.pth')
         model.load_state_dict(ckpt)
         ckpt, loss_curve = train(dataset, 5, 0.001, 16, model)
-        model.load_state_dict(ckpt)
+        # model.load_state_dict(ckpt)
         # change noise type
         # for target in source:
         #     datasets.append(

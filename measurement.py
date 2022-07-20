@@ -55,7 +55,7 @@ def data_extract(path, files_mic1, files_mic2, files_imu1, files_imu2):
     imu1 = np.pad(imu1, ((0, freq_bin_high), (0, 0)))
     imu2 = np.pad(imu2, ((0, freq_bin_high), (0, 0)))
     return Zxx1, Zxx2, imu1, imu2
-def draw(Zxx, imu, start, stop, n, vmax):
+def draw_2(Zxx, imu, start, stop, n, vmax):
     fig, axs = plt.subplots(1, 2, figsize=(4, 2))
     plt.subplots_adjust(left=0.14, bottom=0.12, right=1, top=0.92, wspace=-0.03, hspace=0)
     spectrogram1 = Zxx[: 2 * freq_bin_high, int(start * 50): int(stop * 50)]
@@ -87,9 +87,35 @@ def draw(Zxx, imu, start, stop, n, vmax):
     fig.text(0.2, 0.04, 'Time(Sec)', va='center')
     fig.text(0.65, 0.04, 'Time(Sec)', va='center')
     fig.text(0.01, 0.50, 'Frequency(Hz)', va='center', rotation='vertical')
-    plt.savefig(n, dpi=600)
-    #plt.show()
+    #plt.savefig(n, dpi=600)
+    plt.show()
 
+def draw_4(spectrogram1, spectrogram2, index, vmax):
+
+
+    axs[2*index].locator_params(axis='x', nbins=1)
+    axs[2*index].set_yticks([0, 100, 400, 800, 1600])
+    axs[2*index].axline((0, 100), (2, 100), color='w')
+    im1 = axs[2*index].imshow(spectrogram1, extent=[0, 2, 0, 1600],
+                        aspect='auto', origin='lower', vmin=0, vmax=vmax[0])
+    # cb1 = fig.colorbar(im1, ticks=[], ax=axs[0], aspect=50)
+    # cb1.ax.text(2.5, 0.05, '0', transform=cb1.ax.transAxes, va='top', ha='center')
+    # cb1.ax.text(1.1, 1, str(vmax[0]), transform=cb1.ax.transAxes, va='bottom', ha='center')
+
+    axs[2*index + 1].locator_params(axis='x', nbins=1)
+    axs[2*index + 1].set_yticks([])
+    axs[2*index + 1].axline((0, 100), (2, 100), color='w')
+    im2 = axs[2*index + 1].imshow(spectrogram2, extent=[0, 2, 0, 1600],
+                        aspect='auto', origin='lower', vmin=0, vmax=vmax[1])
+    # cb2 = fig.colorbar(im2, ticks=[], ax=axs[1], aspect=50)
+    # cb2.ax.text(2.5, 0.05, '0', transform=cb2.ax.transAxes, va='top', ha='center')
+    # cb2.ax.text(1.1, 1, str(vmax[1]), transform=cb2.ax.transAxes, va='bottom', ha='center')
+
+    # fig.text(0.2, 0.95, 'Microphone', va='center')
+    # fig.text(0.65, 0.95, 'Acceleration', va='center')
+    # fig.text(0.2, 0.04, 'Time(Sec)', va='center')
+    # fig.text(0.65, 0.04, 'Time(Sec)', va='center')
+    # fig.text(0.01, 0.50, 'Frequency(Hz)', va='center', rotation='vertical')
 
 if __name__ == "__main__":
 
@@ -126,8 +152,8 @@ if __name__ == "__main__":
         plt.savefig('transfer_variance.pdf', dpi=600)
         plt.show()
 
-    else:
-        path = os.path.join('exp7/measurement/')
+    elif args.mode == 1:
+        path = os.path.join('dataset/measurement/')
         files = os.listdir(path)
         N = int(len(files) / 4)
         files_imu1 = files[:N]
@@ -139,8 +165,8 @@ if __name__ == "__main__":
         name = ['clean', 'noise', 'move', 'notalk']
         #vmax = [[[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]]]
         vmax = [[0.05, 0.02], [0.05, 0.02], [0.05, 0.02], [0.05, 0.02]]
-        for i in [1]:
-            select = [1, 5, 6, 13]
+        select = [1, 5, 6, 13]
+        for i in [0, 1, 2, 3]:
             v = vmax[i]
             start = crop[i][0]
             stop = crop[i][1]
@@ -148,5 +174,49 @@ if __name__ == "__main__":
             i = select[i]
 
             Zxx1, Zxx2, imu1, imu2 = data_extract(path, files_mic1[i], files_mic2[i], files_imu1[i], files_imu2[i])
-            draw(Zxx2, imu1, start, stop, n + '.pdf', v)
+            draw_2(Zxx2, imu1, start, stop, n + '.pdf', v)
+    else:
+        path = os.path.join('dataset/measurement/')
+        files = os.listdir(path)
+        N = int(len(files) / 4)
+        files_imu1 = files[:N]
+        files_imu2 = files[N:2 * N]
+        files_mic1 = files[2 * N:3 * N]
+        files_mic2 = files[3 * N:]
+        files_mic2.sort(key=lambda x: int(x[4:-4]))
+
+        crop = [[0.5, 2.5], [1.5, 3.5]]
+        vmax = [[0.05, 0.02], [0.05, 0.02]]
+        select = [1, 5]
+        fig, axs = plt.subplots(1, 4, figsize=(4, 2), sharey=True)
+        plt.subplots_adjust(left=0.05, bottom=0.12, right=0.95, top=0.95, wspace=0.05, hspace=0.05)
+        for i in [0, 1]:
+            index = select[i]
+            Zxx1, Zxx2, imu1, imu2 = data_extract(path, files_mic1[index], files_mic2[index], files_imu1[index], files_imu2[index])
+            v = vmax[i]
+            start = crop[i][0]
+            stop = crop[i][1]
+            spectrogram1 = Zxx2[: 2 * freq_bin_high, int(start * 50): int(stop * 50)]
+            spectrogram2 = imu1[: 2 * freq_bin_high, int(start * 50): int(stop * 50)]
+            draw_4(spectrogram1, spectrogram2, i, v)
+
+        rect = patches.Rectangle((1.05, 200), 0.7, 550, linewidth=1, edgecolor='w', facecolor='none')
+        axs[2].add_patch(rect)
+        # plt.savefig(n, dpi=600)
+        plt.show()
+
+        # crop = [[0.5, 2.5], [1.5, 3.5], [0.5, 2.5], [1, 3]]
+        # name = ['clean', 'noise', 'move', 'notalk']
+        # # vmax = [[[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]]]
+        # vmax = [[0.05, 0.02], [0.05, 0.02], [0.05, 0.02], [0.05, 0.02]]
+        # for i in [1]:
+        #     select = [1, 5, 6, 13]
+        #     v = vmax[i]
+        #     start = crop[i][0]
+        #     stop = crop[i][1]
+        #     n = name[i]
+        #     i = select[i]
+        #
+        #     Zxx1, Zxx2, imu1, imu2 = data_extract(path, files_mic1[i], files_mic2[i], files_imu1[i], files_imu2[i])
+        #     draw(Zxx2, imu1, start, stop, n + '.pdf', v)
 
