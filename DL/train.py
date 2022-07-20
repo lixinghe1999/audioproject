@@ -49,12 +49,13 @@ def sample_evaluation(x, noise, y, audio_only=False):
         predict1, predict2 = model(x, magnitude)
 
     # either predict the spectrogram, or predict the CIRM
-    #predict1 = torch.exp(1j * phase[:, :freq_bin_high, :]) * predict1
+    predict1 = predict1.unsqueeze(1)
+    predict1 = torch.exp(1j * phase[:, :freq_bin_high, :]) * predict1
 
-    cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
-    enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
-    enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
-    predict1 = torch.complex(enhanced_real, enhanced_imag)
+    # cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
+    # enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
+    # enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
+    # predict1 = torch.complex(enhanced_real, enhanced_imag)
 
     predict = predict1.cpu().numpy()
     predict = np.pad(predict, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
@@ -77,7 +78,7 @@ def sample(x, noise, y, audio_only=False):
         loss = Loss(predict1, cIRM)
     else:
         predict1, predict2 = model(x, noise)
-        loss1 = Loss(predict1, cIRM)
+        loss1 = Loss(predict1, y)
         loss2 = Loss(predict2, y[:, :, :33, :])
         loss = loss1 + 0.05 * loss2
     return loss
@@ -102,19 +103,19 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
-        Loss_list = []
-        for i, (x, noise, y) in enumerate(tqdm(train_loader)):
-            loss = sample(x, noise, y, audio_only=False)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            Loss_list.append(loss.item())
-            if i % 300 == 0:
-                print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
-        mean_lost = np.mean(Loss_list)
-        loss_curve.append(mean_lost)
+        # Loss_list = []
+        # for i, (x, noise, y) in enumerate(tqdm(train_loader)):
+        #     loss = sample(x, noise, y, audio_only=False)
+        #
+        #     optimizer.zero_grad()
+        #     loss.backward()
+        #     optimizer.step()
+        #
+        #     Loss_list.append(loss.item())
+        #     if i % 300 == 0:
+        #         print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
+        # mean_lost = np.mean(Loss_list)
+        # loss_curve.append(mean_lost)
         Metric = []
         with torch.no_grad():
             for x, noise, y in test_loader:
