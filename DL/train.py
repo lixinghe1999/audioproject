@@ -49,10 +49,7 @@ def sample_evaluation(x, noise, y, audio_only=False):
         predict1, predict2 = model(x, magnitude)
 
     # either predict the spectrogram, or predict the CIRM
-    predict1 = predict1.unsqueeze(1)
-    print(predict1.shape)
-    print(phase.shape)
-    predict1 = torch.exp(1j * phase[:, :freq_bin_high, :]) * predict1
+    predict1 = torch.exp(1j * phase[:, :, :freq_bin_high, :]) * predict1
     print(predict1.shape)
 
     # cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
