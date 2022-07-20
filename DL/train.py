@@ -139,7 +139,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.mode == 0:
-        BATCH_SIZE = 64
+        BATCH_SIZE = 128
         lr = 0.001
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
