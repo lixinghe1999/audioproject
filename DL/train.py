@@ -72,13 +72,12 @@ def sample(x, noise, y, audio_only=False):
     noise = noise.abs().to(device=device, dtype=torch.float)
     y = y.abs().to(device=device, dtype=torch.float)
 
-
     if audio_only:
         predict1 = model(noise)
         loss = Loss(predict1, cIRM)
     else:
         predict1, predict2 = model(x, noise)
-        loss1 = Loss(predict1, y)
+        loss1 = Loss(predict1, cIRM)
         loss2 = Loss(predict2, y[:, :, :33, :])
         loss = loss1 + 0.05 * loss2
     return loss
