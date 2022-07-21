@@ -171,7 +171,7 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people, simulation=True)
 
         ckpt_dir = 'pretrain/fullsubnet'
-        ckpt_name = ckpt_dir + '/' + os.listdir(ckpt_dir)[0]
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
         print(ckpt_name)
         # model = nn.DataParallel(A2net()).to(device)
