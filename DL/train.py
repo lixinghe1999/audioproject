@@ -3,6 +3,7 @@ import time
 
 import matplotlib.pyplot as plt
 import torch
+torch.manual_seed(0)
 import torch.utils.data as Data
 import torchaudio
 import torch.nn as nn
@@ -15,10 +16,8 @@ from result import subjective_evaluation, objective_evaluation
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from tqdm import tqdm
 import argparse
-import pickle
 from evaluation import wer, snr, lsd
 from pesq import pesq_batch
-from torch.cuda.amp import GradScaler, autocast
 
 device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 Loss = nn.L1Loss()
@@ -186,7 +185,7 @@ if __name__ == "__main__":
         EPOCH = 10
         ckpt_dir = 'pretrain/fullsubnet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-        ckpt = torch.load(ckpt_name)
+        ckpt = torch.load('pretrain/fullsubnet_allnoise.pth')
 
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
@@ -194,6 +193,7 @@ if __name__ == "__main__":
                                 simulation=True)
         # model = nn.DataParallel(A2net()).to(device)
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        inference(dataset, BATCH_SIZE, model)
 
 
     # elif args.mode == 2:
