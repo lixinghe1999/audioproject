@@ -166,16 +166,17 @@ if __name__ == "__main__":
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 10
-        # synthetic dataset
-        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people, simulation=True)
 
         ckpt_dir = 'pretrain/fullsubnet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
-        print(ckpt_name)
+
         # model = nn.DataParallel(A2net()).to(device)
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+
+        # synthetic dataset
+        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
 
         model.load_state_dict(ckpt)
         ckpt, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model)
@@ -183,15 +184,14 @@ if __name__ == "__main__":
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 10
+        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+        ckpt = torch.load(ckpt_name)
+
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people,
                                 simulation=True)
-
-        ckpt_dir = 'pretrain/fullsubnet'
-        ckpt_name = ckpt_dir + '/' + os.listdir(ckpt_dir)[0]
-        ckpt = torch.load(ckpt_name)
-
         # model = nn.DataParallel(A2net()).to(device)
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
