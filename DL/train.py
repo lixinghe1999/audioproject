@@ -107,7 +107,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     for e in range(EPOCH):
         Loss_list = []
         for i, (x, noise, y) in enumerate(tqdm(train_loader)):
-            loss = sample(x, noise, y, audio_only=False)
+            loss = sample(x, noise, y, audio_only=True)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -119,7 +119,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Metric = []
         with torch.no_grad():
             for x, noise, y in test_loader:
-                metric = sample_evaluation(x, noise, y, audio_only=False)
+                metric = sample_evaluation(x, noise, y, audio_only=True)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
