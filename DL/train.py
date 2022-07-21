@@ -134,7 +134,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
 
 def inference(dataset, BATCH_SIZE, model):
     length = len(dataset)
-    test_size = min(int(0.1 * length), 2000)
+    #test_size = min(int(0.1 * length), 2000)
     test_size = int(0.4 * length)
     train_size = length - test_size
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
