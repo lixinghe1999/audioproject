@@ -190,17 +190,16 @@ if __name__ == "__main__":
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 10
-        ckpt_dir = 'pretrain/fullsubnet'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-        ckpt = torch.load('pretrain/fullsubnet_all.pth')
 
-        # model = nn.DataParallel(A2net()).to(device)
-        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        ckpt = torch.load('pretrain/vibvoice_all.pth')
+
+        model = nn.DataParallel(A2net()).to(device)
+        #odel = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
         model.load_state_dict(ckpt)
 
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        for noise in ['music.json']:
+        for noise in ['dev.json', 'background.json', 'music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
             avg_metric = inference(dataset, BATCH_SIZE, model)
             print(noise, avg_metric)
