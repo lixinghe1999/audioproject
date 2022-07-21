@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        for noise in ['background.json', 'music.json']:
+        for noise in ['music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
             avg_metric = inference(dataset, BATCH_SIZE, model)
             print(noise, avg_metric)
