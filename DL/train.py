@@ -87,8 +87,7 @@ def sample(model, x, noise, y, audio_only=False):
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     length = len(dataset)
-    # test_size = min(int(0.1 * length), 2000)
-    test_size = int(0.7 * length)
+    test_size = min(int(0.1 * length), 2000)
     train_size = length - test_size
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
