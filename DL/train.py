@@ -173,6 +173,7 @@ if __name__ == "__main__":
         ckpt_dir = 'pretrain/fullsubnet'
         ckpt_name = ckpt_dir + '/' + os.listdir(ckpt_dir)[0]
         ckpt = torch.load(ckpt_name)
+        print(ckpt_name)
         # model = nn.DataParallel(A2net()).to(device)
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
@@ -190,7 +191,7 @@ if __name__ == "__main__":
         ckpt_dir = 'pretrain/fullsubnet'
         ckpt_name = ckpt_dir + '/' + os.listdir(ckpt_dir)[0]
         ckpt = torch.load(ckpt_name)
-        print(ckpt_name)
+
         # model = nn.DataParallel(A2net()).to(device)
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
