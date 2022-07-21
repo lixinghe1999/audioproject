@@ -1,3 +1,6 @@
+import os
+import time
+
 import matplotlib.pyplot as plt
 import torch
 import torch.utils.data as Data
@@ -91,14 +94,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
-    #optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     optimizer = torch.optim.Adam(
         params=model.parameters(),
         lr=lr,
         betas=(0.9, 0.999)
     )
-
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
+
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()
@@ -128,6 +130,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
             loss_best = mean_lost
             if save_all:
                 torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
+    torch.save(ckpt_best, 'pretrain/' + str(avg_metric) + '.pth')
     return ckpt_best, loss_curve
 
 
@@ -155,30 +158,14 @@ if __name__ == "__main__":
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people, simulation=True)
 
-        model = nn.DataParallel(A2net()).to(device)
-        ckpt = torch.load('pretrain/0.00014219064625976838.pth')
-        #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
-        #ckpt = torch.load('pretrain/0.0249880163383113.pth')
-        model.load_state_dict(ckpt)
-        ckpt, loss_curve = train(dataset, 5, 0.001, 16, model)
-        # model.load_state_dict(ckpt)
-        # change noise type
-        # for target in source:
-        #     datasets.append(
-        #         IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/background.json',
-        #                      person=[target], minmax=norm_clean[target]))
-        # train_dataset = Data.ConcatDataset(datasets)
+        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_name = ckpt_dir + '/' + os.listdir(ckpt_dir)[0]
+        ckpt = torch.load(ckpt_name)
+        # model = nn.DataParallel(A2net()).to(device)
+        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
-        # length = len(train_dataset)
-        # test_size = min(int(0.2 * length), 2000)
-        # train_size = length - test_size
-        # train_dataset, test_dataset = torch.utils.data.random_split(train_dataset, [train_size, test_size],
-        #                                                             torch.Generator().manual_seed(0))
-        #
-        # # test on synthetic noise
-        # PESQ, SNR, LSD = objective_evaluation(model, test_dataset)
-        # mean_PESQ = np.mean(PESQ, axis=0)[0]
-        # np.savez(str(mean_PESQ) + '.npz', PESQ=PESQ, SNR=SNR, LSD=LSD)
+        model.load_state_dict(ckpt)
+        ckpt, loss_curve = train(dataset, 10, 0.001, 32, model)
 
     elif args.mode == 2:
         # train one by one

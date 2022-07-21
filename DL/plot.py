@@ -37,7 +37,7 @@ def plot(x, y, name, yaxis, lim):
     plt.show()
 if __name__ == "__main__":
 
-    #speech real noise
+    # speech real noise
     # baseline = load('checkpoint/baseline/noise')
     # vibvoice = load('checkpoint/new_5min')
     # PESQ, SNR, WER = average(vibvoice, baseline)
