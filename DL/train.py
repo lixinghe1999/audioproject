@@ -91,7 +91,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     test_size = min(int(0.1 * length), 2000)
     train_size = length - test_size
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
+    train_loader = Data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     optimizer = torch.optim.Adam(
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 32
         lr = 0.001
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True)
 
         #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
