@@ -141,7 +141,7 @@ def inference(dataset, BATCH_SIZE, model):
     Metric = []
     with torch.no_grad():
         for x, noise, y in test_loader:
-            metric = sample_evaluation(model, x, noise, y, audio_only=True)
+            metric = sample_evaluation(model, x, noise, y, audio_only=False)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
