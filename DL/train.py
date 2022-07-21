@@ -39,7 +39,7 @@ freq_bin_limit = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
 
 
-def sample_evaluation(x, noise, y, audio_only=False):
+def sample_evaluation(model, x, noise, y, audio_only=False):
     x = x.to(device=device, dtype=torch.float)
     magnitude = torch.abs(noise).to(device=device, dtype=torch.float)
     phase = torch.angle(noise).to(device=device, dtype=torch.float)
@@ -69,7 +69,7 @@ def sample_evaluation(x, noise, y, audio_only=False):
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
     return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
-def sample(x, noise, y, audio_only=False):
+def sample(model, x, noise, y, audio_only=False):
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
     cIRM = cIRM.to(device=device, dtype=torch.float)
     x = x.to(device=device, dtype=torch.float)
@@ -107,7 +107,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     for e in range(EPOCH):
         Loss_list = []
         for i, (x, noise, y) in enumerate(tqdm(train_loader)):
-            loss = sample(x, noise, y, audio_only=True)
+            loss = sample(model, x, noise, y, audio_only=True)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -119,7 +119,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Metric = []
         with torch.no_grad():
             for x, noise, y in test_loader:
-                metric = sample_evaluation(x, noise, y, audio_only=True)
+                metric = sample_evaluation(model, x, noise, y, audio_only=True)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
@@ -133,6 +133,15 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     torch.save(ckpt_best, 'pretrain/' + str(avg_metric) + '.pth')
     return ckpt_best, loss_curve
 
+def inference(dataset, BATCH_SIZE, model):
+    test_loader = Data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    Metric = []
+    with torch.no_grad():
+        for x, noise, y in test_loader:
+            metric = sample_evaluation(model, x, noise, y, audio_only=True)
+            Metric.append(metric)
+    avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
+    return avg_metric
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -154,6 +163,9 @@ if __name__ == "__main__":
         plt.savefig('loss.png')
 
     elif args.mode == 1:
+        BATCH_SIZE = 16
+        lr = 0.001
+        EPOCH = 10
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people, simulation=True)
@@ -165,106 +177,122 @@ if __name__ == "__main__":
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         model.load_state_dict(ckpt)
-        ckpt, loss_curve = train(dataset, 10, 0.001, 16, model)
-
+        ckpt, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model)
     elif args.mode == 2:
-        # train one by one
-        file = open(pkl_folder + "clean_train_paras.pkl", "rb")
-        norm_clean = pickle.load(file)
-        file = open(pkl_folder + "noise_train_paras.pkl", "rb")
-        norm_noise = pickle.load(file)
+        BATCH_SIZE = 16
+        lr = 0.001
+        EPOCH = 10
+        # synthetic dataset
+        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people,
+                                simulation=True)
 
-        source = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        #source = ["hou", "he"]
-        candidate = ["he", "shi", "hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai"]
-        #candidate = ['hou']
-        for target in candidate:
-            source = [x for x in source if x != target]
-            datasets = []
-            for c in source:
-                datasets.append(IMUSPEECHSet('json/noise_train_imu.json', 'json/noise_train_gt.json', 'json/noise_train_wav.json', simulate=False, person=[c], norm=norm_noise[c]))
-            train_dataset = Data.ConcatDataset(datasets)
-            user_dataset = IMUSPEECHSet('json/train_imu.json', 'json/train_wav.json', 'json/train_wav.json', ratio=1, person=[target], norm=norm_clean[target])
-            model = nn.DataParallel(A2net()).to(device)
-            #ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
-            #ckpt = torch.load('pretrain/mel/0.0034707123340922408.pth')
-            ckpt = torch.load('pretrain/0.06400973408017308.pth')
-            # for f in os.listdir('checkpoint/5min'):
-            #     if f[-3:] == 'pth' and f[:len(target)] == target:
-            #         pth_file = f
-            # ckpt = torch.load('checkpoint/5min/' + pth_file)
-            # ckpt = {'module.' + k: v for k, v in ckpt.items()}
-            # print(pth_file)
-            model.load_state_dict(ckpt)
-
-            # ckpt, _ = train(train_dataset, 5, 0.001, 32, Loss, device, model)
-            # model.load_state_dict(ckpt)
-            # ckpt, _ = train(user_dataset, 2, 0.0001, 4, Loss, device, model)
-            # model.load_state_dict(ckpt)
-
-            file = open(pkl_folder + "noise_paras.pkl", "rb")
-            paras = pickle.load(file)
-            dataset = IMUSPEECHSet('json/noise_imu.json', 'json/noise_gt.json', 'json/noise_wav.json', person=[target], simulate=False, phase=True, norm=paras[target])
-            WER = subjective_evaluation(model, dataset)
-            mean_WER = np.mean(WER)
-            np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, SNR=SNR, WER=WER)
-            print(target, mean_WER)
+        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_name = ckpt_dir + '/' + os.listdir(ckpt_dir)[0]
+        ckpt = torch.load(ckpt_name)
+        print(ckpt_name)
+        # model = nn.DataParallel(A2net()).to(device)
+        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
 
-
-    elif args.mode == 3:
-        # test on audio-only, the acceleration is generated by transfer function
-        file = open(pkl_folder + "clean_train_paras.pkl", "rb")
-        norm_clean = pickle.load(file)
-        source = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        datasets = []
-        for target in source:
-            datasets.append(IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/speech.json', person=[target], minmax=norm_clean[target]))
-        dataset = Data.ConcatDataset(datasets)
-        model = nn.DataParallel(A2net()).to(device)
-        ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
-        model.load_state_dict(ckpt)
-        ckpt_best, loss_curve = train(dataset, 5, 0.001, 32, Loss, device, model)
-        model.load_state_dict(ckpt_best)
-
-        file = open(pkl_folder + "clean_paras.pkl", "rb")
-        norm_clean = pickle.load(file)
-        for target in ['he', 'hou']:
-            dataset = NoisyCleanSet('json/clean_wavexp7.json', 'json/speech.json', phase=True, alpha=[1] + norm_clean[target])
-            PESQ, SNR, WER = vibvoice(model, dataset)
-            mean_PESQ = np.mean(PESQ)
-            mean_WER = np.mean(WER)
-            np.savez(target + '_' + str(mean_WER) + '_augmented_IMU.npz', PESQ=PESQ, SNR=SNR, WER=WER)
-            print(target, mean_PESQ, mean_WER)
-
-    elif args.mode == 4:
-        # field test
-        ckpt = torch.load("checkpoint/5min/he_70.05555555555556.pth")
-        for target in ['office', 'corridor', 'stair']:
-            PESQ, WER = vibvoice(ckpt, target, 4)
-            mean_PESQ = np.mean(PESQ)
-            mean_WER = np.mean(WER)
-            np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, WER=WER)
-            print(target, mean_PESQ, mean_WER)
-
-    else:
-        # micro-benchmark for the three earphones
-        file = open(pkl_folder + "noise_train_paras.pkl", "rb")
-        norm_noise = pickle.load(file)
-        candidate = ['airpod', 'freebud', 'galaxy']
-        model = nn.DataParallel(A2net()).to(device)
-        ckpt = torch.load('checkpoint/he_66.58333333333333.pth')
-        model.load_state_dict(ckpt)
-        for target in candidate:
-            file = open(pkl_folder + "noise_paras.pkl", "rb")
-            paras = pickle.load(file)
-            dataset = IMUSPEECHSet('json/noise_imuexp7.json', 'json/noise_gtexp7.json', 'json/noise_wavexp7.json', person=[target], simulate=False, phase=True)
-            PESQ, SNR, WER = vibvoice(model, dataset)
-            mean_WER = np.mean(WER)
-            np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, WER=WER)
-            print(target)
-
-
+    # elif args.mode == 2:
+    #     # train one by one
+    #     file = open(pkl_folder + "clean_train_paras.pkl", "rb")
+    #     norm_clean = pickle.load(file)
+    #     file = open(pkl_folder + "noise_train_paras.pkl", "rb")
+    #     norm_noise = pickle.load(file)
+    #
+    #     source = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+    #     #source = ["hou", "he"]
+    #     candidate = ["he", "shi", "hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai"]
+    #     #candidate = ['hou']
+    #     for target in candidate:
+    #         source = [x for x in source if x != target]
+    #         datasets = []
+    #         for c in source:
+    #             datasets.append(IMUSPEECHSet('json/noise_train_imu.json', 'json/noise_train_gt.json', 'json/noise_train_wav.json', simulate=False, person=[c], norm=norm_noise[c]))
+    #         train_dataset = Data.ConcatDataset(datasets)
+    #         user_dataset = IMUSPEECHSet('json/train_imu.json', 'json/train_wav.json', 'json/train_wav.json', ratio=1, person=[target], norm=norm_clean[target])
+    #         model = nn.DataParallel(A2net()).to(device)
+    #         #ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
+    #         #ckpt = torch.load('pretrain/mel/0.0034707123340922408.pth')
+    #         ckpt = torch.load('pretrain/0.06400973408017308.pth')
+    #         # for f in os.listdir('checkpoint/5min'):
+    #         #     if f[-3:] == 'pth' and f[:len(target)] == target:
+    #         #         pth_file = f
+    #         # ckpt = torch.load('checkpoint/5min/' + pth_file)
+    #         # ckpt = {'module.' + k: v for k, v in ckpt.items()}
+    #         # print(pth_file)
+    #         model.load_state_dict(ckpt)
+    #
+    #         # ckpt, _ = train(train_dataset, 5, 0.001, 32, Loss, device, model)
+    #         # model.load_state_dict(ckpt)
+    #         # ckpt, _ = train(user_dataset, 2, 0.0001, 4, Loss, device, model)
+    #         # model.load_state_dict(ckpt)
+    #
+    #         file = open(pkl_folder + "noise_paras.pkl", "rb")
+    #         paras = pickle.load(file)
+    #         dataset = IMUSPEECHSet('json/noise_imu.json', 'json/noise_gt.json', 'json/noise_wav.json', person=[target], simulate=False, phase=True, norm=paras[target])
+    #         WER = subjective_evaluation(model, dataset)
+    #         mean_WER = np.mean(WER)
+    #         np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, SNR=SNR, WER=WER)
+    #         print(target, mean_WER)
+    #
+    #
+    #
+    # elif args.mode == 3:
+    #     # test on audio-only, the acceleration is generated by transfer function
+    #     file = open(pkl_folder + "clean_train_paras.pkl", "rb")
+    #     norm_clean = pickle.load(file)
+    #     source = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+    #     datasets = []
+    #     for target in source:
+    #         datasets.append(IMUSPEECHSet('json/clean_train_imuexp7.json', 'json/clean_train_wavexp7.json', 'json/speech.json', person=[target], minmax=norm_clean[target]))
+    #     dataset = Data.ConcatDataset(datasets)
+    #     model = nn.DataParallel(A2net()).to(device)
+    #     ckpt = torch.load('pretrain/L1/0.0013439175563689787.pth')
+    #     model.load_state_dict(ckpt)
+    #     ckpt_best, loss_curve = train(dataset, 5, 0.001, 32, Loss, device, model)
+    #     model.load_state_dict(ckpt_best)
+    #
+    #     file = open(pkl_folder + "clean_paras.pkl", "rb")
+    #     norm_clean = pickle.load(file)
+    #     for target in ['he', 'hou']:
+    #         dataset = NoisyCleanSet('json/clean_wavexp7.json', 'json/speech.json', phase=True, alpha=[1] + norm_clean[target])
+    #         PESQ, SNR, WER = vibvoice(model, dataset)
+    #         mean_PESQ = np.mean(PESQ)
+    #         mean_WER = np.mean(WER)
+    #         np.savez(target + '_' + str(mean_WER) + '_augmented_IMU.npz', PESQ=PESQ, SNR=SNR, WER=WER)
+    #         print(target, mean_PESQ, mean_WER)
+    #
+    # elif args.mode == 4:
+    #     # field test
+    #     ckpt = torch.load("checkpoint/5min/he_70.05555555555556.pth")
+    #     for target in ['office', 'corridor', 'stair']:
+    #         PESQ, WER = vibvoice(ckpt, target, 4)
+    #         mean_PESQ = np.mean(PESQ)
+    #         mean_WER = np.mean(WER)
+    #         np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, WER=WER)
+    #         print(target, mean_PESQ, mean_WER)
+    #
+    # else:
+    #     # micro-benchmark for the three earphones
+    #     file = open(pkl_folder + "noise_train_paras.pkl", "rb")
+    #     norm_noise = pickle.load(file)
+    #     candidate = ['airpod', 'freebud', 'galaxy']
+    #     model = nn.DataParallel(A2net()).to(device)
+    #     ckpt = torch.load('checkpoint/he_66.58333333333333.pth')
+    #     model.load_state_dict(ckpt)
+    #     for target in candidate:
+    #         file = open(pkl_folder + "noise_paras.pkl", "rb")
+    #         paras = pickle.load(file)
+    #         dataset = IMUSPEECHSet('json/noise_imuexp7.json', 'json/noise_gtexp7.json', 'json/noise_wavexp7.json', person=[target], simulate=False, phase=True)
+    #         PESQ, SNR, WER = vibvoice(model, dataset)
+    #         mean_WER = np.mean(WER)
+    #         np.savez(target + '_' + str(mean_WER) + '.npz', PESQ=PESQ, WER=WER)
+    #         print(target)
+    #
+    #
 
 
 
