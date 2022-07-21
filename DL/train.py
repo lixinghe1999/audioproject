@@ -165,7 +165,7 @@ if __name__ == "__main__":
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         model.load_state_dict(ckpt)
-        ckpt, loss_curve = train(dataset, 10, 0.001, 32, model)
+        ckpt, loss_curve = train(dataset, 10, 0.001, 16, model)
 
     elif args.mode == 2:
         # train one by one
