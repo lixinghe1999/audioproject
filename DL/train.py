@@ -133,7 +133,11 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     return ckpt_best, loss_curve
 
 def inference(dataset, BATCH_SIZE, model):
-    test_loader = Data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    length = len(dataset)
+    test_size = min(int(0.1 * length), 2000)
+    train_size = length - test_size
+    train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+    test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
         for x, noise, y in test_loader:
@@ -149,6 +153,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.mode == 0:
+        # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 32
         lr = 0.001
         EPOCH = 30
@@ -162,6 +167,7 @@ if __name__ == "__main__":
         plt.savefig('loss.png')
 
     elif args.mode == 1:
+        # This script is for model fine-tune on self-collected dataset
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 10
@@ -180,21 +186,29 @@ if __name__ == "__main__":
         model.load_state_dict(ckpt)
         ckpt, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model)
     elif args.mode == 2:
+        # This script will test model on different settings
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 10
         ckpt_dir = 'pretrain/fullsubnet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-        ckpt = torch.load('pretrain/fullsubnet_allnoise.pth')
+        ckpt = torch.load('pretrain/fullsubnet_all.pth')
+
+        # model = nn.DataParallel(A2net()).to(device)
+        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        model.load_state_dict(ckpt)
 
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people,
-                                simulation=True)
-        # model = nn.DataParallel(A2net()).to(device)
-        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
-        inference(dataset, BATCH_SIZE, model)
+        for noise in ['dev.json', 'backgroud.json', 'music.json']:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
+            avg_metric = inference(dataset, BATCH_SIZE, model)
+            print(noise, avg_metric)
 
+        for level in [1, 6, 11]:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, snr=[level-1, level+1])
+            avg_metric = inference(dataset, BATCH_SIZE, model)
+            print(level, avg_metric)
 
     # elif args.mode == 2:
     #     # train one by one

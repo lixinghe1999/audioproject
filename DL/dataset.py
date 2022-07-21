@@ -201,13 +201,14 @@ class BaseDataset:
             out = signal.filtfilt(b, a, data, axis=0)
             return out, file
 class NoisyCleanSet:
-    def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1):
+    def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20)):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
         :param person: person we want to involve
         :param simulation: whether the noise is simulation
         :param ratio: ratio of the data we use
+        :param snr: SNR range of the synthetic dataset
         '''
         self.dataset = []
         sr = [16000, 16000, 1600]
@@ -231,7 +232,7 @@ class NoisyCleanSet:
         self.text = text
         self.ratio = ratio
         self.length = len(self.dataset[1])
-        self.snr_list = np.arange(0, 20, 1)
+        self.snr_list = np.arange(snr[0], snr[1], 1)
 
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
