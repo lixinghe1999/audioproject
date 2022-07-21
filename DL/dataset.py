@@ -214,7 +214,7 @@ class NoisyCleanSet:
         for i, path in enumerate(json_paths):
             with open(path, 'r') as f:
                 data = json.load(f)
-            if person is not None:
+            if person is not None and isinstance(data, dict):
                 tmp = []
                 for p in person:
                     tmp += data[p]
