@@ -51,13 +51,13 @@ def sample_evaluation(model, x, noise, y, audio_only=False):
         predict1, predict2 = model(x, magnitude)
 
     # either predict the spectrogram, or predict the CIRM
-    # predict1 = torch.exp(1j * phase[:, :, :freq_bin_high, :]) * predict1
-    # predict1 = predict1.squeeze(1)
+    predict1 = torch.exp(1j * phase[:, :, :freq_bin_high, :]) * predict1
+    predict1 = predict1.squeeze(1)
 
-    cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
-    enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
-    enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
-    predict1 = torch.complex(enhanced_real, enhanced_imag)
+    # cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
+    # enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
+    # enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
+    # predict1 = torch.complex(enhanced_real, enhanced_imag)
 
     predict = predict1.cpu().numpy()
     predict = np.pad(predict, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
@@ -106,7 +106,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     for e in range(EPOCH):
         Loss_list = []
         for i, (x, noise, y) in enumerate(tqdm(train_loader)):
-            loss = sample(model, x, noise, y, audio_only=True)
+            loss = sample(model, x, noise, y, audio_only=False)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -118,7 +118,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Metric = []
         with torch.no_grad():
             for x, noise, y in test_loader:
-                metric = sample_evaluation(model, x, noise, y, audio_only=True)
+                metric = sample_evaluation(model, x, noise, y, audio_only=False)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
@@ -172,12 +172,12 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_dir = 'pretrain/vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
 
-        # model = nn.DataParallel(A2net()).to(device)
-        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        model = nn.DataParallel(A2net()).to(device)
+        #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
