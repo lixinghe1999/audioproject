@@ -17,7 +17,7 @@ from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_
 from tqdm import tqdm
 import argparse
 from evaluation import wer, snr, lsd
-from pesq import pesq_batch
+from pesq import pesq_batch, pesq
 
 device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 Loss = nn.L1Loss()
@@ -68,7 +68,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False):
     y = np.pad(y, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
     for i in range(16):
-        pesq = pesq_batch(16000, y[i, :], predict[i, :], 'wb', on_error=1)
+        pesq(16000, y[i, :], predict[i, :], 'wb', on_error=1)
     #print(time.time() - t_start)
     #return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
     return snr(y, predict), lsd(y, predict)
