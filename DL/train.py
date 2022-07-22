@@ -68,7 +68,9 @@ def sample_evaluation(model, x, noise, y, audio_only=False):
     y = np.pad(y, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
     #print(time.time() - t_start)
-    return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
+    #return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
+    return snr(y, predict), lsd(y, predict)
+
 def sample(model, x, noise, y, audio_only=False):
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
     cIRM = cIRM.to(device=device, dtype=torch.float)
