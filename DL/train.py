@@ -173,7 +173,7 @@ if __name__ == "__main__":
         plt.savefig('loss.png')
 
     elif args.mode == 1:
-        # This script is for model fine-tune on self-collected dataset
+        # This script is for model fine-tune on self-collected dataset, by default-with all noises
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 10
@@ -197,10 +197,10 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 10
 
-        ckpt = torch.load('pretrain/vibvoice_all.pth')
+        ckpt = torch.load('pretrain/fullsubnet_all.pth')
 
-        model = nn.DataParallel(A2net()).to(device)
-        #odel = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        #model = nn.DataParallel(A2net()).to(device)
+        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
         model.load_state_dict(ckpt)
 
         # synthetic dataset
