@@ -208,21 +208,5 @@ if __name__ == "__main__":
         rect = patches.Rectangle((1.05, 200), 0.7, 550, linewidth=1, edgecolor='w', facecolor='none')
         axs[2].add_patch(rect)
         fig.text(0.5, 0.05, 'Time')
-        plt.savefig('measurement.pdf', dpi=600)
+        #plt.savefig('measurement.pdf', dpi=600)
         plt.show()
-
-        # crop = [[0.5, 2.5], [1.5, 3.5], [0.5, 2.5], [1, 3]]
-        # name = ['clean', 'noise', 'move', 'notalk']
-        # # vmax = [[[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]]]
-        # vmax = [[0.05, 0.02], [0.05, 0.02], [0.05, 0.02], [0.05, 0.02]]
-        # for i in [1]:
-        #     select = [1, 5, 6, 13]
-        #     v = vmax[i]
-        #     start = crop[i][0]
-        #     stop = crop[i][1]
-        #     n = name[i]
-        #     i = select[i]
-        #
-        #     Zxx1, Zxx2, imu1, imu2 = data_extract(path, files_mic1[i], files_mic2[i], files_imu1[i], files_imu2[i])
-        #     draw(Zxx2, imu1, start, stop, n + '.pdf', v)
-

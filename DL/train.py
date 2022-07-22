@@ -44,12 +44,13 @@ def sample_evaluation(model, x, noise, y, audio_only=False):
     phase = torch.angle(noise).to(device=device, dtype=torch.float)
     noise_real = noise.real.to(device=device, dtype=torch.float)
     noise_imag = noise.imag.to(device=device, dtype=torch.float)
+    t_start = time.time()
     y = y.to(device=device).squeeze(1)
     if audio_only:
         predict1 = model(magnitude)
     else:
         predict1, predict2 = model(x, magnitude)
-
+    print(time.time() - t_start)
     # either predict the spectrogram, or predict the CIRM
     # predict1 = torch.exp(1j * phase[:, :, :freq_bin_high, :]) * predict1
     # predict1 = predict1.squeeze(1)
@@ -66,7 +67,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False):
     y = y.cpu().numpy()
     y = np.pad(y, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-
+    print(time.time() - t_start)
     return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
 def sample(model, x, noise, y, audio_only=False):
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
@@ -86,12 +87,14 @@ def sample(model, x, noise, y, audio_only=False):
     return loss
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
-    length = len(dataset)
-    test_size = min(int(0.1 * length), 2000)
-    test_size = int(0.7 * length)
-
-    train_size = length - test_size
-    train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+    if isinstance(dataset, list):
+        # with pre-defined train/ test
+    else:
+        # without pre-defined train/ test
+        length = len(dataset)
+        test_size = min(int(0.1 * length), 2000)
+        train_size = length - test_size
+        train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
@@ -137,7 +140,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
 def inference(dataset, BATCH_SIZE, model):
     length = len(dataset)
     test_size = min(int(0.1 * length), 2000)
-
     train_size = length - test_size
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
@@ -189,7 +191,7 @@ if __name__ == "__main__":
         model.load_state_dict(ckpt)
         ckpt, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model)
     elif args.mode == 2:
-        # This script will test model on different settings
+        # This script will test model on different settings: micro-benchmark
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 10
@@ -211,6 +213,35 @@ if __name__ == "__main__":
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, snr=[level-1, level+1])
             avg_metric = inference(dataset, BATCH_SIZE, model)
             print(level, avg_metric)
+
+    elif args.mode == 3:
+        BATCH_SIZE = 16
+        lr = 0.001
+        EPOCH = 10
+
+        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+        ckpt_start = torch.load(ckpt_name)
+
+        # model = nn.DataParallel(A2net()).to(device)
+        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+
+        # synthetic dataset
+        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        for p in people:
+            model.load_state_dict(ckpt_start)
+            p_except = [i for i in people if i!=p]
+            train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=p_except, simulation=True)
+            test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=[p], simulation=True)
+
+            # involve part of the target user data
+            # length = len(test_dataset)
+            # train_size = int(0.1 * length)
+            # test_size = length - train_size
+            # train_dataset_target, test_dataset = torch.utils.data.random_split(test_dataset, [train_size, test_size])
+            # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset_target])
+
+            train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
 
     # elif args.mode == 2:
     #     # train one by one
