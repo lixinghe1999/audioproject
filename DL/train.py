@@ -44,13 +44,13 @@ def sample_evaluation(model, x, noise, y, audio_only=False):
     phase = torch.angle(noise).to(device=device, dtype=torch.float)
     noise_real = noise.real.to(device=device, dtype=torch.float)
     noise_imag = noise.imag.to(device=device, dtype=torch.float)
-    t_start = time.time()
+    #t_start = time.time()
     y = y.to(device=device).squeeze(1)
     if audio_only:
         predict1 = model(magnitude)
     else:
         predict1, predict2 = model(x, magnitude)
-    print(time.time() - t_start)
+    #print(time.time() - t_start)
     # either predict the spectrogram, or predict the CIRM
     # predict1 = torch.exp(1j * phase[:, :, :freq_bin_high, :]) * predict1
     # predict1 = predict1.squeeze(1)
@@ -67,7 +67,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False):
     y = y.cpu().numpy()
     y = np.pad(y, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-    print(time.time() - t_start)
+    #print(time.time() - t_start)
     return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
 def sample(model, x, noise, y, audio_only=False):
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
@@ -147,7 +147,9 @@ def inference(dataset, BATCH_SIZE, model):
     Metric = []
     with torch.no_grad():
         for x, noise, y in test_loader:
+            t_start = time.time()
             metric = sample_evaluation(model, x, noise, y, audio_only=True)
+            print(time.time() - t_start)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
