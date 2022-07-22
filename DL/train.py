@@ -65,8 +65,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False):
     y = y.cpu().numpy()
     y = np.pad(y, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-    return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', n_processor=0, on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
-    #return snr(y, predict), lsd(y, predict)
+    return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
 
 def sample(model, x, noise, y, audio_only=False):
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
@@ -135,7 +134,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
             if save_all:
                 torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
     torch.save(ckpt_best, 'pretrain/' + str(avg_metric) + '.pth')
-    return ckpt_best, loss_curve
+    return ckpt_best, loss_curve, avg_metric
 
 def inference(dataset, BATCH_SIZE, model):
     length = len(dataset)
@@ -145,10 +144,8 @@ def inference(dataset, BATCH_SIZE, model):
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
-        for x, noise, y in test_loader:
-            t_start = time.time()
+        for x, noise, y in tqdm(test_loader):
             metric = sample_evaluation(model, x, noise, y, audio_only=True)
-            print(time.time() - t_start)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
@@ -219,7 +216,7 @@ if __name__ == "__main__":
     elif args.mode == 3:
         BATCH_SIZE = 16
         lr = 0.001
-        EPOCH = 10
+        EPOCH = 5
 
         ckpt_dir = 'pretrain/fullsubnet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
@@ -229,10 +226,11 @@ if __name__ == "__main__":
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         # synthetic dataset
+        result = []
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         for p in people:
             model.load_state_dict(ckpt_start)
-            p_except = [i for i in people if i!=p]
+            p_except = [i for i in people if i != p]
             train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=p_except, simulation=True)
             test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=[p], simulation=True)
 
@@ -243,7 +241,9 @@ if __name__ == "__main__":
             # train_dataset_target, test_dataset = torch.utils.data.random_split(test_dataset, [train_size, test_size])
             # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset_target])
 
-            train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
+            _, _, avg_metric = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
+            result.append(avg_metric)
+        print(np.mean(result, axis=0))
 
     # elif args.mode == 2:
     #     # train one by one
