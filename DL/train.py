@@ -89,6 +89,7 @@ def sample(model, x, noise, y, audio_only=False):
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     if isinstance(dataset, list):
         # with pre-defined train/ test
+        train_dataset, test_dataset = dataset
     else:
         # without pre-defined train/ test
         length = len(dataset)
