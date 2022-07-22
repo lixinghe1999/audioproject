@@ -115,26 +115,27 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
             loss.backward()
             optimizer.step()
             Loss_list.append(loss.item())
-            if i % 300 == 0:
+            if (i % 100 == 0) and i != 0:
                 print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
         Metric = []
         with torch.no_grad():
-            for x, noise, y in test_loader:
+            for x, noise, y in tqdm(test_loader):
                 metric = sample_evaluation(model, x, noise, y, audio_only=True)
                 Metric.append(metric)
+        scheduler.step()
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
-        scheduler.step()
 
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
+            avg_best = avg_metric
             if save_all:
                 torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
-    torch.save(ckpt_best, 'pretrain/' + str(avg_metric) + '.pth')
-    return ckpt_best, loss_curve, avg_metric
+    torch.save(ckpt_best, 'pretrain/' + str(avg_best) + '.pth')
+    return ckpt_best, loss_curve, avg_best
 
 def inference(dataset, BATCH_SIZE, model):
     length = len(dataset)
@@ -166,7 +167,7 @@ if __name__ == "__main__":
         #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
         ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
-
+        train([1], EPOCH, lr, BATCH_SIZE, model)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
 
@@ -190,7 +191,7 @@ if __name__ == "__main__":
         model.load_state_dict(ckpt)
         ckpt, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model)
     elif args.mode == 2:
-        # This script will test model on different settings: micro-benchmark
+        # This script will test model on different settings: micro-benchmark, test-only
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 10
@@ -214,9 +215,9 @@ if __name__ == "__main__":
             print(level, avg_metric)
 
     elif args.mode == 3:
-        BATCH_SIZE = 16
+        BATCH_SIZE = 32
         lr = 0.001
-        EPOCH = 5
+        EPOCH = 3
 
         ckpt_dir = 'pretrain/fullsubnet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
