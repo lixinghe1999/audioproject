@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import librosa
 
 rate_imu = 1600
-11
+
 def read_data(file, seg_len=256, overlap=224, rate=1600, mfcc=False, filter=True):
     fileobject = open(file, 'r')
     lines = fileobject.readlines()
