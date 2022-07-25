@@ -17,7 +17,7 @@ def read_data(file, seg_len=256, overlap=224, rate=1600, mfcc=False, filter=True
         data[i, :] = [float(item) for item in line]
     data[:, :-1] /= 2**14
     if filter:
-        b, a = signal.butter(4, 100, 'highpass', fs=rate)
+        b, a = signal.butter(4, 10, 'highpass', fs=rate)
         data[:, :3] = signal.filtfilt(b, a, data[:, :3], axis=0)
         data[:, :3] = np.clip(data[:, :3], -0.05, 0.05)
     if mfcc:

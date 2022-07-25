@@ -9,7 +9,7 @@ import torchaudio
 import torch.nn as nn
 from dataset import NoisyCleanSet
 from fullsubnet import Model
-from A2net import A2net
+from model import A2net
 import numpy as np
 import scipy.signal as signal
 from result import subjective_evaluation, objective_evaluation
@@ -38,7 +38,7 @@ freq_bin_limit = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
 
 
-def sample_evaluation(model, x, noise, y, audio_only=False):
+def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     x = x.to(device=device, dtype=torch.float)
     magnitude = torch.abs(noise).to(device=device, dtype=torch.float)
     phase = torch.angle(noise).to(device=device, dtype=torch.float)
@@ -48,15 +48,16 @@ def sample_evaluation(model, x, noise, y, audio_only=False):
     if audio_only:
         predict1 = model(magnitude)
     else:
-        predict1, predict2 = model(x, magnitude)
+        predict1 = model(x, magnitude)
     # either predict the spectrogram, or predict the CIRM
-    # predict1 = torch.exp(1j * phase[:, :, :freq_bin_high, :]) * predict1
-    # predict1 = predict1.squeeze(1)
-
-    cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
-    enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
-    enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
-    predict1 = torch.complex(enhanced_real, enhanced_imag)
+    if complex:
+        cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
+        enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
+        enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
+        predict1 = torch.complex(enhanced_real, enhanced_imag)
+    else:
+        predict1 = torch.exp(1j * phase[:, :, :freq_bin_high, :]) * predict1
+        predict1 = predict1.squeeze(1)
 
     predict = predict1.cpu().numpy()
     predict = np.pad(predict, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
@@ -78,13 +79,13 @@ def sample(model, x, noise, y, audio_only=False):
         predict1 = model(noise)
         loss = Loss(predict1, cIRM)
     else:
-        predict1, predict2 = model(x, noise)
-        loss1 = Loss(predict1, y)
-        loss2 = Loss(predict2, y[:, :, :33, :])
-        loss = loss1 + 0.05 * loss2
+        predict1 = model(x, noise)
+        loss = Loss(predict1, y)
+        # loss2 = Loss(predict2, y[:, :, :33, :])
+        # loss = loss1
     return loss
 
-def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
+def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=False, complex=False):
     if isinstance(dataset, list):
         # with pre-defined train/ test
         train_dataset, test_dataset = dataset
@@ -110,7 +111,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     for e in range(EPOCH):
         Loss_list = []
         for i, (x, noise, y) in enumerate(tqdm(train_loader)):
-            loss = sample(model, x, noise, y, audio_only=True)
+            loss = sample(model, x, noise, y, audio_only=audio_only)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -122,7 +123,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Metric = []
         with torch.no_grad():
             for x, noise, y in tqdm(test_loader):
-                metric = sample_evaluation(model, x, noise, y, audio_only=True)
+                metric = sample_evaluation(model, x, noise, y, audio_only=audio_only, complex=complex)
                 Metric.append(metric)
         scheduler.step()
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
@@ -131,13 +132,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
-            avg_best = avg_metric
+            metric_best = avg_metric
             if save_all:
                 torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
-    torch.save(ckpt_best, 'pretrain/' + str(avg_best) + '.pth')
-    return ckpt_best, loss_curve, avg_best
+    torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
+    return ckpt_best, loss_curve, metric_best
 
-def inference(dataset, BATCH_SIZE, model):
+def inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False):
     length = len(dataset)
     test_size = min(int(0.1 * length), 2000)
     train_size = length - test_size
@@ -146,7 +147,7 @@ def inference(dataset, BATCH_SIZE, model):
     Metric = []
     with torch.no_grad():
         for x, noise, y in tqdm(test_loader):
-            metric = sample_evaluation(model, x, noise, y, audio_only=True)
+            metric = sample_evaluation(model, x, noise, y, audio_only=audio_only, complex=complex)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
@@ -166,55 +167,47 @@ if __name__ == "__main__":
 
         #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
-        ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
+        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
         train([1], EPOCH, lr, BATCH_SIZE, model)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
 
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
-        BATCH_SIZE = 16
+        BATCH_SIZE = 32
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/fullsubnet'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-        ckpt = torch.load(ckpt_name)
+        # ckpt_dir = 'pretrain/fullsubnet'
+        # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+        # ckpt = torch.load(ckpt_name)
 
-        #model = nn.DataParallel(A2net()).to(device)
-        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        model = nn.DataParallel(A2net()).to(device)
+        #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
 
-        model.load_state_dict(ckpt)
-        ckpt, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model)
+        ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
+
+
+        # # Optional Micro-benchmark
+        # model.load_state_dict(ckpt)
+        # # synthetic dataset
+        # people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        # for noise in ['dev.json', 'background.json', 'music.json']:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
+        #     avg_metric = inference(dataset, BATCH_SIZE, model)
+        #     print(noise, avg_metric)
+        #
+        # for level in [1, 6, 11]:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, snr=[level-1, level+1])
+        #     avg_metric = inference(dataset, BATCH_SIZE, model)
+        #     print(level, avg_metric)
+
     elif args.mode == 2:
-        # This script will test model on different settings: micro-benchmark, test-only
-        BATCH_SIZE = 16
-        lr = 0.001
-        EPOCH = 10
-
-        ckpt = torch.load('pretrain/fullsubnet_all.pth')
-
-        #model = nn.DataParallel(A2net()).to(device)
-        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
-        model.load_state_dict(ckpt)
-
-        # synthetic dataset
-        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        for noise in ['dev.json', 'background.json', 'music.json']:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
-            avg_metric = inference(dataset, BATCH_SIZE, model)
-            print(noise, avg_metric)
-
-        for level in [1, 6, 11]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, snr=[level-1, level+1])
-            avg_metric = inference(dataset, BATCH_SIZE, model)
-            print(level, avg_metric)
-
-    elif args.mode == 3:
+        # micro-benchmark per-user, length of data
         BATCH_SIZE = 32
         lr = 0.001
         EPOCH = 3
