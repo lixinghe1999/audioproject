@@ -82,7 +82,7 @@ def sample(model, x, noise, y, audio_only=False):
         predict1 = model(x, noise)
         loss = Loss(predict1, y)
         # loss2 = Loss(predict2, y[:, :, :33, :])
-        # loss = loss1
+        # loss = loss1 + loss2 * 0.05
     return loss
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=False, complex=False):
@@ -182,13 +182,14 @@ if __name__ == "__main__":
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
 
-        model = nn.DataParallel(A2net().to(device), device_ids=[0, 1])
+        model = nn.DataParallel(A2net().to(device), device_ids=[0])
         #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
 
+        model.load_state_dict(ckpt)
         ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
 
         # Optional Micro-benchmark
@@ -197,12 +198,12 @@ if __name__ == "__main__":
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         for noise in ['dev.json', 'background.json', 'music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
-            avg_metric = inference(dataset, BATCH_SIZE, model)
+            avg_metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
             print(noise, avg_metric)
 
         for level in [1, 6, 11]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, snr=[level-1, level+1])
-            avg_metric = inference(dataset, BATCH_SIZE, model)
+            avg_metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
             print(level, avg_metric)
 
     elif args.mode == 2:
