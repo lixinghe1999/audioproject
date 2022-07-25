@@ -160,15 +160,15 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 32
+        BATCH_SIZE = 128
         lr = 0.001
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True)
 
-        #model = nn.DataParallel(A2net(), device_ids=[0]).to(device)
-        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
-        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
-        train([1], EPOCH, lr, BATCH_SIZE, model)
+        model = nn.DataParallel(A2net(), device_ids=[0, 1]).to(device)
+        #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
+                                                   save_all=True, audio_only=False, complex=False)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
 
@@ -190,7 +190,6 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
 
         ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
-
 
         # # Optional Micro-benchmark
         # model.load_state_dict(ckpt)

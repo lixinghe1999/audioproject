@@ -48,6 +48,7 @@ class Fusion(nn.Module):
         b, c, f, t = x.shape
         x = x.permute((0, 3, 1, 2))
         x = x.reshape(b, t, -1)
+        self.biLSTM.flatten_parameters()
         x, _ = self.biLSTM(x)
         x = self.fc1(x)
         x = self.fc2(x)
