@@ -132,11 +132,10 @@ def snr_mix(clean_y, noise_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
             clean_y = clean_y / noisy_y_scalar
 
         return noisy_y, clean_y
-def snr_norm(clean_y, noise_y, target_dB_FS, target_dB_FS_floating_value):
+def snr_norm(signals, target_dB_FS, target_dB_FS_floating_value):
         """
         Args:
-            clean_y: 纯净语音
-            noise_y: 噪声
+            signals: list of signal
             target_dB_FS (int):
             target_dB_FS_floating_value (int):
         Returns:
@@ -146,16 +145,19 @@ def snr_norm(clean_y, noise_y, target_dB_FS, target_dB_FS_floating_value):
             target_dB_FS - target_dB_FS_floating_value,
             target_dB_FS + target_dB_FS_floating_value
         )
-
-        clean_y, _ = norm_amplitude(clean_y)
-        clean_y, _, _ = tailor_dB_FS(clean_y, noisy_target_dB_FS)
-        #clean_rms = (clean_y ** 2).mean() ** 0.5
-
-        noise_y, _ = norm_amplitude(noise_y)
-        noise_y, _, _ = tailor_dB_FS(noise_y, noisy_target_dB_FS)
-        #noise_rms = (noise_y ** 2).mean() ** 0.5
-
-        return noise_y, clean_y
+        new_signal = []
+        for signal in signals:
+            signal, _ = norm_amplitude(signal)
+            signal, _, _ = tailor_dB_FS(signal, noisy_target_dB_FS)
+            new_signal.append(signal)
+        # clean_y, _ = norm_amplitude(clean_y)
+        # clean_y, _, _ = tailor_dB_FS(clean_y, noisy_target_dB_FS)
+        # #clean_rms = (clean_y ** 2).mean() ** 0.5
+        #
+        # noise_y, _ = norm_amplitude(noise_y)
+        # noise_y, _, _ = tailor_dB_FS(noise_y, noisy_target_dB_FS)
+        # #noise_rms = (noise_y ** 2).mean() ** 0.5
+        return new_signal
 
 class BaseDataset:
     def __init__(self, files=None, pad=False, sample_rate=16000):
@@ -242,7 +244,7 @@ class NoisyCleanSet:
             noise, clean = snr_mix(clean, noise, snr, -25, 10, rir=None, eps=1e-6)
         else:
             noise, _ = self.dataset[1][index]
-            noise, clean = snr_norm(clean, noise, -25, 10)
+            noise, clean = snr_norm([clean, noise], -25, 10)
         noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
         clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
         if self.augmentation:

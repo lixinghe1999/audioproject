@@ -4,7 +4,7 @@ from torch.nn import functional
 from audio_zen.acoustics.feature import drop_band
 from audio_zen.model.base_model import BaseModel
 from audio_zen.model.module.sequence_model import SequenceModel
-
+import time
 
 class Model(BaseModel):
     def __init__(self,
@@ -119,22 +119,44 @@ class Model(BaseModel):
         output = sb_mask[:, :, :, self.look_ahead:]
         return output
 
+def model_size(model):
+    param_size = 0
+    for param in model.parameters():
+        param_size += param.nelement() * param.element_size()
+    buffer_size = 0
+    for buffer in model.buffers():
+        buffer_size += buffer.nelement() * buffer.element_size()
 
-if __name__ == "__main__":
+    size_all_mb = (param_size + buffer_size) / 1024 ** 2
+
+    return size_all_mb
+def model_speed(model, input):
+    t_start = time.time()
+    step = 200
     with torch.no_grad():
-        noisy_mag = torch.rand(2, 1, 264, 151)
-        model = Model(
-            num_freqs=264,
-            look_ahead=2,
-            sequence_model="LSTM",
-            fb_num_neighbors=0,
-            sb_num_neighbors=15,
-            fb_output_activate_function="ReLU",
-            sb_output_activate_function=False,
-            fb_model_hidden_size=512,
-            sb_model_hidden_size=384,
-            norm_type="offline_laplace_norm",
-            num_groups_in_drop_band=2,
-            weight_init=False,
-        )
-        print(model(noisy_mag).shape)
+        for i in range(step):
+            model(input)
+    return (time.time() - t_start)/step
+if __name__ == "__main__":
+
+    imu = torch.rand(1, 1, 33, 32)
+    audio = torch.rand(1, 1, 264, 32)
+    model = Model(
+        num_freqs=264,
+        look_ahead=2,
+        sequence_model="LSTM",
+        fb_num_neighbors=0,
+        sb_num_neighbors=15,
+        fb_output_activate_function="ReLU",
+        sb_output_activate_function=False,
+        fb_model_hidden_size=512,
+        sb_model_hidden_size=384,
+        norm_type="offline_laplace_norm",
+        num_groups_in_drop_band=2,
+        weight_init=False,
+    )
+    size_all_mb = model_size(model)
+    print('model size: {:.3f}MB'.format(size_all_mb))
+
+    latency = model_speed(model, audio)
+    print('model latency: {:.3f}S'.format(latency))
