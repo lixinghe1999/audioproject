@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-# from matplotlib import rc
-# rc('text', usetex=True)
-# plt.rcParams.update({'font.size': 12})
+from matplotlib import rc
+rc('text', usetex=True)
+plt.rcParams.update({'font.size': 10})
 import pickle
 import os
 import imuplot
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.mode == 0:
-        candidate = ["liang", "wu", "he", "hou", "zhao", "shi", "shen", "shuai"]
+        candidate = ["he", "liang", "wu", "hou", "zhao", "shi", "shen", "shuai"]
         #
         for i in range(len(candidate)):
             Zxx_valid = [[]] * freq_bin_high
@@ -153,31 +153,33 @@ if __name__ == "__main__":
                 #data2, imu1 = imuplot.read_data(path + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
                 # Zxx = librosa.feature.melspectrogram(S=Zxx, sr=rate_mic, n_mels=264)
                 # imu1 = librosa.feature.melspectrogram(S=imu1, sr=rate_imu, n_mels=33)
-
+                imu1 = synchronization(Zxx, imu1)
                 for j in range(int((T - segment) / stride) + 1):
+
                     clip2 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
                     clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
-                    clip1 = synchronization(clip1, clip1)
+
 
                     # store gamma distribution parameters
                     # Zxx_valid = ratio_accumulate(clip2, clip1, Zxx_valid)
                     response = transfer_function(clip1, clip2, response)
 
-                    # full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
-                    # for j in range(time_bin):
-                    #     full_response[:, j] += stats.norm.rvs(response[0, :], response[1, :])
-                    # augmentedZxx = clip2 * full_response
-                    # e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
-                    # error.append(e)
-                    # augmentedZxx += noise_extraction()
-                    # fig, axs = plt.subplots(2, figsize=(5, 3))
-                    # axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
-                    # axs[0].set_xticks([])
-                    # axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
-                    # fig.text(0.44, 0.022, 'Time (Sec)', va='center')
-                    # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
-                    # plt.savefig('synthetic_compare.pdf')
-                    # plt.show()
+                    full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
+                    for j in range(time_bin):
+                        full_response[:, j] += stats.norm.rvs(response[0, :], response[1, :])
+                    augmentedZxx = clip2 * full_response
+                    e = np.mean(np.abs(augmentedZxx - clip1)) / np.max(clip1)
+                    error.append(e)
+                    augmentedZxx += noise_extraction()
+                    fig, axs = plt.subplots(2, figsize=(4, 2))
+                    plt.subplots_adjust(left=0.12, bottom=0.16, right=0.98, top=0.98)
+                    axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                    axs[0].set_xticks([])
+                    axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                    fig.text(0.44, 0.022, 'Time (Sec)', va='center')
+                    fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
+                    plt.savefig('synthetic_compare.pdf')
+                    plt.show()
 
                 # full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, 1501))
                 # for j in range(time_bin):
@@ -187,7 +189,7 @@ if __name__ == "__main__":
                 if filter_function(response[0, :]):
                     # plt.plot(response[0, :])
                     # plt.show()
-                    np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=response[0, :], variance=response[1, :])
+                    #np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz', response=response[0, :], variance=response[1, :])
                     count += 1
             # parameters = ratio_gamma(Zxx_valid)
             # my_file = 'gamma_transfer_function/' + str(i) + '.pkl'

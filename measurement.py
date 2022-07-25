@@ -141,16 +141,17 @@ if __name__ == "__main__":
                 collect1[id] = np.column_stack([collect1[id], r])
                 collect2[id] = np.column_stack([collect2[id], r])
 
-        fig, axs = plt.subplots(1, figsize=(5, 3))
+        fig, axs = plt.subplots(1, figsize=(4, 2))
+        plt.subplots_adjust(left=0.12, bottom=0.16, right=0.98, top=0.98)
         for i in range(2):
             response = np.mean(collect1[i], axis=1)
             variance = np.mean(collect2[i], axis=1)
             #plt.plot(response)
-            plt.errorbar(range(33), response, yerr=variance/3, fmt='-o', label='volunteer'+str(i))
+            plt.errorbar(range(33), response, yerr=variance/2, fmt='-o', label='volunteer'+str(i))
         plt.xticks([0, 7, 15, 23, 31], [0, 200, 400, 600, 800])
         plt.legend()
 
-        fig.text(0.4, 0.02, 'Frequency(Hz)', va='center')
+        fig.text(0.4, 0.03, 'Frequency(Hz)', va='center')
         fig.text(0.02, 0.575, '${S_Acc}/{S_Mic}$', va='center', rotation='vertical')
         plt.savefig('transfer_variance.pdf', dpi=600)
         plt.show()

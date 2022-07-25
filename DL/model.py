@@ -87,8 +87,8 @@ class A2net(nn.Module):
     def forward(self, x1, x2):
         x1 = self.IMU_branch(x1)
         x2 = self.Audio_branch(x2)
-        # [B, C=8, F=44+11, T]
         x = torch.cat([x1, x2], dim=2)
+        # [B, C=8, F=44+11, T]
         x = self.fusion(x)
         x = x[:, None, :, :]
         return x

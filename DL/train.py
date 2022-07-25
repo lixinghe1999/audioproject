@@ -116,7 +116,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
             loss.backward()
             optimizer.step()
             Loss_list.append(loss.item())
-            if (i % 100 == 0) and i != 0:
+            if (i % 200 == 0) and i != 0:
                 print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -174,15 +174,15 @@ if __name__ == "__main__":
 
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
-        BATCH_SIZE = 32
+        BATCH_SIZE = 64
         lr = 0.001
         EPOCH = 10
 
-        # ckpt_dir = 'pretrain/fullsubnet'
-        # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-        # ckpt = torch.load(ckpt_name)
+        ckpt_dir = 'pretrain/ultrase'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+        ckpt = torch.load(ckpt_name)
 
-        model = nn.DataParallel(A2net()).to(device)
+        model = nn.DataParallel(A2net().to(device), device_ids=[0, 1])
         #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         # synthetic dataset
@@ -191,19 +191,19 @@ if __name__ == "__main__":
 
         ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
 
-        # # Optional Micro-benchmark
-        # model.load_state_dict(ckpt)
-        # # synthetic dataset
-        # people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        # for noise in ['dev.json', 'background.json', 'music.json']:
-        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
-        #     avg_metric = inference(dataset, BATCH_SIZE, model)
-        #     print(noise, avg_metric)
-        #
-        # for level in [1, 6, 11]:
-        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, snr=[level-1, level+1])
-        #     avg_metric = inference(dataset, BATCH_SIZE, model)
-        #     print(level, avg_metric)
+        # Optional Micro-benchmark
+        model.load_state_dict(ckpt)
+        # synthetic dataset
+        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        for noise in ['dev.json', 'background.json', 'music.json']:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
+            avg_metric = inference(dataset, BATCH_SIZE, model)
+            print(noise, avg_metric)
+
+        for level in [1, 6, 11]:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, snr=[level-1, level+1])
+            avg_metric = inference(dataset, BATCH_SIZE, model)
+            print(level, avg_metric)
 
     elif args.mode == 2:
         # micro-benchmark per-user, length of data
