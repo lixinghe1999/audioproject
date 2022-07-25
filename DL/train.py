@@ -9,7 +9,7 @@ import torchaudio
 import torch.nn as nn
 from dataset import NoisyCleanSet
 from fullsubnet import Model
-from model import A2net
+from A2net import A2net
 import numpy as np
 import scipy.signal as signal
 from result import subjective_evaluation, objective_evaluation
@@ -48,7 +48,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     if audio_only:
         predict1 = model(magnitude)
     else:
-        predict1 = model(x, magnitude)
+        predict1, _ = model(x, magnitude)
     # either predict the spectrogram, or predict the CIRM
     if complex:
         cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
@@ -79,10 +79,10 @@ def sample(model, x, noise, y, audio_only=False):
         predict1 = model(noise)
         loss = Loss(predict1, cIRM)
     else:
-        predict1 = model(x, noise)
-        loss = Loss(predict1, y)
-        # loss2 = Loss(predict2, y[:, :, :33, :])
-        # loss = loss1 + loss2 * 0.05
+        predict1, predict2 = model(x, noise)
+        loss1 = Loss(predict1, y)
+        loss2 = Loss(predict2, y[:, :, :33, :])
+        loss = loss1 + loss2 * 0.05
     return loss
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=False, complex=False):
@@ -174,11 +174,11 @@ if __name__ == "__main__":
 
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
-        BATCH_SIZE = 64
+        BATCH_SIZE = 32
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/ultrase'
+        ckpt_dir = 'pretrain/vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
 
