@@ -39,22 +39,39 @@ if __name__ == "__main__":
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
     if args.mode == 0:
-        directory = "../dataset/"
-        #datasets = ['dev', 'background', 'music', 'train']
-        datasets = ['music']
-        for dataset in datasets:
-            audio_files = []
-            g = os.walk(directory + dataset)
-            for path, dir_list, file_list in g:
-                for file_name in file_list:
-                    if file_name[-3:] in ['wav', 'lac']:
-                        audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
-            json.dump(audio_files, open('json/' + dataset + '.json', 'w'), indent=4)
-        # data = []
-        # for dataset in ['dev', 'background', 'music']:
-        #     with open('json/' + dataset + '.json', 'r') as f:
-        #         data += json.load(f)
-        # json.dump(data, open('json/all_noise.json', 'w'), indent=4)
+        # directory = "../dataset/"
+        # datasets = ['dev', 'background', 'music', 'train']
+        # for dataset in datasets:
+        #     audio_files = []
+        #     g = os.walk(directory + dataset)
+        #     for path, dir_list, file_list in g:
+        #         for file_name in file_list:
+        #             if file_name[-3:] in ['wav', 'lac']:
+        #                 audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
+        #     json.dump(audio_files, open('json/' + dataset + '.json', 'w'), indent=4)
+
+        data = {}
+        for dataset in ['dev', 'background', 'music']:
+            with open('json/' + dataset + '.json', 'r') as f:
+                data[dataset] = json.load(f)
+        all_noise = []
+        sum_time = {'dev':0, 'background':0, 'music':0}
+        i = 0
+        flag = 0
+        while True:
+            for dataset in ['dev', 'background', 'music']:
+                if i >= len(data[dataset]):
+                    flag = sum_time[dataset]
+                else:
+                    if flag > 0 and sum_time[dataset] > flag:
+                        pass
+                    else:
+                        all_noise.append(data[dataset][i])
+                        sum_time[dataset] += data[dataset][i][1]
+            i = i + 1
+            if i > 2700:
+                break
+        json.dump(all_noise, open('json/all_noise.json', 'w'), indent=4)
     elif args.mode == 1:
         directory = '../dataset/our'
         person = os.listdir(directory)
