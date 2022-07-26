@@ -45,10 +45,11 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     noise_real = noise.real.to(device=device, dtype=torch.float)
     noise_imag = noise.imag.to(device=device, dtype=torch.float)
     y = y.to(device=device).squeeze(1)
-    if audio_only:
-        predict1 = model(magnitude)
-    else:
-        predict1, _ = model(x, magnitude)
+    # if audio_only:
+    #     predict1 = model(magnitude)
+    # else:
+    #     predict1, _ = model(x, magnitude)
+    predict1 = magnitude
     # either predict the spectrogram, or predict the CIRM
     if complex:
         cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
@@ -186,14 +187,14 @@ if __name__ == "__main__":
         #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         # synthetic dataset
-        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
-
-        model.load_state_dict(ckpt)
-        ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
-
-        # Optional Micro-benchmark
-        model.load_state_dict(ckpt)
+        # people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        # dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
+        #
+        # model.load_state_dict(ckpt)
+        # ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
+        #
+        # # Optional Micro-benchmark
+        # model.load_state_dict(ckpt)
         # synthetic dataset
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         for noise in ['dev.json', 'background.json', 'music.json']:
