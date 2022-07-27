@@ -179,7 +179,7 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/vibvoice'
+        ckpt_dir = 'pretrain/vibvoice_new'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
 
