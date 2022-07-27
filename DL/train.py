@@ -169,7 +169,7 @@ if __name__ == "__main__":
         #model = nn.DataParallel(A2net(), device_ids=[0, 1]).to(device)
         model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
-                                                   save_all=True, audio_only=False, complex=False)
+                                                   save_all=True, audio_only=True, complex=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
 
