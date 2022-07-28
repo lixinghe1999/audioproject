@@ -234,7 +234,7 @@ if __name__ == "__main__":
             # train_dataset_target, test_dataset = torch.utils.data.random_split(test_dataset, [train_size, test_size])
             # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset_target])
 
-            _, _, avg_metric = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
+            _, _, avg_metric = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, audio_only=True, complex=True)
             result.append(avg_metric)
         print('average performance for all users: ', np.mean(result, axis=0))
 
