@@ -215,8 +215,8 @@ if __name__ == "__main__":
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt_start = torch.load(ckpt_name)
 
-        # model = nn.DataParallel(A2net()).to(device)
-        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        model = nn.DataParallel(A2net()).to(device)
+        #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         # synthetic dataset
         result = []
