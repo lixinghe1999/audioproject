@@ -211,7 +211,7 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 3
 
-        ckpt_dir = 'pretrain/fullsubnet_new'
+        ckpt_dir = 'pretrain/vibvoice_new'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt_start = torch.load(ckpt_name)
 
@@ -234,7 +234,7 @@ if __name__ == "__main__":
             # train_dataset_target, test_dataset = torch.utils.data.random_split(test_dataset, [train_size, test_size])
             # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset_target])
 
-            _, _, avg_metric = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, audio_only=True, complex=True)
+            _, _, avg_metric = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
             result.append(avg_metric)
         print('average performance for all users: ', np.mean(result, axis=0))
 
