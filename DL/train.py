@@ -179,7 +179,7 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_dir = 'pretrain/fullsubnet_new'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
 
@@ -195,12 +195,12 @@ if __name__ == "__main__":
         # Optional Micro-benchmark
         model.load_state_dict(ckpt)
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        for noise in ['dev.json', 'background.json', 'music.json']:
+        for noise in ['background.json', 'dev.json', 'music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
             avg_metric = inference(dataset, BATCH_SIZE, model, audio_only=True, complex=True)
             print(noise, avg_metric)
 
-        for level in [1, 6, 11]:
+        for level in [11, 6, 1]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, snr=[level-1, level+1])
             avg_metric = inference(dataset, BATCH_SIZE, model, audio_only=True, complex=True)
             print(level, avg_metric)
@@ -211,7 +211,7 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 3
 
-        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_dir = 'pretrain/fullsubnet_new'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt_start = torch.load(ckpt_name)
 
@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
             _, _, avg_metric = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
             result.append(avg_metric)
-        print(np.mean(result, axis=0))
+        print('average performance for all users: ', np.mean(result, axis=0))
 
     # elif args.mode == 2:
     #     # train one by one
