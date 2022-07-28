@@ -269,7 +269,7 @@ if __name__ == "__main__":
         avg_metric1 = inference(test_dataset1, BATCH_SIZE, model, audio_only=False, complex=False)
         print('first time performance', avg_metric1)
         avg_metric2 = inference(test_dataset2, BATCH_SIZE, model, audio_only=False, complex=False)
-        print('second time performance', avg_metric1)
+        print('second time performance', avg_metric2)
 
     # elif args.mode == 2:
     #     # train one by one
