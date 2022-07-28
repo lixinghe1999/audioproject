@@ -240,7 +240,7 @@ if __name__ == "__main__":
     elif args.mode == 3:
         BATCH_SIZE = 32
         lr = 0.001
-        EPOCH = 3
+        EPOCH = 10
 
         ckpt_dir = 'pretrain/vibvoice_new'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
