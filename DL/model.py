@@ -3,6 +3,8 @@ import time
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
+from torchvision.utils import save_image
+from torch.utils.mobile_optimizer import optimize_for_mobile
 def model_size(model):
     param_size = 0
     for param in model.parameters():
@@ -14,6 +16,16 @@ def model_size(model):
     size_all_mb = (param_size + buffer_size) / 1024 ** 2
 
     return size_all_mb
+def model_save(model):
+    model.eval()
+    scripted_module = torch.jit.script(model)
+    scripted_module.save("inference.pt")
+    optimized_scripted_module = optimize_for_mobile(scripted_module)
+    optimized_scripted_module._save_for_lite_interpreter("inference.ptl")
+    x = torch.rand((1, 1, 33, 151))
+    noise = torch.rand((1, 1, 264, 151))
+    save_image(x, 'input1.jpg')
+    save_image(noise, 'input2.jpg')
 def model_speed(model, input):
     t_start = time.time()
     step = 200
@@ -98,10 +110,12 @@ if __name__ == "__main__":
     imu = torch.rand(1, 1, 33, 151)
     audio = torch.rand(1, 1, 264, 151)
     model = A2net()
-    size_all_mb = model_size(model)
-    print('model size: {:.3f}MB'.format(size_all_mb))
+    # size_all_mb = model_size(model)
+    # print('model size: {:.3f}MB'.format(size_all_mb))
+    #
+    # latency = model_speed(model, [imu, audio])
+    # print('model latency: {:.3f}S'.format(latency))
 
-    latency = model_speed(model, [imu, audio])
-    print('model latency: {:.3f}S'.format(latency))
+    model_save(model)
 
 

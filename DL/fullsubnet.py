@@ -5,6 +5,8 @@ from audio_zen.acoustics.feature import drop_band
 from audio_zen.model.base_model import BaseModel
 from audio_zen.model.module.sequence_model import SequenceModel
 import time
+from torchvision.utils import save_image
+from torch.utils.mobile_optimizer import optimize_for_mobile
 
 class Model(BaseModel):
     def __init__(self,
@@ -132,15 +134,26 @@ def model_size(model):
     return size_all_mb
 def model_speed(model, input):
     t_start = time.time()
-    step = 200
+    step = 1000
     with torch.no_grad():
         for i in range(step):
             model(input)
     return (time.time() - t_start)/step
+def model_save(model, audio):
+    model.eval()
+    traced_script_module = torch.jit.trace(model, audio)
+    traced_script_module_optimized = optimize_for_mobile(traced_script_module)
+    traced_script_module_optimized._save_for_lite_interpreter("model.ptl")
+
+    # scripted_module = torch.jit.script(model)
+    # scripted_module.save("inference.pt")
+    # optimized_scripted_module = optimize_for_mobile(scripted_module)
+    # optimized_scripted_module._save_for_lite_interpreter("inference.ptl")
+    #
+    save_image(audio, 'input.jpg')
 if __name__ == "__main__":
 
-    imu = torch.rand(1, 1, 33, 32)
-    audio = torch.rand(1, 1, 264, 32)
+    audio = torch.rand(1, 1, 264, 151).cuda()
     model = Model(
         num_freqs=264,
         look_ahead=2,
@@ -154,9 +167,11 @@ if __name__ == "__main__":
         norm_type="offline_laplace_norm",
         num_groups_in_drop_band=2,
         weight_init=False,
-    )
+    ).cuda()
     size_all_mb = model_size(model)
     print('model size: {:.3f}MB'.format(size_all_mb))
 
     latency = model_speed(model, audio)
     print('model latency: {:.3f}S'.format(latency))
+
+    model_save(model, audio)

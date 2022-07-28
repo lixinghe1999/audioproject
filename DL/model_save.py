@@ -145,10 +145,6 @@ if __name__ == "__main__":
     device = torch.device('cpu')
     model = A2net_mobile().to(device)
     model.eval()
-    # scripted_module = torch.jit.script(model)
-    # scripted_module.save("inference.pt")
-    # optimized_scripted_module = optimize_for_mobile(scripted_module)
-    # optimized_scripted_module._save_for_lite_interpreter("inference.ptl")
 
     dataset = IMUSPEECHSet('noise_imuexp7.json', 'noise_gtexp7.json', 'noise_wavexp7.json', person=['he'], simulate=False)
     test_loader = Data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=False)
