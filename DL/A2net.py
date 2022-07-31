@@ -5,7 +5,7 @@ from torchvision.utils import save_image
 from torch.utils.mobile_optimizer import optimize_for_mobile
 import time
 class IMU_branch(nn.Module):
-    def __init__(self):
+    def __init__(self, inference=False):
         super(IMU_branch, self).__init__()
         self.conv1 = nn.Sequential(
             nn.Conv2d(1, 16, kernel_size=(3, 3), padding=(1, 1)),
@@ -25,19 +25,22 @@ class IMU_branch(nn.Module):
             nn.Conv2d(64, 128, kernel_size=(5, 3), padding=(4, 1), dilation=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
-        self.conv5 = nn.Sequential(
-            nn.Conv2d(128, 64, kernel_size=(3, 3), padding=(1, 1)),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True))
-        self.conv6 = nn.Sequential(
-            nn.Conv2d(64, 32, kernel_size=(3, 3), padding=(1, 1)),
-            nn.BatchNorm2d(32),
-            nn.ReLU(inplace=True))
-        self.conv7 = nn.Sequential(
-            nn.ConvTranspose2d(32, 16, kernel_size=(3, 2), stride=(3, 2)),
-            nn.Conv2d(16, 1, kernel_size=(3, 3), padding=(1, 1)),
-            nn.BatchNorm2d(1),
-            nn.ReLU(inplace=True))
+        self.inference = inference
+        if not inference:
+            self.conv5 = nn.Sequential(
+                nn.Conv2d(128, 64, kernel_size=(3, 3), padding=(1, 1)),
+                nn.BatchNorm2d(64),
+                nn.ReLU(inplace=True))
+            self.conv6 = nn.Sequential(
+                nn.Conv2d(64, 32, kernel_size=(3, 3), padding=(1, 1)),
+                nn.BatchNorm2d(32),
+                nn.ReLU(inplace=True))
+            self.conv7 = nn.Sequential(
+                nn.ConvTranspose2d(32, 16, kernel_size=(3, 2), stride=(3, 2)),
+                nn.Conv2d(16, 1, kernel_size=(3, 3), padding=(1, 1)),
+                nn.BatchNorm2d(1),
+                nn.ReLU(inplace=True))
+
 
     def forward(self, x):
         # down-sample
@@ -46,12 +49,14 @@ class IMU_branch(nn.Module):
         x = self.conv3(x)
         x_mid = self.conv4(x)
         # up-sample with supervision
-        x = self.conv5(x_mid)
-        x = self.conv6(x)
-        x = self.conv7(x)
-        x = F.pad(x, [0, 1, 0, 0])
-        return x_mid, x
-
+        if not self.inference:
+            x = self.conv5(x_mid)
+            x = self.conv6(x)
+            x = self.conv7(x)
+            x = F.pad(x, [0, 1, 0, 0])
+            return x_mid, x
+        else:
+            return x_mid
 class Audio_branch(nn.Module):
     def __init__(self):
         super(Audio_branch, self).__init__()
@@ -125,17 +130,23 @@ class Residual_Block(nn.Module):
         return self.final(x)
 
 class A2net(nn.Module):
-    def __init__(self):
+    def __init__(self, inference=False):
         super(A2net, self).__init__()
-        self.IMU_branch = IMU_branch()
+        self.inference = inference
+        self.IMU_branch = IMU_branch(self.inference)
         self.Audio_branch = Audio_branch()
         self.Residual_block = Residual_Block(256)
     def forward(self, x1, x2):
         x1 = self.IMU_branch(x1)
-        x1, x_extra = x1
-        x = torch.cat([x1, self.Audio_branch(x2)], dim=1)
-        x = self.Residual_block(x) * x2
-        return x, x_extra
+        if self.inference:
+            x = torch.cat([x1, self.Audio_branch(x2)], dim=1)
+            x = self.Residual_block(x) * x2
+            return x
+        else:
+            x1, x_extra = x1
+            x = torch.cat([x1, self.Audio_branch(x2)], dim=1)
+            x = self.Residual_block(x) * x2
+            return x, x_extra
 
 def model_size(model):
     param_size = 0

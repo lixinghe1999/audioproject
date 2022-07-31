@@ -9,7 +9,7 @@ import scipy.signal as signal
 import librosa
 from scipy import interpolate
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
-
+from torchvision.utils import save_image
 from A2net import A2net
 from fullsubnet import Model
 seg_len_mic = 640
@@ -275,23 +275,36 @@ if __name__ == "__main__":
         size_all_mb = (param_size + buffer_size) / 1024 ** 2
         #print('model size: {:.3f}MB'.format(size_all_mb))
         return size_all_mb
-    mode = 0
+    mode = 1
     if mode == 0:
         # check data
         dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
         #dataset_train = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'], simulation=True, person=['he'])
-        # dataset_train = IMUSPEECHSet('json/noise_imuexp7.json', 'json/noise_gtexp7.json', 'json/noise_wavexp7.json', simulate=False, person=['4'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
-            x = x.numpy()[0, 0]
-            noise = np.abs(noise.numpy()[0, 0])
-            y = np.abs(y.numpy()[0, 0])
+
+            x = x[0].numpy()
+            noise = np.abs(noise[0].numpy())
+            y = np.abs(y[0].numpy())
 
             fig, axs = plt.subplots(3, 1)
             axs[0].imshow(x, aspect='auto')
             axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
             axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
             plt.show()
+    elif mode == 1:
+        # save one people's data into images -> deployment checking
+        dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'], person=['he'], simulation=True, ratio=1)
+
+        loader = Data.DataLoader(dataset=dataset, batch_size=1, shuffle=False)
+        for step, (x, noise, y) in enumerate(loader):
+            x = x[0, 0]
+            noise = torch.abs(noise[0, 0])
+            y = torch.abs(y[0, 0])
+            save_image(x, '../dataset/micro_dataset/input1/' + str(step) + '.png')
+            save_image(x, '../dataset/micro_dataset/input2/' + str(step) + '.png')
+            save_image(x, '../dataset/micro_dataset/output/' + str(step) + '.png')
+
     else:
         # model check 1. FullSubNet 2. A2Net
         model1 = Model(
