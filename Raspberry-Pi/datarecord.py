@@ -16,8 +16,8 @@ if __name__ == "__main__":
     parser.add_argument('--device', action="store", type=int, default=0, required=False, help='device number of microphone')
     args = parser.parse_args()
 
-    bmiaccframe = args.time * 800
-    bmigyroframe = args.time * 800
+    bmiaccframe = args.time * 1600
+    bmigyroframe = args.time * 1600
     micframe = args.time * 16000
     camframe = args.time * 15
     device = args.device
@@ -44,10 +44,14 @@ if __name__ == "__main__":
         thread3.join()
         thread4.join()
     else:
+        stream = open_mic_stream(device)
         thread1 = Process(target=bmi160_accsave, args=('bmiacc1', bmiaccframe, 0))
         thread2 = Process(target=bmi160_accsave, args=('bmiacc2', bmiaccframe, 1))
+        thread = Process(target=voice_record, args=('mic', stream, micframe))
         thread1.start()
         thread2.start()
+        thread.start()
+        thread.join()
         thread1.join()
         thread2.join()
 

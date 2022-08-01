@@ -140,16 +140,31 @@ def model_speed(model, input):
             model(input)
     return (time.time() - t_start)/step
 def model_save(model, audio):
+    from torch.jit.mobile import (
+                _backport_for_mobile,
+                _get_model_bytecode_version,
+            )
     model.eval()
-    traced_script_module = torch.jit.trace(model, audio)
-    traced_script_module_optimized = optimize_for_mobile(traced_script_module)
-    traced_script_module_optimized._save_for_lite_interpreter("model.ptl")
-
-    # scripted_module = torch.jit.script(model)
-    # scripted_module.save("inference.pt")
-    # optimized_scripted_module = optimize_for_mobile(scripted_module)
-    # optimized_scripted_module._save_for_lite_interpreter("inference.ptl")
+    # traced_script_module = torch.jit.trace(model, audio)
+    # traced_script_module.save("model.pt")
+    # traced_script_module_optimized = optimize_for_mobile(traced_script_module)
+    # traced_script_module_optimized._save_for_lite_interpreter("model.ptl")
+    # #torch.jit.save(traced_script_module_optimized, "model.ptl")
+    # convert2version5 = True
+    # if convert2version5:
+    #     MODEL_INPUT_FILE = "model.ptl"
+    #     MODEL_OUTPUT_FILE = "model_v5.ptl"
     #
+    #     print("model version", _get_model_bytecode_version(f_input=MODEL_INPUT_FILE))
+    #
+    #     _backport_for_mobile(f_input=MODEL_INPUT_FILE, f_output=MODEL_OUTPUT_FILE, to_version=5)
+    #
+    #     print("new model version", _get_model_bytecode_version(MODEL_OUTPUT_FILE))
+    scripted_module = torch.jit.trace(model, audio)
+    #scripted_module.save("inference.pt")
+    optimized_scripted_module = optimize_for_mobile(scripted_module)
+    optimized_scripted_module._save_for_lite_interpreter("inference.ptl")
+    print("model version", _get_model_bytecode_version(f_input="inference.ptl"))
     save_image(audio, 'input.jpg')
 if __name__ == "__main__":
 
@@ -168,10 +183,10 @@ if __name__ == "__main__":
         num_groups_in_drop_band=2,
         weight_init=False,
     ).cuda()
-    size_all_mb = model_size(model)
-    print('model size: {:.3f}MB'.format(size_all_mb))
-
-    latency = model_speed(model, audio)
-    print('model latency: {:.3f}S'.format(latency))
+    # size_all_mb = model_size(model)
+    # print('model size: {:.3f}MB'.format(size_all_mb))
+    #
+    # latency = model_speed(model, audio)
+    # print('model latency: {:.3f}S'.format(latency))
 
     model_save(model, audio)
