@@ -246,20 +246,20 @@ if __name__ == "__main__":
         model = nn.DataParallel(A2net()).to(device)
         # model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
-        # synthetic dataset
-        # result = []
-        # people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        # dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
-        #
-        # model.load_state_dict(ckpt)
-        # ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
+        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
 
-        people = ['he', 'hou']
+        model.load_state_dict(ckpt)
+        ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
+
+        people = ['he']
 
 
         test_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people,
                                      simulation=True)
         test_dataset2 = NoisyCleanSet(['json/test_gt.json', 'json/all_noise.json', 'json/test_imu.json'], person=people,
+                                      simulation=True)
+        test_dataset3 = NoisyCleanSet(['json/mask_gt.json', 'json/mask_noise.json', 'json/test_imu.json'], person=people,
                                       simulation=True)
         # model.load_state_dict(torch.load('pretrain/[ 2.42972495 15.36821378  4.22121219].pth'))
         model.load_state_dict(ckpt)
@@ -267,6 +267,8 @@ if __name__ == "__main__":
         print('first time performance', avg_metric1)
         avg_metric2 = inference(test_dataset2, BATCH_SIZE, model, audio_only=False, complex=False)
         print('second time performance', avg_metric2)
+        avg_metric3 = inference(test_dataset3, BATCH_SIZE, model, audio_only=False, complex=False)
+        print('mask-on performance', avg_metric3)
 
     # elif args.mode == 2:
     #     # train one by one

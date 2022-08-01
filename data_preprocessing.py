@@ -42,7 +42,7 @@ if __name__ == "__main__":
         source = 'dataset/raw'
         target = 'dataset/our'
         #for p in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9']:
-        for p in ['he', 'hou']:
+        for p in ['he']:
             print(p)
             g = os.walk(os.path.join(source, p))
             for path, dir_list, file_list in g:
