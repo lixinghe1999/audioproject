@@ -5,15 +5,19 @@ import argparse
 
 def load(path, files, audio=False):
     log = []
-    for f in files:
-        if audio:
+    if audio:
+        for f in files:
             log.append([os.path.join(path, f), torchaudio.info(os.path.join(path, f)).num_frames])
-        else:
-            log.append([os.path.join(path, f), len(open(os.path.join(path, f), 'rb').readlines())])
+    else:
+        N = int(len(files)/2)
+        for i in range(N):
+            log.append([os.path.join(path, files[i]), os.path.join(path, files[N + i]),
+                        len(open(os.path.join(path, files[i]), 'rb').readlines())])
     return log
 
-def update(dict, name, file_list, N, p, kinds=4):
+def update(dict, name, file_list, p, kinds=4):
     file_list = sorted(file_list)
+    N = len(file_list)
     N = int(N / kinds)
     imu = file_list[: 2 * N]
     gt = file_list[2 * N: 3 * N]
@@ -121,9 +125,9 @@ if __name__ == "__main__":
                 if N > 0:
                     name = path.split('/')[-1]
                     if name in ['test', 'mask']:
-                        dict = update(dict, name, file_list, N, p, kinds=3)
+                        dict = update(dict, name, file_list, p, kinds=3)
                     else:
-                        dict = update(dict, name, file_list, N, p, kinds=4)
+                        dict = update(dict, name, file_list, p, kinds=4)
         for name in dict:
             # if len(dict[name]) == 2:
             #     json.dump(dict[name][0], open('json/' + name + '_imu.json', 'w'), indent=4)
