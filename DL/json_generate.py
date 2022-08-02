@@ -120,7 +120,10 @@ if __name__ == "__main__":
                 N = len(file_list)
                 if N > 0:
                     name = path.split('/')[-1]
-                    dict = update(dict, name, file_list, N, p)
+                    if name in ['test', 'mask']:
+                        dict = update(dict, name, file_list, N, p, kinds=3)
+                    else:
+                        dict = update(dict, name, file_list, N, p, kinds=4)
         for name in dict:
             # if len(dict[name]) == 2:
             #     json.dump(dict[name][0], open('json/' + name + '_imu.json', 'w'), indent=4)
