@@ -178,7 +178,7 @@ class BaseDataset:
     def __len__(self):
         return sum(self.num_examples)
     def __getitem__(self, index):
-        # TODO: EXTEND to two-channel IMU
+
         for info, examples in zip(self.files, self.num_examples):
             file, _ = info
             if index >= examples:
