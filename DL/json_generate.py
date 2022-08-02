@@ -3,13 +3,13 @@ import json
 import os
 import argparse
 
-def load(path, files, N, audio=False):
+def load(path, files, audio=False):
     log = []
-    for i in range(N):
+    for f in files:
         if audio:
-            log.append([os.path.join(path, files[i]), torchaudio.info(os.path.join(path, files[i])).num_frames])
+            log.append([os.path.join(path, f), torchaudio.info(os.path.join(path, f)).num_frames])
         else:
-            log.append([os.path.join(path, files[i]), len(open(os.path.join(path, files[i]), 'rb').readlines())])
+            log.append([os.path.join(path, f), len(open(os.path.join(path, f), 'rb').readlines())])
     return log
 
 def update(dict, name, file_list, N, p):
@@ -21,9 +21,9 @@ def update(dict, name, file_list, N, p):
         imu = file_list[: 2 * N]
         gt = file_list[2 * N: 3 * N]
         wav = file_list[3 * N:]
-        imu_files = load(path, imu, N, audio=False)
-        wav_files = load(path, wav, N, audio=True)
-        gt_files = load(path, gt, N, audio=True)
+        imu_files = load(path, imu, audio=False)
+        wav_files = load(path, wav, audio=True)
+        gt_files = load(path, gt, audio=True)
         if name in dict:
             if p in dict[name][0]:
                 dict[name][0][p] += imu_files
@@ -41,8 +41,8 @@ def update(dict, name, file_list, N, p):
         # imu2 = file_list[N: 2 * N]
         imu = file_list[: 2 * N]
         gt = file_list[2 * N: 3 * N]
-        imu_files = load(path, imu, N, audio=False)
-        gt_files = load(path, gt, N, audio=True)
+        imu_files = load(path, imu, audio=False)
+        gt_files = load(path, gt, audio=True)
         if name in dict:
             if p in dict[name][0]:
                 dict[name][0][p] += imu_files
