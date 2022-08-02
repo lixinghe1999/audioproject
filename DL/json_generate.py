@@ -16,11 +16,12 @@ def update(dict, name, file_list, N, p):
     file_list = sorted(file_list)
     if N % 4==0:
         N = int(N/4)
-        imu1 = file_list[: N]
-        imu2 = file_list[N: 2 * N]
+        # imu1 = file_list[: N]
+        # imu2 = file_list[N: 2 * N]
+        imu = file_list[: 2 * N]
         gt = file_list[2 * N: 3 * N]
         wav = file_list[3 * N:]
-        imu_files = load(path, imu1, N, audio=False) + load(path, imu2, N, audio=False)
+        imu_files = load(path, imu, N, audio=False)
         wav_files = load(path, wav, N, audio=True)
         gt_files = load(path, gt, N, audio=True)
         if name in dict:
@@ -36,10 +37,11 @@ def update(dict, name, file_list, N, p):
             dict[name] = [{p: imu_files}, {p: wav_files}, {p: gt_files}]
     else:
         N = int(N / 3)
-        imu1 = file_list[: N]
-        imu2 = file_list[N: 2 * N]
+        # imu1 = file_list[: N]
+        # imu2 = file_list[N: 2 * N]
+        imu = file_list[: 2 * N]
         gt = file_list[2 * N: 3 * N]
-        imu_files = load(path, imu1, N, audio=False) + load(path, imu2, N, audio=False)
+        imu_files = load(path, imu, N, audio=False)
         gt_files = load(path, gt, N, audio=True)
         if name in dict:
             if p in dict[name][0]:
