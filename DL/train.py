@@ -187,7 +187,7 @@ if __name__ == "__main__":
         #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
+        dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu1.json', 'json/train_imu2.json'], person=people, simulation=True)
 
         #model.load_state_dict(ckpt)
         ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
@@ -196,12 +196,12 @@ if __name__ == "__main__":
         model.load_state_dict(ckpt)
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         for noise in ['background.json', 'dev.json', 'music.json']:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'], person=people, simulation=True)
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu1.json', 'json/train_imu2.json'], person=people, simulation=True)
             avg_metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
             print(noise, avg_metric)
 
         for level in [11, 6, 1]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, snr=[level-1, level+1])
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu1.json', 'json/train_imu2.json'], person=people, simulation=True, snr=[level-1, level+1])
             avg_metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
             print(level, avg_metric)
 
