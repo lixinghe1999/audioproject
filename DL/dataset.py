@@ -152,13 +152,6 @@ def snr_norm(signals, target_dB_FS, target_dB_FS_floating_value):
             signal, _ = norm_amplitude(signal)
             signal, _, _ = tailor_dB_FS(signal, noisy_target_dB_FS)
             new_signal.append(signal)
-        # clean_y, _ = norm_amplitude(clean_y)
-        # clean_y, _, _ = tailor_dB_FS(clean_y, noisy_target_dB_FS)
-        # #clean_rms = (clean_y ** 2).mean() ** 0.5
-        #
-        # noise_y, _ = norm_amplitude(noise_y)
-        # noise_y, _, _ = tailor_dB_FS(noise_y, noisy_target_dB_FS)
-        # #noise_rms = (noise_y ** 2).mean() ** 0.5
         return new_signal
 
 class BaseDataset:
@@ -185,6 +178,7 @@ class BaseDataset:
     def __len__(self):
         return sum(self.num_examples)
     def __getitem__(self, index):
+        # TODO: EXTEND to two-channel IMU
         for info, examples in zip(self.files, self.num_examples):
             file, _ = info
             if index >= examples:

@@ -21,8 +21,8 @@ def update(dict, name, file_list, N, p):
         gt = file_list[2 * N: 3 * N]
         wav = file_list[3 * N:]
         imu_files = load(path, imu1, N, audio=False) + load(path, imu2, N, audio=False)
-        wav_files = load(path, wav, N, audio=True) + load(path, wav, N, audio=True)
-        gt_files = load(path, gt, N, audio=True) + load(path, gt, N, audio=True)
+        wav_files = load(path, wav, N, audio=True)
+        gt_files = load(path, gt, N, audio=True)
         if name in dict:
             if p in dict[name][0]:
                 dict[name][0][p] += imu_files
@@ -40,7 +40,7 @@ def update(dict, name, file_list, N, p):
         imu2 = file_list[N: 2 * N]
         gt = file_list[2 * N: 3 * N]
         imu_files = load(path, imu1, N, audio=False) + load(path, imu2, N, audio=False)
-        gt_files = load(path, gt, N, audio=True) + load(path, gt, N, audio=True)
+        gt_files = load(path, gt, N, audio=True)
         if name in dict:
             if p in dict[name][0]:
                 dict[name][0][p] += imu_files
