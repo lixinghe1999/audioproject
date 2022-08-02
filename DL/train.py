@@ -158,13 +158,13 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 32
+        BATCH_SIZE = 128
         lr = 0.001
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True)
 
-        #model = nn.DataParallel(A2net(), device_ids=[0, 1]).to(device)
-        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        model = nn.DataParallel(A2net(), device_ids=[0, 1]).to(device)
+        #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
                                                    save_all=True, audio_only=True, complex=True)
         plt.plot(loss_curve)
@@ -259,7 +259,7 @@ if __name__ == "__main__":
                                      simulation=True)
         test_dataset2 = NoisyCleanSet(['json/test_gt.json', 'json/all_noise.json', 'json/test_imu.json'], person=people,
                                       simulation=True)
-        test_dataset3 = NoisyCleanSet(['json/mask_gt.json', 'json/mask_noise.json', 'json/test_imu.json'], person=people,
+        test_dataset3 = NoisyCleanSet(['json/mask_gt.json', 'json/all_noise.json', 'json/mask_imu.json'], person=people,
                                       simulation=True)
         # model.load_state_dict(torch.load('pretrain/[ 2.42972495 15.36821378  4.22121219].pth'))
         model.load_state_dict(ckpt)

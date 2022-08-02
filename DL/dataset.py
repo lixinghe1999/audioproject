@@ -178,7 +178,6 @@ class BaseDataset:
     def __len__(self):
         return sum(self.num_examples)
     def __getitem__(self, index):
-
         for info, examples in zip(self.files, self.num_examples):
             file, _ = info
             if index >= examples:
@@ -209,7 +208,7 @@ class NoisyCleanSet:
         :param snr: SNR range of the synthetic dataset
         '''
         self.dataset = []
-        sr = [16000, 16000, 1600]
+        sr = [16000, 16000, 1600, 1600]
         for i, path in enumerate(json_paths):
             with open(path, 'r') as f:
                 data = json.load(f)
@@ -244,10 +243,14 @@ class NoisyCleanSet:
         noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
         clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
         if self.augmentation:
-            imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
+            imu1 = synthetic(np.abs(clean), self.transfer_function, self.variance)
+            imu2 = synthetic(np.abs(clean), self.transfer_function, self.variance)
         else:
-            imu, _ = self.dataset[2][index]
-            imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
+            imu1, _ = self.dataset[2][index]
+            imu2, _ = self.dataset[2][index]
+            imu1 = spectrogram(imu1, seg_len_imu, overlap_imu, rate_imu)
+            imu2 = spectrogram(imu2, seg_len_imu, overlap_imu, rate_imu)
+        imu = np.concatenate([imu1, imu2], axis=0)
         noise = noise[:, :8 * freq_bin_high, :]
         clean = clean[:, :8 * freq_bin_high, :]
         if self.text:
@@ -269,22 +272,23 @@ if __name__ == "__main__":
         size_all_mb = (param_size + buffer_size) / 1024 ** 2
         #print('model size: {:.3f}MB'.format(size_all_mb))
         return size_all_mb
-    mode = 1
+    mode = 0
     if mode == 0:
         # check data
         dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
-        #dataset_train = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'], simulation=True, person=['he'])
+        #dataset_train = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json','json/noise_train_imu1.json', 'json/noise_train_imu2.json'], simulation=True, person=['he'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
+            print(x.shape, noise.shape, y.shape)
 
             x = x[0].numpy()
-            noise = np.abs(noise[0].numpy())
-            y = np.abs(y[0].numpy())
-
-            fig, axs = plt.subplots(3, 1)
-            axs[0].imshow(x, aspect='auto')
-            axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
-            axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
+            noise = np.abs(noise[0, 0].numpy())
+            y = np.abs(y[0, 0].numpy())
+            fig, axs = plt.subplots(4, 1)
+            axs[0].imshow(x[0], aspect='auto')
+            axs[1].imshow(x[1], aspect='auto')
+            axs[2].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
+            axs[3].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
             plt.show()
     elif mode == 1:
         # save one people's data into images -> deployment checking
