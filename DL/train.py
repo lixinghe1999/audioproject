@@ -150,7 +150,7 @@ def inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False):
         for file, x, noise, y in tqdm(test_loader):
             print(file)
             metric = sample_evaluation(model, x, noise, y, audio_only=audio_only, complex=complex)
-            metric = np.stack([file, metric])
+            metric = np.stack([np.asarray(file), metric])
             print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
