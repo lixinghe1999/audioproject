@@ -46,6 +46,31 @@ def wer(r, h):
     #alignedPrint(list, r, h, result)
     return result
 
+def SI_SDR(reference, estimation, sr=16000):
+    """
+    Scale-Invariant Signal-to-Distortion Ratio (SI-SDR)
+
+    Args:
+        reference: numpy.ndarray, [..., T]
+        estimation: numpy.ndarray, [..., T]
+
+    Returns:
+        SI-SDR
+
+    References
+        SDR– Half- Baked or Well Done? (http://www.merl.com/publications/docs/TR2019-013.pdf)
+    """
+    estimation, reference = np.broadcast_arrays(estimation, reference)
+    reference_energy = np.sum(reference ** 2, axis=-1, keepdims=True)
+
+    optimal_scaling = np.sum(reference * estimation, axis=-1, keepdims=True) / reference_energy
+
+    projection = optimal_scaling * reference
+
+    noise = estimation - projection
+
+    ratio = np.sum(projection ** 2, axis=-1) / np.sum(noise ** 2, axis=-1)
+    return 10 * np.log10(ratio)
 def snr(gt, est):
     # ordinary snr
     n = gt - est

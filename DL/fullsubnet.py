@@ -161,9 +161,9 @@ def model_save(model, audio):
     #
     #     print("new model version", _get_model_bytecode_version(MODEL_OUTPUT_FILE))
     scripted_module = torch.jit.trace(model, audio)
-    #scripted_module.save("inference.pt")
+    scripted_module.save("inference.pt")
     optimized_scripted_module = optimize_for_mobile(scripted_module)
-    optimized_scripted_module._save_for_lite_interpreter("inference.ptl")
+    optimized_scripted_module._save_for_lite_interpreter("inference_optimized.ptl")
     print("model version", _get_model_bytecode_version(f_input="inference.ptl"))
     save_image(audio, 'input.jpg')
 if __name__ == "__main__":

@@ -276,7 +276,8 @@ if __name__ == "__main__":
     if mode == 0:
         # check data
         #dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
-        dataset_train = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json','json/noise_train_imu1.json', 'json/noise_train_imu2.json'], simulation=True, person=['he'])
+        dataset_train = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json','json/train_imu1.json', 'json/train_imu2.json'],
+                                      simulation=True, person=['liang'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
             print(x.shape, noise.shape, y.shape)

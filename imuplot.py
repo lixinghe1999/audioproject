@@ -33,10 +33,11 @@ def read_data(file, seg_len=256, overlap=224, rate=1600, mfcc=False, filter=True
 def calibrate(file, T, shift):
     fileobject = open(file, 'r')
     lines = fileobject.readlines()
-    data = np.zeros((len(lines), 4))
-    for i in range(len(lines)):
-        line = lines[i].split(' ')
-        data[i, :] = [float(item) for item in line]
+    data = np.loadtxt(file)
+    # data = np.zeros((len(lines), 4))
+    # for i in range(len(lines)):
+    #     line = lines[i].split(' ')
+    #     data[i, :] = [float(item) for item in line]
 
     f = interpolate.interp1d(data[:, -1] - data[0, -1], data[:, :3], axis=0, kind='nearest')
     t = min((data[-1, -1] - data[0, -1]), T)

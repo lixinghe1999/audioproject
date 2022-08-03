@@ -86,8 +86,8 @@ if __name__ == "__main__":
                         f1 = gt[i][:-4] + '.wav'
                         sf.write(os.path.join(folder, f1), mic, 16000)
 
-                        np.savetxt(os.path.join(folder, imu1[i]), data1, fmt='%.6f')
-                        np.savetxt(os.path.join(folder, imu2[i]), data2, fmt='%.6f')
+                        np.savetxt(os.path.join(folder, imu1[i]), data1, fmt='%.2f')
+                        np.savetxt(os.path.join(folder, imu2[i]), data2, fmt='%.2f')
 
 
     elif args.mode == 1:
@@ -124,6 +124,7 @@ if __name__ == "__main__":
                                       os.path.join(target, folder, s, c, files_imu1[i]), T, shift1)
                             calibrate(os.path.join(path, files_imu2[i]),
                                       os.path.join(target, folder, s, c, files_imu2[i]), T, shift2)
+
                             mic = librosa.load(os.path.join(path, files_mic1[i]), sr=16000)[0]
                             airpods = librosa.load(os.path.join(path, files_mic2[i]), sr=16000)[0]
                             shift = np.argmax(signal.correlate(mic, airpods)) - np.shape(mic)
