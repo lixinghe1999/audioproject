@@ -208,7 +208,7 @@ class NoisyCleanSet:
         :param snr: SNR range of the synthetic dataset
         '''
         self.dataset = []
-        sr = [16000, 16000, 1600, 1600]
+        sr = [16000, 16000, 1600]
         for i, path in enumerate(json_paths):
             with open(path, 'r') as f:
                 data = json.load(f)
@@ -243,18 +243,14 @@ class NoisyCleanSet:
         noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
         clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
         if self.augmentation:
-            imu1 = synthetic(np.abs(clean), self.transfer_function, self.variance)
-            imu2 = synthetic(np.abs(clean), self.transfer_function, self.variance)
+            imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
         else:
-            imu1, _ = self.dataset[2][index]
-            imu2, _ = self.dataset[2][index]
-            imu1 = spectrogram(imu1, seg_len_imu, overlap_imu, rate_imu)
-            imu2 = spectrogram(imu2, seg_len_imu, overlap_imu, rate_imu)
-        imu = np.concatenate([imu1, imu2], axis=0)
+            imu, _ = self.dataset[2][index]
+            imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
         noise = noise[:, :8 * freq_bin_high, :]
         clean = clean[:, :8 * freq_bin_high, :]
         if self.text:
-            return sentences[int(file.split('\\')[2][-1])], imu, noise, clean
+            return file, imu, noise, clean
         else:
             return imu, noise, clean
     def __len__(self):
@@ -275,8 +271,8 @@ if __name__ == "__main__":
     mode = 0
     if mode == 0:
         # check data
-        dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
-        #dataset_train = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json','json/noise_train_imu1.json', 'json/noise_train_imu2.json'], simulation=True, person=['he'])
+        #dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
+        dataset_train = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json','json/noise_train_imu1.json', 'json/noise_train_imu2.json'], simulation=True, person=['he'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
             print(x.shape, noise.shape, y.shape)
