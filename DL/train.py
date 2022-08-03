@@ -150,6 +150,8 @@ def inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False):
         for file, x, noise, y in tqdm(test_loader):
             print(file)
             metric = sample_evaluation(model, x, noise, y, audio_only=audio_only, complex=complex)
+            metric = np.stack([file, metric])
+            print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
@@ -204,9 +206,13 @@ if __name__ == "__main__":
 
         for level in [11, 6, 1]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people,
-                    simulation=True, snr=[level-1, level+1], text=True)
+                                    simulation=True, snr=[level - 1, level + 1], text=True)
             avg_metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
             print(level, avg_metric)
+        dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people,
+                    simulation=True, text=True)
+        avg_metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
+        print(level, avg_metric)
 
     elif args.mode == 2:
         # micro-benchmark per-user, length of data
