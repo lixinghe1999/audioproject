@@ -21,61 +21,21 @@ def update(dict, name, file_list, p, kinds=4):
     imu2 = file_list[N: 2 * N]
     gt = file_list[2 * N: 3 * N]
     wav = file_list[3 * N:]
-    imu1_files = load(path, imu1, audio=False)
-    imu2_files = load(path, imu2, audio=False)
-    gt_files = load(path, gt, audio=True)
-    wav_files = load(path, wav, audio=True)
+    imu_files = load(path, imu1, audio=False) + load(path, imu2, audio=False)
+    gt_files = load(path, gt, audio=True) + load(path, gt, audio=True)
+    wav_files = load(path, wav, audio=True) + load(path, wav, audio=True)
     if name in dict:
         if p in dict[name][0]:
-            dict[name][0][p] += imu1_files
-            dict[name][1][p] += imu2_files
-            dict[name][2][p] += gt_files
-            dict[name][3][p] += wav_files
+            dict[name][0][p] += imu_files
+            dict[name][1][p] += gt_files
+            dict[name][2][p] += wav_files
         else:
-            dict[name][0][p] = imu1_files
-            dict[name][1][p] = imu2_files
-            dict[name][2][p] = gt_files
-            dict[name][3][p] = wav_files
+            dict[name][0][p] = imu_files
+            dict[name][1][p] = gt_files
+            dict[name][2][p] = wav_files
     else:
-        dict[name] = [{p: imu1_files}, {p: imu2_files}, {p: gt_files}, {p: wav_files}]
-    # if N % 4 == 0:
-    #     N = int(N/4)
-    #     # imu1 = file_list[: N]
-    #     # imu2 = file_list[N: 2 * N]
-    #     imu = file_list[: 2 * N]
-    #     gt = file_list[2 * N: 3 * N]
-    #     wav = file_list[3 * N:]
-    #     imu_files = load(path, imu, audio=False)
-    #     wav_files = load(path, wav, audio=True)
-    #     gt_files = load(path, gt, audio=True)
-    #     if name in dict:
-    #         if p in dict[name][0]:
-    #             dict[name][0][p] += imu_files
-    #             dict[name][1][p] += wav_files
-    #             dict[name][2][p] += gt_files
-    #         else:
-    #             dict[name][0][p] = imu_files
-    #             dict[name][1][p] = wav_files
-    #             dict[name][2][p] = gt_files
-    #     else:
-    #         dict[name] = [{p: imu_files}, {p: wav_files}, {p: gt_files}]
-    # else:
-    #     N = int(N / 3)
-    #     # imu1 = file_list[: N]
-    #     # imu2 = file_list[N: 2 * N]
-    #     imu = file_list[: 2 * N]
-    #     gt = file_list[2 * N: 3 * N]
-    #     imu_files = load(path, imu, audio=False)
-    #     gt_files = load(path, gt, audio=True)
-    #     if name in dict:
-    #         if p in dict[name][0]:
-    #             dict[name][0][p] += imu_files
-    #             dict[name][1][p] += gt_files
-    #         else:
-    #             dict[name][0][p] = imu_files
-    #             dict[name][1][p] = gt_files
-    #     else:
-    #         dict[name] = [{p: imu_files}, {p: gt_files}]
+        dict[name] = [{p: imu_files}, {p: gt_files}, {p: wav_files}]
+
     return dict
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -132,11 +92,6 @@ if __name__ == "__main__":
                     else:
                         dict = update(dict, name, file_list, p, kinds=4)
         for name in dict:
-            # if len(dict[name]) == 2:
-            #     json.dump(dict[name][0], open('json/' + name + '_imu.json', 'w'), indent=4)
-            #     json.dump(dict[name][1], open('json/' + name + '_gt.json', 'w'), indent=4)
-            # else:
-                json.dump(dict[name][0], open('json/' + name + '_imu1.json', 'w'), indent=4)
-                json.dump(dict[name][1], open('json/' + name + '_imu2.json', 'w'), indent=4)
-                json.dump(dict[name][2], open('json/' + name + '_gt.json', 'w'), indent=4)
-                json.dump(dict[name][3], open('json/' + name + '_wav.json', 'w'), indent=4)
+                json.dump(dict[name][0], open('json/' + name + '_imu.json', 'w'), indent=4)
+                json.dump(dict[name][1], open('json/' + name + '_gt.json', 'w'), indent=4)
+                json.dump(dict[name][2], open('json/' + name + '_wav.json', 'w'), indent=4)
