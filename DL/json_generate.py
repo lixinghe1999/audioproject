@@ -27,8 +27,8 @@ def update(dict, name, file_list, p, kinds=4):
 
     imu1_files = load(path, imu1, audio=False)
     imu2_files = load(path, imu2, audio=False)
-    gt_files = load(path, gt, audio=True) + load(path, gt, audio=True)
-    wav_files = load(path, wav, audio=True) + load(path, wav, audio=True)
+    gt_files = load(path, gt, audio=True)
+    wav_files = load(path, wav, audio=True)
     if name in dict:
         if p in dict[name][0]:
             dict[name][0][p] += imu1_files
