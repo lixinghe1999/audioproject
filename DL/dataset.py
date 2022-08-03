@@ -208,7 +208,7 @@ class NoisyCleanSet:
         :param snr: SNR range of the synthetic dataset
         '''
         self.dataset = []
-        sr = [16000, 16000, 1600]
+        sr = [16000, 16000, 1600, 1600]
         for i, path in enumerate(json_paths):
             with open(path, 'r') as f:
                 data = json.load(f)
@@ -243,10 +243,14 @@ class NoisyCleanSet:
         noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
         clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
         if self.augmentation:
-            imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
+            imu1 = synthetic(np.abs(clean), self.transfer_function, self.variance)
+            imu2 = synthetic(np.abs(clean), self.transfer_function, self.variance)
         else:
-            imu, _ = self.dataset[2][index]
-            imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
+            imu1, _ = self.dataset[2][index]
+            imu2, _ = self.dataset[3][index]
+            imu1 = spectrogram(imu1, seg_len_imu, overlap_imu, rate_imu)
+            imu2 = spectrogram(imu2, seg_len_imu, overlap_imu, rate_imu)
+        imu = np.concatenate([imu1, imu2], axis=0)
         noise = noise[:, :8 * freq_bin_high, :]
         clean = clean[:, :8 * freq_bin_high, :]
         if self.text:
