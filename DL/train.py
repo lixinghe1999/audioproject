@@ -215,6 +215,7 @@ if __name__ == "__main__":
                                     simulation=True, snr=[level - 1, level + 1])
             Metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
             avg_metric = np.mean(Metric, axis=0)
+            print(level, avg_metric)
 
 
     elif args.mode == 2:
