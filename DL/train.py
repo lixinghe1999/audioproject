@@ -153,7 +153,7 @@ def inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False):
             print(file.shape)
             metric = sample_evaluation(model, x, noise, y, audio_only=audio_only, complex=complex)
 
-            metric = np.concatenate([file, metric], axis=1)
+            metric = np.column_stack([file, metric])
             print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
