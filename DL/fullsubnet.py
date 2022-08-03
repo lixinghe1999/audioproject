@@ -168,7 +168,7 @@ def model_save(model, audio):
     save_image(audio, 'input.jpg')
 if __name__ == "__main__":
 
-    audio = torch.rand(1, 1, 264, 151).cuda()
+    audio = torch.rand(1, 1, 264, 151)
     model = Model(
         num_freqs=264,
         look_ahead=2,
@@ -182,7 +182,7 @@ if __name__ == "__main__":
         norm_type="offline_laplace_norm",
         num_groups_in_drop_band=2,
         weight_init=False,
-    ).cuda()
+    )
     # size_all_mb = model_size(model)
     # print('model size: {:.3f}MB'.format(size_all_mb))
     #

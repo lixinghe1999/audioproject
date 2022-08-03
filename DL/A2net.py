@@ -196,10 +196,11 @@ if __name__ == "__main__":
     imu = torch.rand(1, 1, 33, 151)
     audio = torch.rand(1, 1, 264, 151)
     model = A2net()
-    size_all_mb = model_size(model)
-    print('model size: {:.3f}MB'.format(size_all_mb))
 
-    latency = model_speed(model, [imu, audio])
-    print('model latency: {:.3f}S'.format(latency))
+    # size_all_mb = model_size(model)
+    # print('model size: {:.3f}MB'.format(size_all_mb))
+    #
+    # latency = model_speed(model, [imu, audio])
+    # print('model latency: {:.3f}S'.format(latency))
 
     model_save(model)

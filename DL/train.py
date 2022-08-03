@@ -198,7 +198,7 @@ if __name__ == "__main__":
 
         for p in people:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=[p],
-                                    simulation=True, text=True)
+                                    simulation=True)
             Metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
