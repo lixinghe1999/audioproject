@@ -16,7 +16,7 @@ from result import subjective_evaluation, objective_evaluation
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from tqdm import tqdm
 import argparse
-from evaluation import wer, snr, lsd
+from evaluation import wer, snr, lsd, SI_SDR
 from pesq import pesq_batch, pesq
 
 device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
@@ -67,7 +67,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     y = y.cpu().numpy()
     y = np.pad(y, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-    return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', on_error=1)), snr(y, predict), lsd(y, predict)], axis=1)
+    return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', on_error=1)), SI_SDR(y, predict), lsd(y, predict)], axis=1)
 
 def sample(model, x, noise, y, audio_only=False):
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
