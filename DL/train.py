@@ -48,7 +48,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     if audio_only:
         predict1 = model(magnitude)
     else:
-        predict1, _ = model(x, magnitude)
+        predict1 = model(x, magnitude)
     # predict1 = magnitude
     # either predict the spectrogram, or predict the CIRM
     if complex:
