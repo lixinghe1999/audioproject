@@ -8,7 +8,7 @@ class IMU_branch(nn.Module):
     def __init__(self, inference=False):
         super(IMU_branch, self).__init__()
         self.conv1 = nn.Sequential(
-            nn.Conv2d(2, 16, kernel_size=(3, 3), padding=(1, 1)),
+            nn.Conv2d(1, 16, kernel_size=(3, 3), padding=(1, 1)),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True))
         self.conv2 = nn.Sequential(
