@@ -251,6 +251,11 @@ class NoisyCleanSet:
             imu1 = spectrogram(imu1, seg_len_imu, overlap_imu, rate_imu)
             imu2 = spectrogram(imu2, seg_len_imu, overlap_imu, rate_imu)
         imu = np.concatenate([imu1, imu2], axis=0)
+        # if self.augmentation:
+        #     imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
+        # else:
+        #     imu, _ = self.dataset[2][index]
+        #     imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
         noise = noise[:, :8 * freq_bin_high, :]
         clean = clean[:, :8 * freq_bin_high, :]
         if self.text:
