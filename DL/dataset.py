@@ -194,7 +194,7 @@ class BaseDataset:
                 data /= 2 ** 14
             else:
                 data, _ = librosa.load(file, offset=offset, duration=duration, sr=rate_mic)
-            b, a = signal.butter(4, 100, 'highpass', fs=self.sample_rate)
+            b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
             out = signal.filtfilt(b, a, data, axis=0)
             return out, file
 class NoisyCleanSet:

@@ -141,11 +141,13 @@ if __name__ == "__main__":
 
         fig, axs = plt.subplots(1, figsize=(2, 2))
         plt.subplots_adjust(left=0.2, bottom=0.16, right=0.98, top=0.98)
-        for i in range(2):
-            response = np.mean(collect1[i], axis=1)
-            variance = np.mean(collect2[i], axis=1)
-            #plt.plot(response)
-            plt.errorbar(range(33), response, yerr=variance/2, fmt='', label='User'+str(i))
+        response = np.mean(collect1[0], axis=1)
+        variance = np.mean(collect2[0], axis=1)
+        plt.errorbar(range(33), response, yerr=variance/2, fmt='--', color='b', elinewidth=1, capsize=1.5, label='User'+str(0))
+        response = np.mean(collect1[1], axis=1)
+        variance = np.mean(collect2[1], axis=1)
+        plt.errorbar(range(33), response, yerr=variance / 2, fmt='', color='r', elinewidth=1, capsize=1.5,
+                     label='User' + str(1))
         plt.xticks([0, 7, 15, 23, 31], [0, 200, 400, 600, 800])
         plt.legend()
 
@@ -168,7 +170,7 @@ if __name__ == "__main__":
         #vmax = [[[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]], [[0.05, 0.0008], [0.02, 0.02]]]
         vmax = [[0.05, 0.02], [0.05, 0.02], [0.05, 0.02], [0.05, 0.02]]
         select = [1, 5, 6, 13]
-        for i in [0, 1, 2, 3]:
+        for i in [3]:
             v = vmax[i]
             start = crop[i][0]
             stop = crop[i][1]
@@ -190,6 +192,11 @@ if __name__ == "__main__":
                 print('add zoom-in')
                 axins = axs[0].inset_axes([0, 0, 1, 1.5])
                 axins.imshow(spectrogram1, origin="lower", vmin=0, vmax=0.02)
+
+                axins.spines['bottom'].set_color('white')
+                axins.spines['top'].set_color('white')
+                axins.spines['right'].set_color('white')
+                axins.spines['left'].set_color('white')
                 # sub region of the original image
                 x1, x2, y1, y2 = 0, 100, 0, 30
                 axins.set_xlim(x1, x2)
@@ -200,6 +207,10 @@ if __name__ == "__main__":
 
                 axins = axs[1].inset_axes([0, 0, 1, 1.5])
                 axins.imshow(spectrogram2, origin="lower", vmin=0, vmax=0.02)
+                axins.spines['bottom'].set_color('white')
+                axins.spines['top'].set_color('white')
+                axins.spines['right'].set_color('white')
+                axins.spines['left'].set_color('white')
                 # sub region of the original image
                 x1, x2, y1, y2 = 0, 100, 0, 30
                 axins.set_xlim(x1, x2)
@@ -208,7 +219,7 @@ if __name__ == "__main__":
                 axins.set_yticklabels([])
                 axins.tick_params(axis='both', left=False, bottom=False)
             plt.savefig(n + '.pdf', dpi=600)
-            #plt.show()
+            plt.show()
     else:
         path = os.path.join('dataset/measurement/')
         files = os.listdir(path)

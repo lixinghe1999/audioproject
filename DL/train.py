@@ -48,7 +48,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     if audio_only:
         predict1 = model(magnitude)
     else:
-        predict1 = model(x, magnitude)
+        predict1, predict2 = model(x, magnitude)
     # predict1 = magnitude
     # either predict the spectrogram, or predict the CIRM
     if complex:
@@ -80,11 +80,11 @@ def sample(model, x, noise, y, audio_only=False):
         predict1 = model(noise)
         loss = Loss(predict1, cIRM)
     else:
-        predict1 = model(x, noise)
+        predict1, predict2 = model(x, noise)
         loss1 = Loss(predict1, y)
-        loss = loss1
-        # loss2 = Loss(predict2, y[:, :, :33, :])
-        # loss = loss1 + loss2 * 0.05
+        #loss = loss1
+        loss2 = Loss(predict2, y[:, :, :33, :])
+        loss = loss1 + loss2 * 0.05
 
     return loss
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True)
 
-        model = nn.DataParallel(A2net(inference=True), device_ids=[0, 1]).to(device)
+        model = nn.DataParallel(A2net(inference=False), device_ids=[0, 1]).to(device)
         #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
                                                    save_all=True, audio_only=False, complex=False)
