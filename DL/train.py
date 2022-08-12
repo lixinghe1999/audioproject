@@ -101,11 +101,9 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
-    optimizer = torch.optim.Adam(
-        params=model.parameters(),
-        lr=lr,
-        betas=(0.9, 0.999)
-    )
+    #optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
+    optimizer = torch.optim.Adam(params= filter(lambda p: p.requires_grad, model.parameters()), lr=lr, betas=(0.9, 0.999))
+
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
 
     loss_best = 1
@@ -181,7 +179,7 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/no_extra'
+        ckpt_dir = 'pretrain/vibvoice_80'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
 
