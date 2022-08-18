@@ -55,9 +55,22 @@ def calibrate(file, T, shift):
     return data
 
 if __name__ == "__main__":
-    file = 'bmiacc1_1651662404.1797326.txt'
-    data, Zxx = read_data(file)
-    plt.imshow(Zxx)
-    plt.show()
+    directory = 'dataset/positions/glasses'
+    kinds = 3
+    file_list = os.listdir(directory)
+    file_list = sorted(file_list)
+    N = len(file_list)
+    N = int(N / kinds)
+    imu1 = file_list[: N]
+    imu2 = file_list[N: 2 * N]
+    gt = file_list[2 * N: 3 * N]
+    wav = file_list[3 * N:]
+    for f1, f2 in zip(imu1, imu2):
+        data1, Zxx1 = read_data(os.path.join(directory, f1))
+        data2, Zxx2 = read_data(os.path.join(directory, f2))
+        fig, axs = plt.subplots(2, 1)
+        axs[0].imshow(Zxx1)
+        axs[1].imshow(Zxx2)
+        plt.show()
 
 

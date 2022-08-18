@@ -192,11 +192,13 @@ class BaseDataset:
                 data = np.loadtxt(file)
                 data = data[offset * self.sample_rate: (offset + duration) * self.sample_rate, :]
                 data /= 2 ** 14
+                b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
+                data = signal.filtfilt(b, a, data, axis=0)
+                data = np.clip(data, -0.05, 0.05)
             else:
                 data, _ = librosa.load(file, offset=offset, duration=duration, sr=rate_mic)
-            b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
-            out = signal.filtfilt(b, a, data, axis=0)
-            return out, file
+
+            return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20)):
         '''
@@ -281,20 +283,20 @@ if __name__ == "__main__":
     if mode == 0:
         # check data
         #dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
-        dataset_train = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json','json/train_imu1.json', 'json/train_imu2.json'],
-                                      simulation=True, person=['liang'])
+        dataset_train = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json','json/position_imu.json'],
+                                      simulation=True, person=['headphone-'])
+        print(len(dataset_train))
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
             print(x.shape, noise.shape, y.shape)
 
-            x = x[0].numpy()
+            x = x[0, 0].numpy()
             noise = np.abs(noise[0, 0].numpy())
             y = np.abs(y[0, 0].numpy())
-            fig, axs = plt.subplots(4, 1)
-            axs[0].imshow(x[0], aspect='auto')
-            axs[1].imshow(x[1], aspect='auto')
-            axs[2].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
-            axs[3].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
+            fig, axs = plt.subplots(3, 1)
+            axs[0].imshow(x, aspect='auto')
+            axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
+            axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
             plt.show()
     elif mode == 1:
         # save one people's data into images -> deployment checking

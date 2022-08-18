@@ -64,57 +64,22 @@ def draw_2(spectrogram1, spectrogram2, axs, start, stop, vmax):
     axs[0].locator_params(axis='x', nbins=1)
     axs[0].tick_params(axis='both', left=False, bottom=False, pad=-2)
     axs[0].set_yticks([0, 100, 400, 800, 1600])
-    axs[0].axline((0, 100), (2, 100), color='w')
+    #axs[0].axline((0, 100), (2, 100), color='w')
     im1 = axs[0].imshow(spectrogram1, extent=[0, stop - start, 0, 1600],
                         aspect='auto', origin='lower', vmin=0, vmax=vmax[0])
-    #cb1 = fig.colorbar(im1, ticks=[], ax=axs[0], aspect=50)
-    # cb1.ax.text(2.5, 0.05, '0', transform=cb1.ax.transAxes, va='top', ha='center')
-    # cb1.ax.text(1.1, 1, str(vmax[0]), transform=cb1.ax.transAxes, va='bottom', ha='center')
-
 
     axs[1].locator_params(axis='x', nbins=1)
     axs[1].tick_params(axis='both', left=False, bottom=False, pad=-2)
     axs[1].set_yticks([])
-    axs[1].axline((0, 100), (2, 100), color='w')
+    #axs[1].axline((0, 100), (2, 100), color='w')
     im2 = axs[1].imshow(spectrogram2, extent=[0, stop - start, 0, 1600],
                         aspect='auto', origin='lower', vmin=0, vmax=vmax[1])
-    # cb2 = fig.colorbar(im2, ticks=[], ax=axs[1], aspect=50)
-    # cb2.ax.text(2.5, 0.05, '0', transform=cb2.ax.transAxes, va='top', ha='center')
-    # cb2.ax.text(1.1, 1, str(vmax[1]), transform=cb2.ax.transAxes, va='bottom', ha='center')
 
     fig.text(0.3, 0.95, 'Mic', va='center')
     fig.text(0.7, 0.95, 'Acc', va='center')
-    fig.text(0.2, 0.04, 'Time(S)', va='center')
-    fig.text(0.65, 0.04, 'Time(S)', va='center')
+    fig.text(0.2, 0.04, 'Time (S)', va='center')
+    fig.text(0.65, 0.04, 'Time (S)', va='center')
     #fig.text(0.01, 0.50, 'Frequency(Hz)', va='center', rotation='vertical')
-
-
-def draw_4(spectrogram1, spectrogram2, index, vmax):
-
-    axs[2 * index].set_xticks([0.2, 1.8], [0, 2])
-    axs[2 * index].text(0.6, 1450, 'Mic', color='white')
-    axs[2 * index].tick_params(axis='both', bottom=False, pad=0)
-    # axs[2*index].locator_params(axis='x', nbins=1)
-    axs[2 * index].set_yticks([])
-    #axs[2 * index].set_xticks([])
-    #axs[2 * index].set_title('Mic')
-    axs[2*index].axline((0, 100), (2, 100), color='w')
-    im1 = axs[2*index].imshow(spectrogram1, extent=[0, 2, 0, 1600], aspect='auto', origin='lower', vmin=0, vmax=vmax[0])
-    # axs[2 * index].text('0', 0, 0)
-    # axs[2 * index].text('2', 0, 1)
-
-    #axs[2 * index + 1].locator_params(axis='x', nbins=1)
-    axs[2 * index + 1].set_yticks([])
-    axs[2 * index + 1].text(0.6, 1450, 'Acc', color='white')
-    axs[2 * index + 1].set_xticks([0.2, 1.8], [0, 2])
-
-    axs[2 * index + 1].tick_params(axis='both', bottom=False, pad=0)
-    #axs[2 * index + 1].set_xticks([])
-    #axs[2 * index + 1].set_title('Acc')
-    axs[2*index + 1].axline((0, 100), (2, 100), color='w')
-    im2 = axs[2*index + 1].imshow(spectrogram2, extent=[0, 2, 0, 1600], aspect='auto', origin='lower', vmin=0, vmax=vmax[1])
-    # axs[2 * index + 1].text('0', 0, 0)
-    # axs[2 * index + 1].text('2', 0, 1)
 
 
 
@@ -151,7 +116,7 @@ if __name__ == "__main__":
         plt.xticks([0, 7, 15, 23, 31], [0, 200, 400, 600, 800])
         plt.legend()
 
-        fig.text(0.4, 0.03, 'Frequency(Hz)', va='center')
+        fig.text(0.4, 0.03, 'Frequency (Hz)', va='center')
         fig.text(0.02, 0.575, '${S_Acc}/{S_Mic}$', va='center', rotation='vertical')
         plt.savefig('transfer_variance.pdf', dpi=600)
         plt.show()
@@ -183,87 +148,57 @@ if __name__ == "__main__":
             plt.subplots_adjust(left=0.16, bottom=0.12, right=0.95, top=0.92, wspace=0.1, hspace=0)
             spectrogram1 = Zxx2[: 2 * freq_bin_high, int(start * 50): int(stop * 50)]
             spectrogram2 = imu1[: 2 * freq_bin_high, int(start * 50): int(stop * 50)]
-            draw_2(spectrogram1, spectrogram2, axs, start, stop,v)
+            draw_2(spectrogram1, spectrogram2, axs, start, stop, v)
+            # axs[0].axline((0, 100), (2, 100), color='w')
+            # axs[1].axline((0, 100), (2, 100), color='w')
             if i == 1:
                 print('add white box')
                 rect = patches.Rectangle((1.05, 200), 0.7, 550, linewidth=1, edgecolor='w', facecolor='none')
                 axs[0].add_patch(rect)
             if i == 3:
                 print('add zoom-in')
-                axins = axs[0].inset_axes([0, 0, 1, 1.5])
+                rect = patches.Rectangle((0.3, 0), 0.3, 100, linewidth=1, edgecolor='lime', facecolor='none')
+                axs[0].add_patch(rect)
+                rect = patches.Rectangle((0.3, 0), 0.3, 100, linewidth=1, edgecolor='lime', facecolor='none')
+                axs[1].add_patch(rect)
+
+                axs[0].arrow(0.6, 100, 0.7, 500, color='lime')
+                axs[0].arrow(0.3, 100, 0.2, 500, color='lime')
+
+                axs[1].arrow(0.6, 100, 0.7, 500, color='lime')
+                axs[1].arrow(0.3, 100, 0.2, 500, color='lime')
+
+                axs[0].text(0.35, 1200, 'Zoom-in', color='white')
+                axs[1].text(0.35, 1200, 'Zoom-in', color='white')
+                axins = axs[0].inset_axes([0.2, 0.3, 0.5, 0.5])
                 axins.imshow(spectrogram1, origin="lower", vmin=0, vmax=0.02)
-
-                axins.spines['bottom'].set_color('white')
-                axins.spines['top'].set_color('white')
-                axins.spines['right'].set_color('white')
-                axins.spines['left'].set_color('white')
+                axins.spines['bottom'].set_color('lime')
+                axins.spines['top'].set_color('lime')
+                axins.spines['right'].set_color('lime')
+                axins.spines['left'].set_color('lime')
                 # sub region of the original image
-                x1, x2, y1, y2 = 0, 100, 0, 30
+                x1, x2, y1, y2 = 35, 60, 0, 30
                 axins.set_xlim(x1, x2)
                 axins.set_ylim(y1, y2)
                 axins.set_xticklabels([])
                 axins.set_yticklabels([])
                 axins.tick_params(axis='both', left=False, bottom=False)
 
-                axins = axs[1].inset_axes([0, 0, 1, 1.5])
+
+                axins = axs[1].inset_axes([0.2, 0.3, 0.5, 0.5])
                 axins.imshow(spectrogram2, origin="lower", vmin=0, vmax=0.02)
-                axins.spines['bottom'].set_color('white')
-                axins.spines['top'].set_color('white')
-                axins.spines['right'].set_color('white')
-                axins.spines['left'].set_color('white')
+                axins.spines['bottom'].set_color('lime')
+                axins.spines['top'].set_color('lime')
+                axins.spines['right'].set_color('lime')
+                axins.spines['left'].set_color('lime')
                 # sub region of the original image
-                x1, x2, y1, y2 = 0, 100, 0, 30
+                x1, x2, y1, y2 = 35, 60, 0, 30
                 axins.set_xlim(x1, x2)
                 axins.set_ylim(y1, y2)
                 axins.set_xticklabels([])
                 axins.set_yticklabels([])
                 axins.tick_params(axis='both', left=False, bottom=False)
+                #axs[1].indicate_inset_zoom(axins, edgecolor="white")
+
             plt.savefig(n + '.pdf', dpi=600)
             plt.show()
-    else:
-        path = os.path.join('dataset/measurement/')
-        files = os.listdir(path)
-        N = int(len(files) / 4)
-        files_imu1 = files[:N]
-        files_imu2 = files[N:2 * N]
-        files_mic1 = files[2 * N:3 * N]
-        files_mic2 = files[3 * N:]
-        files_mic2.sort(key=lambda x: int(x[4:-4]))
-
-        crop = [[0.5, 2.5], [1.5, 3.5], [1, 3]]
-        vmax = [[0.05, 0.02], [0.05, 0.02], [0.05, 0.02]]
-        select = [1, 5, 13]
-        fig, axs = plt.subplots(1, 6, figsize=(4, 2))
-        plt.subplots_adjust(left=0.08, bottom=0.2, right=0.95, top=0.98, wspace=0.05, hspace=0.05)
-        for i in [0, 1, 2]:
-            index = select[i]
-            Zxx1, Zxx2, imu1, imu2 = data_extract(path, files_mic1[index], files_mic2[index], files_imu1[index], files_imu2[index])
-            v = vmax[i]
-            start = crop[i][0]
-            stop = crop[i][1]
-            spectrogram1 = Zxx2[: 2 * freq_bin_high, int(start * 50): int(stop * 50)]
-            spectrogram2 = imu1[: 2 * freq_bin_high, int(start * 50): int(stop * 50)]
-            draw_4(spectrogram1, spectrogram2, i, v)
-
-        axs[0].set_yticks([0, 100, 400, 800, 1500], [0, 100, 400, 800, 1600])
-        axs[0].tick_params(axis='both', left=False, pad=-1)
-        rect = patches.Rectangle((1.05, 200), 0.7, 550, linewidth=1, edgecolor='w', facecolor='none')
-        axs[2].add_patch(rect)
-        fig.text(0.45, 0.02, 'Time(Sec)')
-        fig.text(0.15, 0.08, 'w/o noise')
-        fig.text(0.45, 0.08, 'w noise')
-        fig.text(0.8, 0.08, 'only walk')
-
-        axins = axs[-1].inset_axes([-1.03, 0.5, 2, 0.5])
-
-        axins.imshow(spectrogram2, origin="lower",  vmin=0, vmax=0.02)
-        # sub region of the original image
-        x1, x2, y1, y2 = 0, 100, 0, 30
-        axins.set_xlim(x1, x2)
-        axins.set_ylim(y1, y2)
-        axins.set_xticklabels([])
-        axins.set_yticklabels([])
-        axins.tick_params(axis='both', left=False, bottom=False)
-        plt.savefig('measurement.pdf', dpi=600)
-        plt.show()
-

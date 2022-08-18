@@ -104,8 +104,11 @@ if __name__ == "__main__":
                 N = len(file_list)
                 if N > 0:
                     # maybe different on Linux/ Windows
-                    name = path.split('/')[-1]
-                    if name in ['test', 'mask']:
+                    # Windows
+                    name = path.split('\\')[-1]
+                    # Linux
+                    # name = path.split('/')[-1]
+                    if name in ['test', 'mask', 'position']:
                         dict = update(dict, name, file_list, p, kinds=3)
                     else:
                         dict = update(dict, name, file_list, p, kinds=4)
