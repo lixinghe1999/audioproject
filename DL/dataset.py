@@ -20,8 +20,8 @@ overlap_imu = 32
 
 rate_mic = 16000
 rate_imu = 1600
-length = 3
-stride = 2
+length = 5
+stride = 5
 function_pool = '../transfer_function'
 #N = len(os.listdir(function_pool))
 N = 300
@@ -260,8 +260,8 @@ class NoisyCleanSet:
         else:
             imu, _ = self.dataset[2][index]
             imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
-        noise = noise[:, :8 * freq_bin_high, :]
-        clean = clean[:, :8 * freq_bin_high, :]
+        # noise = noise[:, :8 * freq_bin_high, :]
+        # clean = clean[:, :8 * freq_bin_high, :]
         if self.text:
             return file, imu, noise, clean
         else:
@@ -315,11 +315,11 @@ if __name__ == "__main__":
                 x = x[0, 0].numpy()
                 noise = torch.abs(noise[0, 0]).numpy()
                 y = torch.abs(y[0, 0]).numpy()
-                wave_x = np.mean(x, axis=0)
-                wave_y = np.mean(y, axis=0)
-                # _, wave_x = signal.istft(x, fs=rate_imu, nperseg=seg_len_imu, noverlap=overlap_imu)
-                # _, wave_y = signal.istft(y, fs=rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-                corr = np.corrcoef(wave_x, wave_y)[0, 1]
+                # wave_x = np.mean(x, axis=0)
+                # wave_y = np.mean(y, axis=0)
+                _, wave_x = signal.istft(x, fs=rate_imu, nperseg=seg_len_imu, noverlap=overlap_imu)
+                _, wave_y = signal.istft(y, fs=rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+                corr = np.corrcoef(wave_x, wave_y[::10])[0, 1]
                 if corr != corr:
                     continue
                 else:
