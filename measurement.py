@@ -162,11 +162,11 @@ if __name__ == "__main__":
                 rect = patches.Rectangle((0.3, 0), 0.3, 100, linewidth=1, edgecolor='lime', facecolor='none')
                 axs[1].add_patch(rect)
 
-                axs[0].arrow(0.6, 100, 0.7, 500, color='lime')
-                axs[0].arrow(0.3, 100, 0.2, 500, color='lime')
+                axs[0].arrow(0.6, 100, 0.8, 600, color='lime')
+                axs[0].arrow(0.3, 100, 0.15, 600, color='lime')
 
-                axs[1].arrow(0.6, 100, 0.7, 500, color='lime')
-                axs[1].arrow(0.3, 100, 0.2, 500, color='lime')
+                axs[1].arrow(0.6, 100, 0.8, 600, color='lime')
+                axs[1].arrow(0.3, 100, 0.15, 600, color='lime')
 
                 axs[0].text(0.35, 1200, 'Zoom-in', color='white')
                 axs[1].text(0.35, 1200, 'Zoom-in', color='white')

@@ -12,6 +12,7 @@ from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped
 from torchvision.utils import save_image
 from A2net import A2net
 from fullsubnet import Model
+import argparse
 seg_len_mic = 640
 overlap_mic = 320
 seg_len_imu = 64
@@ -258,8 +259,8 @@ class NoisyCleanSet:
         else:
             imu, _ = self.dataset[2][index]
             imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
-        noise = noise[:, :8 * freq_bin_high, :]
-        clean = clean[:, :8 * freq_bin_high, :]
+        # noise = noise[:, :8 * freq_bin_high, :]
+        # clean = clean[:, :8 * freq_bin_high, :]
         if self.text:
             return file, imu, noise, clean
         else:
@@ -268,6 +269,10 @@ class NoisyCleanSet:
         return int(len(self.dataset[0]) * self.ratio)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', action="store", type=int, default=0, required=False,
+                        help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
+    args = parser.parse_args()
     def model_size(model):
         param_size = 0
         for param in model.parameters():
@@ -279,12 +284,11 @@ if __name__ == "__main__":
         size_all_mb = (param_size + buffer_size) / 1024 ** 2
         #print('model size: {:.3f}MB'.format(size_all_mb))
         return size_all_mb
-    mode = 0
-    if mode == 0:
+    if args.mode == 0:
         # check data
         #dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
         dataset_train = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json','json/position_imu.json'],
-                                      simulation=True, person=['headphone-'])
+                                      simulation=True, person=['headphone'])
         print(len(dataset_train))
         loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
@@ -298,19 +302,29 @@ if __name__ == "__main__":
             axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
             axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
             plt.show()
-    elif mode == 1:
-        # save one people's data into images -> deployment checking
-        dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'], person=['he'], simulation=True, ratio=1)
-
-        loader = Data.DataLoader(dataset=dataset, batch_size=1, shuffle=False)
-        for step, (x, noise, y) in enumerate(loader):
-            x = x[0, 0]
-            noise = torch.abs(noise[0, 0])
-            y = torch.abs(y[0, 0])
-            save_image(x, '../dataset/micro_dataset/input1/' + str(step) + '.png')
-            save_image(x, '../dataset/micro_dataset/input2/' + str(step) + '.png')
-            save_image(x, '../dataset/micro_dataset/output/' + str(step) + '.png')
-
+    elif args.mode == 1:
+        # save different positions correlation with audio
+        # dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_gt.json', 'json/train_imu'], person=['hou'],
+        #                               simulation=True, ratio=1)
+        for position in ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside']:
+            dataset = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json', 'json/position_imu.json'],
+                                          simulation=True, person=[position])
+            loader = Data.DataLoader(dataset=dataset, batch_size=1, shuffle=False)
+            Corr = []
+            for step, (x, noise, y) in enumerate(loader):
+                x = x[0, 0].numpy()
+                noise = torch.abs(noise[0, 0]).numpy()
+                y = torch.abs(y[0, 0]).numpy()
+                wave_x = np.mean(x, axis=0)
+                wave_y = np.mean(y, axis=0)
+                # _, wave_x = signal.istft(x, fs=rate_imu, nperseg=seg_len_imu, noverlap=overlap_imu)
+                # _, wave_y = signal.istft(y, fs=rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+                corr = np.corrcoef(wave_x, wave_y)[0, 1]
+                if corr != corr:
+                    continue
+                else:
+                    Corr.append(corr)
+            print(position, np.mean(Corr))
     else:
         # model check 1. FullSubNet 2. A2Net
         model1 = Model(
