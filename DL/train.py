@@ -140,10 +140,11 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
     return ckpt_best, loss_curve, metric_best
 
 def inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False):
-    length = len(dataset)
-    test_size = min(int(0.1 * length), 2000)
-    train_size = length - test_size
-    train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+    # length = len(dataset)
+    # test_size = min(int(0.1 * length), 2000)
+    # train_size = length - test_size
+    # train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+    test_dataset = dataset
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
@@ -241,7 +242,7 @@ if __name__ == "__main__":
         # Micro-benchmark for different positions
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         for p in positions:
-            dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=[p], simulation=True)
+            dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=[p], simulation=True, ratio=-0.1)
             Metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
