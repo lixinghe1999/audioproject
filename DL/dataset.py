@@ -211,6 +211,7 @@ class NoisyCleanSet:
         :param snr: SNR range of the synthetic dataset
         '''
         self.dataset = []
+        self.ratio = ratio
         sr = [16000, 16000, 1600]
         for i, path in enumerate(json_paths):
             with open(path, 'r') as f:
@@ -218,8 +219,10 @@ class NoisyCleanSet:
             if person is not None and isinstance(data, dict):
                 tmp = []
                 for p in person:
-                    tmp += data[p]
+                    tmp += data[p][:int(len(data[p]) * self.ratio)]
                 data = tmp
+            else:
+                data = data[:int(len(data) * self.ratio)]
             self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
         if len(json_paths) == 2:
             self.augmentation = True
@@ -230,10 +233,8 @@ class NoisyCleanSet:
             self.augmentation = False
         self.simulation = simulation
         self.text = text
-        self.ratio = ratio
         self.length = len(self.dataset[1])
         self.snr_list = np.arange(snr[0], snr[1], 1)
-
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.simulation:
@@ -266,8 +267,7 @@ class NoisyCleanSet:
         else:
             return imu, noise, clean
     def __len__(self):
-        return int(len(self.dataset[0]) * self.ratio)
-
+        return len(self.dataset[0])
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
