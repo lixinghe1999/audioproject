@@ -20,8 +20,8 @@ overlap_imu = 32
 
 rate_mic = 16000
 rate_imu = 1600
-length = 5
-stride = 5
+length = 3
+stride = 2
 function_pool = '../transfer_function'
 #N = len(os.listdir(function_pool))
 N = 300
@@ -260,8 +260,8 @@ class NoisyCleanSet:
         else:
             imu, _ = self.dataset[2][index]
             imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
-        # noise = noise[:, :8 * freq_bin_high, :]
-        # clean = clean[:, :8 * freq_bin_high, :]
+        noise = noise[:, :8 * freq_bin_high, :]
+        clean = clean[:, :8 * freq_bin_high, :]
         if self.text:
             return file, imu, noise, clean
         else:
