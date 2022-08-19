@@ -238,7 +238,7 @@ if __name__ == "__main__":
         #     print(level, avg_metric, max_percent, min_percent)
 
         # Micro-benchmark for different positions
-        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside']
+        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         for p in positions:
             dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=[p], simulation=True)
             Metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
