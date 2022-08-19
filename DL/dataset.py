@@ -78,8 +78,8 @@ def synthetic(clean, transfer_function, variance):
     f_norm = f / np.max(f)
     v_norm = variance[index, :] / np.max(f)
     response = np.tile(np.expand_dims(f_norm, axis=1), (1, time_bin))
-    for j in range(time_bin):
-        response[:, j] += np.random.normal(0, v_norm, (freq_bin_high))
+    # for j in range(time_bin):
+    #     response[:, j] += np.random.normal(0, v_norm, (freq_bin_high))
     noisy = clean[:, :freq_bin_high, :] * response
     background_noise = noise_extraction()
     noisy += 2 * background_noise
