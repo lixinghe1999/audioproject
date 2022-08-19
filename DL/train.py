@@ -195,11 +195,12 @@ if __name__ == "__main__":
 
         # extra dataset for other positions
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=positions, simulation=True)
-        length = len(dataset2)
-        test_size = min(int(0.1 * length), 2000)
-        train_size = length - test_size
-        train_dataset2, test_dataset2 = torch.utils.data.random_split(dataset2, [train_size, test_size])
+        train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=positions, simulation=True, ratio=0.9)
+        test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],person=positions, simulation=True, ratio=-0.1)
+        # length = len(dataset2)
+        # test_size = min(int(0.1 * length), 2000)
+        # train_size = length - test_size
+        # train_dataset2, test_dataset2 = torch.utils.data.random_split(dataset2, [train_size, test_size])
 
         train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
         test_dataset = torch.utils.data.ConcatDataset([test_dataset1, test_dataset2])
