@@ -194,7 +194,7 @@ if __name__ == "__main__":
         train_dataset1, test_dataset1 = torch.utils.data.random_split(dataset1, [train_size, test_size])
 
         # extra dataset for other positions
-        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside']
+        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=positions, simulation=True)
         length = len(dataset2)
         test_size = min(int(0.1 * length), 2000)

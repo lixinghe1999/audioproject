@@ -306,7 +306,7 @@ if __name__ == "__main__":
         # save different positions correlation with audio
         # dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_gt.json', 'json/train_imu'], person=['hou'],
         #                               simulation=True, ratio=1)
-        for position in ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside']:
+        for position in ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']:
             dataset = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json', 'json/position_imu.json'],
                                           simulation=True, person=[position])
             loader = Data.DataLoader(dataset=dataset, batch_size=1, shuffle=False)
