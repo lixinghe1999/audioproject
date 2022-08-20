@@ -184,8 +184,8 @@ if __name__ == "__main__":
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
 
-        model = nn.DataParallel(A2net(inference=False).to(device), device_ids=[0])
-        #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        #model = nn.DataParallel(A2net(inference=False).to(device), device_ids=[0])
+        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, ratio=0.8)
@@ -200,14 +200,14 @@ if __name__ == "__main__":
         # test_dataset = torch.utils.data.ConcatDataset([test_dataset1, test_dataset2])
 
         model.load_state_dict(ckpt)
-        ckpt, loss_curve, metric_best = train([train_dataset1, test_dataset1], EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
+        ckpt, loss_curve, metric_best = train([train_dataset1, test_dataset1], EPOCH, lr, BATCH_SIZE, model, audio_only=True, complex=True)
 
         # Optional Micro-benchmark
         model.load_state_dict(ckpt)
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         for p in people:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=[p], simulation=True,ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
+            Metric = inference(dataset, BATCH_SIZE, model, audio_only=True, complex=True)
             avg_metric = np.mean(Metric, axis=0)
             max_percent = np.percentile(Metric, 95, axis=0)
             min_percent = np.percentile(Metric, 5, axis=0)
@@ -215,7 +215,7 @@ if __name__ == "__main__":
 
         for noise in ['background.json', 'dev.json', 'music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'], person=people, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
+            Metric = inference(dataset, BATCH_SIZE, model, audio_only=True, complex=True)
             avg_metric = np.mean(Metric, axis=0)
             max_percent = np.percentile(Metric, 95, axis=0)
             min_percent = np.percentile(Metric, 5, axis=0)
@@ -224,7 +224,7 @@ if __name__ == "__main__":
         for level in [11, 6, 1]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
                                     simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
+            Metric = inference(dataset, BATCH_SIZE, model, audio_only=True, complex=True)
             avg_metric = np.mean(Metric, axis=0)
             max_percent = np.percentile(Metric, 95, axis=0)
             min_percent = np.percentile(Metric, 5, axis=0)
