@@ -1,0 +1,966 @@
+{
+    "he": [
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1070.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1071.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1072.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1073.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1074.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1110.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1111.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1112.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1113.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1114.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 231.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 232.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 233.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 234.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 235.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 252.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 253.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 254.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 255.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 256.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1070.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1071.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1072.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1073.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1074.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1110.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1111.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1112.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1113.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 1114.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 231.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 232.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 233.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 234.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 235.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 252.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 253.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 254.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 255.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\mobile\\\u65b0\u5f55\u97f3 256.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1075.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1076.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1077.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1078.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1079.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1115.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1116.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1117.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1118.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1119.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 236.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 237.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 238.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 239.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 240.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 257.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 258.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 259.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 260.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 261.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1075.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1076.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1077.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1078.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1079.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1115.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1116.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1117.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1118.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 1119.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 236.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 237.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 238.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 239.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 240.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 257.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 258.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 259.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 260.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\mobile\\\u65b0\u5f55\u97f3 261.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1080.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1081.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1082.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1083.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1084.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1120.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1121.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1122.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1123.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1124.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 241.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 242.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 244.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 245.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 246.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 262.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 263.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 264.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 265.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 266.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1080.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1081.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1082.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1083.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1084.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1120.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1121.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1122.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1123.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 1124.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 241.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 242.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 244.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 245.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 246.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 262.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 263.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 264.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 265.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\mobile\\\u65b0\u5f55\u97f3 266.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1085.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1086.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1087.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1088.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1089.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1125.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1126.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1127.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1128.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1129.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 247.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 248.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 249.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 250.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 251.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 267.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 268.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 269.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 270.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 271.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1085.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1086.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1087.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1088.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1089.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1125.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1126.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1127.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1128.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 1129.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 247.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 248.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 249.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 250.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 251.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 267.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 268.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 269.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 270.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\mobile\\\u65b0\u5f55\u97f3 271.wav",
+            80000
+        ]
+    ],
+    "hou": [
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 146.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 147.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 148.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 149.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 150.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 166.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 167.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 168.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 169.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 170.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 146.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 147.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 148.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 149.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 150.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 166.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 167.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 168.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 169.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\mobile\\\u65b0\u5f55\u97f3 170.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 151.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 152.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 153.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 154.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 155.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 171.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 172.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 173.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 174.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 175.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 151.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 152.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 153.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 154.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 155.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 171.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 172.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 173.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 174.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\mobile\\\u65b0\u5f55\u97f3 175.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 156.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 157.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 158.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 159.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 160.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 176.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 177.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 178.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 179.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 180.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 156.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 157.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 158.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 159.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 160.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 176.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 177.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 178.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 179.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\mobile\\\u65b0\u5f55\u97f3 180.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 161.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 162.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 163.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 164.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 165.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 181.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 182.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 183.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 184.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 185.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 161.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 162.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 163.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 164.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 165.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 181.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 182.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 183.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 184.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\mobile\\\u65b0\u5f55\u97f3 185.wav",
+            80000
+        ]
+    ]
+}

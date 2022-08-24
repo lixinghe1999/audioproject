@@ -1,0 +1,438 @@
+{
+    "he": [
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 40.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 41.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 42.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 43.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 44.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 45.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 46.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 53.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 54.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 55.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 56.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 57.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 58.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 40.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 41.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 42.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 43.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 44.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 45.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 46.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 53.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 54.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 55.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 56.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 57.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\clean\\\u65b0\u5f55\u97f3 58.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 47.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 48.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 49.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 50.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 51.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 59.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 60.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 61.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 62.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 63.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 64.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 47.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 48.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 49.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 50.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 51.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 59.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 60.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 61.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 62.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 63.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\clean\\\u65b0\u5f55\u97f3 64.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 201.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 202.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 203.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 204.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 205.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 201.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 202.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 203.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 204.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\clean\\\u65b0\u5f55\u97f3 205.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 206.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 207.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 208.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 209.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 210.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 206.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 207.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 208.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 209.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\clean\\\u65b0\u5f55\u97f3 210.wav",
+            80000
+        ]
+    ],
+    "hou": [
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 86.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 87.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 88.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 89.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 90.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 86.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 87.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 88.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 89.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\clean\\\u65b0\u5f55\u97f3 90.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 91.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 92.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 93.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 94.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 95.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 91.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 92.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 93.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 94.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\clean\\\u65b0\u5f55\u97f3 95.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 100.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 96.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 97.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 98.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 99.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 100.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 96.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 97.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 98.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\clean\\\u65b0\u5f55\u97f3 99.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 101.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 102.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 103.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 104.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 105.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 101.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 102.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 103.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 104.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\clean\\\u65b0\u5f55\u97f3 105.wav",
+            80000
+        ]
+    ]
+}

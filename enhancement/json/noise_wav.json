@@ -1,0 +1,2756 @@
+{
+    "1": [
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 714.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 731.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 732.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 733.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 734.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 714.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 731.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 732.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 733.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s1\\noise\\\u65b0\u5f55\u97f3 734.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 735.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 736.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 737.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 738.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 739.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 735.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 736.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 737.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 738.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s2\\noise\\\u65b0\u5f55\u97f3 739.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 740.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 741.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 742.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 743.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 744.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 740.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 741.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 742.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 743.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s3\\noise\\\u65b0\u5f55\u97f3 744.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 745.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 746.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 747.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 748.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 749.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 745.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 746.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 747.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 748.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\1\\s4\\noise\\\u65b0\u5f55\u97f3 749.wav",
+            80000
+        ]
+    ],
+    "2": [
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 770.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 771.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 772.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 773.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 774.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 770.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 771.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 772.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 773.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s1\\noise\\\u65b0\u5f55\u97f3 774.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 775.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 776.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 777.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 778.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 779.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 775.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 776.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 777.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 778.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s2\\noise\\\u65b0\u5f55\u97f3 779.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 780.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 781.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 782.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 783.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 784.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 780.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 781.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 782.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 783.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s3\\noise\\\u65b0\u5f55\u97f3 784.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 785.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 786.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 787.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 788.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 789.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 785.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 786.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 787.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 788.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\2\\s4\\noise\\\u65b0\u5f55\u97f3 789.wav",
+            80000
+        ]
+    ],
+    "3": [
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 810.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 811.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 812.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 813.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 814.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 810.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 811.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 812.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 813.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s1\\noise\\\u65b0\u5f55\u97f3 814.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 815.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 816.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 817.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 818.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 819.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 815.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 816.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 817.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 818.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s2\\noise\\\u65b0\u5f55\u97f3 819.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 820.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 821.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 822.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 823.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 824.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 820.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 821.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 822.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 823.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s3\\noise\\\u65b0\u5f55\u97f3 824.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 825.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 826.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 827.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 828.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 829.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 825.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 826.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 827.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 828.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\3\\s4\\noise\\\u65b0\u5f55\u97f3 829.wav",
+            80000
+        ]
+    ],
+    "4": [
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 850.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 851.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 852.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 853.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 854.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 850.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 851.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 852.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 853.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s1\\noise\\\u65b0\u5f55\u97f3 854.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 855.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 856.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 857.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 858.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 859.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 855.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 856.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 857.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 858.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s2\\noise\\\u65b0\u5f55\u97f3 859.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 860.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 861.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 862.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 863.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 864.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 860.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 861.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 862.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 863.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s3\\noise\\\u65b0\u5f55\u97f3 864.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 865.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 866.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 867.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 868.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 869.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 865.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 866.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 867.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 868.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\4\\s4\\noise\\\u65b0\u5f55\u97f3 869.wav",
+            80000
+        ]
+    ],
+    "5": [
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 890.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 891.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 892.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 893.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 894.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 890.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 891.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 892.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 893.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s1\\noise\\\u65b0\u5f55\u97f3 894.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 895.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 896.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 897.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 898.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 899.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 895.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 896.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 897.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 898.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s2\\noise\\\u65b0\u5f55\u97f3 899.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 900.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 901.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 902.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 903.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 904.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 900.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 901.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 902.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 903.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s3\\noise\\\u65b0\u5f55\u97f3 904.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 905.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 906.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 907.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 908.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 909.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 905.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 906.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 907.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 908.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\5\\s4\\noise\\\u65b0\u5f55\u97f3 909.wav",
+            80000
+        ]
+    ],
+    "6": [
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1170.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1171.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1172.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1173.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1174.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1170.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1171.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1172.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1173.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s1\\noise\\\u65b0\u5f55\u97f3 1174.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1175.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1176.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1177.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1178.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1179.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1175.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1176.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1177.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1178.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s2\\noise\\\u65b0\u5f55\u97f3 1179.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1180.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1181.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1182.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1183.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1184.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1180.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1181.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1182.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1183.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s3\\noise\\\u65b0\u5f55\u97f3 1184.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1185.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1186.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1187.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1188.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1189.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1185.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1186.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1187.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1188.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\6\\s4\\noise\\\u65b0\u5f55\u97f3 1189.wav",
+            80000
+        ]
+    ],
+    "7": [
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 970.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 971.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 972.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 973.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 974.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 970.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 971.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 972.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 973.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s1\\noise\\\u65b0\u5f55\u97f3 974.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 975.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 976.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 977.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 978.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 979.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 975.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 976.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 977.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 978.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s2\\noise\\\u65b0\u5f55\u97f3 979.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 980.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 981.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 982.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 983.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 984.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 980.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 981.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 982.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 983.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s3\\noise\\\u65b0\u5f55\u97f3 984.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 985.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 986.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 987.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 988.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 989.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 985.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 986.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 987.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 988.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\7\\s4\\noise\\\u65b0\u5f55\u97f3 989.wav",
+            80000
+        ]
+    ],
+    "8": [
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1010.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1011.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1012.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1013.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1014.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1010.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1011.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1012.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1013.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s1\\noise\\\u65b0\u5f55\u97f3 1014.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1015.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1016.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1017.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1018.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1019.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1015.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1016.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1017.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1018.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s2\\noise\\\u65b0\u5f55\u97f3 1019.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1020.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1021.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1022.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1023.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1024.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1020.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1021.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1022.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1023.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s3\\noise\\\u65b0\u5f55\u97f3 1024.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1025.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1026.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1027.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1028.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1029.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1025.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1026.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1027.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1028.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\8\\s4\\noise\\\u65b0\u5f55\u97f3 1029.wav",
+            80000
+        ]
+    ],
+    "9": [
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 930.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 931.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 932.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 933.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 934.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 930.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 931.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 932.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 933.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s1\\noise\\\u65b0\u5f55\u97f3 934.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 935.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 936.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 937.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 938.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 939.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 935.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 936.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 937.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 938.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s2\\noise\\\u65b0\u5f55\u97f3 939.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 940.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 941.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 942.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 943.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 944.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 940.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 941.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 942.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 943.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s3\\noise\\\u65b0\u5f55\u97f3 944.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 945.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 946.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 947.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 948.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 949.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 945.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 946.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 947.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 948.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\9\\s4\\noise\\\u65b0\u5f55\u97f3 949.wav",
+            80000
+        ]
+    ],
+    "he": [
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 291.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 292.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 293.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 294.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 295.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 291.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 292.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 293.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 294.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s1\\noise\\\u65b0\u5f55\u97f3 295.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 296.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 297.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 298.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 299.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 300.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 296.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 297.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 298.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 299.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s2\\noise\\\u65b0\u5f55\u97f3 300.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 302.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 303.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 304.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 305.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 306.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 302.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 303.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 304.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 305.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s3\\noise\\\u65b0\u5f55\u97f3 306.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 307.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 308.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 309.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 310.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 311.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 307.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 308.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 309.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 310.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\he\\s4\\noise\\\u65b0\u5f55\u97f3 311.wav",
+            80000
+        ]
+    ],
+    "hou": [
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 312.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 313.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 314.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 315.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 316.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 312.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 313.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 314.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 315.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s1\\noise\\\u65b0\u5f55\u97f3 316.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 317.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 318.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 319.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 320.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 321.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 317.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 318.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 319.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 320.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s2\\noise\\\u65b0\u5f55\u97f3 321.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 322.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 323.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 324.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 325.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 326.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 322.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 323.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 324.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 325.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s3\\noise\\\u65b0\u5f55\u97f3 326.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 327.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 328.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 329.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 330.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 331.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 327.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 328.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 329.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 330.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\hou\\s4\\noise\\\u65b0\u5f55\u97f3 331.wav",
+            80000
+        ]
+    ],
+    "jiang": [
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 651.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 652.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 653.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 654.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 655.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 651.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 652.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 653.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 654.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s1\\noise\\\u65b0\u5f55\u97f3 655.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 656.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 657.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 658.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 659.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 660.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 656.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 657.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 658.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 659.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s2\\noise\\\u65b0\u5f55\u97f3 660.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 661.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 662.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 663.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 664.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 665.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 661.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 662.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 663.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 664.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s3\\noise\\\u65b0\u5f55\u97f3 665.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 666.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 667.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 668.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 669.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 670.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 666.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 667.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 668.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 669.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\jiang\\s4\\noise\\\u65b0\u5f55\u97f3 670.wav",
+            80000
+        ]
+    ],
+    "liang": [
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 481.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 482.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 483.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 484.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 485.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 481.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 482.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 483.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 484.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s1\\noise\\\u65b0\u5f55\u97f3 485.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 486.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 487.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 488.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 489.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 490.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 486.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 487.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 488.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 489.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s2\\noise\\\u65b0\u5f55\u97f3 490.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 491.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 492.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 493.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 494.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 495.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 491.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 492.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 493.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 494.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s3\\noise\\\u65b0\u5f55\u97f3 495.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 496.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 497.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 498.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 499.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 500.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 496.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 497.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 498.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 499.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\liang\\s4\\noise\\\u65b0\u5f55\u97f3 500.wav",
+            80000
+        ]
+    ],
+    "shi": [
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 347.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 348.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 349.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 350.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 351.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 347.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 348.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 349.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 350.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s1\\noise\\\u65b0\u5f55\u97f3 351.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 352.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 353.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 354.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 355.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 356.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 352.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 353.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 354.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 355.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s2\\noise\\\u65b0\u5f55\u97f3 356.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 357.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 358.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 359.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 360.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 361.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 357.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 358.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 359.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 360.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s3\\noise\\\u65b0\u5f55\u97f3 361.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 362.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 363.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 364.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 365.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 366.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 362.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 363.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 364.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 365.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shi\\s4\\noise\\\u65b0\u5f55\u97f3 366.wav",
+            80000
+        ]
+    ],
+    "shuai": [
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 382.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 383.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 384.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 385.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 386.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 382.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 383.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 384.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 385.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s1\\noise\\\u65b0\u5f55\u97f3 386.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 387.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 388.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 389.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 390.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 391.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 387.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 388.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 389.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 390.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s2\\noise\\\u65b0\u5f55\u97f3 391.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 392.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 393.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 394.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 395.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 396.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 392.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 393.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 394.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 395.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s3\\noise\\\u65b0\u5f55\u97f3 396.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 397.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 398.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 399.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 400.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 401.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 397.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 398.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 399.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 400.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\shuai\\s4\\noise\\\u65b0\u5f55\u97f3 401.wav",
+            80000
+        ]
+    ],
+    "wu": [
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 611.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 612.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 613.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 614.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 615.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 611.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 612.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 613.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 614.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s1\\noise\\\u65b0\u5f55\u97f3 615.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 616.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 617.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 618.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 619.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 620.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 616.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 617.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 618.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 619.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s2\\noise\\\u65b0\u5f55\u97f3 620.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 621.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 622.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 623.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 624.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 625.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 621.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 622.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 623.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 624.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s3\\noise\\\u65b0\u5f55\u97f3 625.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 626.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 627.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 628.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 629.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 630.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 626.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 627.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 628.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 629.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\wu\\s4\\noise\\\u65b0\u5f55\u97f3 630.wav",
+            80000
+        ]
+    ],
+    "yan": [
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 691.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 692.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 693.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 694.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 695.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 691.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 692.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 693.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 694.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s1\\noise\\\u65b0\u5f55\u97f3 695.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 696.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 697.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 698.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 699.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 700.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 696.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 697.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 698.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 699.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s2\\noise\\\u65b0\u5f55\u97f3 700.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 701.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 702.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 703.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 704.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 705.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 701.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 702.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 703.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 704.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s3\\noise\\\u65b0\u5f55\u97f3 705.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 706.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 707.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 708.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 709.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 710.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 706.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 707.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 708.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 709.wav",
+            80000
+        ],
+        [
+            "../dataset/our\\yan\\s4\\noise\\\u65b0\u5f55\u97f3 710.wav",
+            80000
+        ]
+    ]
+}

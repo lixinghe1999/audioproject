@@ -1,0 +1,56 @@
+{
+    "cheek": [
+        [
+            "../dataset/our\\cheek\\stick\\mic_1660890864.0937817.wav",
+            480000
+        ],
+        [
+            "../dataset/our\\cheek\\stick\\mic_1660890987.5922108.wav",
+            480000
+        ],
+        [
+            "../dataset/our\\cheek\\stick\\mic_1660890864.0937817.wav",
+            480000
+        ],
+        [
+            "../dataset/our\\cheek\\stick\\mic_1660890987.5922108.wav",
+            480000
+        ]
+    ],
+    "nose": [
+        [
+            "../dataset/our\\nose\\stick\\mic_1660891426.597229.wav",
+            480000
+        ],
+        [
+            "../dataset/our\\nose\\stick\\mic_1660891523.5900052.wav",
+            480000
+        ],
+        [
+            "../dataset/our\\nose\\stick\\mic_1660891426.597229.wav",
+            480000
+        ],
+        [
+            "../dataset/our\\nose\\stick\\mic_1660891523.5900052.wav",
+            480000
+        ]
+    ],
+    "temple": [
+        [
+            "../dataset/our\\temple\\stick\\mic_1660891150.2873037.wav",
+            480000
+        ],
+        [
+            "../dataset/our\\temple\\stick\\mic_1660891209.0921447.wav",
+            480000
+        ],
+        [
+            "../dataset/our\\temple\\stick\\mic_1660891150.2873037.wav",
+            480000
+        ],
+        [
+            "../dataset/our\\temple\\stick\\mic_1660891209.0921447.wav",
+            480000
+        ]
+    ]
+}

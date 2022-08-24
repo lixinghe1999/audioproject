@@ -1,11 +1,8 @@
 /dataset/
-/exp7/
-/exp6/
 /pretrained_models/
-/field_test_old/
-/field_voice_isolation/
-/speechbrain/
 /transfer_function/
-/SepFormer/checkpoint/
-/SepFormer/result/
-/DL/SepFormer/dataset/json/
+*.pdf
+*.wav
+*.pth
+*.ckpt
+*.npz
