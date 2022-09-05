@@ -76,12 +76,6 @@ def ratio_gamma(Zxx_valid):
         if len(distribution) > 100:
 
             fit_alpha, fit_loc, fit_beta = stats.gamma.fit(distribution)
-            # sample = stats.gamma.rvs(fit_alpha, loc=fit_loc, scale=fit_beta, size=1000)
-            # fig, axs = plt.subplots(2, 1)
-            # axs[0].hist(distribution, bins=30)
-            # axs[1].hist(sample, bins=30)
-            # plt.show()
-            #print(fit_alpha, fit_loc, fit_beta)
             pvalue = stats.kstest(distribution, 'gamma', (fit_alpha, fit_loc, fit_beta))[-1]
             if pvalue > 0.05:
                 count += 1

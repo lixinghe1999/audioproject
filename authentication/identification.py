@@ -1,141 +1,186 @@
-from resemblyzer import preprocess_wav, VoiceEncoder
-import numpy as np
-import torch
 
-
-def get_spk_emb(audio_file_dir, segment_len=960000):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    resemblyzer_encoder = VoiceEncoder(device=device, verbose=False)
-
-    wav = preprocess_wav(audio_file_dir)
-    l = len(wav) // segment_len # segment_len = 16000 * 60
-    l = np.max([1, l])
-    all_embeds = []
-    for i in range(l):
-        mean_embeds, cont_embeds, wav_splits = resemblyzer_encoder.embed_utterance(
-            wav[segment_len * i:segment_len* (i + 1)], return_partials=True, rate=2)
-        all_embeds.append(mean_embeds)
-    all_embeds = np.array(all_embeds)
-    mean_embed = np.mean(all_embeds, axis=0)
-
-    return mean_embed, all_embeds
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats as stats
 from sklearn.svm import SVC, OneClassSVM
+from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, balanced_accuracy_score
+from sklearn.ensemble import VotingClassifier
 from sklearn.model_selection import train_test_split
 import argparse
+from experiment import Experiment, MyDataSet
+from model import Model
+import yaml
+import json
+import librosa
 
 
-def identification(X, Y, ratio=0.5, state=None):
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=ratio, stratify=Y, random_state=state)
-    clf = SVC(kernel='rbf', class_weight='balanced')
-    clf.fit(X_train, y_train)
+def identification(X, Y, ratio=0.1):
+    random_number = np.random.randint(0, 100)
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=ratio, stratify=Y, random_state=random_number)
+    #clf = SVC(kernel='rbf', class_weight='balanced').fit(X_train, y_train)
+    clf = MLPClassifier(hidden_layer_sizes=(128, 128, 128), max_iter=500).fit(X_train, y_train)
     return y_test, clf.predict(X_test), clf
 
-def authentication(X):
-    clf = OneClassSVM(kernel='rbf', gamma='auto')
-    clf.fit(X)
-    return clf
+def Mel_split(X, Y, ratio=0.2):
+    random_number = np.random.randint(0, 100)
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=ratio, stratify=Y, random_state=random_number)
 
-def load_data(file, save=None):
-    function_length = 129
-    n_mfcc = 20
-    functions = os.listdir(file)
-    num = len(functions)
-    X1 = np.empty((num, function_length))
-    X2 = np.empty((num, function_length))
-    X3 = np.empty((num, n_mfcc))
-    Y = np.empty((num,))
-    for i, f in enumerate(functions):
-        npzs = np.load(os.path.join(file, f))
-        index = int(f[:-4].split('_')[0])
-        r1 = npzs['r1']
-        r2 = npzs['r2']
-        m1 = np.max(r1)
-        m2 = np.max(r2)
-        X1[i, :] = r1 / m1 if m1 > 0 else r1
-        X2[i, :] = r2 / m2 if m2 > 0 else r2
-        X3[i, :] = npzs['mfcc']
-        if save is not None:
-            if index == save:
-                Y[i] = 0
-            else:
-                Y[i] = 1
-        else:
-            Y[i] = index
-    return X1, X2, X3, Y
+    results = []
+    for k in range(12):
+        X_clip = np.concatenate([X_train[:, k * 10 : (k + 1) * 10], X_train[:, k * 10 : (k + 1) * 10]], axis=1)
+        clf = SVC(kernel='rbf', class_weight='balanced').fit(X_clip, y_train)
+        pred = clf.predict(np.concatenate([X_test[:, k * 10 : (k + 1) * 10], X_test[:, k * 10 : (k + 1) * 10]], axis=1))
+        results.append(pred)
+    results = np.array(results)
+    axis = 0
+    u, indices = np.unique(results, return_inverse=True)
+    hard_vote = u[np.argmax(np.apply_along_axis(np.bincount, axis, indices.reshape(results.shape), None, np.max(indices) + 1), axis=axis)]
+    return y_test, hard_vote
+
+def load_data(path):
+    people = os.listdir(path)
+    X = []
+    Y = []
+    for i, p in enumerate(people):
+        x = np.load(os.path.join(path, p))
+        X.append(x)
+        N = np.shape(x)[0]
+        Y.append(np.ones(N) * i)
+    return np.concatenate(X, axis=0), np.concatenate(Y)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--mode', action="store", type=int, default=0, required=False)
+    # mode 0: utterance-level embeddings
+    # mode 1: deep learning
+    # mode 2: phone-level embeddings
     args = parser.parse_args()
     # palette = sns.color_palette("bright", 17)
     # X_embedded = TSNE(n_components=2, learning_rate='auto', init='random').fit_transform(X2)
     # sns.scatterplot(x=X_embedded[:, 0], y=X_embedded[:, 1], hue=Y, legend='full', palette=palette)
     # plt.show()
     if args.mode == 0:
+        #X1, Y = load_data('speaker_embedding/DNN_embedding')
+        X2, Y = load_data('speaker_embedding/mfcc_embedding')
+        X3, Y = load_data('speaker_embedding/bcf_embedding')
 
-        X1, X2, X3, Y = load_data('transfer_function')
-        random_number = np.random.randint(0, 100)
-        gt, p1, clf1 = identification(X1, Y, state=random_number)
-        _, p2, clf2 = identification(X2, Y, state=random_number)
-        _, p3, clf3 = identification(X3, Y, state=random_number)
-        P = np.vstack([p1, p2, p3])
-        u, indices = np.unique(P, return_inverse=True)
-        vote = u[np.argmax(np.apply_along_axis(np.bincount, 0, indices.reshape(P.shape), None, np.max(indices) + 1), axis=0)]
-        print(balanced_accuracy_score(gt, p1), balanced_accuracy_score(gt, p2), balanced_accuracy_score(gt, p3))
-        print(balanced_accuracy_score(gt, vote))
-        mat = confusion_matrix(gt, vote, normalize='true')
+        #X = np.concatenate([X2, X3], axis=1)
+        gt, p1, clf1 = identification(X3, Y)
+        #gt, p2 = Mel_split(X3, Y)
+        print(balanced_accuracy_score(gt, p1))
+        mat = confusion_matrix(gt, p1, normalize='true')
         plt.imshow(mat)
         plt.colorbar()
         plt.show()
     elif args.mode == 1:
-        random_number = np.random.randint(0, 100)
-        for i in range(16):
-            X1, X2, X3, Y = load_data('transfer_function', save=i)
-            gt, p1, clf1 = identification(X1, Y, state=random_number)
-            _, p2, clf2 = identification(X2, Y, state=random_number)
-            _, p3, clf3 = identification(X3, Y, state=random_number)
-
-            P = np.vstack([p1, p2, p3])
-            u, indices = np.unique(P, return_inverse=True)
-            vote = u[np.argmax(np.apply_along_axis(np.bincount, 0, indices.reshape(P.shape), None, np.max(indices) + 1), axis=0)]
-            #print(balanced_accuracy_score(gt, p1), balanced_accuracy_score(gt, p2), balanced_accuracy_score(gt, p3))
-            print(balanced_accuracy_score(gt, vote))
-
+        with open('model.yaml', 'r') as file:
+            config = yaml.safe_load(file)
+        model = Model(config['model_params']).cuda()
+        dataset = MyDataSet('speaker_embedding/bcf_embedding')
+        Exp = Experiment(model, dataset, config['exp_params'])
+        Exp.train()
     else:
-        pair = [0, 3, 2, 6]
-        #pair = [0, 2]
-        random_number = np.random.randint(0, 100)
-        for i in range(len(pair)):
-            X1, X2, X3, Y = load_data('transfer_function', save=pair[i])
+        path = 'speaker_embedding/phone_embedding'
+        people = os.listdir(path)
+        X_train = {}
+        Y_train = {}
+        X_test = []
+        Y_test = []
+        classifiers = {}
+        for i, p in enumerate(people):
+            with open(os.path.join(path, p), 'r') as f:
+                data = json.load(f)
+            # keys = ['ʊ', 'm', 'ɔ', 'n', 'ɪ', 'f', 'ɛ', 'ə', 'v', 'a', 's', 't', 'o', 'd', 'i', 'k', 'ɡ', 'æ', 'ɒ', 'w', 'e',
+            #  'ɹ', 'iː', 'ŋ', 'b', 'ʌ', 'p', 'r', 'l', 'u', 'tʰ', 'x', 'j', 'uː',
+            #  'h', 'ɑ', 'ʃ', 'ð', 'ɻ', 'z', 'θ', 'ɯ', 'pʰ', 'ʔ', 'ʒ']
+            print(len(data))
+            N = len(data)
+            N_train = int(0.8 * N)
+            for j, dict in enumerate(data):
+                if j < N_train:
+                    for key in dict:
+                        for d in dict[key]:
+                            pad = 720 - len(d[0])
+                            x = d[0] + [0] * pad
+                            x = np.abs(np.fft.fft(x))[:360:10]
+                            x1 = np.linalg.norm(np.abs(np.fft.fft(d[1]))[:36], axis=1)/x
+                            x2 = np.linalg.norm(np.abs(np.fft.fft(d[2]))[:36], axis=1)/x
+                            x = np.concatenate([x1, x2])
+                            if key not in X_train:
+                                X_train[key] = [x]
+                                Y_train[key] = [i]
+                            else:
+                                X_train[key].append(x)
+                                Y_train[key].append(i)
+                else:
+                    X_test.append(dict)
+                    Y_test.append(i)
+        # training
+        for key in X_train:
+            X = X_train[key]
+            Y = Y_train[key]
+            if len(set(Y)) == 1:
+                continue
+            X = np.stack(X, axis=0)
+            Y = np.array(Y)
+            #clf = SVC(kernel='rbf', class_weight='balanced').fit(X, Y)
+            clf = MLPClassifier(hidden_layer_sizes=(128, 128, 128), max_iter=500).fit(X, Y)
+            classifiers[key] = clf
+        # testing
+        predictions = []
+        for dict_X, Y in zip(X_test, Y_test):
+            phones = []
+            for key in dict_X:
+                if key in classifiers:
+                    clf = classifiers[key]
+                    for d in dict_X[key]:
+                        pad = 720 - len(d[0])
+                        x = d[0] + [0] * pad
+                        x = np.abs(np.fft.fft(x))[:360:10]
+                        x1 = np.linalg.norm(np.abs(np.fft.fft(d[1]))[:36], axis=1) / x
+                        x2 = np.linalg.norm(np.abs(np.fft.fft(d[2]))[:36], axis=1) / x
+                        x = np.concatenate([x1, x2])
+                        pred = clf.predict(x.reshape(1, -1))
+                        phones.append(pred[0])
+            phones = np.array(phones)
+            if len(phones) > 1:
+                u, indices = np.unique(phones, return_inverse=True)
+                hard_vote = u[np.argmax(np.apply_along_axis(np.bincount, 0, indices.reshape(phones.shape), None,
+                                                np.max(indices) + 1), axis=0)]
+            else:
+                hard_vote = phones
+            predictions.append(hard_vote)
 
-            gt, _, clf1 = identification(X1, Y, state=random_number)
-            _, _, clf2 = identification(X2, Y, state=random_number)
-            _, _, clf3 = identification(X3, Y, state=random_number)
-            X1, X2, X3, Y = load_data('attack_transfer_function/human', save=i)
-            select = Y == 0
-            X1 = X1[select]
-            X2 = X2[select]
-            X3 = X3[select]
-            Y = Y[select]
-            # for x, y in zip(X1, Y):
-            #     print(clf1.predict([x]), y)
-            #     plt.plot(x)
-            #     plt.show()
-            p1 = clf1.predict(X1)
-            p2 = clf2.predict(X2)
-            p3 = clf3.predict(X3)
-            P = np.vstack([p1, p2, p3])
-            u, indices = np.unique(P, return_inverse=True)
-            vote = u[np.argmax(np.apply_along_axis(np.bincount, 0, indices.reshape(P.shape), None, np.max(indices) + 1), axis=0)]
-            print(sum(p1 == 0)/len(Y), sum(p2 == 0)/len(Y), sum(p3 == 0)/len(Y))
-            print(sum(vote == 0)/len(Y))
+        print(balanced_accuracy_score(Y_test, predictions))
+        fig, axs = plt.subplots(2)
+        mat = confusion_matrix(Y_test, predictions, normalize='true')
+        axs[0].imshow(mat)
 
-            # mat = confusion_matrix(Y, vote, normalize='true')
-            # plt.imshow(mat)
-            # plt.colorbar()
-            # plt.show()
+        path = 'speaker_embedding/bcf_embedding'
+        people = os.listdir(path)
+        X_train = []
+        Y_train = []
+        X_test = []
+        Y_test = []
+        for i, p in enumerate(people):
+            x = np.load(os.path.join(path, p))
+            N = np.shape(x)[0]
+            N_train = int(0.8 * N)
+            X_train.append(x[:N_train, :])
+            Y_train.append(np.ones(N_train) * i)
+            X_test.append(x[N_train:, :])
+            Y_test.append(np.ones(N - N_train) * i)
+        X_train = np.concatenate(X_train, axis=0)
+        Y_train = np.concatenate(Y_train)
+        X_test = np.concatenate(X_test, axis=0)
+        Y_test = np.concatenate(Y_test)
+        clf = SVC(kernel='rbf', class_weight='balanced').fit(X_train, Y_train)
+        bcf_pred = clf.predict(X_test)
+        print(balanced_accuracy_score(Y_test, bcf_pred))
+        mat = confusion_matrix(Y_test, bcf_pred, normalize='true')
+        axs[1].imshow(mat)
+        plt.show()
+
 
 
