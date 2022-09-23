@@ -79,9 +79,10 @@ if __name__ == "__main__":
             config = yaml.safe_load(file)
         model = ResNet18().cuda()
         train_clean_dataset = MyDataSet_Constrastive('speaker_embedding/DNN_embedding',
-                                         utter_num=config['exp_params']['num_utterances'], ratio=0.8)
+                                         utter_num=config['exp_params']['num_utterances'], ratio=0.8, augmentation=True)
         train_noisy_dataset = MyDataSet_Constrastive('speaker_embedding/noise_DNN_embedding',
-                                                     utter_num=config['exp_params']['num_utterances'], ratio=0.8)
+                                                     utter_num=config['exp_params']['num_utterances'],
+                                                     ratio=0.8, augmentation=True)
         train_dataset = ConcatDataset([train_clean_dataset, train_noisy_dataset])
 
         test_clean_dataset = MyDataSet_Constrastive('speaker_embedding/DNN_embedding',
@@ -92,7 +93,7 @@ if __name__ == "__main__":
         # dataset = MyDataSet('speaker_embedding/DNN_embedding')
         # noisy_dataset = MyDataSet('speaker_embedding/noise_DNN_embedding')
         # dataset = ConcatDataset([dataset, noisy_dataset])
-        Exp = Experiment(model, [train_dataset, test_dataset], config['exp_params'], pretrain='0.14993055164813995_best.pth')
+        Exp = Experiment(model, [train_dataset, test_dataset], config['exp_params'], pretrain=None)
         Exp.constrastive_train()
     else:
         path = 'speaker_embedding/phone_embedding'
