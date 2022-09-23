@@ -210,7 +210,7 @@ class Experiment():
                 EER = self.contrastive_test()
             self.scheduler.step()
             EER_curve.append(EER)
-            if EER > best_EER:
+            if EER < best_EER:
                 best_EER = EER
                 ckpt_best = self.model.state_dict()
         self.scheduler.step()

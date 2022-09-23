@@ -88,7 +88,7 @@ class ResNet18(nn.Module):
         self.layer2 = self._make_layer(BasicBlockEnc, 128, num_Blocks[1], stride=2)
         self.layer3 = self._make_layer(BasicBlockEnc, 256, num_Blocks[2], stride=2)
         #self.layer4 = self._make_layer(BasicBlockEnc, 512, num_Blocks[3], stride=2)
-        #self.linear = nn.Linear(256, output_dim)
+        self.linear = nn.Linear(256, output_dim)
 
     def _make_layer(self, BasicBlockEnc, planes, num_Blocks, stride):
         strides = [stride] + [1]*(num_Blocks-1)
@@ -106,7 +106,7 @@ class ResNet18(nn.Module):
         # x = self.layer4(x)
         x = F.adaptive_avg_pool2d(x, 1)
         x = x.view(x.size(0), -1)
-        #x = self.linear(x)
+        x = self.linear(x)
         return x
 
 class Swap(object):
