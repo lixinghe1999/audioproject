@@ -182,7 +182,7 @@ class Experiment():
             batch_avg_EER += EER
         batch_avg_EER = batch_avg_EER / (batch_id + 1)
         batch_avg_EER = batch_avg_EER.cpu()
-        print(batch_avg_EER)
+        print(str(batch_avg_EER))
         print("\n average EER: %0.2f" % (batch_avg_EER))
         return batch_avg_EER
     def constrastive_train(self):
