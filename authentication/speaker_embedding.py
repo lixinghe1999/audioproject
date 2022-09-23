@@ -124,44 +124,7 @@ if __name__ == '__main__':
                 b, a = signal.butter(4, 80, 'highpass', fs=rate_mic)
                 data3 = preprocess_wav(os.path.join(path, audio1[i]))
                 data3 = signal.filtfilt(b, a, data3, axis=0)
+                print(data1.shape, data3.shape)
                 count = segment_level_feature(data1, data2, data3, count, store_path)
-
-
-
-        #         # vad = VAD(data3, rate_mic, nFFT=512, win_length=0.025, hop_length=0.01, theshold=0.999)
-        #
-        #     # token = model.recognize(os.path.join(path, audio1[i]), 'eng', timestamp=True)
-        #     # token = token.split('\n')
-        #     # embedding = update_phones(token, imu1, imu2, audio, start, stop)
-        #     for j in range(int((T - segment) / segment) + 1):
-        #         start = j * segment
-        #         stop = (j + 1) * segment
-        #         temp_imu1 = data1[rate_imu * start: rate_imu * stop]
-        #         temp_imu2 = data2[rate_imu * start: rate_imu * stop]
-        #         temp_audio = data3[rate_mic * start: rate_mic * stop]
-        #
-        #
-        #         # corr1 = matching_features(data3, data1)
-        #         # corr2 = matching_features(data3, data2)
-        #         # embedding = np.concatenate([corr1, corr2], axis=1)
-        #
-        #         # embedding = get_spk_emb(data3)
-        #
-        #         bcf1 = estimate_response(temp_audio, temp_imu1)
-        #         bcf2 = estimate_response(temp_audio, temp_imu2)
-        #         embedding = np.stack([bcf1[:, :], bcf2[:, :]], axis=0)
-        #         # embedding = np.mean(librosa.feature.mfcc(y=data3, sr=rate_mic), axis=1)
-        #         np.save(store_path + '/' + str(count), embedding)
-        #         count += 1
-        #
-        #     #segment_embedding(token, data1, data2, data3, embeddings)
-        # #json.dump(embeddings, open('speaker_embedding/phone_embedding/' + str(k) + '.json', 'w'), indent=4)
-        #
-        # # embeddings = np.stack(embeddings, axis=0)
-        # # np.save('speaker_embedding/DNN_embedding/' + str(k), embeddings)
-        # # np.save('speaker_embedding/bcf_embedding/' + str(k), embeddings)
-        # # np.save('speaker_embedding/mfcc_embedding/' + str(k), embeddings)
-        # # np.save('speaker_embedding/corr_embedding/' + str(k), embeddings)
-
 
 
