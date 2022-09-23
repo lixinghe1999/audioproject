@@ -111,9 +111,8 @@ if __name__ == '__main__':
                 embeddings = phone_level_feature(model, data1, data2, data3, embeddings)
             json.dump(embeddings, open(store_path + '.json', 'w'), indent=4)
         else:
-            count = 0
             for i in range(len(imu1)):
-                print(audio1[i])
+
                 b, a = signal.butter(4, 80, 'highpass', fs=rate_imu)
                 data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14
                 data2 = np.loadtxt(os.path.join(path, imu2[i])) / 2 ** 14
@@ -127,7 +126,6 @@ if __name__ == '__main__':
                 data3, source_sr = librosa.load(os.path.join(path, audio1[i]), sr=None)
                 data3 = normalize_volume(data3, -30, increase_only=True)
                 data3 = signal.filtfilt(b, a, data3, axis=0)
-                print(data1.shape, data3.shape)
                 count = segment_level_feature(data1, data2, data3, count, store_path)
 
 
