@@ -25,7 +25,7 @@ class MyDataSet(Dataset):
         return np.load(self.X[index]), int(self.Y[index])
 
 class MyDataSet_Constrastive(Dataset):
-    def __init__(self, path, shuffle=True, utter_num=6):
+    def __init__(self, path, shuffle=True, utter_num=6, ratio=1):
         # data path
         self.X = []
         self.num_utterances = 0
@@ -34,7 +34,7 @@ class MyDataSet_Constrastive(Dataset):
             # iterate for each speaker
             person_path = os.path.join(path, p)
             files = os.listdir(person_path)
-            # files = files[: int(ratio * len(files))]
+            files = files[: int(ratio * len(files))]
             num_batch = len(files) // self.utter_num
             for b in range(num_batch):
                 utterances = []
