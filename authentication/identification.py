@@ -3,17 +3,18 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
+import torch
 from sklearn.svm import SVC, OneClassSVM
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, balanced_accuracy_score
 from sklearn.ensemble import VotingClassifier
 from sklearn.model_selection import train_test_split
 import argparse
-from experiment import Experiment, MyDataSet
-from model import Model
+from experiment import Experiment, MyDataSet, MyDataSet_Constrastive
+from model import ResNet18
 import yaml
 import json
-import librosa
+from torch.utils.data import ConcatDataset
 
 
 def identification(X, Y, ratio=0.1):
@@ -76,10 +77,14 @@ if __name__ == "__main__":
     elif args.mode == 1:
         with open('model.yaml', 'r') as file:
             config = yaml.safe_load(file)
-        model = Model(config['model_params']).cuda()
-        dataset = MyDataSet('speaker_embedding/bcf_embedding')
-        Exp = Experiment(model, dataset, config['exp_params'])
-        Exp.train()
+        model = ResNet18().cuda()
+        dataset = MyDataSet_Constrastive('speaker_embedding/DNN_embedding', utter_num=config['exp_params']['num_utterances'])
+        noisy_dataset = MyDataSet_Constrastive('speaker_embedding/noise_DNN_embedding', utter_num=config['exp_params']['num_utterances'])
+        # dataset = MyDataSet('speaker_embedding/DNN_embedding')
+        # noisy_dataset = MyDataSet('speaker_embedding/noise_DNN_embedding')
+        dataset = ConcatDataset([dataset, noisy_dataset])
+        Exp = Experiment(model, dataset, config['exp_params'], pretrain=None)
+        Exp.constrastive_train()
     else:
         path = 'speaker_embedding/phone_embedding'
         people = os.listdir(path)

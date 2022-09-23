@@ -84,8 +84,7 @@ def matching_features(audio, imu):
         segment_corr = np.stack(segment_corr, axis=1)
     return segment_corr
 
-def update_phones(token, imu1, imu2, audio, start, stop):
-    dataset = {}
+def update_phones(token, imu1, imu2, audio, start, stop, dataset):
     for t in token:
         t = t.split()
         t[0] = float(t[0])
@@ -116,11 +115,11 @@ def estimate_response(audio, imu):
     # axs[1].imshow(imu, aspect='auto', origin='lower')
     # plt.show()
     Zxx_ratio = np.divide(imu, audio, out=np.zeros_like(imu), where=select)
-    response = np.zeros((2, freq_bin_high))
-    for i in range(freq_bin_high):
-        if np.sum(select[i, :]) > 0:
-            response[0, i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
-            response[1, i] = np.std(Zxx_ratio[i, :], where=select[i, :])
+    # response = np.zeros((2, freq_bin_high))
+    # for i in range(freq_bin_high):
+    #     if np.sum(select[i, :]) > 0:
+    #         response[0, i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
+    #         response[1, i] = np.std(Zxx_ratio[i, :], where=select[i, :])
 
     # response for spectrum
     # N = 4800
@@ -134,7 +133,7 @@ def estimate_response(audio, imu):
     # axs[2].plot(response)
     # plt.show()
 
-    return response
+    return Zxx_ratio
 
 def spectrogram_recover(audio, imu, response):
     freq, time_bin = np.shape(audio)
