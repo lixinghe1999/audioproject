@@ -1,10 +1,10 @@
 exp_params:
   LR: 0.01
-  epoch: 50
+  epoch: 200
   weight_decay: 0.0
   scheduler_gamma: 0.95
   manual_seed: 42
-  train_batch_size: 6
+  train_batch_size: 12
   test_batch_size: 6
   num_utterances: 6
 
