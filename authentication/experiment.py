@@ -38,7 +38,7 @@ class MyDataSet_Constrastive(Dataset):
             num_batch = len(files) // self.utter_num
             for b in range(num_batch):
                 utterances = []
-                for f in files[b*self.num_utterances: (b+1)*self.num_utterances]:
+                for f in files[b*self.utter_num: (b+1)*self.utter_num]:
                     utterances.append(os.path.join(person_path, f))
                 self.X.append(utterances)
             self.num_utterances += num_batch
