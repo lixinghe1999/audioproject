@@ -92,7 +92,7 @@ if __name__ == "__main__":
         # dataset = MyDataSet('speaker_embedding/DNN_embedding')
         # noisy_dataset = MyDataSet('speaker_embedding/noise_DNN_embedding')
         # dataset = ConcatDataset([dataset, noisy_dataset])
-        Exp = Experiment(model, [train_dataset, test_dataset], config['exp_params'], pretrain=None)
+        Exp = Experiment(model, [train_dataset, test_dataset], config['exp_params'], pretrain='0.14993055164813995_best.pth')
         Exp.constrastive_train()
     else:
         path = 'speaker_embedding/phone_embedding'
