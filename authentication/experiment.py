@@ -45,7 +45,7 @@ class MyDataSet_Constrastive(Dataset):
 
         self.path = path
         self.shuffle = shuffle
-        self.transform = transforms.Compose([Swap(30), Mask(0.8)])
+        self.transform = transforms.Compose([Swap(30)])
 
     def __len__(self):
         return self.num_utterances
