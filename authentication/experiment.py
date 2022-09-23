@@ -169,7 +169,7 @@ class Experiment():
 
                 FAR = (sum([sim_matrix_thresh[i].float().sum() - sim_matrix_thresh[i, :, i].float().sum() for i
                             in range(self.params['test_batch_size'])])
-                       / (self.params['test_batch_size'] - 1.0) / (float(self.params['num_utterances'] / 2)) / self.params['batch_size'])
+                       / (self.params['test_batch_size'] - 1.0) / (float(self.params['num_utterances'] / 2)) / self.params['test_batch_size'])
 
                 FRR = (sum([self.params['num_utterances'] / 2 - sim_matrix_thresh[i, :, i].float().sum() for i in
                             range(self.params['test_batch_size'])])
@@ -184,7 +184,7 @@ class Experiment():
         print("\n average EER: %0.2f" % (batch_avg_EER))
     def constrastive_train(self):
         for i in range(self.params['epoch']):
-            for embeddings in self.train_loader:
+            for embeddings in tqdm(self.train_loader):
                 embeddings = embeddings.to(device=self.device, dtype=torch.float)
                 embeddings = torch.reshape(embeddings, (self.params['train_batch_size'] * self.params['num_utterances'], 2, 33, 151))
                 perm = random.sample(range(0, self.params['train_batch_size'] * self.params['num_utterances']),
