@@ -113,6 +113,7 @@ if __name__ == '__main__':
         else:
             count = 0
             for i in range(len(imu1)):
+                print(audio1[i])
                 b, a = signal.butter(4, 80, 'highpass', fs=rate_imu)
                 data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14
                 data2 = np.loadtxt(os.path.join(path, imu2[i])) / 2 ** 14

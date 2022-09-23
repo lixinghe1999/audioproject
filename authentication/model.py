@@ -87,7 +87,7 @@ class ResNet18(nn.Module):
         self.layer1 = self._make_layer(BasicBlockEnc, 64, num_Blocks[0], stride=1)
         self.layer2 = self._make_layer(BasicBlockEnc, 128, num_Blocks[1], stride=2)
         self.layer3 = self._make_layer(BasicBlockEnc, 256, num_Blocks[2], stride=2)
-        # self.layer4 = self._make_layer(BasicBlockEnc, 512, num_Blocks[3], stride=2)
+        #self.layer4 = self._make_layer(BasicBlockEnc, 512, num_Blocks[3], stride=2)
         #self.linear = nn.Linear(256, output_dim)
 
     def _make_layer(self, BasicBlockEnc, planes, num_Blocks, stride):
