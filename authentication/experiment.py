@@ -87,9 +87,9 @@ class Experiment():
 
 
         self.train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4,
-                                            batch_size=self.params['train_batch_size'], shuffle=True, drop_last=False)
+                                            batch_size=self.params['train_batch_size'], shuffle=True, drop_last=True)
         self.test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4,
-                                           batch_size=self.params['test_batch_size'], shuffle=False)
+                                           batch_size=self.params['test_batch_size'], shuffle=False, drop_last=True)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.params['LR'], weight_decay=self.params['weight_decay'])
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=5, gamma=0.5)
 
