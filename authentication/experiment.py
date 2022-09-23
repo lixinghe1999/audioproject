@@ -45,7 +45,7 @@ class MyDataSet_Constrastive(Dataset):
 
         self.path = path
         self.shuffle = shuffle
-        self.transform = transforms.Compose([Swap(30)])
+        #self.transform = transforms.Compose([Swap(30)])
 
     def __len__(self):
         return self.num_utterances
@@ -63,7 +63,7 @@ class MyDataSet_Constrastive(Dataset):
         for i, file in enumerate(utter_index):
             data = np.load(file)
             #if random_transform[i] > 0.6:
-            data = self.transform(data)
+            #data = self.transform(data)
             utterance.append(data)
         utterance = np.array(utterance)
         return utterance
