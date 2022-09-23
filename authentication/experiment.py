@@ -25,39 +25,42 @@ class MyDataSet(Dataset):
         return np.load(self.X[index]), int(self.Y[index])
 
 class MyDataSet_Constrastive(Dataset):
-    def __init__(self, path, shuffle=True, utter_num=6):
+    def __init__(self, path, shuffle=True, utter_num=6, ratio=0.8):
         # data path
         self.X = []
         self.num_utterances = 0
+        self.utter_num = utter_num
         for i, p in enumerate(os.listdir(path)):
             # iterate for each speaker
             person_path = os.path.join(path, p)
             files = os.listdir(person_path)
-            utterances = []
-            for f in files:
-                utterances.append(os.path.join(person_path, f))
+            files = files[: int(ratio * len(files))]
+            num_batch = len(files) // self.utter_num
+            for b in range(num_batch):
+                utterances = []
+                for f in files[b*self.num_utterances: (b+1)*self.num_utterances]:
+                    utterances.append(os.path.join(person_path, f))
+                self.X.append(utterances)
+            self.num_utterances += num_batch
 
-            self.num_utterances += len(files)
-            self.X.append(utterances)
         self.path = path
-        self.utter_num = utter_num
         self.shuffle = shuffle
         self.transform = transforms.Compose([Swap(30)])
 
     def __len__(self):
-        #return self.num_utterances
-        return len(self.X)
+        return self.num_utterances
+        #return len(self.X)
     def __getitem__(self, idx):
         #selected_file = np.random.randint(0, len(self.X))  # select random speaker
-        speaker_utters = self.X[idx]
-        #utters = np.load(os.path.join(self.path, selected_file))  # load utterance spectrogram of selected speaker
-        if self.shuffle:
-            utter_index = np.random.randint(0, len(speaker_utters), self.utter_num)  # select M utterances per speaker
-        else:
-            utter_index = range(idx, idx + self.utter_num) # utterances of a speaker [batch(M), n_mels, frames]
+        # speaker_utters = self.X[idx]
+        # if self.shuffle:
+        #     utter_index = np.random.randint(0, len(speaker_utters), self.utter_num)  # select M utterances per speaker
+        # else:
+        #     utter_index = range(idx, idx + self.utter_num) # utterances of a speaker [batch(M), n_mels, frames]
+        utter_index = self.X[idx]
         utterance = []
         for index in utter_index:
-            data = np.load(speaker_utters[index])
+            data = np.load(index)
             data = self.transform(data)
             utterance.append(data)
         utterance = np.array(utterance)
@@ -79,13 +82,14 @@ class Experiment():
             length = len(dataset)
             test_size = min(int(0.2 * length), 2000)
             train_size = length - test_size
-            train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size], generator=torch.Generator().manual_seed(42))
+            train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size],
+                                                                        generator=torch.Generator().manual_seed(42))
 
 
         self.train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4,
-                                            batch_size=self.params['batch_size'], shuffle=False, drop_last=True)
+                                            batch_size=self.params['train_batch_size'], shuffle=True, drop_last=False)
         self.test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4,
-                                           batch_size=self.params['batch_size'], shuffle=False)
+                                           batch_size=self.params['test_batch_size'], shuffle=False)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.params['LR'], weight_decay=self.params['weight_decay'])
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=5, gamma=0.5)
 
@@ -100,7 +104,6 @@ class Experiment():
                 output = self.model(embeddings)
                 loss = self.loss(output, cls)
                 self.optimizer.zero_grad()
-
                 loss.backward()
                 #torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.1)
                 self.optimizer.step()
@@ -134,10 +137,10 @@ class Experiment():
 
                 enrollment_batch, verification_batch = torch.split(embeddings, int(embeddings.size(1) / 2), dim=1)
                 enrollment_batch = torch.reshape(enrollment_batch, (
-                    self.params['batch_size'] * self.params['num_utterances'] // 2,
+                    self.params['test_batch_size'] * self.params['num_utterances'] // 2,
                     enrollment_batch.size(2), enrollment_batch.size(3), enrollment_batch.size(4)))
                 verification_batch = torch.reshape(verification_batch, (
-                    self.params['batch_size'] * self.params['num_utterances'] // 2,
+                    self.params['test_batch_size'] * self.params['num_utterances'] // 2,
                     verification_batch.size(2), verification_batch.size(3), verification_batch.size(4)))
 
                 perm = random.sample(range(0, verification_batch.size(0)), verification_batch.size(0))
@@ -152,9 +155,9 @@ class Experiment():
                 verification_embeddings = verification_embeddings[unperm]
 
                 enrollment_embeddings = torch.reshape(enrollment_embeddings,
-                    (self.params['batch_size'], self.params['num_utterances'] // 2, enrollment_embeddings.size(1)))
+                    (self.params['test_batch_size'], self.params['num_utterances'] // 2, enrollment_embeddings.size(1)))
                 verification_embeddings = torch.reshape(verification_embeddings, (
-                    self.params['batch_size'], self.params['num_utterances'] // 2, verification_embeddings.size(1)))
+                    self.params['test_batch_size'], self.params['num_utterances'] // 2, verification_embeddings.size(1)))
 
                 enrollment_centroids = get_centroids(enrollment_embeddings)
                 sim_matrix = get_cossim(verification_embeddings, enrollment_centroids)
@@ -167,12 +170,12 @@ class Experiment():
                     sim_matrix_thresh = sim_matrix > thres
 
                     FAR = (sum([sim_matrix_thresh[i].float().sum() - sim_matrix_thresh[i, :, i].float().sum() for i
-                                in range(self.params['batch_size'])])
-                           / (self.params['batch_size'] - 1.0) / (float(self.params['num_utterances'] / 2)) / self.params['batch_size'])
+                                in range(self.params['test_batch_size'])])
+                           / (self.params['test_batch_size'] - 1.0) / (float(self.params['num_utterances'] / 2)) / self.params['batch_size'])
 
                     FRR = (sum([self.params['num_utterances'] / 2 - sim_matrix_thresh[i, :, i].float().sum() for i in
-                                range(self.params['batch_size'])])
-                           / (float(self.params['num_utterances']/ 2)) / self.params['batch_size'])
+                                range(self.params['test_batch_size'])])
+                           / (float(self.params['num_utterances']/ 2)) / self.params['test_batch_size'])
 
                     # Save threshold when FAR = FRR (=EER)
                     if diff > abs(FAR - FRR):
@@ -189,9 +192,9 @@ class Experiment():
             for e in tqdm(range(100)): # mini-epoch
                 for embeddings in self.train_loader:
                     embeddings = embeddings.to(device=self.device, dtype=torch.float)
-                    embeddings = torch.reshape(embeddings, (self.params['batch_size'] * self.params['num_utterances'], 2, 33, 151))
-                    perm = random.sample(range(0, self.params['batch_size'] * self.params['num_utterances']),
-                                         self.params['batch_size'] * self.params['num_utterances'])
+                    embeddings = torch.reshape(embeddings, (self.params['train_batch_size'] * self.params['num_utterances'], 2, 33, 151))
+                    perm = random.sample(range(0, self.params['train_batch_size'] * self.params['num_utterances']),
+                                         self.params['train_batch_size'] * self.params['num_utterances'])
                     unperm = list(perm)
                     for i, j in enumerate(perm):
                         unperm[j] = i
@@ -200,7 +203,7 @@ class Experiment():
                     self.optimizer.zero_grad()
                     embeddings = self.model(embeddings)
                     embeddings = embeddings[unperm]
-                    embeddings = torch.reshape(embeddings, (self.params['batch_size'], self.params['num_utterances'], -1))
+                    embeddings = torch.reshape(embeddings, (self.params['train_batch_size'], self.params['num_utterances'], -1))
 
                     # get loss, call backward, step optimizer
                     loss = self.loss(embeddings)  # wants (Speaker, Utterances, embedding)
