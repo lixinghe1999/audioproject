@@ -121,6 +121,15 @@ class Swap(object):
         sample[..., swap2:swap2 + self.block] = tmp
         return sample
 
+class Mask(object):
+    def __init__(self, ratio):
+        self.ratio = ratio
+    def __call__(self, sample):
+        f, t = sample.shape[-2:]
+        mask = torch.rand((f, t)) < self.ratio
+        sample = sample * mask
+        return sample
+
 def get_centroids(embeddings):
     centroids = embeddings.mean(dim=1)
     return centroids

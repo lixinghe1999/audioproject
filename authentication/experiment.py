@@ -7,7 +7,7 @@ from tqdm import tqdm
 import numpy as np
 import os
 from torch.utils.data import Dataset
-from model import GE2ELoss, get_centroids, get_cossim, Swap
+from model import GE2ELoss, get_centroids, get_cossim, Swap, Mask
 from torchvision import transforms
 class MyDataSet(Dataset):
     def __init__(self, path):
@@ -45,7 +45,7 @@ class MyDataSet_Constrastive(Dataset):
 
         self.path = path
         self.shuffle = shuffle
-        self.transform = transforms.Compose([Swap(30)])
+        self.transform = transforms.Compose([Swap(30), Mask(0.8)])
 
     def __len__(self):
         return self.num_utterances
@@ -59,9 +59,11 @@ class MyDataSet_Constrastive(Dataset):
         #     utter_index = range(idx, idx + self.utter_num) # utterances of a speaker [batch(M), n_mels, frames]
         utter_index = self.X[idx]
         utterance = []
-        for index in utter_index:
-            data = np.load(index)
-            data = self.transform(data)
+        random_transform = np.random.rand(self.utter_num)
+        for i, file in enumerate(utter_index):
+            data = np.load(file)
+            if random_transform[i] > 0.6:
+                data = self.transform(data)
             utterance.append(data)
         utterance = np.array(utterance)
         return utterance
