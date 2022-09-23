@@ -6,3 +6,4 @@
 *.pth
 *.ckpt
 *.npz
+/.idea

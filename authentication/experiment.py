@@ -185,10 +185,10 @@ class Experiment():
         print("\n average EER: %0.2f" % (overall_avg_EER))
     def constrastive_train(self):
         for i in range(self.params['epoch']):
-            for e in tqdm(range(100)):# mini-epoch
+            for e in tqdm(range(100)): # mini-epoch
                 for embeddings in self.train_loader:
                     embeddings = embeddings.to(device=self.device, dtype=torch.float)
-
+                    embeddings = self.transform(embeddings)
                     embeddings = torch.reshape(embeddings, (self.params['batch_size'] * self.params['num_utterances'], 2, 33, 151))
                     perm = random.sample(range(0, self.params['batch_size'] * self.params['num_utterances']),
                                          self.params['batch_size'] * self.params['num_utterances'])
