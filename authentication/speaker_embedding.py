@@ -80,6 +80,7 @@ if __name__ == '__main__':
         p = person[k]
         path = os.path.join(directory, p, 'noise_train')
         file_list = os.listdir(path)
+        print(file_list)
         dict = directory_decompose(file_list)
         imu1 = dict['bmiacc1']
         imu2 = dict['bmiacc2']
