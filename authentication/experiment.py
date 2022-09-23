@@ -64,6 +64,7 @@ class MyDataSet_Constrastive(Dataset):
             data = self.transform(data)
             utterance.append(data)
         utterance = np.array(utterance)
+        print(utterance.shape)
         return utterance
 class Experiment():
     def __init__(self, model, dataset, params, pretrain=None, single_modality=None):
