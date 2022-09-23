@@ -192,25 +192,25 @@ class Experiment():
         EER_curve = []
         best_EER = 0.5
         for i in range(self.params['epoch']):
-            for embeddings in tqdm(self.train_loader):
-                embeddings = embeddings.to(device=self.device, dtype=torch.float)
-                embeddings = torch.reshape(embeddings, (self.params['train_batch_size'] * self.params['num_utterances'], 2, 33, 151))
-                perm = random.sample(range(0, self.params['train_batch_size'] * self.params['num_utterances']),
-                                     self.params['train_batch_size'] * self.params['num_utterances'])
-                unperm = list(perm)
-                for i, j in enumerate(perm):
-                    unperm[j] = i
-                embeddings = embeddings[perm]
-                # gradient accumulates
-                self.optimizer.zero_grad()
-                embeddings = self.model(embeddings)
-                embeddings = embeddings[unperm]
-                embeddings = torch.reshape(embeddings, (self.params['train_batch_size'], self.params['num_utterances'], -1))
-
-                # get loss, call backward, step optimizer
-                loss = self.loss(embeddings)  # wants (Speaker, Utterances, embedding)
-                loss.backward()
-                self.optimizer.step()
+            # for embeddings in tqdm(self.train_loader):
+            #     embeddings = embeddings.to(device=self.device, dtype=torch.float)
+            #     embeddings = torch.reshape(embeddings, (self.params['train_batch_size'] * self.params['num_utterances'], 2, 33, 151))
+            #     perm = random.sample(range(0, self.params['train_batch_size'] * self.params['num_utterances']),
+            #                          self.params['train_batch_size'] * self.params['num_utterances'])
+            #     unperm = list(perm)
+            #     for i, j in enumerate(perm):
+            #         unperm[j] = i
+            #     embeddings = embeddings[perm]
+            #     # gradient accumulates
+            #     self.optimizer.zero_grad()
+            #     embeddings = self.model(embeddings)
+            #     embeddings = embeddings[unperm]
+            #     embeddings = torch.reshape(embeddings, (self.params['train_batch_size'], self.params['num_utterances'], -1))
+            #
+            #     # get loss, call backward, step optimizer
+            #     loss = self.loss(embeddings)  # wants (Speaker, Utterances, embedding)
+            #     loss.backward()
+            #     self.optimizer.step()
             with torch.no_grad():
                 EER = self.contrastive_test()
             self.scheduler.step()
