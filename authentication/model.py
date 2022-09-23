@@ -126,7 +126,7 @@ class Mask(object):
         self.ratio = ratio
     def __call__(self, sample):
         f, t = sample.shape[-2:]
-        mask = np.random.rand((f, t)) < self.ratio
+        mask = np.random.rand(f, t) < self.ratio
         sample = sample * mask
         return sample
 
