@@ -90,8 +90,10 @@ class Experiment():
                                             batch_size=self.params['train_batch_size'], shuffle=True, drop_last=True)
         self.test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4,
                                            batch_size=self.params['test_batch_size'], shuffle=False, drop_last=True)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.params['LR'], weight_decay=self.params['weight_decay'])
-        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=5, gamma=0.5)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.params['LR'],
+                                          weight_decay=self.params['weight_decay'])
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=self.params['step_size'],
+                                                         gamma=self.params['gamma'])
 
     def train(self):
         best_acc = 0.5
@@ -182,7 +184,6 @@ class Experiment():
             batch_avg_EER += EER
         batch_avg_EER = batch_avg_EER / (batch_id + 1)
         batch_avg_EER = batch_avg_EER.cpu().item()
-        print(str(batch_avg_EER))
         print("\n average EER: %0.2f" % (batch_avg_EER))
         return batch_avg_EER
     def constrastive_train(self):

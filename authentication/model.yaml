@@ -1,8 +1,9 @@
 exp_params:
   LR: 0.01
-  epoch: 200
+  epoch: 300
   weight_decay: 0.0
-  scheduler_gamma: 0.95
+  step_size: 30
+  gamma: 0.5
   manual_seed: 42
   train_batch_size: 12
   test_batch_size: 6
