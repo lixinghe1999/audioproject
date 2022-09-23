@@ -111,8 +111,8 @@ if __name__ == '__main__':
                 embeddings = phone_level_feature(model, data1, data2, data3, embeddings)
             json.dump(embeddings, open(store_path + '.json', 'w'), indent=4)
         else:
+            print(imu1)
             for i in range(len(imu1)):
-                print(count)
                 b, a = signal.butter(4, 80, 'highpass', fs=rate_imu)
                 data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14
                 data2 = np.loadtxt(os.path.join(path, imu2[i])) / 2 ** 14
