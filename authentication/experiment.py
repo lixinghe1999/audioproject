@@ -64,7 +64,6 @@ class MyDataSet_Constrastive(Dataset):
             data = self.transform(data)
             utterance.append(data)
         utterance = np.array(utterance)
-        print(utterance.shape)
         return utterance
 class Experiment():
     def __init__(self, model, dataset, params, pretrain=None, single_modality=None):
@@ -193,6 +192,7 @@ class Experiment():
             for e in tqdm(range(100)): # mini-epoch
                 for embeddings in self.train_loader:
                     embeddings = embeddings.to(device=self.device, dtype=torch.float)
+                    print(embeddings.shape)
                     embeddings = torch.reshape(embeddings, (self.params['train_batch_size'] * self.params['num_utterances'], 2, 33, 151))
                     perm = random.sample(range(0, self.params['train_batch_size'] * self.params['num_utterances']),
                                          self.params['train_batch_size'] * self.params['num_utterances'])
