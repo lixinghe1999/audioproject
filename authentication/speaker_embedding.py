@@ -80,7 +80,6 @@ if __name__ == '__main__':
         p = person[k]
         path = os.path.join(directory, p, 'noise_train')
         file_list = os.listdir(path)
-        print(file_list)
         dict = directory_decompose(file_list)
         imu1 = dict['bmiacc1']
         imu2 = dict['bmiacc2']
@@ -112,7 +111,6 @@ if __name__ == '__main__':
                 embeddings = phone_level_feature(model, data1, data2, data3, embeddings)
             json.dump(embeddings, open(store_path + '.json', 'w'), indent=4)
         else:
-            print(imu1)
             for i in range(len(imu1)):
                 b, a = signal.butter(4, 80, 'highpass', fs=rate_imu)
                 data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14

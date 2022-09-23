@@ -7,7 +7,8 @@ from tqdm import tqdm
 import numpy as np
 import os
 from torch.utils.data import Dataset
-from model import GE2ELoss, get_centroids, get_cossim
+from model import GE2ELoss, get_centroids, get_cossim, Swap
+from torchvision import transforms
 class MyDataSet(Dataset):
     def __init__(self, path):
         self.X = []
@@ -70,16 +71,21 @@ class Experiment():
             self.model.load_state_dict(torch.load(pretrain))
         self.params = params
         self.device = torch.device('cuda')
-        if len(dataset)==2:
+        if len(dataset) == 2:
             train_dataset, test_dataset = dataset
         else:
             length = len(dataset)
             test_size = min(int(0.2 * length), 2000)
             train_size = length - test_size
             train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size], generator=torch.Generator().manual_seed(42))
-        self.train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=self.params['batch_size'], shuffle=False, drop_last=True)
-        self.test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=self.params['batch_size'], shuffle=False)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.params['LR'],weight_decay=self.params['weight_decay'])
+
+        self.transform = transforms.Compose([Swap(30)])
+
+        self.train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4,
+                                            batch_size=self.params['batch_size'], shuffle=False, drop_last=True)
+        self.test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4,
+                                           batch_size=self.params['batch_size'], shuffle=False)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.params['LR'], weight_decay=self.params['weight_decay'])
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=5, gamma=0.5)
 
     def train(self):
