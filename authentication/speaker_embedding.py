@@ -1,7 +1,7 @@
 import os
 import librosa
 from Voice_Activity_Detector.vad import VAD
-from resemblyzer import preprocess_wav, VoiceEncoder
+from resemblyzer import preprocess_wav, VoiceEncoder, normalize_volume
 from bone_conduction_function import estimate_response, matching_features, update_phones
 import numpy as np
 import torch
@@ -123,7 +123,9 @@ if __name__ == '__main__':
                 data2 = np.clip(data2, -0.05, 0.05)
 
                 b, a = signal.butter(4, 80, 'highpass', fs=rate_mic)
-                data3 = preprocess_wav(os.path.join(path, audio1[i]))
+
+                data3, source_sr = librosa.load(os.path.join(path, audio1[i]), sr=None)
+                data3 = normalize_volume(data3, -30, increase_only=True)
                 data3 = signal.filtfilt(b, a, data3, axis=0)
                 print(data1.shape, data3.shape)
                 count = segment_level_feature(data1, data2, data3, count, store_path)
