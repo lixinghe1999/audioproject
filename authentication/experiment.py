@@ -59,11 +59,11 @@ class MyDataSet_Constrastive(Dataset):
         #     utter_index = range(idx, idx + self.utter_num) # utterances of a speaker [batch(M), n_mels, frames]
         utter_index = self.X[idx]
         utterance = []
-        random_transform = np.random.rand(self.utter_num)
+        #random_transform = np.random.rand(self.utter_num)
         for i, file in enumerate(utter_index):
             data = np.load(file)
-            if random_transform[i] > 0.6:
-                data = self.transform(data)
+            #if random_transform[i] > 0.6:
+            data = self.transform(data)
             utterance.append(data)
         utterance = np.array(utterance)
         return utterance
