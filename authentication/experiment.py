@@ -25,7 +25,7 @@ class MyDataSet(Dataset):
         return np.load(self.X[index]), int(self.Y[index])
 
 class MyDataSet_Constrastive(Dataset):
-    def __init__(self, path, shuffle=True, utter_num=6, ratio=0.8):
+    def __init__(self, path, shuffle=True, utter_num=6):
         # data path
         self.X = []
         self.num_utterances = 0
@@ -34,7 +34,7 @@ class MyDataSet_Constrastive(Dataset):
             # iterate for each speaker
             person_path = os.path.join(path, p)
             files = os.listdir(person_path)
-            files = files[: int(ratio * len(files))]
+            # files = files[: int(ratio * len(files))]
             num_batch = len(files) // self.utter_num
             for b in range(num_batch):
                 utterances = []
@@ -182,7 +182,10 @@ class Experiment():
             batch_avg_EER += EER
         batch_avg_EER = batch_avg_EER / (batch_id + 1)
         print("\n average EER: %0.2f" % (batch_avg_EER))
+        return batch_avg_EER
     def constrastive_train(self):
+        EER_curve = []
+        best_EER = 0.5
         for i in range(self.params['epoch']):
             for embeddings in tqdm(self.train_loader):
                 embeddings = embeddings.to(device=self.device, dtype=torch.float)
@@ -204,8 +207,16 @@ class Experiment():
                 loss.backward()
                 self.optimizer.step()
             with torch.no_grad():
-                self.contrastive_test()
+                EER = self.contrastive_test()
             self.scheduler.step()
+            EER_curve.append(EER)
+            if EER > best_EER:
+                best_EER = EER
+                ckpt_best = self.model.state_dict()
+        self.scheduler.step()
+        torch.save(ckpt_best, str(best_EER) + '_best.pth')
+        plt.plot(EER_curve)
+        plt.savefig(str(best_EER) + '_acc.png')
         #     accuracy = []
         #     with torch.no_grad():
         #         for embeddings, cls in tqdm(self.train_loader):
