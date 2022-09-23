@@ -79,8 +79,8 @@ class Experiment():
             train_size = length - test_size
             train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size], generator=torch.Generator().manual_seed(42))
 
-        self.transform = transforms.Compose([Swap(30)])
-
+        transform = transforms.Compose([Swap(30)])
+        train_dataset.transform = transform
         self.train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4,
                                             batch_size=self.params['batch_size'], shuffle=False, drop_last=True)
         self.test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4,

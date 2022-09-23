@@ -116,7 +116,7 @@ class Swap(object):
         f, t = sample.shape[-2:]
         print(sample.shape)
         swap1 = np.random.randint(0, t - 2 * self.block)
-        swap2 = np.random.randint(swap1 - self.block, t - self.block)
+        swap2 = np.random.randint(swap1 + self.block, t - self.block)
         print(swap1, swap2)
         tmp = sample[..., swap1:swap1 + self.block]
         sample[..., swap1:swap1 + self.block] = sample[..., swap2:swap2 + self.block]
