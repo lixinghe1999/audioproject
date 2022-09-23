@@ -181,6 +181,8 @@ class Experiment():
                     EER = (FAR + FRR) / 2
             batch_avg_EER += EER
         batch_avg_EER = batch_avg_EER / (batch_id + 1)
+        batch_avg_EER = batch_avg_EER.cpu()
+        print(batch_avg_EER)
         print("\n average EER: %0.2f" % (batch_avg_EER))
         return batch_avg_EER
     def constrastive_train(self):
@@ -217,24 +219,5 @@ class Experiment():
         torch.save(ckpt_best, str(best_EER) + '_best.pth')
         plt.plot(EER_curve)
         plt.savefig(str(best_EER) + '_acc.png')
-        #     accuracy = []
-        #     with torch.no_grad():
-        #         for embeddings, cls in tqdm(self.train_loader):
-        #             embeddings = embeddings.to(device=self.device, dtype=torch.float)
-        #             output = self.model(embeddings)
-        #             cls_predict = torch.argmax(output, dim=-1).cpu()
-        #             correct = cls_predict == cls
-        #             ratio = torch.sum(correct) / len(correct)
-        #             accuracy.append(ratio)
-        #         acc = np.mean(accuracy)
-        #         print(acc)
-        #         acc_curve.append(acc)
-        #         if acc > best_acc:
-        #             best_acc = acc
-        #             ckpt_best = self.model.state_dict()
-        #     self.scheduler.step()
-        # torch.save(ckpt_best, str(best_acc) + '_best.pth')
-        # plt.plot(acc_curve)
-        # plt.savefig(str(best_acc) + '_acc.png')
 
 
