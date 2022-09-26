@@ -66,8 +66,8 @@ class Experiment():
         super(Experiment, self).__init__()
         self.single_modality = single_modality
         self.model = model
-        #self.loss = torch.nn.CrossEntropyLoss()
-        self.loss = GE2ELoss('cuda')
+        self.loss = torch.nn.CrossEntropyLoss()
+        #self.loss = GE2ELoss('cuda')
         if pretrain:
             self.model.load_state_dict(torch.load(pretrain))
         self.params = params
@@ -104,16 +104,8 @@ class Experiment():
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-            accuracy = []
             with torch.no_grad():
-                for embeddings, cls in tqdm(self.test_loader):
-                    embeddings = embeddings.to(device=self.device, dtype=torch.float)
-                    output = self.model(embeddings)
-                    cls_predict = torch.argmax(output, dim=-1).cpu()
-                    correct = cls_predict == cls
-                    ratio = torch.sum(correct) / len(correct)
-                    accuracy.append(ratio)
-                acc = np.mean(accuracy)
+                acc = self.test()
                 print(acc)
                 acc_curve.append(acc)
                 if acc > best_acc:
@@ -123,6 +115,17 @@ class Experiment():
         torch.save(ckpt_best, str(best_acc) + '_best.pth')
         plt.plot(acc_curve)
         plt.savefig(str(best_acc) + '_acc.png')
+    def test(self):
+        accuracy = []
+        for embeddings, cls in tqdm(self.test_loader):
+            embeddings = embeddings.to(device=self.device, dtype=torch.float)
+            output = self.model(embeddings)
+            cls_predict = torch.argmax(output, dim=-1).cpu()
+            correct = cls_predict == cls
+            ratio = torch.sum(correct) / len(correct)
+            accuracy.append(ratio)
+        acc = np.mean(accuracy)
+        return acc
 
     def contrastive_test(self):
         batch_avg_EER = 0
