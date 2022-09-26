@@ -98,7 +98,7 @@ class ResNet18(nn.Module):
             self.in_planes = planes
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x, auth=False):
         x = torch.relu(self.bn1(self.conv1(x)))
         x = self.layer1(x)
         x = self.layer2(x)
@@ -106,8 +106,11 @@ class ResNet18(nn.Module):
         # x = self.layer4(x)
         x = F.adaptive_avg_pool2d(x, 1)
         x = x.view(x.size(0), -1)
-        x = self.linear(x)
-        return x
+        if auth:
+            return x
+        else:
+            x = self.linear(x)
+            return x
 
 class Swap(object):
     def __init__(self, block):

@@ -10,12 +10,13 @@ from torch.utils.data import Dataset
 from model import GE2ELoss, get_centroids, get_cossim, Swap, Mask
 from torchvision import transforms
 class MyDataSet(Dataset):
-    def __init__(self, path):
+    def __init__(self, path, ratio=1):
         self.X = []
         self.Y = []
         for i, p in enumerate(os.listdir(path)):
             person_path = os.path.join(path, p)
             files = os.listdir(person_path)
+            files = files[: int(ratio * len(files))]
             for f in files:
                 self.X.append(os.path.join(person_path, f))
                 self.Y.append(int(i))
@@ -50,17 +51,9 @@ class MyDataSet_Constrastive(Dataset):
 
     def __len__(self):
         return self.num_utterances
-        #return len(self.X)
     def __getitem__(self, idx):
-        #selected_file = np.random.randint(0, len(self.X))  # select random speaker
-        # speaker_utters = self.X[idx]
-        # if self.shuffle:
-        #     utter_index = np.random.randint(0, len(speaker_utters), self.utter_num)  # select M utterances per speaker
-        # else:
-        #     utter_index = range(idx, idx + self.utter_num) # utterances of a speaker [batch(M), n_mels, frames]
         utter_index = self.X[idx]
         utterance = []
-        #random_transform = np.random.rand(self.utter_num)
         for i, file in enumerate(utter_index):
             data = np.load(file)
             if self.augmentation:
@@ -110,11 +103,10 @@ class Experiment():
                 loss = self.loss(output, cls)
                 self.optimizer.zero_grad()
                 loss.backward()
-                #torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.1)
                 self.optimizer.step()
             accuracy = []
             with torch.no_grad():
-                for embeddings, cls in tqdm(self.train_loader):
+                for embeddings, cls in tqdm(self.test_loader):
                     embeddings = embeddings.to(device=self.device, dtype=torch.float)
                     output = self.model(embeddings)
                     cls_predict = torch.argmax(output, dim=-1).cpu()
