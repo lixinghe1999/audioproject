@@ -16,7 +16,10 @@ class MyDataSet(Dataset):
         for i, p in enumerate(os.listdir(path)):
             person_path = os.path.join(path, p)
             files = os.listdir(person_path)
-            files = files[: int(ratio * len(files))]
+            if ratio > 0:
+                files = files[: int(ratio * len(files))]
+            else:
+                files = files[int(ratio * len(files)):]
             for f in files:
                 self.X.append(os.path.join(person_path, f))
                 self.Y.append(int(i))
@@ -80,7 +83,7 @@ class Experiment():
             train_size = length - test_size
             train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size],
                                                                         generator=torch.Generator().manual_seed(42))
-
+        print(len(train_dataset), len(test_dataset))
 
         self.train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4,
                                             batch_size=self.params['train_batch_size'], shuffle=True, drop_last=True)
@@ -147,7 +150,7 @@ class Experiment():
                 unperm[j] = i
 
             verification_batch = verification_batch[perm]
-            enrollment_embeddings = self.model(enrollment_batch)
+            enrollment_embeddings = self.model(enrollment_batch, auth=True)
             verification_embeddings = self.model(verification_batch)
 
             verification_embeddings = verification_embeddings[unperm]
