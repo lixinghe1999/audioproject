@@ -77,7 +77,7 @@ if __name__ == "__main__":
     elif args.mode == 1:
         with open('model.yaml', 'r') as file:
             config = yaml.safe_load(file)
-        model = ResNet18().cuda()
+        model = ResNet18(output_dim=15).cuda()
         # train_clean_dataset = MyDataSet_Constrastive('speaker_embedding/DNN_embedding',
         #                                  utter_num=config['exp_params']['num_utterances'], ratio=0.8, augmentation=True)
         # train_noisy_dataset = MyDataSet_Constrastive('speaker_embedding/noise_DNN_embedding',

@@ -79,7 +79,7 @@ class BasicBlockDec(nn.Module):
 
 class ResNet18(nn.Module):
 
-    def __init__(self, num_Blocks=[2,2,2,2], output_dim=64, nc=2):
+    def __init__(self, num_Blocks=[2,2,2,2], output_dim=15, nc=2):
         super().__init__()
         self.in_planes = 64
         self.conv1 = nn.Conv2d(nc, 64, kernel_size=3, stride=2, padding=1, bias=False)
