@@ -92,8 +92,9 @@ if __name__ == "__main__":
         # test_dataset = ConcatDataset([test_clean_dataset, test_noisy_dataset])
 
         train_dataset = MyDataSet('speaker_embedding/DNN_embedding', ratio=0.8)
-        test_dataset = MyDataSet_Constrastive('speaker_embedding/DNN_embedding',
-                                                    utter_num=config['exp_params']['num_utterances'], ratio=-0.2)
+        test_dataset = MyDataSet('speaker_embedding/DNN_embedding', ratio=-0.2)
+        # test_dataset = MyDataSet_Constrastive('speaker_embedding/DNN_embedding',
+        #                                             utter_num=config['exp_params']['num_utterances'], ratio=-0.2)
         # dataset = MyDataSet('speaker_embedding/DNN_embedding')
         # noisy_dataset = MyDataSet('speaker_embedding/noise_DNN_embedding')
         # dataset = ConcatDataset([dataset, noisy_dataset])

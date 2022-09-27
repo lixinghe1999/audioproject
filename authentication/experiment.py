@@ -110,16 +110,16 @@ class Experiment():
             with torch.no_grad():
                 acc = self.test()
                 print(acc)
-                EER = self.contrastive_test()
-                print(EER)
-            EER_curve.append(EER)
-            if EER < best_EER:
-                best_EER = EER
-                ckpt_best = self.model.state_dict()
-
-        torch.save(ckpt_best, str(best_EER) + '_best.pth')
-        plt.plot(EER_curve)
-        plt.savefig(str(best_EER) + '_acc.png')
+        #         EER = self.contrastive_test()
+        #         print(EER)
+        #     EER_curve.append(EER)
+        #     if EER < best_EER:
+        #         best_EER = EER
+        #         ckpt_best = self.model.state_dict()
+        #
+        # torch.save(ckpt_best, str(best_EER) + '_best.pth')
+        # plt.plot(EER_curve)
+        # plt.savefig(str(best_EER) + '_acc.png')
     def test(self):
         accuracy = []
         for embeddings, cls in tqdm(self.test_loader):
