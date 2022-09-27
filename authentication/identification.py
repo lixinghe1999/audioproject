@@ -79,10 +79,10 @@ if __name__ == "__main__":
             config = yaml.safe_load(file)
         model = ResNet18(output_dim=15).cuda()
         train_clean_dataset = MyDataSet_Constrastive('speaker_embedding/DNN_embedding',
-                                         utter_num=config['exp_params']['num_utterances'], ratio=0.8, augmentation=True)
+                                         utter_num=config['exp_params']['num_utterances'], ratio=0.8, augmentation=False)
         train_noisy_dataset = MyDataSet_Constrastive('speaker_embedding/noise_DNN_embedding',
                                                      utter_num=config['exp_params']['num_utterances'],
-                                                     ratio=0.8, augmentation=True)
+                                                     ratio=0.8, augmentation=False)
         train_dataset = ConcatDataset([train_clean_dataset, train_noisy_dataset])
 
         test_clean_dataset = MyDataSet_Constrastive('speaker_embedding/DNN_embedding',
