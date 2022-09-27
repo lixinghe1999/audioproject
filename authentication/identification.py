@@ -98,7 +98,7 @@ if __name__ == "__main__":
         # dataset = MyDataSet('speaker_embedding/DNN_embedding')
         # noisy_dataset = MyDataSet('speaker_embedding/noise_DNN_embedding')
         # dataset = ConcatDataset([dataset, noisy_dataset])
-        Exp = Experiment(model, [train_dataset, test_dataset], config['exp_params'], pretrain='0.1316666603088379_best.pth')
+        Exp = Experiment(model, [train_dataset, test_dataset], config['exp_params'], pretrain=None)
         Exp.constrastive_train()
         #Exp.train()
     else:
