@@ -135,7 +135,7 @@ class Experiment():
 
     def contrastive_test(self):
         batch_avg_EER = 0
-        for batch_id, embeddings in enumerate(self.test_loader):
+        for batch_id, embeddings in enumerate(self.train_loader):
             embeddings = embeddings.to(device=self.device, dtype=torch.float)
             assert self.params['num_utterances'] % 2 == 0
 
