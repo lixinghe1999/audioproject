@@ -219,10 +219,16 @@ class NoisyCleanSet:
             if person is not None and isinstance(data, dict):
                 tmp = []
                 for p in person:
-                    tmp += data[p][:int(len(data[p]) * self.ratio)]
+                    if ratio > 0:
+                        tmp += data[p][:int(len(data[p]) * self.ratio)]
+                    else:
+                        tmp += data[p][int(len(data[p]) * self.ratio):]
                 data = tmp
             else:
-                data = data[:int(len(data) * self.ratio)]
+                if ratio > 0:
+                    data = data[:int(len(data) * self.ratio)]
+                else:
+                    data = data[int(len(data) * self.ratio):]
             self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
         if len(json_paths) == 2:
             self.augmentation = True
