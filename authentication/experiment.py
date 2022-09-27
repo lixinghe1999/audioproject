@@ -123,7 +123,7 @@ class Experiment():
         plt.savefig(str(best_EER) + '_acc.png')
     def test(self):
         accuracy = []
-        for embeddings, cls in tqdm(self.test_loader):
+        for embeddings, cls in self.test_loader:
             embeddings = embeddings.to(device=self.device, dtype=torch.float)
             output = self.model(embeddings)
             cls_predict = torch.argmax(output, dim=-1).cpu()
