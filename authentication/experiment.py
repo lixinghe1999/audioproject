@@ -83,7 +83,6 @@ class Experiment():
             train_size = length - test_size
             train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size],
                                                                         generator=torch.Generator().manual_seed(42))
-        print(len(train_dataset), len(test_dataset))
 
         self.train_loader = Data.DataLoader(dataset=train_dataset, num_workers=4,
                                             batch_size=self.params['train_batch_size'], shuffle=True, drop_last=True)
@@ -95,8 +94,8 @@ class Experiment():
                                                          gamma=self.params['gamma'])
 
     def train(self):
-        best_acc = 0.5
-        acc_curve = []
+        best_EER = 0.5
+        EER_curve = []
         for i in range(self.params['epoch']):
             for embeddings, cls in tqdm(self.train_loader):
                 embeddings = embeddings.to(device=self.device, dtype=torch.float)
@@ -107,17 +106,19 @@ class Experiment():
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-            with torch.no_grad():
-                acc = self.test()
-                print(acc)
-                acc_curve.append(acc)
-                if acc > best_acc:
-                    best_acc = acc
-                    ckpt_best = self.model.state_dict()
             self.scheduler.step()
-        torch.save(ckpt_best, str(best_acc) + '_best.pth')
-        plt.plot(acc_curve)
-        plt.savefig(str(best_acc) + '_acc.png')
+            with torch.no_grad():
+                #acc = self.test()
+                EER = self.contrastive_test()
+                print(EER)
+            EER_curve.append(EER)
+            if EER < best_EER:
+                best_EER = EER
+                ckpt_best = self.model.state_dict()
+
+        torch.save(ckpt_best, str(best_EER) + '_best.pth')
+        plt.plot(EER_curve)
+        plt.savefig(str(best_EER) + '_acc.png')
     def test(self):
         accuracy = []
         for embeddings, cls in tqdm(self.test_loader):
@@ -151,7 +152,7 @@ class Experiment():
 
             verification_batch = verification_batch[perm]
             enrollment_embeddings = self.model(enrollment_batch, auth=True)
-            verification_embeddings = self.model(verification_batch)
+            verification_embeddings = self.model(verification_batch, auth=True)
 
             verification_embeddings = verification_embeddings[unperm]
 
@@ -185,7 +186,7 @@ class Experiment():
             batch_avg_EER += EER
         batch_avg_EER = batch_avg_EER / (batch_id + 1)
         batch_avg_EER = batch_avg_EER.cpu().item()
-        print("\n average EER: %0.2f" % (batch_avg_EER))
+
         return batch_avg_EER
     def constrastive_train(self):
         EER_curve = []
@@ -210,9 +211,10 @@ class Experiment():
                 loss = self.loss(embeddings)  # wants (Speaker, Utterances, embedding)
                 loss.backward()
                 self.optimizer.step()
+            self.scheduler.step()
             with torch.no_grad():
                 EER = self.contrastive_test()
-            self.scheduler.step()
+                print("\n average EER: %0.2f" % (EER))
             EER_curve.append(EER)
             if EER < best_EER:
                 best_EER = EER
