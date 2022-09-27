@@ -69,8 +69,8 @@ class Experiment():
         super(Experiment, self).__init__()
         self.single_modality = single_modality
         self.model = model
-        self.loss = torch.nn.CrossEntropyLoss()
-        #self.loss = GE2ELoss('cuda')
+        #self.loss = torch.nn.CrossEntropyLoss()
+        self.loss = GE2ELoss('cuda')
         if pretrain:
             self.model.load_state_dict(torch.load(pretrain))
         self.params = params
@@ -108,18 +108,16 @@ class Experiment():
                 self.optimizer.step()
             self.scheduler.step()
             with torch.no_grad():
-                acc = self.test()
-                print(acc)
-        #         EER = self.contrastive_test()
-        #         print(EER)
-        #     EER_curve.append(EER)
-        #     if EER < best_EER:
-        #         best_EER = EER
-        #         ckpt_best = self.model.state_dict()
-        #
-        # torch.save(ckpt_best, str(best_EER) + '_best.pth')
-        # plt.plot(EER_curve)
-        # plt.savefig(str(best_EER) + '_acc.png')
+                EER = self.contrastive_test()
+                print(EER)
+            EER_curve.append(EER)
+            if EER < best_EER:
+                best_EER = EER
+                ckpt_best = self.model.state_dict()
+
+        torch.save(ckpt_best, str(best_EER) + '_best.pth')
+        plt.plot(EER_curve)
+        plt.savefig(str(best_EER) + '_acc.png')
     def test(self):
         accuracy = []
         for embeddings, cls in tqdm(self.test_loader):

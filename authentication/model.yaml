@@ -5,7 +5,7 @@ exp_params:
   step_size: 10
   gamma: 0.5
   manual_seed: 42
-  train_batch_size: 8
+  train_batch_size: 4
   test_batch_size: 4
   num_utterances: 4
 
