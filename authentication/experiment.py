@@ -108,7 +108,8 @@ class Experiment():
                 self.optimizer.step()
             self.scheduler.step()
             with torch.no_grad():
-                #acc = self.test()
+                acc = self.test()
+                print(acc)
                 EER = self.contrastive_test()
                 print(EER)
             EER_curve.append(EER)
