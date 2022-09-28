@@ -136,10 +136,6 @@ class A2net(nn.Module):
         self.IMU_branch = IMU_branch(self.inference)
         self.Audio_branch = Audio_branch()
         self.Residual_block = Residual_Block(256)
-        # for p in self.IMU_branch.parameters():
-        #     p.requires_grad = False
-        # for p in self.Audio_branch.parameters():
-        #     p.requires_grad = False
     def forward(self, x1, x2):
         x1 = self.IMU_branch(x1)
         if self.inference:

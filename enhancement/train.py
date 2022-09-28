@@ -159,7 +159,8 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-
+    audio_only = False
+    complex = False
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 128
@@ -170,7 +171,7 @@ if __name__ == "__main__":
         model = A2net(inference=False).to(device)
         #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
-                                                   save_all=True, audio_only=False, complex=False)
+                                                   save_all=True, audio_only=audio_only, complex=complex)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
 
@@ -200,27 +201,27 @@ if __name__ == "__main__":
         test_dataset = torch.utils.data.ConcatDataset([test_dataset1, test_dataset2])
 
         model.load_state_dict(ckpt)
-        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, audio_only=True, complex=True)
+        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, audio_only=audio_only, complex=complex)
 
         # Optional Micro-benchmark
         model.load_state_dict(ckpt)
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         for p in people:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=[p], simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=True, complex=True)
+            Metric = inference(dataset, BATCH_SIZE, model, audio_only=audio_only, complex=complex)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
 
         for noise in ['background.json', 'dev.json', 'music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'], person=people, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=True, complex=True)
+            Metric = inference(dataset, BATCH_SIZE, model,  audio_only=audio_only, complex=complex)
             avg_metric = np.mean(Metric, axis=0)
             print(noise, avg_metric)
 
         for level in [11, 6, 1]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
                                     simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=True, complex=True)
+            Metric = inference(dataset, BATCH_SIZE, model,  audio_only=audio_only, complex=complex)
             avg_metric = np.mean(Metric, axis=0)
             print(level, avg_metric)
 
@@ -228,7 +229,7 @@ if __name__ == "__main__":
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         for p in positions:
             dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=[p], simulation=True, ratio=-0.1)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False)
+            Metric = inference(dataset, BATCH_SIZE, model,  audio_only=audio_only, complex=complex)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
 
