@@ -180,12 +180,12 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_dir = 'pretrain/vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt = torch.load(ckpt_name)
 
-        #model = nn.DataParallel(A2net(inference=False).to(device), device_ids=[0])
-        model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
+        model = A2net(inference=False).to(device)
+        #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, ratio=0.8)
