@@ -194,8 +194,8 @@ if __name__ == "__main__":
 
         # extra dataset for other positions
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=positions, simulation=True, ratio=0.9)
-        test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],person=positions, simulation=True, ratio=-0.1)
+        train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=positions, simulation=True, ratio=0.8)
+        test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],person=positions, simulation=True, ratio=-0.2)
 
         train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
         test_dataset = torch.utils.data.ConcatDataset([test_dataset1, test_dataset2])
@@ -228,7 +228,7 @@ if __name__ == "__main__":
         # Micro-benchmark for different positions
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         for p in positions:
-            dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=[p], simulation=True, ratio=-0.1)
+            dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=[p], simulation=True, ratio=-0.2)
             Metric = inference(dataset, BATCH_SIZE, model,  audio_only=audio_only, complex=complex)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
