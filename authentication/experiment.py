@@ -9,6 +9,8 @@ import os
 from torch.utils.data import Dataset
 from model import GE2ELoss, get_centroids, get_cossim, Swap, Mask
 from torchvision import transforms
+from sklearn.manifold import TSNE
+import seaborn as sns
 class MyDataSet(Dataset):
     def __init__(self, path, ratio=1):
         self.X = []
@@ -110,9 +112,8 @@ class Experiment():
                 loss.backward()
                 self.optimizer.step()
             self.scheduler.step()
-            with torch.no_grad():
-                EER = self.contrastive_test()
-                print(EER)
+            EER = self.contrastive_test()
+            print(EER)
             EER_curve.append(EER)
             if EER < best_EER:
                 best_EER = EER
@@ -123,69 +124,87 @@ class Experiment():
         plt.savefig(str(best_EER) + '_acc.png')
     def test(self):
         accuracy = []
-        for embeddings, cls in self.test_loader:
-            embeddings = embeddings.to(device=self.device, dtype=torch.float)
-            output = self.model(embeddings)
-            cls_predict = torch.argmax(output, dim=-1).cpu()
-            correct = cls_predict == cls
-            ratio = torch.sum(correct) / len(correct)
-            accuracy.append(ratio)
+        with torch.no_grad():
+            for embeddings, cls in self.test_loader:
+                embeddings = embeddings.to(device=self.device, dtype=torch.float)
+                output = self.model(embeddings)
+                cls_predict = torch.argmax(output, dim=-1).cpu()
+                correct = cls_predict == cls
+                ratio = torch.sum(correct) / len(correct)
+                accuracy.append(ratio)
         acc = np.mean(accuracy)
         return acc
-
+    def cluster_test(self):
+        X = []
+        Y = []
+        with torch.no_grad():
+            for embeddings, cls in self.test_loader:
+                embeddings = embeddings.to(device=self.device, dtype=torch.float)
+                output = self.model(embeddings, auth=True)
+                output = output.cpu().numpy()
+                cls = cls.cpu().numpy()
+                X.append(output)
+                Y.append(cls)
+        X = np.concatenate(X, axis=0)
+        Y = np.concatenate(Y, axis=0)
+        X_embedded = TSNE(n_components=2, learning_rate='auto', init='random').fit_transform(X)
+        plt.figure()
+        sns.scatterplot(x=X_embedded[:, 0], y=X_embedded[:, 1], hue=Y, legend='full', palette=sns.color_palette("hls", 15))
+        plt.show()
     def contrastive_test(self):
         batch_avg_EER = 0
-        for batch_id, embeddings in enumerate(self.test_loader):
-            embeddings = embeddings.to(device=self.device, dtype=torch.float)
-            assert self.params['num_utterances'] % 2 == 0
+        with torch.no_grad:
+            for batch_id, embeddings in enumerate(self.test_loader):
+                embeddings = embeddings.to(device=self.device, dtype=torch.float)
+                assert self.params['num_utterances'] % 2 == 0
 
-            enrollment_batch, verification_batch = torch.split(embeddings, int(embeddings.size(1) / 2), dim=1)
-            enrollment_batch = torch.reshape(enrollment_batch, (
-                self.params['test_batch_size'] * self.params['num_utterances'] // 2,
-                enrollment_batch.size(2), enrollment_batch.size(3), enrollment_batch.size(4)))
-            verification_batch = torch.reshape(verification_batch, (
-                self.params['test_batch_size'] * self.params['num_utterances'] // 2,
-                verification_batch.size(2), verification_batch.size(3), verification_batch.size(4)))
+                enrollment_batch, verification_batch = torch.split(embeddings, int(embeddings.size(1) / 2), dim=1)
+                enrollment_batch = torch.reshape(enrollment_batch, (
+                    self.params['test_batch_size'] * self.params['num_utterances'] // 2,
+                    enrollment_batch.size(2), enrollment_batch.size(3), enrollment_batch.size(4)))
+                verification_batch = torch.reshape(verification_batch, (
+                    self.params['test_batch_size'] * self.params['num_utterances'] // 2,
+                    verification_batch.size(2), verification_batch.size(3), verification_batch.size(4)))
 
-            perm = random.sample(range(0, verification_batch.size(0)), verification_batch.size(0))
-            unperm = list(perm)
-            for i, j in enumerate(perm):
-                unperm[j] = i
+                perm = random.sample(range(0, verification_batch.size(0)), verification_batch.size(0))
+                unperm = list(perm)
+                for i, j in enumerate(perm):
+                    unperm[j] = i
 
-            verification_batch = verification_batch[perm]
-            enrollment_embeddings = self.model(enrollment_batch, auth=True)
-            verification_embeddings = self.model(verification_batch, auth=True)
+                verification_batch = verification_batch[perm]
+                enrollment_embeddings = self.model(enrollment_batch, auth=True)
+                verification_embeddings = self.model(verification_batch, auth=True)
 
-            verification_embeddings = verification_embeddings[unperm]
+                verification_embeddings = verification_embeddings[unperm]
 
-            enrollment_embeddings = torch.reshape(enrollment_embeddings,
-                (self.params['test_batch_size'], self.params['num_utterances'] // 2, enrollment_embeddings.size(1)))
-            verification_embeddings = torch.reshape(verification_embeddings, (
-                self.params['test_batch_size'], self.params['num_utterances'] // 2, verification_embeddings.size(1)))
+                enrollment_embeddings = torch.reshape(enrollment_embeddings,
+                    (self.params['test_batch_size'], self.params['num_utterances'] // 2, enrollment_embeddings.size(1)))
+                verification_embeddings = torch.reshape(verification_embeddings, (
+                    self.params['test_batch_size'], self.params['num_utterances'] // 2, verification_embeddings.size(1)))
 
-            enrollment_centroids = get_centroids(enrollment_embeddings)
-            sim_matrix = get_cossim(verification_embeddings, enrollment_centroids)
+                enrollment_centroids = get_centroids(enrollment_embeddings)
+                sim_matrix = get_cossim(verification_embeddings, enrollment_centroids)
 
-            # calculating EER
-            diff = 1;
-            EER = 0;
+                # calculating EER
+                diff = 1;
+                EER = 0;
 
-            for thres in [0.01 * i + 0.5 for i in range(50)]:
-                sim_matrix_thresh = sim_matrix > thres
+                for thres in [0.01 * i + 0.5 for i in range(50)]:
+                    sim_matrix_thresh = sim_matrix > thres
 
-                FAR = (sum([sim_matrix_thresh[i].float().sum() - sim_matrix_thresh[i, :, i].float().sum() for i
-                            in range(self.params['test_batch_size'])])
-                       / (self.params['test_batch_size'] - 1.0) / (float(self.params['num_utterances'] / 2)) / self.params['test_batch_size'])
+                    FAR = (sum([sim_matrix_thresh[i].float().sum() - sim_matrix_thresh[i, :, i].float().sum() for i
+                                in range(self.params['test_batch_size'])])
+                           / (self.params['test_batch_size'] - 1.0) / (float(self.params['num_utterances'] / 2)) / self.params['test_batch_size'])
 
-                FRR = (sum([self.params['num_utterances'] / 2 - sim_matrix_thresh[i, :, i].float().sum() for i in
-                            range(self.params['test_batch_size'])])
-                       / (float(self.params['num_utterances']/ 2)) / self.params['test_batch_size'])
+                    FRR = (sum([self.params['num_utterances'] / 2 - sim_matrix_thresh[i, :, i].float().sum() for i in
+                                range(self.params['test_batch_size'])])
+                           / (float(self.params['num_utterances']/ 2)) / self.params['test_batch_size'])
 
-                # Save threshold when FAR = FRR (=EER)
-                if diff > abs(FAR - FRR):
-                    diff = abs(FAR - FRR)
-                    EER = (FAR + FRR) / 2
-            batch_avg_EER += EER
+                    # Save threshold when FAR = FRR (=EER)
+                    if diff > abs(FAR - FRR):
+                        diff = abs(FAR - FRR)
+                        EER = (FAR + FRR) / 2
+                batch_avg_EER += EER
         batch_avg_EER = batch_avg_EER / (batch_id + 1)
         batch_avg_EER = batch_avg_EER.cpu().item()
 

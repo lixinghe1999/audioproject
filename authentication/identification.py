@@ -100,8 +100,7 @@ if __name__ == "__main__":
         #Exp.constrastive_train()
         #EER = Exp.contrastive_test()
         #print(EER)
-        acc = Exp.test()
-        print(acc)
+        Exp.cluster_test()
     else:
         path = 'speaker_embedding/phone_embedding'
         people = os.listdir(path)
