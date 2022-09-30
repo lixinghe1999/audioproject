@@ -120,6 +120,7 @@ if __name__ == "__main__":
     acc = torch.rand(2, 1, 33, 151)
     model = Sequence_A2net()
     output = model(audio, acc)[0]
+    print(output)
     print(output.shape)
     size_all_mb = model_size(model)
     print('model size: {:.3f}MB'.format(size_all_mb))

@@ -117,9 +117,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            print(loss.item())
             Loss_list.append(loss.item())
-            # if (i % 200 == 0) and i != 0:
-            #     print("epoch: ", e, "iteration: ", i, "training loss: ", loss.item())
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
         Metric = []
