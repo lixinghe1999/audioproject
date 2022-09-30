@@ -10,8 +10,8 @@ from torch.utils.mobile_optimizer import optimize_for_mobile
 
 class Sequence_A2net(BaseModel):
     def __init__(self,
-                 input_freqs=297,
-                 output_freqs=264,
+                 audio_freqs=297,
+                 acc_freqs=264,
                  look_ahead=2,
                  sequence_model="LSTM",
                  fb_output_activate_function="ReLU",
@@ -35,10 +35,11 @@ class Sequence_A2net(BaseModel):
         """
         super().__init__()
         assert sequence_model in ("GRU", "LSTM"), f"{self.__class__.__name__} only support GRU and LSTM."
-        self.output_freqs = output_freqs
+        self.acc_freqs = acc_freqs
+        self.audio_freqs = audio_freqs
         self.fb_model = SequenceModel(
-            input_size=input_freqs,
-            output_size=output_freqs,
+            input_size=self.acc_freqs + self.audio_freqs,
+            output_size=self.acc_freqs + self.audio_freqs,
             hidden_size=fb_model_hidden_size,
             num_layers=2,
             bidirectional=False,
@@ -77,9 +78,11 @@ class Sequence_A2net(BaseModel):
         # Fullband model
 
         fb_input = self.norm(noisy_mag).reshape(batch_size, num_channels * num_freqs, num_frames)
-        fb_output = self.fb_model(fb_input).reshape(batch_size, 1, 264, num_frames)
+        fb_output = self.fb_model(fb_input).reshape(batch_size, 1, num_freqs, num_frames)
         output = fb_output[:, :, :, self.look_ahead:]
-        return output
+        recon_audio = output[:, :, :self.audio_freqs, :]
+        recon_acc = output[:, :, -self.acc_freqs:, :]
+        return recon_audio, recon_acc
 
 def model_size(model):
     param_size = 0
