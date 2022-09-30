@@ -99,7 +99,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
         test_size = min(int(0.1 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    train_dataset = train_dataset[:1000]
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
@@ -167,7 +166,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 128
         lr = 0.001
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
 
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=264).to(device)
