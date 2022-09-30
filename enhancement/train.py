@@ -8,8 +8,9 @@ import torch.utils.data as Data
 import torchaudio
 import torch.nn as nn
 from dataset import NoisyCleanSet
-from fullsubnet import Model
+from fullsubnet import FullSubNet
 from A2net import A2net
+from lstm_A2net import Sequence_A2net
 import numpy as np
 import scipy.signal as signal
 from result import subjective_evaluation, objective_evaluation
@@ -159,17 +160,18 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    audio_only = True
-    complex = True
+    audio_only = False
+    complex = False
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 16
+        BATCH_SIZE = 32
         lr = 0.001
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True)
 
         #model = A2net(inference=False).to(device)
-        model = Model(num_freqs=264).to(device)
+        #model = FullSubNet(num_freqs=264).to(device)
+        model = Sequence_A2net().to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
                                                    save_all=True, audio_only=audio_only, complex=complex)
         plt.plot(loss_curve)

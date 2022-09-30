@@ -8,7 +8,7 @@ import time
 from torchvision.utils import save_image
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
-class Model(BaseModel):
+class FullSubNet(BaseModel):
     def __init__(self,
                  num_freqs=257,
                  look_ahead=2,
@@ -169,7 +169,7 @@ def model_save(model, audio):
 if __name__ == "__main__":
 
     audio = torch.rand(1, 1, 264, 151)
-    model = Model(
+    model = FullSubNet(
         num_freqs=264,
         look_ahead=2,
         sequence_model="LSTM",
