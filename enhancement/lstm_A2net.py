@@ -108,7 +108,7 @@ class Sequence_A2net(BaseModel):
         if weight_init:
             self.apply(self.weight_init)
 
-    def forward(self, noisy_mag, acc):
+    def forward(self, acc, noisy_mag):
         """
         Args:
             noisy_mag: noisy magnitude spectrogram
@@ -118,8 +118,8 @@ class Sequence_A2net(BaseModel):
             The real part and imag part of the enhanced spectrogram
 
         Shapes:
-            noisy_mag: [B, 1, F, T]
             acc: [B, 1, F_a, T]
+            noisy_mag: [B, 1, F, T]
             return: [B, 2, F, T]
         """
         assert noisy_mag.dim() == 4
