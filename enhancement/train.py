@@ -49,7 +49,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     if audio_only:
         predict1 = model(magnitude)
     else:
-        predict1, predict2 = model(x, magnitude)
+        predict1 = model(x, magnitude)
     # predict1 = magnitude
     # either predict the spectrogram, or predict the CIRM
     if complex:
@@ -81,11 +81,11 @@ def sample(model, x, noise, y, audio_only=False):
         predict1 = model(noise)
         loss = Loss(predict1, cIRM)
     else:
-        predict1, predict2 = model(x, noise)
+        predict1 = model(x, noise)
         loss1 = Loss(predict1, y)
         #loss = loss1
-        loss2 = Loss(predict2, y[:, :, :33, :])
-        loss = loss1 + loss2 * 0.01
+        #loss2 = Loss(predict2, y[:, :, :33, :])
+        loss = loss1
 
     return loss
 
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    audio_only = True
+    audio_only = False
     complex = False
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
