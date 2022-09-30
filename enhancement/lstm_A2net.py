@@ -183,10 +183,10 @@ if __name__ == "__main__":
                                                                                               #4: [3, 2]})
 
     model = Sequence_A2net()
-    output = model(audio, acc)
+    output = model(acc, audio)
     size_all_mb = model_size(model)
     print('model size: {:.3f}MB'.format(size_all_mb))
-    latency = model_speed(model, [audio,acc])
+    latency = model_speed(model, [acc, audio])
     print('model latency: {:.3f}S'.format(latency))
 
     #model_save(model, audio)

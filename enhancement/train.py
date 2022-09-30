@@ -159,7 +159,7 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    audio_only = False
+    audio_only = True
     complex = False
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
