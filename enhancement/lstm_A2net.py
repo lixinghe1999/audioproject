@@ -90,7 +90,7 @@ class Sequence_A2net(BaseModel):
                                    max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 3]})
         self.model_fusion = Unet_decoder(input_channel=128+64, filters=[128, 64, 32, 16],
                                    kernels=[[5, 5], [5, 5], [5, 5], [3, 3]],
-                                   max_pooling={1: [2, 1], 2: [2, 1], 3: [3, 3]})
+                                   max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 3]})
         self.fb_model = SequenceModel(
             input_size=(128 + 64) * 11,
             output_size=(128 + 64) * 11,
