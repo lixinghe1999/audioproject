@@ -18,7 +18,7 @@ class Sequence_A2net(BaseModel):
                  fb_model_hidden_size=512,
                  norm_type="offline_laplace_norm",
                  num_groups_in_drop_band=2,
-                 weight_init=True,
+                 weight_init=False,
                  ):
         """
         FullSubNet model (cIRM mask)
