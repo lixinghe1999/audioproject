@@ -164,7 +164,7 @@ if __name__ == "__main__":
     complex = False
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 32
+        BATCH_SIZE = 128
         lr = 0.001
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True)
