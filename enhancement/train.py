@@ -82,7 +82,6 @@ def sample(model, x, noise, y, audio_only=False):
         loss = Loss(predict1, cIRM)
     else:
         predict1 = model(x, noise)
-        print(predict1.shape)
         loss1 = Loss(predict1, y)
         #loss = loss1
         #loss2 = Loss(predict2, y[:, :, :33, :])
