@@ -82,6 +82,7 @@ def sample(model, x, noise, y, audio_only=False):
         loss = Loss(predict1, cIRM)
     else:
         predict1 = model(x, noise)
+        print(predict1.shape)
         loss1 = Loss(predict1, y)
         #loss = loss1
         #loss2 = Loss(predict2, y[:, :, :33, :])
@@ -117,7 +118,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            print(loss.item())
             Loss_list.append(loss.item())
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -166,7 +166,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 128
         lr = 0.001
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True)
 
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=264).to(device)
