@@ -90,6 +90,7 @@ def sample(model, x, noise, y, audio_only=False):
     return loss
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=False, complex=False):
+    dataset = dataset[:100]
     if isinstance(dataset, list):
         # with pre-defined train/ test
         train_dataset, test_dataset = dataset
