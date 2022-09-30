@@ -1,6 +1,6 @@
 import torch
 from torch.nn import functional
-
+import torch.nn as nn
 from audio_zen.acoustics.feature import drop_band
 from audio_zen.model.base_model import BaseModel
 from audio_zen.model.module.sequence_model import SequenceModel
@@ -8,11 +8,58 @@ import time
 from torchvision.utils import save_image
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
+class Unet_encoder(nn.Module):
+    def __init__(self, filters=[16, 32, 64, 128], kernels=[[3, 3], [3, 3], [3, 3], [3, 3]], max_pooling={2:[1,3], 3:[2,1]}):
+        super(Unet_encoder, self).__init__()
+        self.num_layers = len(filters)
+        layers = []
+        for i in range(self.num_layers):
+            if i == 0:
+                input_channel = 1
+            else:
+                input_channel = filters[i-1]
+            output_channel = filters[i]
+            kernel = kernels[i]
+            padding = [(k-1)//2 for k in kernel]
+            layer = nn.Sequential(
+            nn.Conv2d(input_channel, output_channel, kernel_size=kernel, padding=padding),
+            nn.BatchNorm2d(output_channel),
+            nn.ReLU(inplace=True))
+            layers.append(layer)
+            if i in max_pooling:
+                layers.append(nn.MaxPool2d(kernel_size=max_pooling[i]))
+        self.model = nn.Sequential(*layers)
+    def forward(self, x):
+        return self.model(x)
+class Unet_decoder(nn.Module):
+    def __init__(self, input_channel, filters=[16, 32, 64, 128],
+                 kernels=[[3, 3], [3, 3], [3, 3], [3, 3]], max_pooling={2:[1,3], 3:[2,1]}):
+        super(Unet_decoder, self).__init__()
+        self.num_layers = len(filters)
+        layers = []
+        for i in range(self.num_layers):
+            if i == 0:
+                input_channel = input_channel
+            else:
+                input_channel = filters[i-1]
+            output_channel = filters[i]
+            kernel = kernels[i]
+            padding = [(k-1)//2 for k in kernel]
+            layer = nn.Sequential(
+            nn.Conv2d(input_channel, output_channel, kernel_size=kernel, padding=padding),
+            nn.BatchNorm2d(output_channel),
+            nn.ReLU(inplace=True))
+            layers.append(layer)
+            if i in max_pooling:
+                layers.append(nn.ConvTranspose2d(output_channel, output_channel, kernel_size=max_pooling[i], stride=max_pooling[i]))
+        layers.append(nn.Conv2d(filters[-1], 1, kernel_size=1))
+        self.model = nn.Sequential(*layers)
+    def forward(self, x):
+        return self.model(x)
 class Sequence_A2net(BaseModel):
     def __init__(self,
-                 audio_freqs=264,
-                 acc_freqs=33,
                  look_ahead=2,
+                 T_segment=15,
                  sequence_model="LSTM",
                  fb_output_activate_function="ReLU",
                  fb_model_hidden_size=512,
@@ -35,18 +82,24 @@ class Sequence_A2net(BaseModel):
         """
         super().__init__()
         assert sequence_model in ("GRU", "LSTM"), f"{self.__class__.__name__} only support GRU and LSTM."
-        self.acc_freqs = acc_freqs
-        self.audio_freqs = audio_freqs
+        self.T_segment = T_segment
+        self.model_acc = Unet_encoder(filters=[16, 32, 64], kernels=[[3, 3], [3, 3], [3, 3]],
+                                 max_pooling={1: [1, 3], 2: [3, 1]})
+        self.model_audio = Unet_encoder(filters=[16, 32, 64, 128],
+                                   kernels=[[5, 5], [5, 5], [5, 5], [3, 3]],
+                                   max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 3]})
+        self.model_fusion = Unet_decoder(input_channel=128+64, filters=[128, 64, 32, 16],
+                                   kernels=[[5, 5], [5, 5], [5, 5], [3, 3]],
+                                   max_pooling={1: [2, 1], 2: [2, 1], 3: [3, 3]})
         self.fb_model = SequenceModel(
-            input_size=self.acc_freqs + self.audio_freqs,
-            output_size=self.acc_freqs + self.audio_freqs,
+            input_size=(128 + 64) * 11,
+            output_size=(128 + 64) * 11,
             hidden_size=fb_model_hidden_size,
             num_layers=2,
             bidirectional=False,
             sequence_model=sequence_model,
             output_activate_function=fb_output_activate_function
         )
-
 
         self.look_ahead = look_ahead
         self.norm = self.norm_wrapper(norm_type)
@@ -70,19 +123,25 @@ class Sequence_A2net(BaseModel):
             return: [B, 2, F, T]
         """
         assert noisy_mag.dim() == 4
-        noisy_mag = torch.cat([noisy_mag, acc], dim=2)
-        noisy_mag = functional.pad(noisy_mag, [0, self.look_ahead]) # Pad the look ahead
         batch_size, num_channels, num_freqs, num_frames = noisy_mag.size()
-        assert num_channels == 1, f"{self.__class__.__name__} takes the mag feature as inputs."
+        noisy_mag = noisy_mag.reshape(-1, num_channels, num_freqs, self.T_segment)
+        noisy_mag = self.model_audio(noisy_mag)
+        noisy_mag = noisy_mag.reshape(batch_size, 128, 11, -1)
 
+        batch_size, num_channels, num_freqs, num_frames = acc.size()
+        acc = acc.reshape(-1, num_channels, num_freqs, self.T_segment)
+        acc = self.model_acc(acc)
+        acc = acc.reshape(batch_size, 64, 11, -1)
+
+        noisy_mag = torch.cat([noisy_mag, acc], dim=1)
+        batch_size, num_channels, num_freqs, num_frames = noisy_mag.size()
         # Fullband model
 
-        fb_input = self.norm(noisy_mag).reshape(batch_size, num_channels * num_freqs, num_frames)
-        fb_output = self.fb_model(fb_input).reshape(batch_size, 1, num_freqs, num_frames)
-        output = fb_output[:, :, :, self.look_ahead:]
-        recon_audio = output[:, :, :self.audio_freqs, :]
-        recon_acc = output[:, :, -self.acc_freqs:, :]
-        return recon_audio, recon_acc
+        noisy_mag = self.norm(noisy_mag).reshape(batch_size, num_channels * num_freqs, num_frames)
+        output = self.fb_model(noisy_mag).reshape(batch_size, 128+64, num_freqs, num_frames)
+        output = self.model_fusion(output)
+
+        return output
 
 def model_size(model):
     param_size = 0
@@ -116,15 +175,17 @@ def model_save(model, audio):
     save_image(audio, 'input.jpg')
 if __name__ == "__main__":
 
-    audio = torch.rand(2, 1, 264, 151)
-    acc = torch.rand(2, 1, 33, 151)
+    audio = torch.rand(2, 1, 264, 150)
+    acc = torch.rand(2, 1, 33, 150)
+    # model_acc = Unet_encoder(filters=[16, 32, 64, 128], kernels=[[3, 3], [3, 3], [3, 3], [3, 3]], max_pooling={2:(1, 2), 3:(3,1)})
+    # model_audio = Unet_encoder(filters=[16, 32, 64, 128, 256],
+    #                            kernels=[[5, 5], [5, 5], [5, 5], [5, 5], [3, 3]], max_pooling={1: [2, 1], 2: [2, 1], 3: [2, 1],
+                                                                                              #4: [3, 2]})
+
     model = Sequence_A2net()
-    output = model(audio, acc)[0]
-    print(output)
-    print(output.shape)
+    output = model(audio, acc)
     size_all_mb = model_size(model)
     print('model size: {:.3f}MB'.format(size_all_mb))
-    #
     latency = model_speed(model, [audio,acc])
     print('model latency: {:.3f}S'.format(latency))
 
