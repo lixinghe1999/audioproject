@@ -11,7 +11,7 @@ from scipy import interpolate
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
 from torchvision.utils import save_image
 from A2net import A2net
-from fullsubnet import Model
+from fullsubnet import FullSubNet
 import argparse
 seg_len_mic = 640
 overlap_mic = 320
