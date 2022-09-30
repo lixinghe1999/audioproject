@@ -10,8 +10,8 @@ from torch.utils.mobile_optimizer import optimize_for_mobile
 
 class Sequence_A2net(BaseModel):
     def __init__(self,
-                 audio_freqs=297,
-                 acc_freqs=264,
+                 audio_freqs=264,
+                 acc_freqs=33,
                  look_ahead=2,
                  sequence_model="LSTM",
                  fb_output_activate_function="ReLU",
