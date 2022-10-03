@@ -17,43 +17,30 @@ import json
 from torch.utils.data import ConcatDataset
 
 
-def identification(X, Y, ratio=0.1):
+def identification(X, Y, ratio=0.3):
     random_number = np.random.randint(0, 100)
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=ratio, stratify=Y, random_state=random_number)
-    #clf = SVC(kernel='rbf', class_weight='balanced').fit(X_train, y_train)
-    clf = MLPClassifier(hidden_layer_sizes=(128, 128, 128), max_iter=500).fit(X_train, y_train)
+    clf = SVC(kernel='rbf', class_weight='balanced').fit(X_train, y_train)
+    #clf = MLPClassifier(hidden_layer_sizes=(128, 128, 128), max_iter=500).fit(X_train, y_train)
     return y_test, clf.predict(X_test), clf
 
-def Mel_split(X, Y, ratio=0.2):
-    random_number = np.random.randint(0, 100)
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=ratio, stratify=Y, random_state=random_number)
-
-    results = []
-    for k in range(12):
-        X_clip = np.concatenate([X_train[:, k * 10 : (k + 1) * 10], X_train[:, k * 10 : (k + 1) * 10]], axis=1)
-        clf = SVC(kernel='rbf', class_weight='balanced').fit(X_clip, y_train)
-        pred = clf.predict(np.concatenate([X_test[:, k * 10 : (k + 1) * 10], X_test[:, k * 10 : (k + 1) * 10]], axis=1))
-        results.append(pred)
-    results = np.array(results)
-    axis = 0
-    u, indices = np.unique(results, return_inverse=True)
-    hard_vote = u[np.argmax(np.apply_along_axis(np.bincount, axis, indices.reshape(results.shape), None, np.max(indices) + 1), axis=axis)]
-    return y_test, hard_vote
 
 def load_data(path):
     people = os.listdir(path)
     X = []
     Y = []
     for i, p in enumerate(people):
-        x = np.load(os.path.join(path, p))
-        X.append(x)
-        N = np.shape(x)[0]
-        Y.append(np.ones(N) * i)
-    return np.concatenate(X, axis=0), np.concatenate(Y)
+        person_path = os.path.join(path, p)
+        files = os.listdir(person_path)
+        for f in files:
+            x = np.load(os.path.join(person_path, f)).reshape(-1)
+            X.append(x)
+            Y.append(i)
+    return np.stack(X, axis=0), Y
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--mode', action="store", type=int, default=0, required=False)
-    # mode 0: utterance-level embeddings
+    # mode 0: machine learning
     # mode 1: deep learning
     # mode 2: phone-level embeddings
     args = parser.parse_args()
@@ -62,15 +49,11 @@ if __name__ == "__main__":
     # sns.scatterplot(x=X_embedded[:, 0], y=X_embedded[:, 1], hue=Y, legend='full', palette=palette)
     # plt.show()
     if args.mode == 0:
-        #X1, Y = load_data('speaker_embedding/DNN_embedding')
-        X2, Y = load_data('speaker_embedding/mfcc_embedding')
-        X3, Y = load_data('speaker_embedding/bcf_embedding')
-
+        X, Y = load_data('speaker_embedding/noise_dependent')
         #X = np.concatenate([X2, X3], axis=1)
-        gt, p1, clf1 = identification(X3, Y)
-        #gt, p2 = Mel_split(X3, Y)
-        print(balanced_accuracy_score(gt, p1))
-        mat = confusion_matrix(gt, p1, normalize='true')
+        gt, p, clf = identification(X, Y)
+        print(balanced_accuracy_score(gt, p))
+        mat = confusion_matrix(gt, p, normalize='true')
         plt.imshow(mat)
         plt.colorbar()
         plt.show()
@@ -93,14 +76,15 @@ if __name__ == "__main__":
 
         # train_dataset = MyDataSet('speaker_embedding/DNN_embedding', ratio=0.8)
         # test_dataset = MyDataSet('speaker_embedding/DNN_embedding', ratio=-0.2)
-        dataset = MyDataSet('speaker_embedding/DNN_embedding')
-        noisy_dataset = MyDataSet('speaker_embedding/noise_DNN_embedding')
-        dataset = ConcatDataset([dataset, noisy_dataset])
-        Exp = Experiment(model, dataset, config['exp_params'], pretrain='97_noisy.pth')
-        #Exp.constrastive_train()
+        # dataset = MyDataSet('speaker_embedding/DNN_embedding')
+        # noisy_dataset = MyDataSet('speaker_embedding/noise_DNN_embedding')
+        # dataset = ConcatDataset([dataset, noisy_dataset])
+        dataset = MyDataSet('speaker_embedding/noise_dependent')
+        Exp = Experiment(model, dataset, config['exp_params'], pretrain=None)
+        Exp.train()
         #EER = Exp.contrastive_test()
         #print(EER)
-        Exp.cluster_test()
+        #Exp.cluster_test()
     else:
         path = 'speaker_embedding/phone_embedding'
         people = os.listdir(path)

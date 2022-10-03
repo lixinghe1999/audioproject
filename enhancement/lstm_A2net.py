@@ -58,14 +58,9 @@ class Unet_decoder(nn.Module):
         return self.model(x)
 class Sequence_A2net(BaseModel):
     def __init__(self,
-                 look_ahead=2,
-                 T_segment=15,
+                 T_segment=30,
                  sequence_model="LSTM",
                  fb_output_activate_function="ReLU",
-                 fb_model_hidden_size=512,
-                 norm_type="offline_laplace_norm",
-                 num_groups_in_drop_band=2,
-                 weight_init=False,
                  ):
         """
         FullSubNet model (cIRM mask)
@@ -84,29 +79,24 @@ class Sequence_A2net(BaseModel):
         assert sequence_model in ("GRU", "LSTM"), f"{self.__class__.__name__} only support GRU and LSTM."
         self.T_segment = T_segment
         self.model_acc = Unet_encoder(filters=[16, 32, 64], kernels=[[3, 3], [3, 3], [3, 3]],
-                                 max_pooling={1: [1, 3], 2: [3, 1]})
+                                 max_pooling={2: [3, 1]})
         self.model_audio = Unet_encoder(filters=[16, 32, 64, 128],
                                    kernels=[[5, 5], [5, 5], [5, 5], [3, 3]],
-                                   max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 3]})
+                                   max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 1]})
         self.model_fusion = Unet_decoder(input_channel=128+64, filters=[128, 64, 32, 16],
                                    kernels=[[5, 5], [5, 5], [5, 5], [3, 3]],
-                                   max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 3]})
+                                   max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 1]})
         self.fb_model = SequenceModel(
             input_size=(128 + 64) * 11,
-            output_size=(128 + 64) * 11,
-            hidden_size=fb_model_hidden_size,
+            output_size=1024,
+            hidden_size=512,
             num_layers=2,
             bidirectional=False,
             sequence_model=sequence_model,
             output_activate_function=fb_output_activate_function
         )
-
-        self.look_ahead = look_ahead
-        self.norm = self.norm_wrapper(norm_type)
-        self.num_groups_in_drop_band = num_groups_in_drop_band
-
-        if weight_init:
-            self.apply(self.weight_init)
+        self.fc = nn.Sequential(nn.Linear(1024, 600), nn.Linear(600, 600),
+                                nn.Linear(600, 264))
 
     def forward(self, acc, noisy_mag):
         """
@@ -136,10 +126,11 @@ class Sequence_A2net(BaseModel):
         noisy_mag = torch.cat([noisy_mag, acc], dim=1)
         batch_size, num_channels, num_freqs, num_frames = noisy_mag.size()
         # Fullband model
-
-        noisy_mag = self.norm(noisy_mag).reshape(batch_size, num_channels * num_freqs, num_frames)
-        output = self.fb_model(noisy_mag).reshape(batch_size, 128+64, num_freqs, num_frames)
-        output = self.model_fusion(output)
+        noisy_mag = noisy_mag.reshape(batch_size, num_channels * num_freqs, num_frames)
+        output = self.fb_model(noisy_mag)
+        output = self.fc(output.permute(0, 2, 1)).permute(0, 2, 1)
+        # output = self.fb_model(noisy_mag).reshape(batch_size, num_channels, num_freqs, num_frames)
+        # output = self.model_fusion(output)
 
         return output
 

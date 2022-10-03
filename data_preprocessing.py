@@ -42,6 +42,7 @@ if __name__ == "__main__":
         source = 'dataset/raw'
         target = 'dataset/our'
         for p in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9']:
+        #for p in ['1']:
         # for p in ['vr-down', 'vr-up', 'headphone-inside', 'headphone-outside', 'glasses']:
         #for p in ['cheek', 'temple', 'back', 'nose']:
             print(p)
@@ -50,6 +51,8 @@ if __name__ == "__main__":
                 N = len(file_list)
                 if N > 0:
                     name = path.split('\\')[-1]
+                    if name != 'noise':
+                        continue
                     if name in ['noise', 'clean', 'mobile']:
                         T = 5
                     else:
@@ -73,8 +76,29 @@ if __name__ == "__main__":
 
                         data1 = calibrate(os.path.join(path, imu1[i]), T, shift1)
                         data2 = calibrate(os.path.join(path, imu2[i]), T, shift2)
-
+                        # b, a = signal.butter(4, 80, 'highpass', fs=1600)
+                        # data1 = signal.filtfilt(b, a, data1, axis=0)
+                        # data2 = signal.filtfilt(b, a, data2, axis=0)
+                        # data1 = np.clip(data1, -0.05, 0.05)
+                        # data2 = np.clip(data2, -0.05, 0.05)
                         mic = librosa.load(os.path.join(path, gt[i]), sr=16000)[0]
+
+
+                        # mic = signal.stft(mic, nperseg=640, noverlap=320, fs=16000)[-1]
+                        # mic = np.abs(mic[:33, :])
+                        # data1 = signal.stft(data1, nperseg=64, noverlap=32, fs=1600, axis=0)[-1]
+                        # data1 = np.linalg.norm(np.abs(data1), axis=1)
+                        # data2 = signal.stft(data2, nperseg=64, noverlap=32, fs=1600, axis=0)[-1]
+                        # data2 = np.linalg.norm(np.abs(data2), axis=1)
+                        # data1[:4, :] = 0
+                        # data2[:4, :] = 0
+                        # print(data1.shape, data2.shape)
+                        # fig, axs = plt.subplots(3)
+                        # axs[0].imshow(data1)
+                        # axs[1].imshow(data2)
+                        # axs[2].imshow(mic)
+                        # plt.show()
+
                         if dual:
                             airpods = librosa.load(os.path.join(path, wav[i]), sr=16000)[0]
                             shift = np.argmax(signal.correlate(mic, airpods)) - np.shape(mic)
@@ -83,10 +107,8 @@ if __name__ == "__main__":
 
                             f2 = wav[i][:-4] + '.wav'
                             sf.write(os.path.join(folder, f2), airpods, 16000)
-
                         f1 = gt[i][:-4] + '.wav'
                         sf.write(os.path.join(folder, f1), mic, 16000)
-
                         np.savetxt(os.path.join(folder, imu1[i]), data1, fmt='%.2f')
                         np.savetxt(os.path.join(folder, imu2[i]), data2, fmt='%.2f')
 
@@ -135,65 +157,6 @@ if __name__ == "__main__":
                             f2 = 'new' + files_mic2[i][:-4] + '.wav'
                             sf.write(os.path.join(target, folder, s, c, f1), mic, 16000)
                             sf.write(os.path.join(target, folder, s, c, f2), airpods, 16000)
-
-
-    elif args.mode == 2:
-        # synchronize airpods and microphone
-        source = 'replay/record'
-        T = 5
-        # source = 'attack/box'
-        # T = 30
-        for folder in os.listdir(source):
-            path = os.path.join(source, folder)
-            if not os.path.isdir(path):
-                continue
-            else:
-                files = os.listdir(path)
-                N = int(len(files) / 3)
-                files_imu1 = files[:N]
-                files_imu2 = files[N:2 * N]
-                files_mic1 = files[2 * N:]
-                for i in range(N):
-                    calibrate(os.path.join(path, files_imu1[i]),
-                              os.path.join(path, files_imu1[i]), T, 0)
-                    calibrate(os.path.join(path, files_imu2[i]),
-                              os.path.join(path, files_imu2[i]), T, 0)
-
-    else:
-        source = 'identification/replay/record/he'
-        target = 'identification/replay/generate'
-        T = 5
-        path = source
-        files = os.listdir(path)
-        N = int(len(files) / 3)
-        files_imu1 = files[:N]
-        files_imu2 = files[N:2 * N]
-        files_mic1 = files[2 * N:]
-        for i in range(N):
-            data1, imu1 = read_data(os.path.join(path, files_imu1[i]))
-            data2, imu2 = read_data(os.path.join(path, files_imu2[i]))
-            wave, mic, phase = micplot.load_stereo(os.path.join(path, files_mic1[i]), T, 2560, 2240, 16000, normalize=True)
-            imu1 = synchronization(mic, imu1)
-            imu2 = synchronization(mic, imu2)
-            # imu1[imu1 < 0.5 * filters.threshold_otsu(imu1)] = 0
-            # imu2[imu2 < 0.5 * filters.threshold_otsu(imu2)] = 0
-            # imu1 = morphology.dilation(imu1, morphology.square(3))
-            # imu2 = morphology.dilation(imu2, morphology.square(3))
-            # re1 = phase[:129, :] * imu1
-            # re2 = phase[:129, :] * imu2
-            # out = np.zeros((1281, 251), dtype='complex64')
-            # out[:129] = re1
-            # _, x1 = signal.istft(out, fs=16000, window='hann', nperseg=2560, noverlap=2240)
-            # out[:129] = re2
-            # _, x2 = signal.istft(out, fs=16000, window='hann', nperseg=2560, noverlap=2240)
-            # sf.write(os.path.join(target, '1_' + str(i) + '.wav'), 10 * x1, 16000)
-            # sf.write(os.path.join(target, '2_' + str(i) + '.wav'), 10 * x2, 16000)
-            fig, axs = plt.subplots(3, figsize=(5, 3))
-            axs[0].imshow(imu1, aspect='auto')
-            axs[1].imshow(imu2, aspect='auto')
-            axs[2].imshow(mic[:129, :], aspect='auto')
-            plt.show()
-
 
 
 

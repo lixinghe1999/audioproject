@@ -74,8 +74,8 @@ class Experiment():
         super(Experiment, self).__init__()
         self.single_modality = single_modality
         self.model = model
-        #self.loss = torch.nn.CrossEntropyLoss()
-        self.loss = GE2ELoss('cuda')
+        self.loss = torch.nn.CrossEntropyLoss()
+        #self.loss = GE2ELoss('cuda')
         if pretrain:
             self.model.load_state_dict(torch.load(pretrain))
         self.params = params
@@ -99,8 +99,8 @@ class Experiment():
                                                          gamma=self.params['gamma'])
 
     def train(self):
-        best_EER = 0.5
-        EER_curve = []
+        best_acc = 0.5
+        acc_curve = []
         for i in range(self.params['epoch']):
             for embeddings, cls in tqdm(self.train_loader):
                 embeddings = embeddings.to(device=self.device, dtype=torch.float)
@@ -112,16 +112,16 @@ class Experiment():
                 loss.backward()
                 self.optimizer.step()
             self.scheduler.step()
-            EER = self.contrastive_test()
-            print(EER)
-            EER_curve.append(EER)
-            if EER < best_EER:
-                best_EER = EER
+            acc = self.test()
+            print(acc)
+            acc_curve.append(acc)
+            if acc > best_acc:
+                best_acc = acc
                 ckpt_best = self.model.state_dict()
 
-        torch.save(ckpt_best, str(best_EER) + '_best.pth')
-        plt.plot(EER_curve)
-        plt.savefig(str(best_EER) + '_acc.png')
+        torch.save(ckpt_best, str(best_acc) + '_best.pth')
+        plt.plot(acc_curve)
+        plt.savefig(str(best_acc) + '_acc.png')
     def test(self):
         accuracy = []
         with torch.no_grad():

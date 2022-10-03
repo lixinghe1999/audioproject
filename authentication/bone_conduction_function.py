@@ -107,20 +107,21 @@ def estimate_response(audio, imu):
     audio = np.abs(audio[:freq_bin_high, :])
     f, t, imu = signal.stft(imu, nperseg=seg_len_imu, noverlap=overlap_imu, fs=rate_imu, axis=0)
     imu = np.linalg.norm(np.abs(imu), axis=1)
+    imu = np.roll(imu, 3, axis=1)
+    imu[:4, :] = 0
     select = audio > 1 * filters.threshold_otsu(audio)
-    #select2 = imu > 1 * filters.threshold_otsu(imu)
-
-    # fig, axs = plt.subplots(2)
-    # axs[0].imshow(audio, aspect='auto', origin='lower')
-    # axs[1].imshow(imu, aspect='auto', origin='lower')
-    # plt.show()
     Zxx_ratio = np.divide(imu, audio, out=np.zeros_like(imu), where=select)
-    # response = np.zeros((2, freq_bin_high))
-    # for i in range(freq_bin_high):
-    #     if np.sum(select[i, :]) > 0:
-    #         response[0, i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
-    #         response[1, i] = np.std(Zxx_ratio[i, :], where=select[i, :])
 
+    response = np.zeros(freq_bin_high)
+    for i in range(freq_bin_high):
+        if np.sum(select[i, :]) > 0:
+            response[i] = np.mean(Zxx_ratio[i, :], where=select[i, :])
+
+    fig, axs = plt.subplots(3)
+    axs[0].imshow(audio)
+    axs[1].imshow(imu)
+    axs[2].imshow(Zxx_ratio)
+    plt.show()
     # response for spectrum
     # N = 4800
     # audio = np.abs(scipy.fft.fft(audio[::10]))[:N//2]
@@ -133,7 +134,7 @@ def estimate_response(audio, imu):
     # axs[2].plot(response)
     # plt.show()
 
-    return Zxx_ratio
+    return response
 
 def spectrogram_recover(audio, imu, response):
     freq, time_bin = np.shape(audio)

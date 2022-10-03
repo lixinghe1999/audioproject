@@ -12,8 +12,8 @@ from allosaurus.app import read_recognizer
 import json
 
 
-T = 30
-segment = 3
+T = 5
+segment = 5
 rate_imu = 1600
 rate_mic = 16000
 
@@ -53,12 +53,11 @@ def segment_level_feature(data1, data2, data3, count, store_path):
         # corr1 = matching_features(data3, data1)
         # corr2 = matching_features(data3, data2)
         # embedding = np.concatenate([corr1, corr2], axis=1)
-
         # embedding = get_spk_emb(data3)
 
         bcf1 = estimate_response(audio, imu1)
         bcf2 = estimate_response(audio, imu2)
-        embedding = np.stack([bcf1[:, :], bcf2[:, :]], axis=0)
+        embedding = np.stack([bcf1, bcf2], axis=0)
         # embedding = np.mean(librosa.feature.mfcc(y=data3, sr=rate_mic), axis=1)
         np.save(store_path + '/' + str(count), embedding)
         count += 1
@@ -78,53 +77,47 @@ if __name__ == '__main__':
         count = 0
         print(k)
         p = person[k]
-        path = os.path.join(directory, p, 'noise_train')
-        file_list = os.listdir(path)
-        dict = directory_decompose(file_list)
-        imu1 = dict['bmiacc1']
-        imu2 = dict['bmiacc2']
-        audio1 = dict['mic']
-        if '新录音' in dict:
-            audio2 = dict['新录音']
-        embeddings = []
-        dataset = {}
+        for s in ['s1']:
+            path = os.path.join(directory, p, s, 'noise')
 
-        store_path = 'speaker_embedding/noise_DNN_embedding/' + str(k)
-        if not os.path.exists(store_path):
-            os.makedirs(store_path)
-        if args.mode == 0:
-            model = read_recognizer()
-            embeddings = {}
-            for i in range(len(imu1)):
-                b, a = signal.butter(4, 80, 'highpass', fs=rate_imu)
-                data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14
-                data2 = np.loadtxt(os.path.join(path, imu2[i])) / 2 ** 14
-                data1 = signal.filtfilt(b, a, data1, axis=0)
-                data2 = signal.filtfilt(b, a, data2, axis=0)
-                data1 = np.clip(data1, -0.05, 0.05)
-                data2 = np.clip(data2, -0.05, 0.05)
+            file_list = os.listdir(path)
+            dict = directory_decompose(file_list)
+            imu1 = dict['bmiacc1']
+            imu2 = dict['bmiacc2']
+            audio1 = dict['mic']
+            if '新录音' in dict:
+                audio2 = dict['新录音']
+            embeddings = []
+            dataset = {}
 
-                b, a = signal.butter(4, 80, 'highpass', fs=rate_mic)
-                data3 = preprocess_wav(os.path.join(path, audio1[i]))
-                data3 = signal.filtfilt(b, a, data3, axis=0)
+            store_path = 'speaker_embedding/noise_dependent/' + str(k)
+            if not os.path.exists(store_path):
+                os.makedirs(store_path)
+            if args.mode == 0:
+                model = read_recognizer()
+                embeddings = {}
+                for i in range(len(imu1)):
+                    b, a = signal.butter(4, 80, 'highpass', fs=rate_imu)
+                    data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14
+                    data2 = np.loadtxt(os.path.join(path, imu2[i])) / 2 ** 14
+                    data1 = signal.filtfilt(b, a, data1, axis=0)
+                    data2 = signal.filtfilt(b, a, data2, axis=0)
+                    data1 = np.clip(data1, -0.05, 0.05)
+                    data2 = np.clip(data2, -0.05, 0.05)
 
-                embeddings = phone_level_feature(model, data1, data2, data3, embeddings)
-            json.dump(embeddings, open(store_path + '.json', 'w'), indent=4)
-        else:
-            for i in range(len(imu1)):
-                b, a = signal.butter(4, 80, 'highpass', fs=rate_imu)
-                data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14
-                data2 = np.loadtxt(os.path.join(path, imu2[i])) / 2 ** 14
-                data1 = signal.filtfilt(b, a, data1, axis=0)
-                data2 = signal.filtfilt(b, a, data2, axis=0)
-                data1 = np.clip(data1, -0.05, 0.05)
-                data2 = np.clip(data2, -0.05, 0.05)
+                    b, a = signal.butter(4, 80, 'highpass', fs=rate_mic)
+                    data3 = preprocess_wav(os.path.join(path, audio1[i]))
+                    data3 = signal.filtfilt(b, a, data3, axis=0)
 
-                b, a = signal.butter(4, 80, 'highpass', fs=rate_mic)
+                    embeddings = phone_level_feature(model, data1, data2, data3, embeddings)
+                json.dump(embeddings, open(store_path + '.json', 'w'), indent=4)
+            else:
+                for i in range(len(imu1)):
 
-                data3, source_sr = librosa.load(os.path.join(path, audio1[i]), sr=None)
-                data3 = normalize_volume(data3, -30, increase_only=True)
-                data3 = signal.filtfilt(b, a, data3, axis=0)
-                count = segment_level_feature(data1, data2, data3, count, store_path)
+                    data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14
+                    data2 = np.loadtxt(os.path.join(path, imu2[i])) / 2 ** 14
+                    data3, source_sr = librosa.load(os.path.join(path, audio1[i]), sr=None)
+                    data3 = normalize_volume(data3, -30, increase_only=True)
+                    count = segment_level_feature(data1, data2, data3, count, store_path)
 
 
