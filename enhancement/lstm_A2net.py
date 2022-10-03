@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import torch
 from torch.nn import functional
 import torch.nn as nn
@@ -83,9 +84,9 @@ class Sequence_A2net(BaseModel):
         self.model_audio = Unet_encoder(filters=[16, 32, 64, 128],
                                    kernels=[[5, 5], [5, 5], [5, 5], [3, 3]],
                                    max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 1]})
-        self.model_fusion = Unet_decoder(input_channel=128+64, filters=[128, 64, 32, 16],
-                                   kernels=[[5, 5], [5, 5], [5, 5], [3, 3]],
-                                   max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 1]})
+        # self.model_fusion = Unet_decoder(input_channel=128+64, filters=[128, 64, 32, 16],
+        #                            kernels=[[5, 5], [5, 5], [5, 5], [3, 3]],
+        #                            max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 1]})
         self.fb_model = SequenceModel(
             input_size=(128 + 64) * 11,
             output_size=512,
@@ -113,14 +114,28 @@ class Sequence_A2net(BaseModel):
         """
         assert noisy_mag.dim() == 4
         batch_size, num_channels, num_freqs, num_frames = noisy_mag.size()
-        noisy_mag = noisy_mag.reshape(-1, num_channels, num_freqs, self.T_segment)
+        #noisy_mag = noisy_mag.reshape(-1, num_channels, num_freqs, self.T_segment)
+        #noisy_mag = noisy_mag.permute(3, 0, 1, 2).reshape(self.T_segment, -1, num_channels, num_freqs).permute(1, 2, 3, 0)
+        # fig, axs = plt.subplots(1, 10)
+        # for i in range(10):
+        #     axs[i].imshow(noisy_mag.cpu()[i, 0, :, :])
+        # plt.show()
+        noisy_mag = torch.split(noisy_mag, self.T_segment, dim=-1)
+        noisy_mag = torch.cat(noisy_mag, dim=0)
         noisy_mag = self.model_audio(noisy_mag)
-        noisy_mag = noisy_mag.reshape(batch_size, 128, 11, -1)
+        noisy_mag = torch.split(noisy_mag, batch_size, dim=0)
+        noisy_mag = torch.cat(noisy_mag, dim=-1)
+        #
+        # noisy_mag = noisy_mag.permute(3, 0, 1, 2).reshape(num_frames, batch_size, 128, 11).permute(1, 2, 3, 0)
+        #
+
 
         batch_size, num_channels, num_freqs, num_frames = acc.size()
-        acc = acc.reshape(-1, num_channels, num_freqs, self.T_segment)
+        acc = torch.split(acc, self.T_segment, dim=-1)
+        acc = torch.cat(acc, dim=0)
         acc = self.model_acc(acc)
-        acc = acc.reshape(batch_size, 64, 11, -1)
+        acc = torch.split(acc, batch_size, dim=0)
+        acc = torch.cat(acc, dim=-1)
 
         noisy_mag = torch.cat([noisy_mag, acc], dim=1)
         batch_size, num_channels, num_freqs, num_frames = noisy_mag.size()
