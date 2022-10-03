@@ -125,10 +125,6 @@ class Sequence_A2net(BaseModel):
         noisy_mag = self.model_audio(noisy_mag)
         noisy_mag = torch.split(noisy_mag, batch_size, dim=0)
         noisy_mag = torch.cat(noisy_mag, dim=-1)
-        #
-        # noisy_mag = noisy_mag.permute(3, 0, 1, 2).reshape(num_frames, batch_size, 128, 11).permute(1, 2, 3, 0)
-        #
-
 
         batch_size, num_channels, num_freqs, num_frames = acc.size()
         acc = torch.split(acc, self.T_segment, dim=-1)
