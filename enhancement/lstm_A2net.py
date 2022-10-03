@@ -58,7 +58,7 @@ class Unet_decoder(nn.Module):
         return self.model(x)
 class Sequence_A2net(BaseModel):
     def __init__(self,
-                 T_segment=30,
+                 T_segment=25,
                  sequence_model="LSTM",
                  fb_output_activate_function="ReLU",
                  ):
@@ -88,15 +88,14 @@ class Sequence_A2net(BaseModel):
                                    max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 1]})
         self.fb_model = SequenceModel(
             input_size=(128 + 64) * 11,
-            output_size=1024,
+            output_size=512,
             hidden_size=512,
             num_layers=2,
             bidirectional=False,
             sequence_model=sequence_model,
             output_activate_function=fb_output_activate_function
         )
-        self.fc = nn.Sequential(nn.Linear(1024, 600), nn.Linear(600, 600),
-                                nn.Linear(600, 264))
+        self.fc = nn.Sequential(nn.Linear(512, 400), nn.Linear(400, 264))
 
     def forward(self, acc, noisy_mag):
         """
@@ -131,7 +130,7 @@ class Sequence_A2net(BaseModel):
         output = self.fc(output.permute(0, 2, 1)).permute(0, 2, 1)
         # output = self.fb_model(noisy_mag).reshape(batch_size, num_channels, num_freqs, num_frames)
         # output = self.model_fusion(output)
-
+        print(output.shape)
         return output
 
 def model_size(model):
