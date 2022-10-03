@@ -130,7 +130,6 @@ class Sequence_A2net(BaseModel):
         output = self.fc(output.permute(0, 2, 1)).permute(0, 2, 1)
         # output = self.fb_model(noisy_mag).reshape(batch_size, num_channels, num_freqs, num_frames)
         # output = self.model_fusion(output)
-        print(output.shape)
         return output
 
 def model_size(model):
