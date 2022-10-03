@@ -127,7 +127,7 @@ class Sequence_A2net(BaseModel):
         # Fullband model
         noisy_mag = noisy_mag.reshape(batch_size, num_channels * num_freqs, num_frames)
         output = self.fb_model(noisy_mag)
-        output = self.fc(output.permute(0, 2, 1)).permute(0, 2, 1)
+        output = self.fc(output.permute(0, 2, 1)).permute(0, 2, 1).unsqueeze(1)
         # output = self.fb_model(noisy_mag).reshape(batch_size, num_channels, num_freqs, num_frames)
         # output = self.model_fusion(output)
         return output
