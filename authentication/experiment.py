@@ -2,7 +2,6 @@
 import matplotlib.pyplot as plt
 import torch
 import torch.utils.data as Data
-import random
 from tqdm import tqdm
 import numpy as np
 import os
@@ -11,10 +10,13 @@ from model import GE2ELoss, get_centroids, get_cossim, Swap, Mask
 from torchvision import transforms
 from sklearn.manifold import TSNE
 import seaborn as sns
+import random
 class MyDataSet(Dataset):
-    def __init__(self, path, ratio=1):
+    def __init__(self, path, ratio=1, augmentation=0):
         self.X = []
         self.Y = []
+        self.augmentation = augmentation
+        self.transform = transforms.Compose([Swap(30)])
         for i, p in enumerate(os.listdir(path)):
             person_path = os.path.join(path, p)
             files = os.listdir(person_path)
@@ -28,7 +30,12 @@ class MyDataSet(Dataset):
     def __len__(self):
         return len(self.Y)
     def __getitem__(self, index):
-        return np.load(self.X[index]), int(self.Y[index])
+
+        r = random.uniform(0, 1)
+        if r < self.augmentation:
+            return self.transform(np.load(self.X[index])), int(self.Y[index])
+        else:
+            return np.load(self.X[index]), int(self.Y[index])
 
 class MyDataSet_Constrastive(Dataset):
     def __init__(self, path, shuffle=True, utter_num=6, ratio=1, augmentation=False):
