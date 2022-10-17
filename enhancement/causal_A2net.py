@@ -122,12 +122,12 @@ class Audio_branch(nn.Module):
             nn.ReLU(inplace=True),
             )
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
-        x = self.conv4(x)
-        x = self.conv5(x)
-        return x
+        x1 = self.conv1(x)
+        x2 = self.conv2(x1)
+        x3 = self.conv3(x2)
+        x4 = self.conv4(x3)
+        x5 = self.conv5(x4)
+        return [x1, x2, x3, x4, x5]
 
 class Residual_branch(nn.Module):
     def __init__(self, in_channels):
@@ -136,7 +136,7 @@ class Residual_branch(nn.Module):
             CausalConv2d(in_channels, 256, kernel_size=3),
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True))
-        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(2, 1), stride=(2, 1))
+        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(3, 2), stride=(3, 2))
         self.r2 = nn.Sequential(
             CausalConv2d(128, 128, kernel_size=5, dilation=2),
             nn.BatchNorm2d(128),
@@ -151,13 +151,14 @@ class Residual_branch(nn.Module):
             CausalConv2d(32, 32, kernel_size=3),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
-        self.up4 = nn.ConvTranspose2d(32, 16, kernel_size=(3, 2), stride=(3, 2))
+        self.up4 = nn.ConvTranspose2d(32, 16, kernel_size=(2, 1), stride=(2, 1))
         self.final = CausalConv2d(16, 1, kernel_size=1)
-    def forward(self, x):
-        x = self.up1(self.r1(x) + x)
-        x = self.up2(self.r2(x) + x)
-        x = self.up3(self.r3(x) + x)
-        x = self.up4(self.r4(x) + x)
+    def forward(self, x, Res_x):
+        x1, x2, x3, x4 = Res_x
+        x = self.up1(self.r1(x)) + x4
+        x = self.up2(self.r2(x)) + x3
+        x = self.up3(self.r3(x)) + x2
+        x = self.up4(self.r4(x)) + x1
         return self.final(x)
 
 class Fusion_branch(nn.Module):
@@ -200,21 +201,24 @@ class Causal_A2net(nn.Module):
         self.inference = inference
         self.IMU_branch = IMU_branch(self.inference)
         self.Audio_branch = Audio_branch()
-        #self.Residual_branch = Residual_branch(256)
-        self.Fusion_branch = Fusion_branch(256)
-    def forward(self, x1, x2):
+        self.Residual_branch = Residual_branch(256)
+        #self.Fusion_branch = Fusion_branch(256)
+    def forward(self, acc, audio):
         if self.inference:
-            x = torch.cat([self.IMU_branch(x1), self.Audio_branch(x2)], dim=1)
-            #x = self.Residual_branch(x) * x2
-            x = self.Fusion_branch(x) * x2
+            acc = self.IMU_branch(acc)
+            [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
+            x = torch.cat([acc, x5], dim=1)
+            x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
+            #x = self.Fusion_branch(x) * x2
             return x
         else:
-            x1 = self.IMU_branch(x1)
-            x1, x_extra = x1
-            x = torch.cat([x1, self.Audio_branch(x2)], dim=1)
-            #x = self.Residual_branch(x) * x2
-            x = self.Fusion_branch(x) * x2
-            return x, x_extra
+            acc = self.IMU_branch(acc)
+            acc, acc_extra = acc
+            [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
+            x = torch.cat([acc, x5], dim=1)
+            x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
+            #x = self.Fusion_branch(x) * x2
+            return x, acc_extra
 
 
 
