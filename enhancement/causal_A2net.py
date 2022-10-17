@@ -46,7 +46,6 @@ class IMU_branch(nn.Module):
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.conv4(x)
-        print(x.shape)
         return x
 class Audio_branch(nn.Module):
     def __init__(self):
@@ -82,7 +81,6 @@ class Audio_branch(nn.Module):
         x = self.conv3(x)
         x = self.conv4(x)
         x = self.conv5(x)
-        print(x.shape)
         return x
 
 class Residual_Block(nn.Module):
