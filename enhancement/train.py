@@ -11,6 +11,7 @@ from dataset import NoisyCleanSet
 from fullsubnet import FullSubNet
 from A2net import A2net
 from lstm_A2net import Sequence_A2net
+from causal_A2net import Causal_A2net
 import numpy as np
 import scipy.signal as signal
 from result import subjective_evaluation, objective_evaluation
@@ -169,7 +170,8 @@ if __name__ == "__main__":
 
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=264).to(device)
-        model = Sequence_A2net().to(device)
+        #model = Sequence_A2net().to(device)
+        model = Causal_A2net().to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
                                                    save_all=True, audio_only=audio_only, complex=complex)
         plt.plot(loss_curve)
