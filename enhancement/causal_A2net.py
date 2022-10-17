@@ -217,6 +217,7 @@ class Causal_A2net(nn.Module):
             x1, x_extra = x1
             x = torch.cat([x1, self.Audio_branch(x2)], dim=1)
             #x = self.Residual_branch(x) * x2
+            print(x.shape, x2.shape)
             x = self.Fusion_branch(x) * x2
             return x, x_extra
 
@@ -253,11 +254,11 @@ def model_speed(model, input):
     return (time.time() - t_start)/step
 if __name__ == "__main__":
 
-    acc = torch.rand(1, 1, 33, 150)
-    audio = torch.rand(1, 1, 264, 150)
+    acc = torch.rand(128, 1, 33, 150)
+    audio = torch.rand(128, 1, 264, 150)
     model = Causal_A2net(inference=False)
     recover_audio, recover_acc = model(acc, audio)
-    # print(recover_audio.shape, recover_acc.shape)
+    print(recover_audio.shape, recover_acc.shape)
     print(model_size(model))
-    print(model_speed(model, [acc, audio]))
+    #print(model_speed(model, [acc, audio]))
     #model_save(model)
