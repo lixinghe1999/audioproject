@@ -5,59 +5,7 @@ from torchvision.utils import save_image
 from torch.utils.mobile_optimizer import optimize_for_mobile
 import time
 from torch.nn.modules.utils import _pair
-class IMU_branch(nn.Module):
-    def __init__(self, inference=False):
-        super(IMU_branch, self).__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=(3, 3), padding=(1, 1)),
-            nn.BatchNorm2d(16),
-            nn.ReLU(inplace=True))
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(16, 32, kernel_size=(5, 3), padding=(4, 1), dilation=(2, 1)),
-            nn.BatchNorm2d(32),
-            nn.ReLU(inplace=True))
-        self.conv3 = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(1, 2)),
-            nn.Conv2d(32, 64, kernel_size=(5, 3), padding=(4, 1), dilation=(2, 1)),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True))
-        self.conv4 = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(3, 1)),
-            nn.Conv2d(64, 128, kernel_size=(5, 3), padding=(4, 1), dilation=(2, 1)),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True))
-        self.inference = inference
-        if not inference:
-            self.conv5 = nn.Sequential(
-                nn.Conv2d(128, 64, kernel_size=(3, 3), padding=(1, 1)),
-                nn.BatchNorm2d(64),
-                nn.ReLU(inplace=True))
-            self.conv6 = nn.Sequential(
-                nn.Conv2d(64, 32, kernel_size=(3, 3), padding=(1, 1)),
-                nn.BatchNorm2d(32),
-                nn.ReLU(inplace=True))
-            self.conv7 = nn.Sequential(
-                nn.ConvTranspose2d(32, 16, kernel_size=(3, 2), stride=(3, 2)),
-                nn.Conv2d(16, 1, kernel_size=(3, 3), padding=(1, 1)),
-                nn.BatchNorm2d(1),
-                nn.ReLU(inplace=True))
 
-
-    def forward(self, x):
-        # down-sample
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
-        x_mid = self.conv4(x)
-        # up-sample with supervision
-        if not self.inference:
-            x = self.conv5(x_mid)
-            x = self.conv6(x)
-            x = self.conv7(x)
-            x = F.pad(x, [0, 1, 0, 0])
-            return x_mid, x
-        else:
-            return x_mid
 class CausalConv2d(nn.Conv2d):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=None, dilation=1, groups=1, bias=True):
         kernel_size = _pair(kernel_size)
@@ -72,80 +20,145 @@ class CausalConv2d(nn.Conv2d):
         inputs = F.pad(inputs, (self.left_padding[1], 0, self.left_padding[0], 0))
         output = super().forward(inputs)
         return output
-import torch
-class Res_Block(nn.Module):
-    def __init__(self, conv, BN, AC, UP):
-        super(Res_Block, self).__init__()
-        self.model = nn.Sequential(
-            conv, BN, AC)
-        self.UP = UP
+class IMU_branch(nn.Module):
+    def __init__(self):
+        super(IMU_branch, self).__init__()
+        self.conv1 = nn.Sequential(
+            CausalConv2d(1, 16, kernel_size=3),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True))
+        self.conv2 = nn.Sequential(
+            CausalConv2d(16, 32, kernel_size=3),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True))
+        self.conv3 = nn.Sequential(
+            CausalConv2d(32, 64, kernel_size=5, stride=(1, 2), dilation=2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True))
+        self.conv4 = nn.Sequential(
+            CausalConv2d(64, 128, kernel_size=5, stride=(3, 1), dilation=2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True))
+
     def forward(self, x):
-        return self.UP(self.model(x) + x)
-class Encoder(nn.Module):
-    def __init__(self, filters=[16, 32, 64, 128],
-                 kernels=[3, 3, 3, 3], max_pooling={2:[1,3], 3:[2,1]}):
-        super(Encoder, self).__init__()
-        self.num_layers = len(filters)
-        layers = []
-        for i in range(self.num_layers):
-            if i == 0:
-                input_channel = 1
-            else:
-                input_channel = filters[i-1]
-            output_channel = filters[i]
-            kernel = kernels[i]
-            conv = CausalConv2d(in_channels=input_channel, out_channels=output_channel, kernel_size=kernel)
-            layer = nn.Sequential(
-            conv, nn.BatchNorm2d(output_channel), nn.ReLU(inplace=True))
-            layers.append(layer)
-            if i in max_pooling:
-                layers.append(nn.MaxPool2d(kernel_size=max_pooling[i]))
-            self.model = nn.Sequential(*layers)
-    def forward(self, x):
-        x = self.model(x)
+        # down-sample
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        print(x.shape)
         return x
-class Decoder(nn.Module):
-    def __init__(self, input_channel, filters=[16, 32, 64, 128],
-                 kernels=[3, 3, 3, 3], max_pooling={2:[1,3], 3:[2,1]}):
-        super(Decoder, self).__init__()
-        self.num_layers = len(filters)
-        layers = []
-        for i in range(self.num_layers):
-            if i == 0:
-                input_channel = input_channel
-            else:
-                input_channel = filters[i-1]
-            output_channel = filters[i]
-            kernel = kernels[i]
-            if i in max_pooling:
-                conv = CausalConv2d(in_channels=input_channel, out_channels=input_channel, kernel_size=kernel)
-                Up_sample = nn.ConvTranspose2d(input_channel, output_channel, kernel_size=max_pooling[i], stride=max_pooling[i])
-                layer = Res_Block(
-                    conv, nn.BatchNorm2d(input_channel), nn.ReLU(inplace=True), Up_sample)
-            else:
-                conv = CausalConv2d(in_channels=input_channel, out_channels=output_channel, kernel_size=kernel)
-                layer = nn.Sequential(
-                    conv, nn.BatchNorm2d(output_channel), nn.ReLU(inplace=True))
-            layers.append(layer)
-        layers.append(nn.Conv2d(filters[-1], 1, kernel_size=1))
-        self.model = nn.Sequential(*layers)
+class Audio_branch(nn.Module):
+    def __init__(self):
+        super(Audio_branch, self).__init__()
+        self.conv1 = nn.Sequential(
+            CausalConv2d(1, 16, kernel_size=3),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True),
+        )
+        self.conv2 = nn.Sequential(
+            CausalConv2d(16, 32, kernel_size=5, stride=(2, 1), dilation=2),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True)
+            )
+        self.conv3 = nn.Sequential(
+            CausalConv2d(32, 64, kernel_size=5, stride=(2, 1), dilation=2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True)
+            )
+        self.conv4 = nn.Sequential(
+            CausalConv2d(64, 128, kernel_size=5, stride=(2, 1), dilation=2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            )
+        self.conv5 = nn.Sequential(
+            CausalConv2d(128, 128, kernel_size=5, stride=(3, 2), dilation=2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            )
     def forward(self, x):
-        return self.model(x)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
+        print(x.shape)
+        return x
+
+class Residual_Block(nn.Module):
+    def __init__(self, in_channels):
+        super(Residual_Block, self).__init__()
+        self.r1 = nn.Sequential(
+            CausalConv2d(in_channels, 256, kernel_size=3),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True))
+        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(2, 1), stride=(2, 1))
+        self.r2 = nn.Sequential(
+            CausalConv2d(128, 128, kernel_size=5, dilation=2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True))
+        self.up2 = nn.ConvTranspose2d(128, 64, kernel_size=(2, 1), stride=(2, 1))
+        self.r3 = nn.Sequential(
+            CausalConv2d(64, 64, kernel_size=5, dilation=2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True))
+        self.up3 = nn.ConvTranspose2d(64, 32, kernel_size=(2, 1), stride=(2, 1))
+        self.r4 = nn.Sequential(
+            CausalConv2d(32, 32, kernel_size=3),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True))
+        self.up4 = nn.ConvTranspose2d(32, 16, kernel_size=(3, 2), stride=(3, 2))
+        self.final = CausalConv2d(16, 1, kernel_size=1)
+    def forward(self, x):
+        x = self.up1(self.r1(x) + x)
+        x = self.up2(self.r2(x) + x)
+        x = self.up3(self.r3(x) + x)
+        x = self.up4(self.r4(x) + x)
+        return self.final(x)
+
+class Fusion_branch(nn.Module):
+    def __init__(self, in_channels):
+        super(Fusion_branch, self).__init__()
+        self.r1 = nn.Sequential(
+            CausalConv2d(in_channels, 256, kernel_size=3),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True))
+        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(2, 1), stride=(2, 1))
+        self.r2 = nn.Sequential(
+            CausalConv2d(128, 128, kernel_size=5, dilation=2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True))
+        self.up2 = nn.ConvTranspose2d(128, 64, kernel_size=(2, 1), stride=(2, 1))
+        self.r3 = nn.Sequential(
+            CausalConv2d(64, 64, kernel_size=5, dilation=2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True))
+        self.up3 = nn.ConvTranspose2d(64, 32, kernel_size=(2, 1), stride=(2, 1))
+        self.r4 = nn.Sequential(
+            CausalConv2d(32, 32, kernel_size=3),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True))
+        self.up4 = nn.ConvTranspose2d(32, 16, kernel_size=(3, 2), stride=(3, 2))
+        self.final = CausalConv2d(16, 1, kernel_size=1)
+    def forward(self, x):
+        x = self.up1(self.r1(x) + x)
+        x = self.up2(self.r2(x) + x)
+        x = self.up3(self.r3(x) + x)
+        x = self.up4(self.r4(x) + x)
+        return self.final(x)
+
 class Causal_A2net(nn.Module):
     def __init__(self):
         super(Causal_A2net, self).__init__()
-        self.model_acc = Encoder(filters=[16, 32, 64], kernels=[3, 3, 3],
-                            max_pooling={2: [3, 1]})
-        self.model_audio = Encoder(filters=[16, 32, 64, 128],
-                              kernels=[5, 5, 5, 3],
-                              max_pooling={0: [2, 1], 1: [2, 1], 2: [2, 1], 3: [3, 1]})
-        self.model_fusion = Decoder(input_channel=128 + 64, filters=[128, 64, 32, 16],
-                               kernels=[5, 5, 5, 3],
-                               max_pooling={0: [3, 1], 1: [2, 1], 2: [2, 1], 3: [2, 1]})
-    def forward(self, acc, audio):
-        mixture = torch.cat([self.model_audio(audio), self.model_acc(acc)], dim=1)
-        clean_audio = self.model_fusion(mixture)
-        return clean_audio
+        self.IMU_branch = IMU_branch()
+        self.Audio_branch = Audio_branch()
+        self.Residual_block = Residual_Block(256)
+    def forward(self, x1, x2):
+
+        x = torch.cat([self.IMU_branch(x1), self.Audio_branch(x2)], dim=1)
+        x = self.Residual_block(x) * x2
+        return x
+
 def model_size(model):
     param_size = 0
     for param in model.parameters():
@@ -164,25 +177,22 @@ def model_save(model):
     #scripted_module.save("inference.pt")
     optimized_scripted_module = optimize_for_mobile(scripted_module)
     optimized_scripted_module._save_for_lite_interpreter("inference.ptl")
+
     save_image(x, 'input1.jpg')
     save_image(noise, 'input2.jpg')
 
 def model_speed(model, input):
     t_start = time.time()
-    step = 100
+    step = 1000
     with torch.no_grad():
         for i in range(step):
             model(*input)
     return (time.time() - t_start)/step
 if __name__ == "__main__":
-    audio = torch.rand(1, 1, 264, 151)
-    acc = torch.rand(1, 1, 33, 151)
+
+    acc = torch.rand(1, 1, 33, 150)
+    audio = torch.rand(1, 1, 264, 150)
     model = Causal_A2net()
-    clean_audio = model(acc, audio)
-    print(clean_audio.shape)
-    ckpt = model.state_dict()
-    torch.save(ckpt, 'causal.pth')
-    size_all_mb = model_size(model)
-    print('model size: {:.3f}MB'.format(size_all_mb))
-    latency = model_speed(model, [acc, audio])
-    print('model latency: {:.3f}S'.format(latency))
+    print(model(acc, audio).shape)
+
+    #model_save(model)
