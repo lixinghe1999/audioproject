@@ -129,7 +129,7 @@ class Causal_A2net(nn.Module):
         self.model_fusion = Decoder(input_channel=128 + 64, filters=[128, 64, 32, 16],
                                kernels=[5, 5, 5, 3],
                                max_pooling={0: [3, 1], 1: [2, 1], 2: [2, 1], 3: [2, 1]})
-    def forward(self, audio, acc):
+    def forward(self, acc, audio):
         mixture = torch.cat([self.model_audio(audio), self.model_acc(acc)], dim=1)
         clean_audio = self.model_fusion(mixture)
         return clean_audio
@@ -171,5 +171,5 @@ if __name__ == "__main__":
     torch.save(ckpt, 'causal.pth')
     size_all_mb = model_size(model)
     print('model size: {:.3f}MB'.format(size_all_mb))
-    latency = model_speed(model, [audio, acc])
+    latency = model_speed(model, [acc, audio])
     print('model latency: {:.3f}S'.format(latency))
