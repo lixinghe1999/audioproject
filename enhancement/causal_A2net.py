@@ -163,16 +163,12 @@ class Residual_branch(nn.Module):
 class Fusion_branch(nn.Module):
     def __init__(self, in_channels):
         super(Fusion_branch, self).__init__()
-        self.r1 = nn.Sequential(
-            CausalConv2d(in_channels, 256, kernel_size=3),
-            nn.BatchNorm2d(256),
-            nn.ReLU(inplace=True))
-        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(1, 2), stride=(1, 2))
+        self.up = nn.ConvTranspose2d(in_channels, 64, kernel_size=(1, 2), stride=(1, 2))
 
-        self.s_conv1 = CausalConv2d(128, 64, kernel_size=1)
-        self.s_conv2 = CausalConv1d(11 * 64, 128, kernel_size=3)
+        self.s_conv1 = CausalConv2d(64, 32, kernel_size=1)
+        self.s_conv2 = CausalConv1d(11 * 32, 64, kernel_size=3)
         self.LSTM = nn.LSTM(
-                input_size=11 * 128,
+                input_size=11 * 64,
                 hidden_size=600,
                 num_layers=2,
                 batch_first=True,
@@ -184,7 +180,7 @@ class Fusion_branch(nn.Module):
 
     def forward(self, x):
         batch = x.shape[0]
-        x = self.up1(self.r1(x) + x)
+        x = self.up(x)
         x_attention = self.s_conv1(x)
         x_attention = x_attention.reshape(batch, -1, 250)
         x_attention = self.s_conv2(x_attention)
@@ -253,8 +249,8 @@ def model_speed(model, input):
     return (time.time() - t_start)/step
 if __name__ == "__main__":
 
-    acc = torch.rand(128, 1, 33, 250)
-    audio = torch.rand(128, 1, 264, 250)
+    acc = torch.rand(1, 1, 33, 250)
+    audio = torch.rand(1, 1, 264, 250)
     model = Causal_A2net(inference=False)
     recover_audio, recover_acc = model(acc, audio)
     print(recover_audio.shape, recover_acc.shape)
