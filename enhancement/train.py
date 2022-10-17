@@ -21,8 +21,6 @@ import argparse
 from evaluation import wer, snr, lsd, SI_SDR
 from pesq import pesq_batch, pesq
 
-device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-Loss = nn.L1Loss()
 
 seg_len_mic = 640
 overlap_mic = 320
@@ -161,6 +159,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     audio_only = False
     complex = False
+    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    Loss = nn.L1Loss()
+    torch.cuda.set_device(1)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 128
