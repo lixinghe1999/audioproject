@@ -72,7 +72,15 @@ class CausalConv2d(nn.Conv2d):
         inputs = F.pad(inputs, (self.left_padding[1], 0, self.left_padding[0], 0))
         output = super().forward(inputs)
         return output
-
+import torch
+class Res_Block(nn.Module):
+    def __init__(self, conv, BN, AC, UP):
+        super(Res_Block, self).__init__()
+        self.model = nn.Sequential(
+            conv, BN, AC)
+        self.UP = UP
+    def forward(self, x):
+        return self.UP(self.model(x) + x)
 class Encoder(nn.Module):
     def __init__(self, filters=[16, 32, 64, 128],
                  kernels=[3, 3, 3, 3], max_pooling={2:[1,3], 3:[2,1]}):
@@ -94,7 +102,8 @@ class Encoder(nn.Module):
                 layers.append(nn.MaxPool2d(kernel_size=max_pooling[i]))
             self.model = nn.Sequential(*layers)
     def forward(self, x):
-        return self.model(x)
+        x = self.model(x)
+        return x
 class Decoder(nn.Module):
     def __init__(self, input_channel, filters=[16, 32, 64, 128],
                  kernels=[3, 3, 3, 3], max_pooling={2:[1,3], 3:[2,1]}):
@@ -108,12 +117,16 @@ class Decoder(nn.Module):
                 input_channel = filters[i-1]
             output_channel = filters[i]
             kernel = kernels[i]
-            conv = CausalConv2d(in_channels=input_channel, out_channels=output_channel, kernel_size=kernel)
-            layer = nn.Sequential(
-                conv, nn.BatchNorm2d(output_channel), nn.ReLU(inplace=True))
-            layers.append(layer)
             if i in max_pooling:
-                layers.append(nn.ConvTranspose2d(output_channel, output_channel, kernel_size=max_pooling[i], stride=max_pooling[i]))
+                conv = CausalConv2d(in_channels=input_channel, out_channels=input_channel, kernel_size=kernel)
+                Up_sample = nn.ConvTranspose2d(input_channel, output_channel, kernel_size=max_pooling[i], stride=max_pooling[i])
+                layer = Res_Block(
+                    conv, nn.BatchNorm2d(input_channel), nn.ReLU(inplace=True), Up_sample)
+            else:
+                conv = CausalConv2d(in_channels=input_channel, out_channels=output_channel, kernel_size=kernel)
+                layer = nn.Sequential(
+                    conv, nn.BatchNorm2d(output_channel), nn.ReLU(inplace=True))
+            layers.append(layer)
         layers.append(nn.Conv2d(filters[-1], 1, kernel_size=1))
         self.model = nn.Sequential(*layers)
     def forward(self, x):
@@ -165,7 +178,7 @@ if __name__ == "__main__":
     audio = torch.rand(1, 1, 264, 151)
     acc = torch.rand(1, 1, 33, 151)
     model = Causal_A2net()
-    clean_audio = model(audio, acc)
+    clean_audio = model(acc, audio)
     print(clean_audio.shape)
     ckpt = model.state_dict()
     torch.save(ckpt, 'causal.pth')
