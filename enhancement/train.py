@@ -10,7 +10,6 @@ import torch.nn as nn
 from dataset import NoisyCleanSet
 from fullsubnet import FullSubNet
 from A2net import A2net
-from lstm_A2net import Sequence_A2net
 from causal_A2net import Causal_A2net
 import numpy as np
 import scipy.signal as signal
