@@ -75,7 +75,7 @@ class IMU_branch(nn.Module):
                 nn.BatchNorm2d(32),
                 nn.ReLU(inplace=True))
             self.conv7 = nn.Sequential(
-                nn.ConvTranspose2d(32, 16, kernel_size=(3, 2), stride=(3, 2)),
+                nn.ConvTranspose2d(32, 16, kernel_size=(3, 1), stride=(3, 1)),
                 CausalConv2d(16, 1, kernel_size=3),
                 nn.BatchNorm2d(1),
                 nn.ReLU(inplace=True))
