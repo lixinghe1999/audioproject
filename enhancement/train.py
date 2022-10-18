@@ -152,14 +152,14 @@ if __name__ == "__main__":
     audio_only = False
     complex = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    Loss = nn.L1Loss()
+    Loss = nn.MSELoss()
     torch.cuda.set_device(1)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 64
-        lr = 0.005
+        lr = 0.01
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
 
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=264).to(device)
