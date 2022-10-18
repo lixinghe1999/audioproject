@@ -50,7 +50,7 @@ class IMU_branch(nn.Module):
     def __init__(self, inference):
         super(IMU_branch, self).__init__()
         self.conv1 = nn.Sequential(
-            CausalConv2d(1, 16, kernel_size=3),
+            CausalConv2d(1, 16, kernel_size=3, stride=(2, 1)),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True))
         self.conv2 = nn.Sequential(
@@ -98,7 +98,7 @@ class Audio_branch(nn.Module):
     def __init__(self):
         super(Audio_branch, self).__init__()
         self.conv1 = nn.Sequential(
-            CausalConv2d(1, 16, kernel_size=3, stride=(2, 1), dilation=2),
+            CausalConv2d(1, 16, kernel_size=5, stride=(4, 1), dilation=2),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True),
         )
@@ -135,27 +135,23 @@ class Residual_branch(nn.Module):
     def __init__(self, in_channels):
         super(Residual_branch, self).__init__()
         self.r1 = nn.Sequential(
-            CausalConv2d(in_channels, in_channels, kernel_size=3),
-            CausalTransConv2d(in_channels, 256, kernel_size=(2, 1), stride=(2, 1)),
-            nn.BatchNorm2d(256),
-            nn.ReLU(inplace=True))
-        self.r2 = nn.Sequential(
-            CausalConv2d(256+128, 256+128, kernel_size=3),
-            CausalTransConv2d(256+128, 128, kernel_size=(2, 1), stride=(2, 1)),
+            CausalTransConv2d(in_channels, 128, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
-        self.r3 = nn.Sequential(
-            CausalConv2d(128+64, 128+64, kernel_size=5, dilation=2),
-            CausalTransConv2d(128+64, 64, kernel_size=(2, 1), stride=(2, 1)),
+        self.r2 = nn.Sequential(
+            CausalTransConv2d(128+128, 64, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
-        self.r4 = nn.Sequential(
-            CausalConv2d(64+32, 64+32, kernel_size=5, dilation=2),
-            CausalTransConv2d(64+32, 32, kernel_size=(2, 1), stride=(2, 1)),
+        self.r3 = nn.Sequential(
+            CausalTransConv2d(64+64, 32, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
+        self.r4 = nn.Sequential(
+            CausalTransConv2d(32+32, 16, kernel_size=(2, 1), stride=(2, 1)),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True))
         self.final = nn.Sequential(
-            CausalTransConv2d(32+16, 16, kernel_size=(2, 1), stride=(2, 1)),
+            CausalTransConv2d(16+16, 16, kernel_size=(4, 1), stride=(4, 1)),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True),
             CausalConv2d(16, 1, kernel_size=1))
@@ -168,62 +164,26 @@ class Residual_branch(nn.Module):
 
         return self.final(x)
 
-class Fusion_branch(nn.Module):
-    def __init__(self, in_channels):
-        super(Fusion_branch, self).__init__()
-        self.up = CausalTransConv2d(in_channels, 64, kernel_size=(1, 2), stride=(1, 2))
-
-        self.s_conv1 = CausalConv2d(64, 32, kernel_size=1)
-        self.s_conv2 = CausalConv1d(11 * 32, 64, kernel_size=3)
-        self.LSTM = nn.LSTM(
-                input_size=11 * 64,
-                hidden_size=600,
-                num_layers=2,
-                batch_first=True,
-                bidirectional=False,
-            )
-        self.fc_output_layer = nn.Linear(600, 400)
-        self.activate_function = nn.ReLU()
-        self.final = nn.Linear(400, 264)
-
-    def forward(self, x):
-        batch = x.shape[0]
-        x = self.up(x)
-        x_attention = self.s_conv1(x)
-        x_attention = x_attention.reshape(batch, -1, 250)
-        x_attention = self.s_conv2(x_attention)
-        x = x * torch.unsqueeze(x_attention, dim=2)
-
-        x = x.permute(0, 3, 1, 2)
-        x = torch.flatten(x, start_dim=2)
-        x, _ = self.LSTM(x)
-        x = self.activate_function(self.fc_output_layer(x))
-        x = self.final(x)
-        x = torch.unsqueeze(x.permute(0, 2, 1), dim=1)
-        return x
 
 class Causal_A2net(nn.Module):
     def __init__(self, inference=False):
         super(Causal_A2net, self).__init__()
         self.inference = inference
         self.IMU_branch = IMU_branch(self.inference)
-        #self.lstm_layer = nn.LSTM(input_size=3072, hidden_size=2048, num_layers=1, batch_first=True)
+        self.lstm_layer = nn.LSTM(input_size=1536, hidden_size=1024, num_layers=1, batch_first=True)
         self.Audio_branch = Audio_branch()
-        self.Residual_branch = Residual_branch(256+128)
+        self.Residual_branch = Residual_branch(256)
         #self.Fusion_branch = Fusion_branch(256)
     def forward(self, acc, audio):
         if self.inference:
             acc = self.IMU_branch(acc)
             [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
             x = torch.cat([acc, x5], dim=1)
-
-            # batch_size, n_channels, n_f_bins, n_frame_size = x.shape
-            # # [2, 256, 4, 200] = [2, 1024, 200] => [2, 200, 1024]
-            # lstm_in = e_5.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
-            # lstm_out, _ = self.lstm_layer(lstm_in)  # [2, 200, 1024]
-            # lstm_out = lstm_out.permute(0, 2, 1).reshape(batch_size, n_channels, n_f_bins, n_frame_size)  # [2, 256, 4, 200]
-
-
+            batch_size, n_channels, n_f_bins, n_frame_size = x.shape
+            # [2, 256, 4, 200] = [2, 1024, 200] => [2, 200, 1024]
+            lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
+            lstm_out, _ = self.lstm_layer(lstm_in)  # [2, 200, 1024]
+            x = lstm_out.permute(0, 2, 1).reshape(batch_size, n_channels, n_f_bins, n_frame_size)  # [2, 256, 4, 200]
             x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
             #x = self.Fusion_branch(x) * x2
             return x
@@ -232,8 +192,13 @@ class Causal_A2net(nn.Module):
             acc, acc_extra = acc
             [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
             x = torch.cat([acc, x5], dim=1)
+
+            batch_size, n_channels, n_f_bins, n_frame_size = x.shape
+            lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
+            x, _ = self.lstm_layer(lstm_in)  # [2, 200, 1024]
+            x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
+
             x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
-            #x = self.Fusion_branch(x) * x2
             return x, acc_extra
 
 
