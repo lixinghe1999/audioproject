@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import torch
 torch.manual_seed(0)
 import torch.utils.data as Data
-import torchaudio
 import torch.nn.functional as F
 import torch.nn as nn
 from dataset import NoisyCleanSet
@@ -47,6 +46,8 @@ class STFTLoss(torch.nn.Module):
         """
         spectral_convergenge_loss = torch.norm(y_mag - x_mag, p="fro") / torch.norm(y_mag, p="fro")
         log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
+        print(spectral_convergenge_loss.item())
+        print(log_stft_magnitude.item())
         return spectral_convergenge_loss + log_stft_magnitude
 
 def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
@@ -95,7 +96,6 @@ def sample(model, x, noise, y, audio_only=False):
         loss1 = Loss(predict1, y)
         #loss2 = Loss(predict2, y[:, :, :32, :])
         loss = loss1
-
     return loss
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=False, complex=False):
@@ -148,10 +148,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
     return ckpt_best, loss_curve, metric_best
 
 def inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False):
-    # length = len(dataset)
-    # test_size = min(int(0.1 * length), 2000)
-    # train_size = length - test_size
-    # train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     test_dataset = dataset
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
@@ -171,13 +167,14 @@ if __name__ == "__main__":
     complex = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     Loss = STFTLoss()
-    torch.cuda.set_device(1)
+    #Loss = nn.MSELoss()
+    torch.cuda.set_device(0)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 128
+        BATCH_SIZE = 1
         lr = 0.01
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
 
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256).to(device)
