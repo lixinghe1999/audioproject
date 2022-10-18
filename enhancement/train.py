@@ -75,7 +75,7 @@ def sample(model, x, noise, y, audio_only=False):
     else:
         predict1, predict2 = model(x, noise)
         loss1 = Loss(predict1, y)
-        loss2 = Loss(predict2, y[:, :, :33, :])
+        loss2 = Loss(predict2, y[:, :, :32, :])
         loss = loss1 + 0.05 * loss2
 
     return loss
