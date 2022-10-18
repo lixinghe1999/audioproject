@@ -179,11 +179,12 @@ class Causal_A2net(nn.Module):
             acc = self.IMU_branch(acc)
             [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
             x = torch.cat([acc, x5], dim=1)
+
             batch_size, n_channels, n_f_bins, n_frame_size = x.shape
-            # [2, 256, 4, 200] = [2, 1024, 200] => [2, 200, 1024]
             lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
-            lstm_out, _ = self.lstm_layer(lstm_in)  # [2, 200, 1024]
-            x = lstm_out.permute(0, 2, 1).reshape(batch_size, n_channels, n_f_bins, n_frame_size)  # [2, 256, 4, 200]
+            x, _ = self.lstm_layer(lstm_in)
+            x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
+
             x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
             #x = self.Fusion_branch(x) * x2
             return x
@@ -195,7 +196,7 @@ class Causal_A2net(nn.Module):
 
             batch_size, n_channels, n_f_bins, n_frame_size = x.shape
             lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
-            x, _ = self.lstm_layer(lstm_in)  # [2, 200, 1024]
+            x, _ = self.lstm_layer(lstm_in)
             x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
 
             x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
