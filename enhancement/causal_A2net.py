@@ -129,7 +129,6 @@ class Audio_branch(nn.Module):
         x3 = self.conv3(x2)
         x4 = self.conv4(x3)
         x5 = self.conv5(x4)
-        print(x1.shape, x2.shape, x3.shape, x4.shape, x5.shape)
         return [x1, x2, x3, x4, x5]
 
 class Residual_branch(nn.Module):
@@ -232,7 +231,6 @@ class Causal_A2net(nn.Module):
             acc = self.IMU_branch(acc)
             acc, acc_extra = acc
             [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
-            print(acc.shape, x5.shape)
             x = torch.cat([acc, x5], dim=1)
             x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
             #x = self.Fusion_branch(x) * x2
