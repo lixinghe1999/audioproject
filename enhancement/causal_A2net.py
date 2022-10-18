@@ -173,7 +173,6 @@ class Causal_A2net(nn.Module):
         self.lstm_layer = nn.LSTM(input_size=1536, hidden_size=1024, num_layers=1, batch_first=True)
         self.Audio_branch = Audio_branch()
         self.Residual_branch = Residual_branch(256)
-        #self.Fusion_branch = Fusion_branch(256)
     def forward(self, acc, audio):
         if self.inference:
             acc = self.IMU_branch(acc)
@@ -241,3 +240,4 @@ if __name__ == "__main__":
     recover_audio, recover_acc = model(acc, audio)
     print(recover_audio.shape, recover_acc.shape)
     print(model_size(model))
+    print(model_speed(model, [acc, audio]))

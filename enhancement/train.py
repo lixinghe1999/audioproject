@@ -6,6 +6,7 @@ import torch
 torch.manual_seed(0)
 import torch.utils.data as Data
 import torchaudio
+import torch.nn.functional as F
 import torch.nn as nn
 from dataset import NoisyCleanSet
 from fullsubnet import FullSubNet
@@ -30,6 +31,23 @@ rate_imu = 1600
 
 
 freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
+
+class STFTLoss(torch.nn.Module):
+    """Spectral convergence loss module."""
+    def __init__(self):
+        """Initilize spectral convergence loss module."""
+        super(STFTLoss, self).__init__()
+    def forward(self, x_mag, y_mag):
+        """Calculate forward propagation.
+        Args:
+            x_mag (Tensor): Magnitude spectrogram of predicted signal (B, #frames, #freq_bins).
+            y_mag (Tensor): Magnitude spectrogram of groundtruth signal (B, #frames, #freq_bins).
+        Returns:
+            Tensor: Spectral convergence loss value.
+        """
+        spectral_convergenge_loss = torch.norm(y_mag - x_mag, p="fro") / torch.norm(y_mag, p="fro")
+        log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
+        return spectral_convergenge_loss + log_stft_magnitude
 
 def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     x = x.to(device=device, dtype=torch.float)
@@ -152,7 +170,7 @@ if __name__ == "__main__":
     audio_only = False
     complex = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    Loss = nn.MSELoss()
+    Loss = STFTLoss()
     torch.cuda.set_device(1)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
