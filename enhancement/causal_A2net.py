@@ -20,25 +20,26 @@ class CausalConv2d(nn.Conv2d):
         inputs = F.pad(inputs, (self.left_padding[1], 0, self.left_padding[0], 0))
         output = super().forward(inputs)
         return output
-class CausalConv1d(nn.Conv1d):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 dilation=1,
-                 groups=1,
-                 bias=True):
-        super(CausalConv1d, self).__init__(
-            in_channels,
-            out_channels,
-            kernel_size,
-            stride=stride,
-            padding=0,
-            dilation=dilation,
-            groups=groups,
-            bias=bias)
+    
+class CausalTransConv2d(nn.ConvTranspose2d):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=None, dilation=1, groups=1, bias=True):
+        kernel_size = _pair(kernel_size)
+        stride = _pair(stride)
+        dilation = _pair(dilation)
+        if padding is None:
+            padding = [int((dilation[i] * (kernel_size[i] - 1) + 1 - stride[i])) for i in range(len(kernel_size))]
+        self.left_padding = _pair(padding)
+        super().__init__(in_channels, out_channels, kernel_size, stride=stride, padding=0, dilation=dilation,
+                                           groups=groups, bias=bias)
+    def forward(self, inputs):
+        inputs = F.pad(inputs, (self.left_padding[1], 0, self.left_padding[0], 0))
+        output = super().forward(inputs)
+        return output
 
+class CausalConv1d(nn.Conv1d):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, dilation=1, groups=1, bias=True):
+        super(CausalConv1d, self).__init__(in_channels,out_channels,kernel_size, 
+                                           stride=stride,padding=0,dilation=dilation, groups=groups, bias=bias)
         self.left_padding = dilation * (kernel_size - 1)
 
     def forward(self, input):
@@ -53,15 +54,15 @@ class IMU_branch(nn.Module):
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True))
         self.conv2 = nn.Sequential(
-            CausalConv2d(16, 32, kernel_size=5, dilation=2),
+            CausalConv2d(16, 32, kernel_size=5, dilation=2, stride=(2, 1)),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
         self.conv3 = nn.Sequential(
-            CausalConv2d(32, 64, kernel_size=5, dilation=2),
+            CausalConv2d(32, 64, kernel_size=5, dilation=2, stride=(2, 1)),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
         self.conv4 = nn.Sequential(
-            CausalConv2d(64, 128, kernel_size=3, stride=(3, 1)),
+            CausalConv2d(64, 128, kernel_size=3),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
         self.inference = inference
@@ -71,11 +72,11 @@ class IMU_branch(nn.Module):
                 nn.BatchNorm2d(64),
                 nn.ReLU(inplace=True))
             self.conv6 = nn.Sequential(
-                CausalConv2d(64, 32, kernel_size=3),
+                CausalTransConv2d(64, 32, kernel_size=(2, 1), stride=(2, 1)),
                 nn.BatchNorm2d(32),
                 nn.ReLU(inplace=True))
             self.conv7 = nn.Sequential(
-                nn.ConvTranspose2d(32, 16, kernel_size=(3, 1), stride=(3, 1)),
+                CausalTransConv2d(32, 16, kernel_size=(2, 1), stride=(2, 1)),
                 CausalConv2d(16, 1, kernel_size=3),
                 nn.BatchNorm2d(1),
                 nn.ReLU(inplace=True))
@@ -97,7 +98,7 @@ class Audio_branch(nn.Module):
     def __init__(self):
         super(Audio_branch, self).__init__()
         self.conv1 = nn.Sequential(
-            CausalConv2d(1, 16, kernel_size=3),
+            CausalConv2d(1, 16, kernel_size=3, stride=(2, 1), dilation=2),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True),
         )
@@ -112,15 +113,16 @@ class Audio_branch(nn.Module):
             nn.ReLU(inplace=True)
             )
         self.conv4 = nn.Sequential(
-            CausalConv2d(64, 128, kernel_size=5, stride=(2, 1), dilation=2),
+            CausalConv2d(64, 128, kernel_size=3, stride=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
             )
         self.conv5 = nn.Sequential(
-            CausalConv2d(128, 256, kernel_size=3, stride=(3, 1)),
+            CausalConv2d(128, 256, kernel_size=3, stride=(2, 1)),
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
             )
+
     def forward(self, x):
         x1 = self.conv1(x)
         x2 = self.conv2(x1)
@@ -133,38 +135,39 @@ class Residual_branch(nn.Module):
     def __init__(self, in_channels):
         super(Residual_branch, self).__init__()
         self.r1 = nn.Sequential(
-            CausalConv2d(in_channels, 256, kernel_size=3),
+            CausalTransConv2d(in_channels, 256, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True))
-        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(3, 1), stride=(3, 1))
         self.r2 = nn.Sequential(
-            CausalConv2d(256, 128, kernel_size=5, dilation=2),
+            CausalTransConv2d(256+128, 128, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
-        self.up2 = nn.ConvTranspose2d(128, 64, kernel_size=(2, 1), stride=(2, 1))
         self.r3 = nn.Sequential(
-            CausalConv2d(128, 64, kernel_size=5, dilation=2),
+            CausalTransConv2d(128+64, 64, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
-        self.up3 = nn.ConvTranspose2d(64, 32, kernel_size=(2, 1), stride=(2, 1))
         self.r4 = nn.Sequential(
-            CausalConv2d(64, 32, kernel_size=3),
+            CausalTransConv2d(64+32, 32, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
-        self.up4 = nn.ConvTranspose2d(32, 16, kernel_size=(2, 1), stride=(2, 1))
-        self.final = CausalConv2d(32, 1, kernel_size=1)
+        self.final = nn.Sequential(
+            CausalTransConv2d(32+16, 16, kernel_size=(2, 1), stride=(2, 1)),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True),
+            CausalConv2d(16, 1, kernel_size=1))
     def forward(self, x, Res_x):
         x1, x2, x3, x4 = Res_x
-        x = torch.cat([self.up1(self.r1(x)), x4], dim=1)
-        x = torch.cat([self.up2(self.r2(x)), x3], dim=1)
-        x = torch.cat([self.up3(self.r3(x)), x2], dim=1)
-        x = torch.cat([self.up4(self.r4(x)), x1], dim=1)
+        x = torch.cat([self.r1(x), x4], dim=1)
+        x = torch.cat([self.r2(x), x3], dim=1)
+        x = torch.cat([self.r3(x), x2], dim=1)
+        x = torch.cat([self.r4(x), x1], dim=1)
+
         return self.final(x)
 
 class Fusion_branch(nn.Module):
     def __init__(self, in_channels):
         super(Fusion_branch, self).__init__()
-        self.up = nn.ConvTranspose2d(in_channels, 64, kernel_size=(1, 2), stride=(1, 2))
+        self.up = CausalTransConv2d(in_channels, 64, kernel_size=(1, 2), stride=(1, 2))
 
         self.s_conv1 = CausalConv2d(64, 32, kernel_size=1)
         self.s_conv2 = CausalConv1d(11 * 32, 64, kernel_size=3)
@@ -253,8 +256,8 @@ def model_speed(model, input):
     return (time.time() - t_start)/step
 if __name__ == "__main__":
 
-    acc = torch.rand(1, 1, 33, 250)
-    audio = torch.rand(1, 1, 264, 250)
+    acc = torch.rand(1, 1, 32, 250)
+    audio = torch.rand(1, 1, 256, 250)
     model = Causal_A2net(inference=False)
     recover_audio, recover_acc = model(acc, audio)
     print(recover_audio.shape, recover_acc.shape)

@@ -27,15 +27,9 @@ seg_len_imu = 64
 overlap_imu = 32
 rate_mic = 16000
 rate_imu = 1600
-length = 5
-stride = 4
-
-freq_bin_high = 8 * (int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1)
-freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
-time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
-freq_bin_limit = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
 
+freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
 def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     x = x.to(device=device, dtype=torch.float)
@@ -60,11 +54,11 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
         predict1 = predict1.squeeze(1)
 
     predict = predict1.cpu().numpy()
-    predict = np.pad(predict, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
+    predict = np.pad(predict, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     _, predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
 
     y = y.cpu().numpy()
-    y = np.pad(y, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (0, 0)))
+    y = np.pad(y, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
     return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', on_error=1)), SI_SDR(y, predict), lsd(y, predict)], axis=1)
 
@@ -162,8 +156,8 @@ if __name__ == "__main__":
     torch.cuda.set_device(1)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 64
-        lr = 0.01
+        BATCH_SIZE = 16
+        lr = 0.002
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
