@@ -44,7 +44,7 @@ class FullSubNet(BaseModel):
             output_size=num_freqs,
             hidden_size=fb_model_hidden_size,
             num_layers=2,
-            bidirectional=False,
+            bidirectional=True,
             sequence_model=sequence_model,
             output_activate_function=fb_output_activate_function
         )
@@ -54,7 +54,7 @@ class FullSubNet(BaseModel):
             output_size=2,
             hidden_size=sb_model_hidden_size,
             num_layers=2,
-            bidirectional=False,
+            bidirectional=True,
             sequence_model=sequence_model,
             output_activate_function=sb_output_activate_function
         )
