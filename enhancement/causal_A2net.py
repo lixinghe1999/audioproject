@@ -53,15 +53,15 @@ class IMU_branch(nn.Module):
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True))
         self.conv2 = nn.Sequential(
-            CausalConv2d(16, 32, kernel_size=3),
+            CausalConv2d(16, 32, kernel_size=5, dilation=2),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
         self.conv3 = nn.Sequential(
-            CausalConv2d(32, 64, kernel_size=5, stride=(1, 2), dilation=2),
+            CausalConv2d(32, 64, kernel_size=5, dilation=2),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
         self.conv4 = nn.Sequential(
-            CausalConv2d(64, 128, kernel_size=5, stride=(3, 1), dilation=2),
+            CausalConv2d(64, 128, kernel_size=3, stride=(3, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
         self.inference = inference
@@ -117,8 +117,8 @@ class Audio_branch(nn.Module):
             nn.ReLU(inplace=True),
             )
         self.conv5 = nn.Sequential(
-            CausalConv2d(128, 128, kernel_size=5, stride=(3, 2), dilation=2),
-            nn.BatchNorm2d(128),
+            CausalConv2d(128, 256, kernel_size=3, stride=(3, 1)),
+            nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
             )
     def forward(self, x):
@@ -136,7 +136,7 @@ class Residual_branch(nn.Module):
             CausalConv2d(in_channels, 256, kernel_size=3),
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True))
-        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(3, 2), stride=(3, 2))
+        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(3, 1), stride=(3, 1))
         self.r2 = nn.Sequential(
             CausalConv2d(128, 128, kernel_size=5, dilation=2),
             nn.BatchNorm2d(128),
@@ -201,7 +201,7 @@ class Causal_A2net(nn.Module):
         self.inference = inference
         self.IMU_branch = IMU_branch(self.inference)
         self.Audio_branch = Audio_branch()
-        self.Residual_branch = Residual_branch(256)
+        self.Residual_branch = Residual_branch(256+128)
         #self.Fusion_branch = Fusion_branch(256)
     def forward(self, acc, audio):
         if self.inference:

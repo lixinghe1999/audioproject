@@ -252,15 +252,6 @@ class NoisyCleanSet:
             noise, clean = snr_norm([clean, noise], -25, 10)
         noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
         clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
-        # if self.augmentation:
-        #     imu1 = synthetic(np.abs(clean), self.transfer_function, self.variance)
-        #     imu2 = synthetic(np.abs(clean), self.transfer_function, self.variance)
-        # else:
-        #     imu1, _ = self.dataset[2][index]
-        #     imu2, _ = self.dataset[3][index]
-        #     imu1 = spectrogram(imu1, seg_len_imu, overlap_imu, rate_imu)
-        #     imu2 = spectrogram(imu2, seg_len_imu, overlap_imu, rate_imu)
-        # imu = np.concatenate([imu1, imu2], axis=0)
         if self.augmentation:
             imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
         else:
