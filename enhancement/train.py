@@ -46,9 +46,9 @@ class STFTLoss(torch.nn.Module):
         """
         spectral_convergenge_loss = torch.norm(y_mag - x_mag, p="fro") / torch.norm(y_mag, p="fro")
         log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
-        print(spectral_convergenge_loss.item())
-        print(log_stft_magnitude.item())
-        return spectral_convergenge_loss + log_stft_magnitude
+        print('spec', spectral_convergenge_loss.item())
+        print('mag', log_stft_magnitude.item())
+        return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 
 def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     x = x.to(device=device, dtype=torch.float)
