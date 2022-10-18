@@ -47,10 +47,7 @@ class STFTLoss(torch.nn.Module):
         x_mag = torch.clamp(x_mag, min=1e-7)
         y_mag = torch.clamp(y_mag, min=1e-7)
         spectral_convergenge_loss = torch.norm(y_mag - x_mag, p="fro") / torch.norm(y_mag, p="fro")
-        print(torch.min(y_mag), torch.min(x_mag))
         log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
-        print('spec', spectral_convergenge_loss.item())
-        print('mag', log_stft_magnitude.item())
         return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 
 def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
@@ -174,7 +171,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 1
+        BATCH_SIZE = 128
         lr = 0.01
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
