@@ -41,7 +41,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     if audio_only:
         predict1 = model(magnitude)
     else:
-        predict1, predict2 = model(x, magnitude)
+        predict1 = model(x, magnitude)
     # predict1 = magnitude
     # either predict the spectrogram, or predict the CIRM
     if complex:
@@ -73,10 +73,10 @@ def sample(model, x, noise, y, audio_only=False):
         predict1 = model(noise)
         loss = Loss(predict1, cIRM)
     else:
-        predict1, predict2 = model(x, noise)
+        predict1 = model(x, noise)
         loss1 = Loss(predict1, y)
-        loss2 = Loss(predict2, y[:, :, :32, :])
-        loss = loss1 + 0.05 * loss2
+        #loss2 = Loss(predict2, y[:, :, :32, :])
+        loss = loss1
 
     return loss
 
@@ -162,9 +162,9 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
 
         #model = A2net(inference=False).to(device)
-        #model = FullSubNet(num_freqs=264).to(device)
+        #model = FullSubNet(num_freqs=256).to(device)
         #model = Sequence_A2net().to(device)
-        model = Causal_A2net(inference=False).to(device)
+        model = Causal_A2net(inference=True).to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
                                                    save_all=True, audio_only=audio_only, complex=complex)
         plt.plot(loss_curve)
