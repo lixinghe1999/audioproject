@@ -138,27 +138,27 @@ class Residual_branch(nn.Module):
             nn.ReLU(inplace=True))
         self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(3, 1), stride=(3, 1))
         self.r2 = nn.Sequential(
-            CausalConv2d(128, 128, kernel_size=5, dilation=2),
+            CausalConv2d(256, 128, kernel_size=5, dilation=2),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
         self.up2 = nn.ConvTranspose2d(128, 64, kernel_size=(2, 1), stride=(2, 1))
         self.r3 = nn.Sequential(
-            CausalConv2d(64, 64, kernel_size=5, dilation=2),
+            CausalConv2d(128, 64, kernel_size=5, dilation=2),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
         self.up3 = nn.ConvTranspose2d(64, 32, kernel_size=(2, 1), stride=(2, 1))
         self.r4 = nn.Sequential(
-            CausalConv2d(32, 32, kernel_size=3),
+            CausalConv2d(64, 32, kernel_size=3),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
         self.up4 = nn.ConvTranspose2d(32, 16, kernel_size=(2, 1), stride=(2, 1))
-        self.final = CausalConv2d(16, 1, kernel_size=1)
+        self.final = CausalConv2d(32, 1, kernel_size=1)
     def forward(self, x, Res_x):
         x1, x2, x3, x4 = Res_x
-        x = self.up1(self.r1(x)) + x4
-        x = self.up2(self.r2(x)) + x3
-        x = self.up3(self.r3(x)) + x2
-        x = self.up4(self.r4(x)) + x1
+        x = torch.cat([self.up1(self.r1(x)), x4], dim=1)
+        x = torch.cat([self.up2(self.r2(x)), x3], dim=1)
+        x = torch.cat([self.up3(self.r3(x)), x2], dim=1)
+        x = torch.cat([self.up4(self.r4(x)), x1], dim=1)
         return self.final(x)
 
 class Fusion_branch(nn.Module):
