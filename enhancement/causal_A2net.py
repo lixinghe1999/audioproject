@@ -129,6 +129,7 @@ class Audio_branch(nn.Module):
         x3 = self.conv3(x2)
         x4 = self.conv4(x3)
         x5 = self.conv5(x4)
+        print(x1.shape, x2.shape, x3.shape, x4.shape, x5.shape)
         return [x1, x2, x3, x4, x5]
 
 class Residual_branch(nn.Module):
