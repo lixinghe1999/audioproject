@@ -154,7 +154,8 @@ class Residual_branch(nn.Module):
             CausalTransConv2d(16+16, 16, kernel_size=(4, 1), stride=(4, 1)),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True),
-            CausalConv2d(16, 1, kernel_size=1))
+            CausalConv2d(16, 1, kernel_size=1),
+            nn.ReLU(inplace=True))
     def forward(self, x, Res_x):
         x1, x2, x3, x4 = Res_x
         x = torch.cat([self.r1(x), x4], dim=1)
