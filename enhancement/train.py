@@ -149,22 +149,22 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    audio_only = True
-    complex = True
+    audio_only = False
+    complex = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     Loss = nn.MSELoss()
     torch.cuda.set_device(1)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 4
+        BATCH_SIZE = 64
         lr = 0.01
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
         #model = A2net(inference=False).to(device)
-        model = FullSubNet(num_freqs=256).to(device)
+        #model = FullSubNet(num_freqs=256).to(device)
         #model = Sequence_A2net().to(device)
-        #model = Causal_A2net(inference=True).to(device)
+        model = Causal_A2net(inference=True).to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
                                                    save_all=True, audio_only=audio_only, complex=complex)
         plt.plot(loss_curve)
