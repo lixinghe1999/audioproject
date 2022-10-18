@@ -45,6 +45,7 @@ class STFTLoss(torch.nn.Module):
             Tensor: Spectral convergence loss value.
         """
         spectral_convergenge_loss = torch.norm(y_mag - x_mag, p="fro") / torch.norm(y_mag, p="fro")
+        print(torch.min(y_mag), torch.min(x_mag))
         log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
         print('spec', spectral_convergenge_loss.item())
         print('mag', log_stft_magnitude.item())
