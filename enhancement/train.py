@@ -174,7 +174,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 128
         lr = 0.01
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256).to(device)
