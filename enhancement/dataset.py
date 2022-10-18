@@ -26,7 +26,7 @@ function_pool = '../transfer_function'
 #N = len(os.listdir(function_pool))
 N = 300
 
-freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
+freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
 
@@ -257,8 +257,8 @@ class NoisyCleanSet:
         else:
             imu, _ = self.dataset[2][index]
             imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
-        noise = noise[:, 1:8 * freq_bin_high, :-1]
-        clean = clean[:, 1:8 * freq_bin_high, :-1]
+        noise = noise[:, 1: freq_bin_high, :-1]
+        clean = clean[:, 1: freq_bin_high, :-1]
         imu = imu[:, 1:, :-1]
         if self.text:
             return file, imu, noise, clean
