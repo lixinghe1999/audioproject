@@ -181,7 +181,7 @@ if __name__ == "__main__":
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256).to(device)
         #model = Sequence_A2net().to(device)
-        model = Causal_A2net(inference=True).to(device)
+        model = Causal_A2net(inference=False).to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
                                                    save_all=True, audio_only=audio_only, complex=complex)
         plt.plot(loss_curve)
