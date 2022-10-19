@@ -81,7 +81,9 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False)
     metric1 = batch_pesq(clean, predict)
     metric2 = SI_SDR(clean, predict)
     metric3 = lsd(clean, predict)
-    print(metric1.shape, metric2.shape, metric3.shape)
+    print(metric1.shape)
+    print(metric2.shape)
+    print(metric3.shape)
     return np.stack([metric1, metric2, metric3], axis=1)
 
 def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=None, audio_only=False,):
