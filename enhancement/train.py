@@ -77,6 +77,7 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False)
     clean = clean.cpu().numpy()
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+    print(clean.shape, predict.shape)
     return np.stack([batch_pesq(clean, predict), SI_SDR(clean, predict), lsd(clean, predict)], axis=1)
 
 def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=None, audio_only=False,):
@@ -152,13 +153,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator, save_all=False, 
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            loss, discrim_loss = sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
-            Loss_list.append(loss)
-        mean_lost = np.mean(Loss_list)
-        loss_curve.append(mean_lost)
-        scheduler.step(mean_lost)
-        Metric = []
+        # for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
+        #     loss, discrim_loss = sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
+        #     Loss_list.append(loss)
+        # mean_lost = np.mean(Loss_list)
+        # loss_curve.append(mean_lost)
+        # scheduler.step(mean_lost)
+        # Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
                 metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only, complex=complex)

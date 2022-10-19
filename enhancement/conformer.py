@@ -1,7 +1,7 @@
 import torch
 from torch import nn, einsum
 import torch.nn.functional as F
-
+import time
 from einops import rearrange
 from einops.layers.torch import Rearrange
 
@@ -335,7 +335,7 @@ class ComplexDecoder(nn.Module):
 
 
 class TSCNet(nn.Module):
-    def __init__(self, num_channel=64, num_features=321):
+    def __init__(self, num_channel=64, num_features=201):
         super(TSCNet, self).__init__()
         self.dense_encoder = DenseEncoder(in_channel=3, channels=num_channel)
 
@@ -362,7 +362,6 @@ class TSCNet(nn.Module):
         out_3 = self.TSCB_2(out_2)
         out_4 = self.TSCB_3(out_3)
         out_5 = self.TSCB_4(out_4)
-        print(out_5.shape)
         mask = self.mask_decoder(out_5)
         out_mag = mask * mag
 
@@ -372,9 +371,27 @@ class TSCNet(nn.Module):
         final_real = mag_real + complex_out[:, 0, :, :].unsqueeze(1)
         final_imag = mag_imag + complex_out[:, 1, :, :].unsqueeze(1)
         return final_real, final_imag
+def model_size(model):
+    param_size = 0
+    for param in model.parameters():
+        param_size += param.nelement() * param.element_size()
+    buffer_size = 0
+    for buffer in model.buffers():
+        buffer_size += buffer.nelement() * buffer.element_size()
+    size_all_mb = (param_size + buffer_size) / 1024 ** 2
+    return size_all_mb
 
+def model_speed(model, input):
+    t_start = time.time()
+    step = 100
+    with torch.no_grad():
+        for i in range(step):
+            model(*input)
+    return (time.time() - t_start)/step
 if __name__ == "__main__":
 
-    audio = torch.rand(1, 2, 250, 321)
+    audio = torch.rand(1, 2, 250, 201)
     model = TSCNet()
-    output = model(audio)
+    #output = model(audio)
+    print(model_size(model))
+    print(model_speed(model, [audio]))
