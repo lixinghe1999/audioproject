@@ -97,14 +97,14 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=No
         predict1, predict2 = model(acc, noise_mag)
         loss1 = Reconstruction_Loss(predict1, clean_mag)
         loss2 = Lowband_Loss(predict2, clean_mag[:, :, :32, :])
-        loss = loss1 + 2 * loss2
+        loss = loss1 + loss2
 
     # adversarial training
     one_labels = torch.ones(BATCH_SIZE).cuda()
     predict_fake_metric = discriminator(clean_mag, predict1)
     gen_loss_GAN = F.mse_loss(predict_fake_metric.flatten(), one_labels.float())
     #print(loss1.item(), loss2.item(), gen_loss_GAN.item())
-    loss += gen_loss_GAN
+    loss += 0.1 * gen_loss_GAN
     loss.backward()
     optimizer.step()
     # discriminator loss
