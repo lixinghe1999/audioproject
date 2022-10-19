@@ -94,7 +94,7 @@ def sample(model, x, noise, y, audio_only=False):
     else:
         predict1, predict2 = model(x, noise)
         loss1 = Loss(predict1, y)
-        loss2 = Loss(predict2, y[:, :, :32, :])
+        loss2 = Loss_extra(predict2, y[:, :, :32, :])
         print(loss1.item(), loss2.item())
         loss = loss1
     return loss
@@ -169,6 +169,7 @@ if __name__ == "__main__":
     complex = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     Loss = STFTLoss()
+    Loss_extra = nn.MSELoss()
     #Loss = nn.MSELoss()
     torch.cuda.set_device(0)
     if args.mode == 0:
