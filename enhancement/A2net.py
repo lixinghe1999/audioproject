@@ -3,7 +3,6 @@ import torch
 import torch.nn.functional as F
 from torchvision.utils import save_image
 from torch.utils.mobile_optimizer import optimize_for_mobile
-import time
 class IMU_branch(nn.Module):
     def __init__(self, inference=False):
         super(IMU_branch, self).__init__()
@@ -40,8 +39,6 @@ class IMU_branch(nn.Module):
                 nn.Conv2d(16, 1, kernel_size=(3, 3), padding=(1, 1)),
                 nn.BatchNorm2d(1),
                 nn.ReLU(inplace=True))
-
-
     def forward(self, x):
         # down-sample
         x = self.conv1(x)

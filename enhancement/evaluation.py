@@ -1,6 +1,7 @@
 import scipy.signal as signal
 import numpy as np
-
+from pesq import pesq
+from joblib import Parallel, delayed
 
 sentences = [["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
                     ["WE", "WANT", "TO", "IMPROVE", "SPEECH", "QUALITY", "IN", "THIS", "PROJECT"],
@@ -90,7 +91,23 @@ def lsd(gt, est):
     error = np.mean(error, axis=1)
     return error
 
+def pesq_loss(clean, noisy, sr=16000):
+    try:
+        pesq_score = pesq(sr, clean, noisy, 'wb')
+    except:
+        # error can happen due to silent period
+        pesq_score = -1
+    return pesq_score
 
+
+def batch_pesq(clean, noisy):
+    pesq_score = Parallel(n_jobs=-1)(delayed(pesq_loss)(c, n) for c, n in zip(clean, noisy))
+    pesq_score = np.array(pesq_score)
+    if -1 in pesq_score:
+        return None
+    #pesq_score = (pesq_score - 1) / 3.5
+    #return torch.FloatTensor(pesq_score).to('cuda')
+    return pesq_score
 if __name__ == "__main__":
     # we evaluate WER and PESQ in this script
     f = open('survey/survey.txt', 'r', encoding='UTF-8')

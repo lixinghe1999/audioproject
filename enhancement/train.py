@@ -17,7 +17,7 @@ from result import subjective_evaluation, objective_evaluation
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from tqdm import tqdm
 import argparse
-from evaluation import wer, snr, lsd, SI_SDR
+from evaluation import wer, snr, lsd, SI_SDR, batch_pesq
 from pesq import pesq_batch, pesq
 
 
@@ -79,7 +79,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     y = y.cpu().numpy()
     y = np.pad(y, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-    return np.stack([np.array(pesq_batch(16000, y, predict, 'wb', on_error=1)), SI_SDR(y, predict), lsd(y, predict)], axis=1)
+    return np.stack([batch_pesq(y, predict), SI_SDR(y, predict), lsd(y, predict)], axis=1)
 
 def sample(model, x, noise, y, audio_only=False):
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
@@ -114,8 +114,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     #optimizer = torch.optim.Adam(params= filter(lambda p: p.requires_grad, model.parameters()), lr=lr, betas=(0.9, 0.999))
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
-
+    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=2,)
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()
@@ -129,12 +129,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
             Loss_list.append(loss.item())
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
+        scheduler.step(mean_lost)
         Metric = []
         with torch.no_grad():
             for x, noise, y in tqdm(test_loader):
                 metric = sample_evaluation(model, x, noise, y, audio_only=audio_only, complex=complex)
                 Metric.append(metric)
-        scheduler.step()
+
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
 
@@ -174,7 +175,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 128
         lr = 0.01
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
 
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256).to(device)

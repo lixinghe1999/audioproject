@@ -77,7 +77,7 @@ class CRN(nn.Module):
         self.conv_block_5 = CausalConvBlock(128, 256)
 
         # LSTM
-        self.lstm_layer = nn.LSTM(input_size=1024, hidden_size=1024, num_layers=2, batch_first=True)
+        self.lstm_layer = nn.LSTM(input_size=1792, hidden_size=1792, num_layers=2, batch_first=True)
 
         self.tran_conv_block_1 = CausalTransConvBlock(256 + 256, 128)
         self.tran_conv_block_2 = CausalTransConvBlock(128 + 128, 64)
@@ -87,7 +87,6 @@ class CRN(nn.Module):
 
     def forward(self, x):
         self.lstm_layer.flatten_parameters()
-
         e_1 = self.conv_block_1(x)
         e_2 = self.conv_block_2(e_1)
         e_3 = self.conv_block_3(e_2)
@@ -121,6 +120,6 @@ def model_size(model):
     return size_all_mb
 if __name__ == '__main__':
     layer = CRN()
-    a = torch.rand(2, 1, 161, 200)
+    a = torch.rand(2, 1, 256, 250)
+    print(layer(a).shape)
     print(model_size(layer))
-    #print(layer(a).shape)
