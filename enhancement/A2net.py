@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch
 import torch.nn.functional as F
 from torchvision.utils import save_image
+import time
 from torch.utils.mobile_optimizer import optimize_for_mobile
 class IMU_branch(nn.Module):
     def __init__(self, inference=False):
@@ -169,7 +170,7 @@ def model_save(model):
 
 def model_speed(model, input):
     t_start = time.time()
-    step = 1000
+    step = 100
     with torch.no_grad():
         for i in range(step):
             model(*input)
@@ -178,12 +179,12 @@ if __name__ == "__main__":
 
     imu = torch.rand(1, 1, 33, 151)
     audio = torch.rand(1, 1, 264, 151)
-    model = A2net(inference=True)
+    model = A2net(inference=False)
 
-    # size_all_mb = model_size(model)
-    # print('model size: {:.3f}MB'.format(size_all_mb))
-    #
-    # latency = model_speed(model, [imu, audio])
-    # print('model latency: {:.3f}S'.format(latency))
+    size_all_mb = model_size(model)
+    print('model size: {:.3f}MB'.format(size_all_mb))
 
-    model_save(model)
+    latency = model_speed(model, [imu, audio])
+    print('model latency: {:.3f}S'.format(latency))
+
+    #model_save(model)

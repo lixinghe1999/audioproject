@@ -66,7 +66,7 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False)
         enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
         predict1 = torch.complex(enhanced_real, enhanced_imag)
     else:
-        predict1, _ = model(acc, noise_mag)
+        predict1 = model(acc, noise_mag)
         predict1 = torch.exp(1j * noise_pha[:, :, :freq_bin_high, :]) * predict1
         predict1 = predict1.squeeze(1)
 
@@ -82,7 +82,7 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False)
     metric3 = lsd(clean, predict)
     return np.stack([metric1, metric2, metric3], axis=1)
 
-def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=None, audio_only=False,):
+def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=None, audio_only=False):
     acc = acc.to(device=device, dtype=torch.float)
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
     clean_mag = clean.abs().to(device=device, dtype=torch.float)
@@ -94,42 +94,41 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=No
         predict1 = model(noise_mag)
         loss = Reconstruction_Loss(predict1, cIRM)
     else:
-        predict1, predict2 = model(acc, noise_mag)
-        loss1 = Reconstruction_Loss(predict1, clean_mag)
-        loss2 = Lowband_Loss(predict2, clean_mag[:, :, :32, :])
-        loss = loss1 + loss2
-
-    # adversarial training
-    one_labels = torch.ones(BATCH_SIZE).cuda()
-    predict_fake_metric = discriminator(clean_mag, predict1)
-    gen_loss_GAN = F.mse_loss(predict_fake_metric.flatten(), one_labels.float())
-    #print(loss1.item(), loss2.item(), gen_loss_GAN.item())
-    loss += 0.1 * gen_loss_GAN
+        predict1 = model(acc, noise_mag)
+        loss = Reconstruction_Loss(predict1, clean_mag)
+        #loss += Lowband_Loss(predict2, clean_mag[:, :, :32, :])
+    # # adversarial training
+    # one_labels = torch.ones(BATCH_SIZE).cuda()
+    # predict_fake_metric = discriminator(clean_mag, predict1)
+    # gen_loss_GAN = F.mse_loss(predict_fake_metric.flatten(), one_labels.float())
+    # #print(loss1.item(), loss2.item(), gen_loss_GAN.item())
+    # loss += 0.1 * gen_loss_GAN
     loss.backward()
     optimizer.step()
-    # discriminator loss
+    return loss.item()
 
-    predict_audio = predict1.detach().cpu().numpy()
-    predict_audio = np.pad(predict_audio, ((0, 0), (0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
-    predict_audio = signal.istft(predict_audio, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
-
-    clean_audio = np.pad(clean, ((0, 0), (0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
-    clean_audio = signal.istft(clean_audio, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
-
-    pesq_score = discriminator.batch_pesq(clean_audio, predict_audio)
-    # The calculation of PESQ can be None due to silent part
-    if pesq_score is not None:
-        optimizer_disc.zero_grad()
-        predict_enhance_metric = discriminator(clean_mag, predict1.detach())
-        predict_max_metric = discriminator(clean_mag, clean_mag)
-        discrim_loss = F.mse_loss(predict_max_metric.flatten(), one_labels) + \
-                              F.mse_loss(predict_enhance_metric.flatten(), pesq_score)
-        discrim_loss.backward()
-        optimizer_disc.step()
-    else:
-        discrim_loss = torch.tensor([0.])
-
-    return loss.item(), discrim_loss.item()
+    # # discriminator loss
+    #
+    # predict_audio = predict1.detach().cpu().numpy()
+    # predict_audio = np.pad(predict_audio, ((0, 0), (0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    # predict_audio = signal.istft(predict_audio, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+    #
+    # clean_audio = np.pad(clean, ((0, 0), (0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    # clean_audio = signal.istft(clean_audio, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+    #
+    # pesq_score = discriminator.batch_pesq(clean_audio, predict_audio)
+    # # The calculation of PESQ can be None due to silent part
+    # if pesq_score is not None:
+    #     optimizer_disc.zero_grad()
+    #     predict_enhance_metric = discriminator(clean_mag, predict1.detach())
+    #     predict_max_metric = discriminator(clean_mag, clean_mag)
+    #     discrim_loss = F.mse_loss(predict_max_metric.flatten(), one_labels) + \
+    #                           F.mse_loss(predict_enhance_metric.flatten(), pesq_score)
+    #     discrim_loss.backward()
+    #     optimizer_disc.step()
+    # else:
+    #     discrim_loss = torch.tensor([0.])
+    # return loss.item(), discrim_loss.item()
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator, save_all=False, audio_only=False):
     if isinstance(dataset, list):
@@ -149,7 +148,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator, save_all=False, 
     optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=2 * lr, betas=(0.9, 0.999))
     #optimizer = torch.optim.Adam(params= filter(lambda p: p.requires_grad, model.parameters()), lr=lr, betas=(0.9, 0.999))
     #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=2,)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=3,)
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()

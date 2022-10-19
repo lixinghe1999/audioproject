@@ -19,8 +19,6 @@ import pickle
 
 import torchaudio
 
-
-
 seg_len_mic = 640
 overlap_mic = 320
 seg_len_imu = 64

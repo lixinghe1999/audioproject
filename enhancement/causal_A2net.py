@@ -133,6 +133,43 @@ class Audio_branch(nn.Module):
         x5 = self.conv5(x4)
         return [x1, x2, x3, x4, x5]
 
+class Fusion_branch(nn.Module):
+    def __init__(self):
+        super(Fusion_branch, self).__init__()
+        self.conv1 = nn.Sequential(
+            CausalConv2d(2, 16, kernel_size=5, stride=(4, 1), dilation=2),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True),
+        )
+        self.conv2 = nn.Sequential(
+            CausalConv2d(16, 32, kernel_size=5, stride=(2, 1), dilation=2),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True)
+            )
+        self.conv3 = nn.Sequential(
+            CausalConv2d(32, 64, kernel_size=5, stride=(2, 1), dilation=2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True)
+            )
+        self.conv4 = nn.Sequential(
+            CausalConv2d(64, 128, kernel_size=3, stride=(2, 1)),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            )
+        self.conv5 = nn.Sequential(
+            CausalConv2d(128, 256, kernel_size=3, stride=(2, 1)),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            )
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x2 = self.conv2(x1)
+        x3 = self.conv3(x2)
+        x4 = self.conv4(x3)
+        x5 = self.conv5(x4)
+        return [x1, x2, x3, x4, x5]
+
 class Residual_branch(nn.Module):
     def __init__(self, in_channels):
         super(Residual_branch, self).__init__()
@@ -171,38 +208,48 @@ class Residual_branch(nn.Module):
 class Causal_A2net(nn.Module):
     def __init__(self, inference=False):
         super(Causal_A2net, self).__init__()
-        self.inference = inference
-        self.IMU_branch = IMU_branch(self.inference)
-        self.lstm_layer = nn.LSTM(input_size=1536, hidden_size=1024, num_layers=1, batch_first=True)
-        self.Audio_branch = Audio_branch()
+        # self.inference = inference
+        # self.IMU_branch = IMU_branch(self.inference)
+        # self.Audio_branch = Audio_branch()
+
+        self.fusion_branch = Fusion_branch()
+        self.lstm_layer = nn.LSTM(input_size=1024, hidden_size=1024, num_layers=1, batch_first=True)
         self.Residual_branch = Residual_branch(256)
     def forward(self, acc, audio):
-        if self.inference:
-            acc = self.IMU_branch(acc)
-            [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
-            x = torch.cat([acc, x5], dim=1)
+        x = torch.cat([audio, acc.repeat(1, 1, 8, 1)], dim=1)
+        [x1, x2, x3, x4, x] = self.fusion_branch(x)
+        batch_size, n_channels, n_f_bins, n_frame_size = x.shape
+        lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
+        x, _ = self.lstm_layer(lstm_in)
+        x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
+        x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
+        return x
 
-            batch_size, n_channels, n_f_bins, n_frame_size = x.shape
-            lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
-            x, _ = self.lstm_layer(lstm_in)
-            x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
-
-            x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
-            #x = self.Fusion_branch(x) * x2
-            return x
-        else:
-            acc = self.IMU_branch(acc)
-            acc, acc_extra = acc
-            [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
-            x = torch.cat([acc, x5], dim=1)
-
-            batch_size, n_channels, n_f_bins, n_frame_size = x.shape
-            lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
-            x, _ = self.lstm_layer(lstm_in)
-            x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
-
-            x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
-            return x, acc_extra
+        # if self.inference:
+        #     acc = self.IMU_branch(acc)
+        #     [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
+        #     x = torch.cat([acc, x5], dim=1)
+        #
+        #     batch_size, n_channels, n_f_bins, n_frame_size = x.shape
+        #     lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
+        #     x, _ = self.lstm_layer(lstm_in)
+        #     x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
+        #
+        #     x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
+        #     return x
+        # else:
+        #     acc = self.IMU_branch(acc)
+        #     acc, acc_extra = acc
+        #     [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
+        #     x = torch.cat([acc, x5], dim=1)
+        #
+        #     batch_size, n_channels, n_f_bins, n_frame_size = x.shape
+        #     lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
+        #     x, _ = self.lstm_layer(lstm_in)
+        #     x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
+        #
+        #     x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
+        #     return x, acc_extra
 
 
 
@@ -239,8 +286,8 @@ if __name__ == "__main__":
 
     acc = torch.rand(1, 1, 32, 250)
     audio = torch.rand(1, 1, 256, 250)
-    model = Causal_A2net(inference=False)
-    recover_audio, recover_acc = model(acc, audio)
-    print(recover_audio.shape, recover_acc.shape)
+    model = Causal_A2net(inference=True)
+    outputs = model(acc, audio)
+    print(outputs.shape)
     print(model_size(model))
     #print(model_speed(model, [acc, audio]))
