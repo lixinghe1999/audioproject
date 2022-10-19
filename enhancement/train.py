@@ -18,7 +18,7 @@ from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_
 from tqdm import tqdm
 import argparse
 from evaluation import wer, snr, lsd, SI_SDR, batch_pesq
-from pesq import pesq_batch, pesq
+import discriminator
 
 
 seg_len_mic = 640
@@ -50,55 +50,84 @@ class STFTLoss(torch.nn.Module):
         log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
         return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 
-def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
-    x = x.to(device=device, dtype=torch.float)
-    magnitude = torch.abs(noise).to(device=device, dtype=torch.float)
-    phase = torch.angle(noise).to(device=device, dtype=torch.float)
+def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False):
+    acc = acc.to(device=device, dtype=torch.float)
+    noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)
+    noise_pha = torch.angle(noise).to(device=device, dtype=torch.float)
     noise_real = noise.real.to(device=device, dtype=torch.float)
     noise_imag = noise.imag.to(device=device, dtype=torch.float)
-    y = y.to(device=device).squeeze(1)
-    if audio_only:
-        predict1 = model(magnitude)
-    else:
-        predict1, _ = model(x, magnitude)
-    # predict1 = magnitude
+    clean = clean.to(device=device).squeeze(1)
+
     # either predict the spectrogram, or predict the CIRM
-    if complex:
+    if audio_only:
+        predict1 = model(noise_mag)
         cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
         enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
         enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
         predict1 = torch.complex(enhanced_real, enhanced_imag)
     else:
-        predict1 = torch.exp(1j * phase[:, :, :freq_bin_high, :]) * predict1
+        predict1, _ = model(acc, noise_mag)
+        predict1 = torch.exp(1j * noise_pha[:, :, :freq_bin_high, :]) * predict1
         predict1 = predict1.squeeze(1)
 
     predict = predict1.cpu().numpy()
     predict = np.pad(predict, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
-    _, predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
+    predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
 
-    y = y.cpu().numpy()
-    y = np.pad(y, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
-    _, y = signal.istft(y, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-    return np.stack([batch_pesq(y, predict), SI_SDR(y, predict), lsd(y, predict)], axis=1)
+    clean = clean.cpu().numpy()
+    clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+    return np.stack([batch_pesq(clean, predict), SI_SDR(clean, predict), lsd(clean, predict)], axis=1)
 
-def sample(model, x, noise, y, audio_only=False):
-    cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, y.real, y.imag)  # [B, 2, F, T]
-    cIRM = cIRM.to(device=device, dtype=torch.float)
-    x = x.to(device=device, dtype=torch.float)
-    noise = noise.abs().to(device=device, dtype=torch.float)
-    y = y.abs().to(device=device, dtype=torch.float)
+def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=None, audio_only=False,):
+    acc = acc.to(device=device, dtype=torch.float)
+    noise_mag = noise.abs().to(device=device, dtype=torch.float)
+    clean_mag = clean.abs().to(device=device, dtype=torch.float)
 
+    optimizer.zero_grad()
     if audio_only:
-        predict1 = model(noise)
-        loss = Loss(predict1, cIRM)
+        cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, clean.real, clean.imag)  # [B, 2, F, T]
+        cIRM = cIRM.to(device=device, dtype=torch.float)
+        predict1 = model(noise_mag)
+        loss = Reconstruction_Loss(predict1, cIRM)
     else:
-        predict1, predict2 = model(x, noise)
-        loss1 = Loss(predict1, y)
-        loss2 = Loss_extra(predict2, y[:, :, :32, :])
+        predict1, predict2 = model(acc, noise_mag)
+        loss1 = Reconstruction_Loss(predict1, clean_mag)
+        loss2 = Lowband_Loss(predict2, clean_mag[:, :, :32, :])
         loss = loss1 + loss2
-    return loss
 
-def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=False, complex=False):
+    # adversarial training
+    one_labels = torch.ones(BATCH_SIZE).cuda()
+    predict_fake_metric = discriminator(clean_mag, predict1)
+    gen_loss_GAN = F.mse_loss(predict_fake_metric.flatten(), one_labels.float())
+    loss += gen_loss_GAN
+    loss.backward()
+    optimizer.step()
+    # discriminator loss
+
+    predict_audio = predict1.detach().cpu().numpy()
+    predict_audio = np.pad(predict_audio, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    predict_audio = signal.istft(predict_audio, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+
+    clean_audio = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    clean_audio = signal.istft(clean_audio, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+
+    pesq_score = discriminator.batch_pesq(clean_audio, predict_audio)
+    # The calculation of PESQ can be None due to silent part
+    if pesq_score is not None:
+        optimizer_disc.zero_grad()
+        predict_enhance_metric = discriminator(clean_mag, predict1.detach())
+        predict_max_metric = discriminator(clean_mag, clean_mag)
+        discrim_loss = F.mse_loss(predict_max_metric.flatten(), one_labels) + \
+                              F.mse_loss(predict_enhance_metric.flatten(), pesq_score)
+        discrim_loss.backward()
+        optimizer_disc.step()
+    else:
+        discrim_loss = torch.tensor([0.])
+
+    return loss.item()
+
+def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator, save_all=False, audio_only=False):
     if isinstance(dataset, list):
         # with pre-defined train/ test
         train_dataset, test_dataset = dataset
@@ -112,8 +141,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
+    optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=2 * lr, betas=(0.9, 0.999))
     #optimizer = torch.optim.Adam(params= filter(lambda p: p.requires_grad, model.parameters()), lr=lr, betas=(0.9, 0.999))
-
     #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=2,)
     loss_best = 1
@@ -121,24 +150,19 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=Fals
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        for i, (x, noise, y) in enumerate(tqdm(train_loader)):
-            loss = sample(model, x, noise, y, audio_only=audio_only)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
+            loss = sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
             Loss_list.append(loss.item())
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
         scheduler.step(mean_lost)
         Metric = []
         with torch.no_grad():
-            for x, noise, y in tqdm(test_loader):
-                metric = sample_evaluation(model, x, noise, y, audio_only=audio_only, complex=complex)
+            for acc, noise, clean in tqdm(test_loader):
+                metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only, complex=complex)
                 Metric.append(metric)
-
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
-
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
@@ -165,25 +189,25 @@ if __name__ == "__main__":
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
     audio_only = False
-    complex = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    Loss = STFTLoss()
-    Loss_extra = nn.MSELoss()
-    #Loss = nn.MSELoss()
+    Reconstruction_Loss = STFTLoss()
+    Lowband_Loss = nn.MSELoss()
     torch.cuda.set_device(0)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 128
         lr = 0.01
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
 
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256).to(device)
         #model = Sequence_A2net().to(device)
         model = Causal_A2net(inference=False).to(device)
-        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model,
-                                                   save_all=True, audio_only=audio_only, complex=complex)
+
+        discriminator = discriminator.Discriminator(ndf=16).to(device)
+        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator,
+                                                   save_all=True, audio_only=audio_only)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
 
