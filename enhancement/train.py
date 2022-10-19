@@ -17,7 +17,7 @@ from result import subjective_evaluation, objective_evaluation
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from tqdm import tqdm
 import argparse
-from evaluation import wer, snr, LSD, SI_SDR, batch_pesq
+from evaluation import wer, snr, lsd, SI_SDR, batch_pesq
 import discriminator
 
 
@@ -78,11 +78,11 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False)
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     print(clean.shape, predict.shape)
-    pesq = batch_pesq(clean, predict)
-    sisdr = SI_SDR(clean, predict)
-    lsd = LSD(clean, predict)
-    print(pesq.shape, sisdr.shape, lsd.shape)
-    return np.stack([pesq, sisdr, lsd], axis=1)
+    metric1 = batch_pesq(clean, predict)
+    metric2 = SI_SDR(clean, predict)
+    metric3 = lsd(clean, predict)
+    print(metric1.shape, metric2.shape, metric3.shape)
+    return np.stack([metric1, metric2, metric3], axis=1)
 
 def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=None, audio_only=False,):
     acc = acc.to(device=device, dtype=torch.float)
