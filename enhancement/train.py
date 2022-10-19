@@ -77,13 +77,9 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False)
     clean = clean.cpu().numpy()
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
-    print(clean.shape, predict.shape)
     metric1 = batch_pesq(clean, predict)
     metric2 = SI_SDR(clean, predict)
     metric3 = lsd(clean, predict)
-    print(metric1.shape)
-    print(metric2.shape)
-    print(metric3.shape)
     return np.stack([metric1, metric2, metric3], axis=1)
 
 def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=None, audio_only=False,):
