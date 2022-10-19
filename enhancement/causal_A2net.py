@@ -34,11 +34,8 @@ class CausalTransConv2d(nn.ConvTranspose2d):
                                            groups=groups, bias=bias)
     def forward(self, inputs):
         #inputs = F.pad(inputs, (self.left_padding[1], 0, self.left_padding[0], 0))
-        print(inputs.shape)
-
         output = super().forward(inputs)
         output = output[:, :, :-1, :-1]
-        print(output.shape)
         return output
 
 class CausalConv1d(nn.Conv1d):
@@ -95,12 +92,9 @@ class IMU_branch(nn.Module):
         if self.inference:
             return x_embedding
         else:
-            print(x_embedding.shape)
             x = self.conv5(x_embedding)
-            print(x.shape)
             x = self.conv6(x)
             x = self.conv7(x)
-            print(x.shape)
             return x_embedding, x
 class Audio_branch(nn.Module):
     def __init__(self):

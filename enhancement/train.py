@@ -95,8 +95,7 @@ def sample(model, x, noise, y, audio_only=False):
         predict1, predict2 = model(x, noise)
         loss1 = Loss(predict1, y)
         loss2 = Loss_extra(predict2, y[:, :, :32, :])
-        print(loss1.item(), loss2.item())
-        loss = loss1
+        loss = loss1 + loss2
     return loss
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False, audio_only=False, complex=False):
