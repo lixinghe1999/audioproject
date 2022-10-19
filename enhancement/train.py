@@ -60,7 +60,7 @@ def sample_evaluation(model, x, noise, y, audio_only=False, complex=False):
     if audio_only:
         predict1 = model(magnitude)
     else:
-        predict1 = model(x, magnitude)
+        predict1, _ = model(x, magnitude)
     # predict1 = magnitude
     # either predict the spectrogram, or predict the CIRM
     if complex:
@@ -92,9 +92,10 @@ def sample(model, x, noise, y, audio_only=False):
         predict1 = model(noise)
         loss = Loss(predict1, cIRM)
     else:
-        predict1 = model(x, noise)
+        predict1, predict2 = model(x, noise)
         loss1 = Loss(predict1, y)
-        #loss2 = Loss(predict2, y[:, :, :32, :])
+        loss2 = Loss(predict2, y[:, :, :32, :])
+        print(loss1.item(), loss2.item())
         loss = loss1
     return loss
 
