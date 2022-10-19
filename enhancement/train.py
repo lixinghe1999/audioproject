@@ -98,10 +98,7 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=No
 
     # adversarial training
     one_labels = torch.ones(BATCH_SIZE).cuda()
-    print(BATCH_SIZE)
-
     predict_fake_metric = discriminator(clean_mag, predict1)
-    print(predict_fake_metric.shape)
     gen_loss_GAN = F.mse_loss(predict_fake_metric.flatten(), one_labels.float())
     #print(loss1.item(), loss2.item(), gen_loss_GAN.item())
     loss += gen_loss_GAN
@@ -141,7 +138,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator, save_all=False, 
         test_size = min(int(0.1 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    train_loader = Data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True)
+    train_loader = Data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
+                                   pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
