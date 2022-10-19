@@ -107,10 +107,10 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=No
 
     predict_audio = predict1.detach().cpu().numpy()
     print(predict_audio.shape)
-    predict_audio = np.pad(predict_audio, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    predict_audio = np.pad(predict_audio, ((0, 0), (0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     predict_audio = signal.istft(predict_audio, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
 
-    clean_audio = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    clean_audio = np.pad(clean, ((0, 0), (0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean_audio = signal.istft(clean_audio, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
 
     pesq_score = discriminator.batch_pesq(clean_audio, predict_audio)
