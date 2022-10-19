@@ -100,6 +100,7 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=No
     one_labels = torch.ones(BATCH_SIZE).cuda()
     predict_fake_metric = discriminator(clean_mag, predict1)
     gen_loss_GAN = F.mse_loss(predict_fake_metric.flatten(), one_labels.float())
+    print(loss1.item(), loss2.item(), gen_loss_GAN.item())
     loss += gen_loss_GAN
     loss.backward()
     optimizer.step()
