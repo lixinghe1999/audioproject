@@ -106,7 +106,6 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=No
     # discriminator loss
 
     predict_audio = predict1.detach().cpu().numpy()
-    print(predict_audio.shape)
     predict_audio = np.pad(predict_audio, ((0, 0), (0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     predict_audio = signal.istft(predict_audio, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
 
@@ -126,7 +125,7 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=No
     else:
         discrim_loss = torch.tensor([0.])
 
-    return loss.item()
+    return loss.item(), discrim_loss.item()
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator, save_all=False, audio_only=False):
     if isinstance(dataset, list):
@@ -152,7 +151,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator, save_all=False, 
     for e in range(EPOCH):
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            loss = sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
+            loss, discrim_loss = sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -199,7 +198,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 128
         lr = 0.01
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=0.1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
         #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256).to(device)
