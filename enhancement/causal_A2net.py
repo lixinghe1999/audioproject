@@ -26,14 +26,19 @@ class CausalTransConv2d(nn.ConvTranspose2d):
         kernel_size = _pair(kernel_size)
         stride = _pair(stride)
         dilation = _pair(dilation)
-        if padding is None:
-            padding = [int((dilation[i] * (kernel_size[i] - 1) + 1 - stride[i])) for i in range(len(kernel_size))]
-        self.left_padding = _pair(padding)
+
+        # if padding is None:
+        #     padding = [int((dilation[i] * (kernel_size[i] - 1) + 1 - stride[i])) for i in range(len(kernel_size))]
+        # self.left_padding = _pair(padding)
         super().__init__(in_channels, out_channels, kernel_size, stride=stride, padding=0, dilation=dilation,
                                            groups=groups, bias=bias)
     def forward(self, inputs):
-        inputs = F.pad(inputs, (self.left_padding[1], 0, self.left_padding[0], 0))
+        #inputs = F.pad(inputs, (self.left_padding[1], 0, self.left_padding[0], 0))
+        print(inputs.shape)
+
         output = super().forward(inputs)
+        output = output[:, :, :-1, :-1]
+        print(output.shape)
         return output
 
 class CausalConv1d(nn.Conv1d):
@@ -68,15 +73,15 @@ class IMU_branch(nn.Module):
         self.inference = inference
         if not self.inference:
             self.conv5 = nn.Sequential(
-                CausalConv2d(128, 64, kernel_size=3),
+                CausalTransConv2d(128, 64, kernel_size=(3, 2), stride=(2, 1)),
                 nn.BatchNorm2d(64),
                 nn.ReLU(inplace=True))
             self.conv6 = nn.Sequential(
-                CausalTransConv2d(64, 32, kernel_size=(2, 1), stride=(2, 1)),
+                CausalTransConv2d(64, 32, kernel_size=(3, 2), stride=(2, 1)),
                 nn.BatchNorm2d(32),
                 nn.ReLU(inplace=True))
             self.conv7 = nn.Sequential(
-                CausalTransConv2d(32, 16, kernel_size=(2, 1), stride=(2, 1)),
+                CausalTransConv2d(32, 16, kernel_size=(3, 2), stride=(2, 1)),
                 CausalConv2d(16, 1, kernel_size=3),
                 nn.BatchNorm2d(1),
                 nn.ReLU(inplace=True))
@@ -90,9 +95,12 @@ class IMU_branch(nn.Module):
         if self.inference:
             return x_embedding
         else:
+            print(x_embedding.shape)
             x = self.conv5(x_embedding)
+            print(x.shape)
             x = self.conv6(x)
             x = self.conv7(x)
+            print(x.shape)
             return x_embedding, x
 class Audio_branch(nn.Module):
     def __init__(self):
@@ -135,23 +143,23 @@ class Residual_branch(nn.Module):
     def __init__(self, in_channels):
         super(Residual_branch, self).__init__()
         self.r1 = nn.Sequential(
-            CausalTransConv2d(in_channels, 128, kernel_size=(2, 1), stride=(2, 1)),
+            CausalTransConv2d(in_channels, 128, kernel_size=(3, 2), stride=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
         self.r2 = nn.Sequential(
-            CausalTransConv2d(128+128, 64, kernel_size=(2, 1), stride=(2, 1)),
+            CausalTransConv2d(128+128, 64, kernel_size=(3, 2), stride=(2, 1)),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
         self.r3 = nn.Sequential(
-            CausalTransConv2d(64+64, 32, kernel_size=(2, 1), stride=(2, 1)),
+            CausalTransConv2d(64+64, 32, kernel_size=(3, 2), stride=(2, 1)),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
         self.r4 = nn.Sequential(
-            CausalTransConv2d(32+32, 16, kernel_size=(2, 1), stride=(2, 1)),
+            CausalTransConv2d(32+32, 16, kernel_size=(3, 2), stride=(2, 1)),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True))
         self.final = nn.Sequential(
-            CausalTransConv2d(16+16, 16, kernel_size=(4, 1), stride=(4, 1)),
+            CausalTransConv2d(16+16, 16, kernel_size=(5, 2), stride=(4, 1)),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True),
             CausalConv2d(16, 1, kernel_size=1),
@@ -241,4 +249,4 @@ if __name__ == "__main__":
     recover_audio, recover_acc = model(acc, audio)
     print(recover_audio.shape, recover_acc.shape)
     print(model_size(model))
-    print(model_speed(model, [acc, audio]))
+    #print(model_speed(model, [acc, audio]))
