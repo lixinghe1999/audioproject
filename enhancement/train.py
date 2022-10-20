@@ -206,7 +206,7 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
         #model = A2net(inference=False).to(device)
-        model = FullSubNet(num_freqs=256).to(device)
+        model = nn.DataParallel(FullSubNet(num_freqs=256).to(device), device_ids=[0, 1])
         #model = Causal_A2net(inference=False).to(device)
 
         discriminator = discriminator.Discriminator(ndf=16).to(device)
