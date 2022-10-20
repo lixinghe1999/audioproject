@@ -177,13 +177,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 
-def inference(dataset, BATCH_SIZE, model, audio_only=False, complex=False):
+def inference(dataset, BATCH_SIZE, model, audio_only=False):
     test_dataset = dataset
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
         for x, noise, y in test_loader:
-            metric = sample_evaluation(model, x, noise, y, audio_only=audio_only, complex=complex)
+            metric = sample_evaluation(model, x, noise, y, audio_only=audio_only)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -193,22 +193,21 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    audio_only = False
+    audio_only = True
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     Reconstruction_Loss = STFTLoss()
     Lowband_Loss = nn.MSELoss()
     torch.cuda.set_device(0)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 128
+        BATCH_SIZE = 4
         lr = 0.01
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
         #model = A2net(inference=False).to(device)
-        #model = FullSubNet(num_freqs=256).to(device)
-        #model = Sequence_A2net().to(device)
-        model = Causal_A2net(inference=False).to(device)
+        model = FullSubNet(num_freqs=256).to(device)
+        #model = Causal_A2net(inference=False).to(device)
 
         discriminator = discriminator.Discriminator(ndf=16).to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator,
