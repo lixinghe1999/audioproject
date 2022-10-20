@@ -82,7 +82,7 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False)
     metric3 = lsd(clean, predict)
     return np.stack([metric1, metric2, metric3], axis=1)
 
-def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=None, audio_only=False):
+def sample(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, audio_only=False):
     acc = acc.to(device=device, dtype=torch.float)
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
     clean_mag = clean.abs().to(device=device, dtype=torch.float)
@@ -130,7 +130,7 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=No
     #     discrim_loss = torch.tensor([0.])
     # return loss.item(), discrim_loss.item()
 
-def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator, save_all=False, audio_only=False):
+def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False, audio_only=False):
     if isinstance(dataset, list):
         # with pre-defined train/ test
         train_dataset, test_dataset = dataset
@@ -145,7 +145,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator, save_all=False, 
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
-    optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=2 * lr, betas=(0.9, 0.999))
+    if discriminator is not None:
+        optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=2 * lr, betas=(0.9, 0.999))
     #optimizer = torch.optim.Adam(params= filter(lambda p: p.requires_grad, model.parameters()), lr=lr, betas=(0.9, 0.999))
     #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=3,)
