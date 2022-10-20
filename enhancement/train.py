@@ -62,8 +62,6 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False):
     if audio_only:
         predict1 = model(noise_mag)
         cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
-        noise_real, noise_imag = drop_band(noise_real, model.module.num_groups_in_drop_band),\
-                                 drop_band(noise_imag, model.module.num_groups_in_drop_band)
         enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
         enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
         predict1 = torch.complex(enhanced_real, enhanced_imag)
@@ -153,7 +151,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = Data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
                                    pin_memory=True)
-    test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=1, shuffle=False)
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     if discriminator is not None:
