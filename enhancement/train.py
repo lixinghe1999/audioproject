@@ -50,7 +50,7 @@ class STFTLoss(torch.nn.Module):
         log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
         return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 
-def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False):
+def sample_evaluation(model, acc, noise, clean, audio_only=False):
     acc = acc.to(device=device, dtype=torch.float)
     noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)
     noise_pha = torch.angle(noise).to(device=device, dtype=torch.float)
@@ -156,7 +156,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     for e in range(EPOCH):
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            loss = sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
+            loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -164,7 +164,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
-                metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only, complex=complex)
+                metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
