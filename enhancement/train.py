@@ -66,7 +66,7 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False, complex=False)
         enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
         predict1 = torch.complex(enhanced_real, enhanced_imag)
     else:
-        predict1 = model(acc, noise_mag)
+        predict1, _ = model(acc, noise_mag)
         predict1 = torch.exp(1j * noise_pha[:, :, :freq_bin_high, :]) * predict1
         predict1 = predict1.squeeze(1)
 
@@ -94,7 +94,7 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc, discriminator=No
         predict1 = model(noise_mag)
         loss = Reconstruction_Loss(predict1, cIRM)
     else:
-        predict1 = model(acc, noise_mag)
+        predict1, _ = model(acc, noise_mag)
         loss = Reconstruction_Loss(predict1, clean_mag)
         #loss += Lowband_Loss(predict2, clean_mag[:, :, :32, :])
     # # adversarial training
@@ -221,12 +221,14 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_dir = 'pretrain/causal_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+        print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
 
         #model = A2net(inference=False).to(device)
-        model = FullSubNet(num_freqs=264).to(device)
+        #model = FullSubNet(num_freqs=264).to(device)
+        model = Causal_A2net(inference=False).to(device)
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, ratio=0.8)

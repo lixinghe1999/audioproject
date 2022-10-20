@@ -208,48 +208,48 @@ class Residual_branch(nn.Module):
 class Causal_A2net(nn.Module):
     def __init__(self, inference=False):
         super(Causal_A2net, self).__init__()
-        # self.inference = inference
-        # self.IMU_branch = IMU_branch(self.inference)
-        # self.Audio_branch = Audio_branch()
+        self.inference = inference
+        self.IMU_branch = IMU_branch(self.inference)
+        self.Audio_branch = Audio_branch()
 
-        self.fusion_branch = Fusion_branch()
+        #self.fusion_branch = Fusion_branch()
         self.lstm_layer = nn.LSTM(input_size=1024, hidden_size=1024, num_layers=1, batch_first=True)
         self.Residual_branch = Residual_branch(256)
     def forward(self, acc, audio):
-        x = torch.cat([audio, acc.repeat(1, 1, 8, 1)], dim=1)
-        [x1, x2, x3, x4, x] = self.fusion_branch(x)
-        batch_size, n_channels, n_f_bins, n_frame_size = x.shape
-        lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
-        x, _ = self.lstm_layer(lstm_in)
-        x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
-        x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
-        return x
+        # x = torch.cat([audio, acc.repeat(1, 1, 8, 1)], dim=1)
+        # [x1, x2, x3, x4, x] = self.fusion_branch(x)
+        # batch_size, n_channels, n_f_bins, n_frame_size = x.shape
+        # lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
+        # x, _ = self.lstm_layer(lstm_in)
+        # x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
+        # x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
+        # return x
 
-        # if self.inference:
-        #     acc = self.IMU_branch(acc)
-        #     [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
-        #     x = torch.cat([acc, x5], dim=1)
-        #
-        #     batch_size, n_channels, n_f_bins, n_frame_size = x.shape
-        #     lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
-        #     x, _ = self.lstm_layer(lstm_in)
-        #     x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
-        #
-        #     x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
-        #     return x
-        # else:
-        #     acc = self.IMU_branch(acc)
-        #     acc, acc_extra = acc
-        #     [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
-        #     x = torch.cat([acc, x5], dim=1)
-        #
-        #     batch_size, n_channels, n_f_bins, n_frame_size = x.shape
-        #     lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
-        #     x, _ = self.lstm_layer(lstm_in)
-        #     x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
-        #
-        #     x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
-        #     return x, acc_extra
+        if self.inference:
+            acc = self.IMU_branch(acc)
+            [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
+            x = torch.cat([acc, x5], dim=1)
+
+            batch_size, n_channels, n_f_bins, n_frame_size = x.shape
+            lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
+            x, _ = self.lstm_layer(lstm_in)
+            x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
+
+            x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
+            return x
+        else:
+            acc = self.IMU_branch(acc)
+            acc, acc_extra = acc
+            [x1, x2, x3, x4, x5] = self.Audio_branch(audio)
+            x = torch.cat([acc, x5], dim=1)
+
+            batch_size, n_channels, n_f_bins, n_frame_size = x.shape
+            lstm_in = x.reshape(batch_size, n_channels * n_f_bins, n_frame_size).permute(0, 2, 1)
+            x, _ = self.lstm_layer(lstm_in)
+            x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
+
+            x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
+            return x, acc_extra
 
 
 
