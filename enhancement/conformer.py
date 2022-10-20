@@ -81,7 +81,7 @@ class Attention(nn.Module):
     ):
         super().__init__()
         inner_dim = dim_head * heads
-        self.heads= heads
+        self.heads = heads
         self.scale = dim_head ** -0.5
         self.to_q = nn.Linear(dim, inner_dim, bias = False)
         self.to_kv = nn.Linear(dim, inner_dim * 2, bias = False)
@@ -95,17 +95,19 @@ class Attention(nn.Module):
     def forward(self, x, context = None, mask = None, context_mask = None):
         n, device, h, max_pos_emb, has_context = x.shape[-2], x.device, self.heads, self.max_pos_emb, exists(context)
         context = default(context, x)
-
+        print(x.shape)
         q, k, v = (self.to_q(x), *self.to_kv(context).chunk(2, dim = -1))
         q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h = h), (q, k, v))
-
+        print(q.shape, k.shape, v.shape)
         dots = einsum('b h i d, b h j d -> b h i j', q, k) * self.scale
 
         # shaw's relative positional embedding
         seq = torch.arange(n, device = device)
         dist = rearrange(seq, 'i -> i ()') - rearrange(seq, 'j -> () j')
+        print(dist.shape)
         dist = dist.clamp(-max_pos_emb, max_pos_emb) + max_pos_emb
         rel_pos_emb = self.rel_pos_emb(dist).to(q)
+        print(rel_pos_emb.shape)
         pos_attn = einsum('b h n d, n r d -> b h n r', q, rel_pos_emb) * self.scale
         dots = dots + pos_attn
 
@@ -392,6 +394,6 @@ if __name__ == "__main__":
 
     audio = torch.rand(1, 2, 250, 201)
     model = TSCNet()
-    #output = model(audio)
+    output = model(audio)
     print(model_size(model))
-    print(model_speed(model, [audio]))
+    #print(model_speed(model, [audio]))

@@ -94,7 +94,7 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminat
         cIRM = cIRM.to(device=device, dtype=torch.float)
         cIRM = drop_band(cIRM, model.module.num_groups_in_drop_band)
         predict1 = model(noise_mag)
-        loss = Reconstruction_Loss(predict1, cIRM)
+        loss = Lowband_Loss(predict1, cIRM)
 
         # predict real and imag
         # noisy_spec = torch.stack([noise.real, noise.imag], 1).to(device=device, dtype=torch.float).permute(0, 1, 3, 2)
@@ -157,8 +157,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     if discriminator is not None:
         optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=2 * lr, betas=(0.9, 0.999))
     #optimizer = torch.optim.Adam(params= filter(lambda p: p.requires_grad, model.parameters()), lr=lr, betas=(0.9, 0.999))
-    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=3,)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
+    #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=3,)
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()
@@ -169,7 +169,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
-        scheduler.step(mean_lost)
+        scheduler.step()
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
@@ -209,7 +209,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 16
+        BATCH_SIZE = 32
         lr = 0.01
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
