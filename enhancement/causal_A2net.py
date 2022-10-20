@@ -5,6 +5,7 @@ from torchvision.utils import save_image
 from torch.utils.mobile_optimizer import optimize_for_mobile
 import time
 from torch.nn.modules.utils import _pair
+from torch.nn import functional
 
 class CausalConv2d(nn.Conv2d):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=None, dilation=1, groups=1, bias=True):
@@ -208,6 +209,7 @@ class Residual_branch(nn.Module):
 class Causal_A2net(nn.Module):
     def __init__(self, inference=False):
         super(Causal_A2net, self).__init__()
+        self.look_ahead = 2
         self.inference = inference
         self.IMU_branch = IMU_branch(self.inference)
         self.Audio_branch = Audio_branch()
@@ -216,6 +218,9 @@ class Causal_A2net(nn.Module):
         self.lstm_layer = nn.LSTM(input_size=1536, hidden_size=1024, num_layers=1, batch_first=True)
         self.Residual_branch = Residual_branch(256)
     def forward(self, acc, audio):
+        audio = functional.pad(audio, [0, self.look_ahead])
+        acc = functional.pad(acc, [0, self.look_ahead])
+
         # x = torch.cat([audio, acc.repeat(1, 1, 8, 1)], dim=1)
         # [x1, x2, x3, x4, x] = self.fusion_branch(x)
         # batch_size, n_channels, n_f_bins, n_frame_size = x.shape
@@ -236,7 +241,7 @@ class Causal_A2net(nn.Module):
             x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
 
             x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
-            return x
+            return x[:, :, :, self.look_ahead:]
         else:
             acc = self.IMU_branch(acc)
             acc, acc_extra = acc
@@ -249,7 +254,7 @@ class Causal_A2net(nn.Module):
             x = x.permute(0, 2, 1).reshape(batch_size, -1, n_f_bins, n_frame_size)
 
             x = self.Residual_branch(x, [x1, x2, x3, x4]) * audio
-            return x, acc_extra
+            return x[:, :, :, self.look_ahead:], acc_extra[:, :, :, self.look_ahead:]
 
 
 
