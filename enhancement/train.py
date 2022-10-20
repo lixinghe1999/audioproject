@@ -164,13 +164,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        # for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-        #     loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
-        #     Loss_list.append(loss)
-        # mean_lost = np.mean(Loss_list)
-        # loss_curve.append(mean_lost)
-        # scheduler.step(mean_lost)
-        # Metric = []
+        for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
+            loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
+            Loss_list.append(loss)
+        mean_lost = np.mean(Loss_list)
+        loss_curve.append(mean_lost)
+        scheduler.step(mean_lost)
+        Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
                 metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only)
