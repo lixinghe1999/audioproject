@@ -1,6 +1,4 @@
 import os
-import time
-
 import matplotlib.pyplot as plt
 import torch
 torch.manual_seed(0)
@@ -14,6 +12,7 @@ from causal_A2net import Causal_A2net
 import numpy as np
 import scipy.signal as signal
 from result import subjective_evaluation, objective_evaluation
+from audio_zen.acoustics.feature import drop_band
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from tqdm import tqdm
 import argparse
@@ -91,6 +90,7 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminat
     if audio_only:
         cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, clean.real, clean.imag)  # [B, 2, F, T]
         cIRM = cIRM.to(device=device, dtype=torch.float)
+        cIRM = drop_band(cIRM, model.module.num_groups_in_drop_band)
         predict1 = model(noise_mag)
         loss = Reconstruction_Loss(predict1, cIRM)
     else:
