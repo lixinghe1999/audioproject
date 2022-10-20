@@ -213,7 +213,7 @@ class Causal_A2net(nn.Module):
         self.Audio_branch = Audio_branch()
 
         #self.fusion_branch = Fusion_branch()
-        self.lstm_layer = nn.LSTM(input_size=1024, hidden_size=1024, num_layers=1, batch_first=True)
+        self.lstm_layer = nn.LSTM(input_size=1536, hidden_size=1024, num_layers=1, batch_first=True)
         self.Residual_branch = Residual_branch(256)
     def forward(self, acc, audio):
         # x = torch.cat([audio, acc.repeat(1, 1, 8, 1)], dim=1)
