@@ -94,7 +94,7 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminat
         cIRM = cIRM.to(device=device, dtype=torch.float)
         cIRM = drop_band(cIRM, model.module.num_groups_in_drop_band)
         predict1 = model(noise_mag)
-        loss = Lowband_Loss(predict1, cIRM)
+        loss = F.l1_loss(predict1, cIRM)
 
         # predict real and imag
         # noisy_spec = torch.stack([noise.real, noise.imag], 1).to(device=device, dtype=torch.float).permute(0, 1, 3, 2)
@@ -104,8 +104,8 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminat
         # loss = 0.9 * F.mse_loss(est_mag, clean_mag) + 0.1 * F.mse_loss(est_real, clean_real) + F.mse_loss(est_imag, clean_imag)
     else:
         predict1, _ = model(acc, noise_mag)
-        loss = Reconstruction_Loss(predict1, clean_mag)
-        #loss += Lowband_Loss(predict2, clean_mag[:, :, :32, :])
+        loss = Spectral_Loss(predict1, clean_mag)
+        #loss += F.mse_loss(predict2, clean_mag[:, :, :32, :])
     # # adversarial training
     # one_labels = torch.ones(BATCH_SIZE).cuda()
     # predict_fake_metric = discriminator(clean_mag, predict1)
@@ -204,8 +204,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     audio_only = True
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    Reconstruction_Loss = STFTLoss()
-    Lowband_Loss = nn.MSELoss()
+    Spectral_Loss = STFTLoss()
     torch.cuda.set_device(0)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
