@@ -9,6 +9,7 @@ from dataset import NoisyCleanSet
 from fullsubnet import FullSubNet
 from A2net import A2net
 from causal_A2net import Causal_A2net
+from conformer import TSCNet
 import numpy as np
 import scipy.signal as signal
 from result import subjective_evaluation, objective_evaluation
@@ -61,6 +62,8 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False):
     if audio_only:
         predict1 = model(noise_mag)
         cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
+        noise_real, noise_imag = drop_band(noise_real, model.module.num_groups_in_drop_band),\
+                                 drop_band(noise_imag, model.module.num_groups_in_drop_band)
         enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
         enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
         predict1 = torch.complex(enhanced_real, enhanced_imag)
@@ -88,11 +91,19 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminat
 
     optimizer.zero_grad()
     if audio_only:
+        # predict complex Ideal Ratio Mask
         cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, clean.real, clean.imag)  # [B, 2, F, T]
         cIRM = cIRM.to(device=device, dtype=torch.float)
         cIRM = drop_band(cIRM, model.module.num_groups_in_drop_band)
         predict1 = model(noise_mag)
         loss = Reconstruction_Loss(predict1, cIRM)
+
+        # predict real and imag
+        # noisy_spec = torch.stack([noise.real, noise.imag], 1).to(device=device, dtype=torch.float).permute(0, 1, 3, 2)
+        # clean_real, clean_imag = clean.real.to(device=device, dtype=torch.float), clean.imag.to(device=device, dtype=torch.float)
+        # est_real, est_imag = model(noisy_spec)
+        # est_mag = torch.sqrt(est_real ** 2 + est_imag ** 2)
+        # loss = 0.9 * F.mse_loss(est_mag, clean_mag) + 0.1 * F.mse_loss(est_real, clean_real) + F.mse_loss(est_imag, clean_imag)
     else:
         predict1, _ = model(acc, noise_mag)
         loss = Reconstruction_Loss(predict1, clean_mag)
@@ -155,13 +166,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
-            Loss_list.append(loss)
-        mean_lost = np.mean(Loss_list)
-        loss_curve.append(mean_lost)
-        scheduler.step(mean_lost)
-        Metric = []
+        # for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
+        #     loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
+        #     Loss_list.append(loss)
+        # mean_lost = np.mean(Loss_list)
+        # loss_curve.append(mean_lost)
+        # scheduler.step(mean_lost)
+        # Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
                 metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only)
@@ -208,6 +219,7 @@ if __name__ == "__main__":
         #model = A2net(inference=False).to(device)
         model = nn.DataParallel(FullSubNet(num_freqs=256).to(device), device_ids=[0, 1])
         #model = Causal_A2net(inference=False).to(device)
+        #model = TSCNet().to(device)
 
         discriminator = discriminator.Discriminator(ndf=16).to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator,
