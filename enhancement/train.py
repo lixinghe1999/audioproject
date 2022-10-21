@@ -29,7 +29,7 @@ rate_mic = 16000
 rate_imu = 1600
 
 
-freq_bin_high = 8 * (int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1)
+freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
 class STFTLoss(torch.nn.Module):
     """Spectral convergence loss module."""
@@ -71,11 +71,11 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False):
         predict1 = predict1.squeeze(1)
 
     predict = predict1.cpu().numpy()
-    predict = np.pad(predict, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    predict = np.pad(predict, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
 
     clean = clean.cpu().numpy()
-    clean = np.pad(clean, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     metric1 = batch_pesq(clean, predict)
     metric2 = SI_SDR(clean, predict)
@@ -214,15 +214,16 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
         #model = A2net(inference=False).to(device)
-        model = FullSubNet(num_freqs=264).to(device)
+        model = nn.DataParallel(FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device), device_ids=[0, 1])
         #model = Causal_A2net(inference=False).to(device)
         #model = TSCNet().to(device)
 
-        ckpt_dir = 'pretrain/fullsubnet'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-        print("load checkpoint: {}".format(ckpt_name))
-        ckpt = torch.load(ckpt_name)
-        model.load_state_dict(ckpt)
+        # potential ckpt
+        # ckpt_dir = 'pretrain/fullsubnet'
+        # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+        # print("load checkpoint: {}".format(ckpt_name))
+        # ckpt = torch.load(ckpt_name)
+        # model.load_state_dict(ckpt)
 
         discriminator = discriminator.Discriminator(ndf=16).to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator,

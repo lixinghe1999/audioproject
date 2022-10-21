@@ -257,12 +257,12 @@ class NoisyCleanSet:
         else:
             imu, _ = self.dataset[2][index]
             imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
-        # noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
-        # clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
-        # imu = imu[:, 1:, :-1]
-        noise = noise[:, : 8 * (freq_bin_high), :-1]
-        clean = clean[:, : 8 * (freq_bin_high), :-1]
-        imu = imu[:, :, :-1]
+        noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
+        clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
+        imu = imu[:, 1:, :-1]
+        # noise = noise[:, : 8 * (freq_bin_high), :-1]
+        # clean = clean[:, : 8 * (freq_bin_high), :-1]
+        # imu = imu[:, :, :-1]
         if self.text:
             return file, imu, noise, clean
         else:
