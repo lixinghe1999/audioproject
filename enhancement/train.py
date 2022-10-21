@@ -214,7 +214,7 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
 
         #model = A2net(inference=False).to(device)
-        model = nn.DataParallel(FullSubNet(num_freqs=264).to(device), device_ids=[0, 1])
+        model = FullSubNet(num_freqs=264).to(device)
         #model = Causal_A2net(inference=False).to(device)
         #model = TSCNet().to(device)
 
