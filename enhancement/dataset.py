@@ -274,17 +274,6 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    def model_size(model):
-        param_size = 0
-        for param in model.parameters():
-            param_size += param.nelement() * param.element_size()
-        buffer_size = 0
-        for buffer in model.buffers():
-            buffer_size += buffer.nelement() * buffer.element_size()
-
-        size_all_mb = (param_size + buffer_size) / 1024 ** 2
-        #print('model size: {:.3f}MB'.format(size_all_mb))
-        return size_all_mb
     if args.mode == 0:
         # check data
         #dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
@@ -326,31 +315,3 @@ if __name__ == "__main__":
                 else:
                     Corr.append(corr)
             print(position, np.mean(Corr))
-    else:
-        # model check 1. FullSubNet 2. A2Net
-        model1 = Model(
-            num_freqs=264,
-            look_ahead=2,
-            sequence_model="LSTM",
-            fb_num_neighbors=0,
-            sb_num_neighbors=15,
-            fb_output_activate_function="ReLU",
-            sb_output_activate_function=False,
-            fb_model_hidden_size=512,
-            sb_model_hidden_size=384,
-            norm_type="offline_laplace_norm",
-            num_groups_in_drop_band=2,
-            weight_init=False,
-        )
-        model2 = A2net()
-        size1 = model_size(model1)
-        size2 = model_size(model2)
-        print(size1, size2)
-        with torch.no_grad():
-            dataset_train = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'], simulation=True, person=['he'])
-            loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
-            for step, (x, noise, y) in enumerate(loader):
-                x, noise, y = x.to(dtype=torch.float), torch.abs(noise).to(dtype=torch.float), torch.abs(y).to(dtype=torch.float)
-                # x1 = model1(noise)
-                x1, x2 = model2(x, noise)
-                print(x1.shape)
