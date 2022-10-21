@@ -25,6 +25,16 @@ class Swish(nn.Module):
     def forward(self, x):
         return x * x.sigmoid()
 
+def generate_square_subsequent_mask(sz: int, device: str = "cpu") -> torch.Tensor:
+    """ Generate the attention mask for causal decoding """
+    mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
+    # mask = (
+    #     mask.float()
+    #     .masked_fill(mask == 0, float("-inf"))
+    #     .masked_fill(mask == 1, float(0.0))
+    # ).to(device=device)
+    mask = mask.to(device=device)
+    return mask
 
 class GLU(nn.Module):
     def __init__(self, dim):
@@ -107,12 +117,18 @@ class Attention(nn.Module):
         pos_attn = einsum('b h n d, n r d -> b h n r', q, rel_pos_emb) * self.scale
         dots = dots + pos_attn
 
-        if exists(mask) or exists(context_mask):
-            mask = default(mask, lambda: torch.ones(*x.shape[:2], device = device))
-            context_mask = default(context_mask, mask) if not has_context else default(context_mask, lambda: torch.ones(*context.shape[:2], device = device))
+        if mask:
+            # causal mask
+            mask = generate_square_subsequent_mask(n, device)
+            mask = rearrange(mask, 'i j -> () () i j')
             mask_value = -torch.finfo(dots.dtype).max
-            mask = rearrange(mask, 'b i -> b () i ()') * rearrange(context_mask, 'b j -> b () () j')
             dots.masked_fill_(~mask, mask_value)
+        # if exists(mask) or exists(context_mask):
+        #     mask = default(mask, lambda: torch.ones(*x.shape[:2], device = device))
+        #     context_mask = default(context_mask, mask) if not has_context else default(context_mask, lambda: torch.ones(*context.shape[:2], device = device))
+        #     mask_value = -torch.finfo(dots.dtype).max
+        #     mask = rearrange(mask, 'b i -> b () i ()') * rearrange(context_mask, 'b j -> b () () j')
+        #     dots.masked_fill_(~mask, mask_value)
 
         attn = dots.softmax(dim = -1)
 
