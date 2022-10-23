@@ -221,7 +221,7 @@ if __name__ == "__main__":
         #model = nn.DataParallel(FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device), device_ids=[0, 1])
         #model = Causal_A2net(inference=False).to(device)
         #model = TSCNet().to(device)
-        model = SEANet().to(device)
+        model = nn.DataParallel(SEANet().to(device), device_ids=[0, 1])
 
         # potential ckpt
         # ckpt_dir = 'pretrain/fullsubnet'
