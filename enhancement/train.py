@@ -10,6 +10,7 @@ from fullsubnet import FullSubNet
 from A2net import A2net
 from causal_A2net import Causal_A2net
 from conformer import TSCNet
+from SEANet import SEANet
 import numpy as np
 import scipy.signal as signal
 from result import subjective_evaluation, objective_evaluation
@@ -103,9 +104,12 @@ def sample(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminat
         # est_mag = torch.sqrt(est_real ** 2 + est_imag ** 2)
         # loss = 0.9 * F.mse_loss(est_mag, clean_mag) + 0.1 * F.mse_loss(est_real, clean_real) + F.mse_loss(est_imag, clean_imag)
     else:
-        predict1, _ = model(acc, noise_mag)
-        loss = Spectral_Loss(predict1, clean_mag)
-        #loss += F.mse_loss(predict2, clean_mag[:, :, :32, :])
+        # predict1, predict2 = model(acc, noise_mag)
+        # loss = Spectral_Loss(predict1, clean_mag)
+        # loss += F.mse_loss(predict2, clean_mag[:, :, :32, :])
+
+        predict1, predict2 = model(acc, noise.to(device=device, dtype=torch.float))
+        loss = F.mse_loss(predict1, noise.to(device=device, dtype=torch.float))
     # # adversarial training
     # one_labels = torch.ones(BATCH_SIZE).cuda()
     # predict_fake_metric = discriminator(clean_mag, predict1)
@@ -202,7 +206,7 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    audio_only = True
+    audio_only = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     Spectral_Loss = STFTLoss()
     torch.cuda.set_device(0)
@@ -211,12 +215,13 @@ if __name__ == "__main__":
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], simulation=True, ratio=1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=True,simulation=True, ratio=1)
 
         #model = A2net(inference=False).to(device)
-        model = nn.DataParallel(FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device), device_ids=[0, 1])
+        #model = nn.DataParallel(FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device), device_ids=[0, 1])
         #model = Causal_A2net(inference=False).to(device)
         #model = TSCNet().to(device)
+        model = SEANet().to(device)
 
         # potential ckpt
         # ckpt_dir = 'pretrain/fullsubnet'

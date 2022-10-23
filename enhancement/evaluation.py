@@ -2,6 +2,7 @@ import scipy.signal as signal
 import numpy as np
 from pesq import pesq
 from joblib import Parallel, delayed
+from pystoi.stoi import stoi
 
 sentences = [["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
                     ["WE", "WANT", "TO", "IMPROVE", "SPEECH", "QUALITY", "IN", "THIS", "PROJECT"],
@@ -103,9 +104,11 @@ def pesq_loss(clean, noisy, sr=16000):
 def batch_pesq(clean, noisy):
     pesq_score = Parallel(n_jobs=-1)(delayed(pesq_loss)(c, n) for c, n in zip(clean, noisy))
     pesq_score = np.array(pesq_score)
-    #pesq_score = (pesq_score - 1) / 3.5
-    #return torch.FloatTensor(pesq_score).to('cuda')
     return pesq_score
+
+def STOI(ref, est, sr=16000):
+    return stoi(ref, est, sr, extended=False)
+
 if __name__ == "__main__":
     # we evaluate WER and PESQ in this script
     f = open('survey/survey.txt', 'r', encoding='UTF-8')

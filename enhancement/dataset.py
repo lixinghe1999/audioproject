@@ -20,7 +20,7 @@ overlap_imu = 32
 
 rate_mic = 16000
 rate_imu = 1600
-length = 5
+length = 4
 stride = 3
 function_pool = '../transfer_function'
 #N = len(os.listdir(function_pool))
@@ -70,7 +70,6 @@ def noise_extraction():
     noise_clip = np.load('../dataset/noise/' + noise_list[index])
     index = np.random.randint(0, noise_clip.shape[1] - time_bin)
     return noise_clip[:, index:index + time_bin]
-
 
 def synthetic(clean, transfer_function, variance):
     index = np.random.randint(0, N)
@@ -201,12 +200,13 @@ class BaseDataset:
 
             return data, file
 class NoisyCleanSet:
-    def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20)):
+    def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False, ratio=1, snr=(0, 20)):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
         :param person: person we want to involve
         :param simulation: whether the noise is simulation
+        :param time_domain: use frequency domain (complex) or time domain
         :param ratio: ratio of the data we use
         :param snr: SNR range of the synthetic dataset
         '''
@@ -239,6 +239,7 @@ class NoisyCleanSet:
             self.augmentation = False
         self.simulation = simulation
         self.text = text
+        self.time_domain = time_domain
         self.length = len(self.dataset[1])
         self.snr_list = np.arange(snr[0], snr[1], 1)
     def __getitem__(self, index):
@@ -250,19 +251,30 @@ class NoisyCleanSet:
         else:
             noise, _ = self.dataset[1][index]
             noise, clean = snr_norm([clean, noise], -25, 10)
-        noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
-        clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
-        if self.augmentation:
-            imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
+        if self.time_domain:
+            if self.augmentation:
+                clean_spec = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
+                imu = synthetic(np.abs(clean_spec), self.transfer_function, self.variance)
+                imu = imu * np.exp(1j * np.angle(clean_spec[0, :freq_bin_high, :]))
+                imu = signal.istft(imu, rate_imu, nperseg=seg_len_imu, noverlap=overlap_imu)[-1]
+            else:
+                imu, _ = self.dataset[2][index]
+            clean = np.expand_dims(clean, 0)
+            noise = np.expand_dims(noise, 0)
         else:
-            imu, _ = self.dataset[2][index]
-            imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
-        noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
-        clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
-        imu = imu[:, 1:, :-1]
-        # noise = noise[:, : 8 * (freq_bin_high), :-1]
-        # clean = clean[:, : 8 * (freq_bin_high), :-1]
-        # imu = imu[:, :, :-1]
+            noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
+            clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
+            if self.augmentation:
+                imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
+            else:
+                imu, _ = self.dataset[2][index]
+                imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
+            noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
+            clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
+            imu = imu[:, 1:, :-1]
+            # noise = noise[:, : 8 * (freq_bin_high), :-1]
+            # clean = clean[:, : 8 * (freq_bin_high), :-1]
+            # imu = imu[:, :, :-1]
         if self.text:
             return file, imu, noise, clean
         else:
@@ -276,22 +288,29 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.mode == 0:
         # check data
-        #dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
-        dataset_train = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json','json/position_imu.json'],
-                                      simulation=True, person=['headphone'])
-        print(len(dataset_train))
-        loader = Data.DataLoader(dataset=dataset_train, batch_size=1, shuffle=False)
+        dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], time_domain=True, simulation=True, ratio=1)
+        #dataset_train = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json','json/position_imu.json'], imulation=True, person=['headphone'])
+        loader = Data.DataLoader(dataset=dataset_train, batch_size=2, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
             print(x.shape, noise.shape, y.shape)
 
             x = x[0, 0].numpy()
-            noise = np.abs(noise[0, 0].numpy())
-            y = np.abs(y[0, 0].numpy())
+            noise = noise[0, 0].numpy()
+            y = y[0, 0].numpy()
             fig, axs = plt.subplots(3, 1)
-            axs[0].imshow(x, aspect='auto')
-            axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
-            axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
+            axs[0].plot(x)
+            axs[1].plot(noise)
+            axs[2].plot(y)
             plt.show()
+
+            # x = x[0, 0].numpy()
+            # noise = np.abs(noise[0, 0].numpy())
+            # y = np.abs(y[0, 0].numpy())
+            # fig, axs = plt.subplots(3, 1)
+            # axs[0].imshow(x, aspect='auto')
+            # axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
+            # axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
+            # plt.show()
     elif args.mode == 1:
         # save different positions correlation with audio
         # dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_gt.json', 'json/train_imu'], person=['hou'],
