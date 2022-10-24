@@ -23,7 +23,7 @@ def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discr
     (feats_fake, score_fake), (feats_real, _) = (disc_fake, disc_real)
     loss = torch.mean(torch.sum(torch.pow(score_fake - 1.0, 2), dim=[1, 2]))
     for feat_f, feat_r in zip(feats_fake, feats_real):
-        loss += 1 * torch.mean(torch.abs(feat_f - feat_r))
+        loss += 100 * torch.mean(torch.abs(feat_f - feat_r))
     loss.backward()
     optimizer.step()
 
