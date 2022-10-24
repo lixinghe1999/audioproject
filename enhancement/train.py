@@ -209,17 +209,17 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
-        Loss_list = []
-        for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            # FullSubNet + VibVoice
-            # loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
-
-            # Conformer + SEANet (time_domain)
-            loss, discrim_loss = sample_GAN(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
-            Loss_list.append(loss)
-        mean_lost = np.mean(Loss_list)
-        loss_curve.append(mean_lost)
-        scheduler.step()
+        # Loss_list = []
+        # for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
+        #     # FullSubNet + VibVoice
+        #     # loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
+        #
+        #     # Conformer + SEANet (time_domain)
+        #     loss, discrim_loss = sample_GAN(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
+        #     Loss_list.append(loss)
+        # mean_lost = np.mean(Loss_list)
+        # loss_curve.append(mean_lost)
+        # scheduler.step()
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
