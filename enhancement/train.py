@@ -263,10 +263,10 @@ if __name__ == "__main__":
         BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=True, simulation=True, ratio=0.1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=True, simulation=True, ratio=1)
 
         #model = A2net(inference=False).to(device)
-        #model = nn.DataParallel(FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device), device_ids=[0, 1])
+        #model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
         #model = Causal_A2net(inference=False).to(device)
         #model = TSCNet().to(device)
         model = SEANet().to(device)
