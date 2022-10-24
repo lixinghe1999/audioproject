@@ -221,7 +221,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         # mean_lost = np.mean(Loss_list)
         # loss_curve.append(mean_lost)
         # scheduler.step()
-        # Metric = []
+        Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
                 #metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only)
