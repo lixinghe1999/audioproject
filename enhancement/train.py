@@ -216,7 +216,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
 
             # Conformer + SEANet (time_domain)
             #loss, discrim_loss = sample_GAN(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
-            loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator)
+            loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -225,7 +225,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
                 #metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only)
-                metric = test_SEANet(model, acc, noise, clean)
+                metric = test_SEANet(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)

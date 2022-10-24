@@ -14,8 +14,7 @@ seg_len_imu = 64
 overlap_imu = 32
 rate_mic = 16000
 rate_imu = 1600
-def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None):
-    device = model.device
+def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, device='cuda'):
     predict1, predict2 = model(acc.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float))
     # generator
     optimizer.zero_grad()
@@ -39,8 +38,7 @@ def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discr
     optimizer_disc.step()
     return loss.item(), discrim_loss.item()
 
-def test_SEANet(model, acc, noise, clean):
-    device = model.device
+def test_SEANet(model, acc, noise, clean, device='cuda'):
     predict1, predict2 = model(acc.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float))
 
     clean = clean.squeeze(1).numpy()
