@@ -9,7 +9,6 @@ import scipy.signal as signal
 import librosa
 from scipy import interpolate
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
-from torchvision.utils import save_image
 from A2net import A2net
 from fullsubnet import FullSubNet
 import argparse
@@ -153,7 +152,6 @@ def snr_norm(signals, target_dB_FS, target_dB_FS_floating_value):
             signal, _, _ = tailor_dB_FS(signal, noisy_target_dB_FS)
             new_signal.append(signal)
         return new_signal
-
 class BaseDataset:
     def __init__(self, files=None, pad=False, sample_rate=16000):
         """
@@ -245,9 +243,13 @@ class NoisyCleanSet:
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.simulation:
-            noise, _ = self.dataset[1][np.random.randint(0, self.length)]
-            snr = np.random.choice(self.snr_list)
-            noise, clean = snr_mix(clean, noise, snr, -25, 10, rir=None, eps=1e-6)
+            # number of noise source, by default 1
+            clean_tmp = clean
+            for i in range(1):
+                noise, _ = self.dataset[1][np.random.randint(0, self.length)]
+                snr = np.random.choice(self.snr_list)
+                noise, clean = snr_mix(clean_tmp, noise, snr, -25, 10, rir=None, eps=1e-6)
+                clean_tmp = noise
         else:
             noise, _ = self.dataset[1][index]
             noise, clean = snr_norm([clean, noise], -25, 10)

@@ -22,9 +22,9 @@ class LearnableSigmoid(nn.Module):
     def forward(self, x):
         return self.beta * torch.sigmoid(self.slope * x)
 
-class Discriminator(nn.Module):
-    def __init__(self, ndf, in_channel=2):
-        super().__init__()
+class Discriminator_spectrogram(nn.Module):
+    def __init__(self, ndf=16, in_channel=2):
+        super(Discriminator_spectrogram, self).__init__()
         self.layers = nn.Sequential(
             nn.utils.spectral_norm(nn.Conv2d(in_channel, ndf, (4,4), (2,2), (1,1), bias=False)),
             nn.InstanceNorm2d(ndf, affine=True),
@@ -58,3 +58,64 @@ class Discriminator(nn.Module):
     def forward(self, x, y):
         xy = torch.cat([x, y], dim=1)
         return self.layers(xy)
+
+class Discriminator_time(nn.Module):
+    def __init__(self):
+        super(Discriminator_time, self).__init__()
+
+        self.discriminator = nn.ModuleList([
+            nn.Sequential(
+                nn.ReflectionPad1d(7),
+                nn.utils.weight_norm(nn.Conv1d(1, 16, kernel_size=15, stride=1)),
+                nn.LeakyReLU(0.2, inplace=True),
+            ),
+            nn.Sequential(
+                nn.utils.weight_norm(nn.Conv1d(16, 64, kernel_size=41, stride=4, padding=20, groups=4)),
+                nn.LeakyReLU(0.2, inplace=True),
+            ),
+            nn.Sequential(
+                nn.utils.weight_norm(nn.Conv1d(64, 256, kernel_size=41, stride=4, padding=20, groups=16)),
+                nn.LeakyReLU(0.2, inplace=True),
+            ),
+            nn.Sequential(
+                nn.utils.weight_norm(nn.Conv1d(256, 1024, kernel_size=41, stride=4, padding=20, groups=64)),
+                nn.LeakyReLU(0.2, inplace=True),
+            ),
+            nn.Sequential(
+                nn.utils.weight_norm(nn.Conv1d(1024, 1024, kernel_size=41, stride=4, padding=20, groups=256)),
+                nn.LeakyReLU(0.2, inplace=True),
+            ),
+            nn.Sequential(
+                nn.utils.weight_norm(nn.Conv1d(1024, 1024, kernel_size=5, stride=1, padding=2)),
+                nn.LeakyReLU(0.2, inplace=True),
+            ),
+            nn.utils.weight_norm(nn.Conv1d(1024, 1, kernel_size=3, stride=1, padding=1)),
+        ])
+
+    def forward(self, x):
+        '''
+            returns: (list of 6 features, discriminator score)
+            we directly predict score without last sigmoid function
+            since we're using Least Squares GAN (https://arxiv.org/abs/1611.04076)
+        '''
+        features = list()
+        if len(x.shape) == 2:
+            x = torch.unsqueeze(x, dim=1)
+        for module in self.discriminator:
+            x = module(x)
+            features.append(x)
+        return features[:-1], features[-1]
+
+if __name__ == '__main__':
+    model_s = Discriminator_spectrogram()
+    model_t = Discriminator_time()
+
+    x_t = torch.randn(4, 1, 64000)
+    x_s = torch.randn(4, 1, 256, 200)
+
+    features, score = model_t(x_t)
+    for feat in features:
+        print(feat.shape)
+    print(score.shape)
+    metric = model_s(x_s, x_s)
+    print(metric.shape)
