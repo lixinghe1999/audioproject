@@ -19,7 +19,7 @@ from tqdm import tqdm
 import argparse
 from evaluation import wer, snr, lsd, SI_SDR, batch_pesq
 from discriminator import Discriminator_time, Discriminator_spectrogram
-
+from train_variants import train_SEANet, test_SEANet
 
 seg_len_mic = 640
 overlap_mic = 320
@@ -209,21 +209,23 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
-        # Loss_list = []
-        # for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-        #     # FullSubNet + VibVoice
-        #     # loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
-        #
-        #     # Conformer + SEANet (time_domain)
-        #     loss, discrim_loss = sample_GAN(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
-        #     Loss_list.append(loss)
-        # mean_lost = np.mean(Loss_list)
-        # loss_curve.append(mean_lost)
-        # scheduler.step()
+        Loss_list = []
+        for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
+            # FullSubNet + VibVoice
+            # loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
+
+            # Conformer + SEANet (time_domain)
+            #loss, discrim_loss = sample_GAN(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
+            loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator)
+            Loss_list.append(loss)
+        mean_lost = np.mean(Loss_list)
+        loss_curve.append(mean_lost)
+        scheduler.step()
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
-                metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only)
+                #metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only)
+                metric = test_SEANet(model, acc, noise, clean)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
