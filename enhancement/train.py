@@ -270,7 +270,7 @@ if __name__ == "__main__":
 
         #model = FullSubNet(num_freqs=264).to(device)
         model = A2net(inference=False).to(device)
-        model = Causal_A2net(inference=False).to(device)
+        #model = Causal_A2net(inference=False).to(device)
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, ratio=0.8)
