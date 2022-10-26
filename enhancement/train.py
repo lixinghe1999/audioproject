@@ -222,7 +222,8 @@ def inference(dataset, BATCH_SIZE, model):
     Metric = []
     with torch.no_grad():
         for acc, noise, clean in test_loader:
-            metric = test_SEANet(model, acc, noise, clean, device)
+            #metric = test_SEANet(model, acc, noise, clean, device)
+            metric = test_vibvoice(model, acc, noise, clean, device)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -262,13 +263,13 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/causal_vibvoice'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+        ckpt_dir = 'pretrain/new_vibvoice'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
 
-        #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=264).to(device)
+        model = A2net(inference=False).to(device)
         model = Causal_A2net(inference=False).to(device)
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
@@ -284,27 +285,27 @@ if __name__ == "__main__":
         test_dataset = torch.utils.data.ConcatDataset([test_dataset1, test_dataset2])
 
         model.load_state_dict(ckpt)
-        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, audio_only=audio_only)
+        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
 
         # Optional Micro-benchmark
         model.load_state_dict(ckpt)
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         for p in people:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=[p], simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=audio_only)
+            Metric = inference(dataset, BATCH_SIZE, model)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
 
         for noise in ['background.json', 'dev.json', 'music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'], person=people, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=audio_only)
+            Metric = inference(dataset, BATCH_SIZE, model)
             avg_metric = np.mean(Metric, axis=0)
             print(noise, avg_metric)
 
         for level in [11, 6, 1]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
                                     simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model, audio_only=audio_only)
+            Metric = inference(dataset, BATCH_SIZE, model)
             avg_metric = np.mean(Metric, axis=0)
             print(level, avg_metric)
 
