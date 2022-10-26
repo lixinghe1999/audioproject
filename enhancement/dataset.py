@@ -9,7 +9,7 @@ import scipy.signal as signal
 import librosa
 from scipy import interpolate
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
-from A2net import A2net
+from vibvoice import A2net
 from fullsubnet import FullSubNet
 import argparse
 seg_len_mic = 640

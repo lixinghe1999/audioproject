@@ -6,11 +6,14 @@ import torch.utils.data as Data
 import torch.nn.functional as F
 import torch.nn as nn
 from dataset import NoisyCleanSet
+
 from fullsubnet import FullSubNet
-from A2net import A2net
-from causal_A2net import Causal_A2net
+# from vibvoice import A2net
+from new_vibvoice import A2net
+from causal_vibvoice import Causal_A2net
 from conformer import TSCNet
 from SEANet import SEANet
+
 import numpy as np
 import scipy.signal as signal
 from audio_zen.acoustics.feature import drop_band
@@ -19,7 +22,8 @@ from tqdm import tqdm
 import argparse
 from evaluation import wer, snr, lsd, SI_SDR, batch_pesq
 from discriminator import Discriminator_time, Discriminator_spectrogram
-from train_variants import train_SEANet, test_SEANet
+from train_variants import train_SEANet, test_SEANet, train_vibvoice, test_vibvoice, train_fullsubnet, test_fullsubnet, \
+    train_conformer, test_conformer
 
 seg_len_mic = 640
 overlap_mic = 320
@@ -30,25 +34,6 @@ rate_imu = 1600
 
 
 freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
-
-class STFTLoss(torch.nn.Module):
-    """Spectral convergence loss module."""
-    def __init__(self):
-        """Initilize spectral convergence loss module."""
-        super(STFTLoss, self).__init__()
-    def forward(self, x_mag, y_mag):
-        """Calculate forward propagation.
-        Args:
-            x_mag (Tensor): Magnitude spectrogram of predicted signal (B, #frames, #freq_bins).
-            y_mag (Tensor): Magnitude spectrogram of groundtruth signal (B, #frames, #freq_bins).
-        Returns:
-            Tensor: Spectral convergence loss value.
-        """
-        x_mag = torch.clamp(x_mag, min=1e-7)
-        y_mag = torch.clamp(y_mag, min=1e-7)
-        spectral_convergenge_loss = torch.norm(y_mag - x_mag, p="fro") / torch.norm(y_mag, p="fro")
-        log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
-        return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 
 def sample_evaluation(model, acc, noise, clean, audio_only=False):
     acc = acc.to(device=device, dtype=torch.float)
@@ -89,7 +74,6 @@ def sample_evaluation(model, acc, noise, clean, audio_only=False):
     metric2 = SI_SDR(clean, predict)
     metric3 = lsd(clean, predict)
     return np.stack([metric1, metric2, metric3], axis=1)
-
 def sample(model, acc, noise, clean, optimizer, audio_only=False):
     acc = acc.to(device=device, dtype=torch.float)
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
@@ -182,10 +166,7 @@ def sample_GAN(model, acc, noise, clean, optimizer, optimizer_disc=None, discrim
         optimizer_disc.step()
         return loss.item(), discrim_loss.item()
 
-
-
-
-def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False, audio_only=False):
+def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False):
     if isinstance(dataset, list):
         # with pre-defined train/ test
         train_dataset, test_dataset = dataset
@@ -211,12 +192,9 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     for e in range(EPOCH):
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            # FullSubNet + VibVoice
-            # loss = sample(model, acc, noise, clean, optimizer, audio_only=audio_only)
 
-            # Conformer + SEANet (time_domain)
-            #loss, discrim_loss = sample_GAN(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, audio_only=audio_only)
-            loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
+            #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
+            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -224,8 +202,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
-                #metric = sample_evaluation(model, acc, noise, clean, audio_only=audio_only)
-                metric = test_SEANet(model, acc, noise, clean, device)
+                #metric = test_SEANet(model, acc, noise, clean, device)
+                metric = test_vibvoice(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
@@ -238,13 +216,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 
-def inference(dataset, BATCH_SIZE, model, audio_only=False):
+def inference(dataset, BATCH_SIZE, model):
     test_dataset = dataset
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
-        for x, noise, y in test_loader:
-            metric = sample_evaluation(model, x, noise, y, audio_only=audio_only)
+        for acc, noise, clean in test_loader:
+            metric = test_SEANet(model, acc, noise, clean, device)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -256,27 +234,25 @@ if __name__ == "__main__":
     args = parser.parse_args()
     audio_only = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    Spectral_Loss = STFTLoss()
-    #torch.cuda.set_device(0)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 32
-        lr = 0.0001
+        lr = 0.001
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=True, simulation=True, ratio=1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=False, simulation=True, ratio=0.1)
 
-        #model = A2net(inference=False).to(device)
+        model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
         #model = Causal_A2net(inference=False).to(device)
         #model = TSCNet().to(device)
-        model = SEANet().to(device)
+        #model = SEANet().to(device)
 
         #model = nn.DataParallel(model, device_ids=[0, 1])
 
         #discriminator = Discriminator_spectrogram().to(device)
         discriminator = Discriminator_time().to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator,
-                                                   save_all=True, audio_only=audio_only)
+                                                   save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
 
