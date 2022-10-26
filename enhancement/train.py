@@ -236,7 +236,7 @@ if __name__ == "__main__":
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 64
+        BATCH_SIZE = 128
         lr = 0.001
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=False, simulation=True, ratio=1)
