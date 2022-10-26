@@ -123,11 +123,6 @@ class Residual_Block(nn.Module):
             nn.ConvTranspose2d(16, 16, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True))
-        self.r5 = nn.Sequential(
-            nn.Conv2d(64, 16, kernel_size=5, padding=4, dilation=2),
-            nn.ConvTranspose2d(16, 16, kernel_size=(2, 1), stride=(2, 1)),
-            nn.BatchNorm2d(16),
-            nn.ReLU(inplace=True))
         self.final = nn.Sequential(
             nn.Conv2d(32, 16, kernel_size=3, padding=1),
             nn.ConvTranspose2d(16, 1, kernel_size=(2, 1), stride=(2, 1)),
