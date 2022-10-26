@@ -236,10 +236,10 @@ if __name__ == "__main__":
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 32
+        BATCH_SIZE = 64
         lr = 0.001
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=False, simulation=True, ratio=0.1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=False, simulation=True, ratio=1)
 
         model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
