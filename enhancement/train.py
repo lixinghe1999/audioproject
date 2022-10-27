@@ -371,7 +371,7 @@ if __name__ == "__main__":
             p_except = [i for i in people if i != p]
             train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'],
                                           person=p_except, simulation=False, text=False)
-            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/speech.json', 'json/train_imu.json'],
+            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
                                            person=p, simulation=True, text=False)
             train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
             #ckpt, loss_curve, metric_best = train(train_dataset, EPOCH, lr, BATCH_SIZE, model)
