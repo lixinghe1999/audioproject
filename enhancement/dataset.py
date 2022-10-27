@@ -198,7 +198,7 @@ class BaseDataset:
 
             return data, file
 class NoisyCleanSet:
-    def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False, ratio=1, snr=(0, 20)):
+    def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False, ratio=1, snr=(0, 20), rir=None):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -235,6 +235,11 @@ class NoisyCleanSet:
             self.transfer_function = transfer_function
         else:
             self.augmentation = False
+        if rir is not None:
+            with open(rir, 'r') as f:
+                data = json.load(f)
+            self.rir_dataset = BaseDataset(data, sample_rate=16000)
+            self.rir_length = len(self.rir_dataset)
         self.simulation = simulation
         self.text = text
         self.time_domain = time_domain
@@ -243,12 +248,15 @@ class NoisyCleanSet:
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.simulation:
-            # number of noise source, by default 1
             clean_tmp = clean
+            use_reverb = bool(np.random.random(1) < 0.7)
             for i in range(1):
+                # number of noise source, by default 1
                 noise, _ = self.dataset[1][np.random.randint(0, self.length)]
                 snr = np.random.choice(self.snr_list)
-                noise, clean = snr_mix(clean_tmp, noise, snr, -25, 10, rir=None, eps=1e-6)
+                noise, clean = snr_mix(clean_tmp, noise, snr, -25, 10,
+                                       rir=self.rir_dataset[np.random.randint(0, self.rir_length)] if use_reverb else None
+                                       , eps=1e-6)
                 clean_tmp = noise
         else:
             noise, _ = self.dataset[1][index]

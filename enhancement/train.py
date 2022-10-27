@@ -240,7 +240,8 @@ if __name__ == "__main__":
         BATCH_SIZE = 128
         lr = 0.001
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=False, simulation=True, ratio=1)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=False, simulation=True,
+                                ratio=1, rir='json/rir_noise.json')
 
         model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
