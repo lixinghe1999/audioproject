@@ -228,7 +228,6 @@ def inference(dataset, BATCH_SIZE, model):
             else:
                 text, acc, noise, clean = data
                 metric = test_vibvoice(model, acc, noise, clean, device, text)
-            print(metric)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -362,7 +361,7 @@ if __name__ == "__main__":
 
         ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        print(ckpt_name)
+        print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
         model = A2net().to(device)
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
@@ -374,10 +373,10 @@ if __name__ == "__main__":
             train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
                                            person=p, simulation=True, text=False)
             train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
-            #ckpt, loss_curve, metric_best = train(train_dataset, EPOCH, lr, BATCH_SIZE, model)
+            ckpt, loss_curve, metric_best = train(train_dataset, EPOCH, lr, BATCH_SIZE, model)
             test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=p,
                                          simulation=False, text=True)
             metric = inference(test_dataset, 4, model)
-            print(metric)
+            print(p, metric)
 
 
