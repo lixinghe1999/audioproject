@@ -147,8 +147,8 @@ if __name__ == "__main__":
                                                savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
                                                run_opts={"device": "cuda"})
     text = ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"]
-    clean = np.zeros([2, 80000])
-    noisy = np.zeros([2, 80000])
+    clean = torch.zeros([2, 80000])
+    noisy = torch.zeros([2, 80000])
     eval_ASR(clean, noisy, asr_model, text)
 
 
