@@ -228,6 +228,7 @@ def inference(dataset, BATCH_SIZE, model):
             else:
                 text, acc, noise, clean = data
                 metric = test_vibvoice(model, acc, noise, clean, device, text)
+            print(metric)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -362,18 +363,21 @@ if __name__ == "__main__":
         ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print(ckpt_name)
-        ckpt = torch.load(ckpt_name)
-
+        ckpt_start = torch.load(ckpt_name)
         model = A2net().to(device)
-        #
-        # people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        # dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
-        # model.load_state_dict(ckpt)
-        # ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model)
-
-        people = ['he']
-        test_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people,
-                                     simulation=False, text=True)
-        metric = inference(test_dataset1, 4, model)
+        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        for p in people:
+            model.load_state_dict(ckpt_start)
+            p_except = [i for i in people if i != p]
+            train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'],
+                                          person=p_except, simulation=False, text=False)
+            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/speech.json', 'json/train_imu.json'],
+                                           person=p, simulation=True, text=False)
+            train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
+            #ckpt, loss_curve, metric_best = train(train_dataset, EPOCH, lr, BATCH_SIZE, model)
+            test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=p,
+                                         simulation=False, text=True)
+            metric = inference(test_dataset, 4, model)
+            print(metric)
 
 
