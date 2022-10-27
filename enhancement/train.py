@@ -218,7 +218,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
 
 def inference(dataset, BATCH_SIZE, model):
     test_dataset = dataset
-    test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=4, shuffle=False)
     Metric = []
     with torch.no_grad():
         for data in test_loader:
@@ -361,6 +361,7 @@ if __name__ == "__main__":
 
         ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        print(ckpt_name)
         ckpt = torch.load(ckpt_name)
 
         model = A2net().to(device)
