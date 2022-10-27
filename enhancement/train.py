@@ -218,7 +218,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
 
 def inference(dataset, BATCH_SIZE, model):
     test_dataset = dataset
-    test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=4, shuffle=False)
+    test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
         for data in test_loader:
@@ -374,5 +374,6 @@ if __name__ == "__main__":
         people = ['he']
         test_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=people,
                                      simulation=False, text=True)
+        metric = inference(test_dataset1, 4, model)
 
 
