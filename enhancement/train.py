@@ -347,7 +347,7 @@ if __name__ == "__main__":
             # train_dataset_target, test_dataset = torch.utils.data.random_split(test_dataset, [train_size, test_size])
             # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset_target])
 
-            _, _, avg_metric = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
+            _, _, avg_metric = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
             result.append(avg_metric)
         print('average performance for all users: ', np.mean(result, axis=0))
     elif args.mode == 3:
@@ -366,7 +366,7 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True)
 
         model.load_state_dict(ckpt)
-        ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, audio_only=False, complex=False)
+        ckpt, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model)
 
         people = ['he']
 
@@ -379,10 +379,10 @@ if __name__ == "__main__":
                                       simulation=True)
         # model.load_state_dict(torch.load('pretrain/[ 2.42972495 15.36821378  4.22121219].pth'))
         model.load_state_dict(ckpt)
-        avg_metric1 = inference(test_dataset1, BATCH_SIZE, model, audio_only=False, complex=False)
+        avg_metric1 = inference(test_dataset1, BATCH_SIZE, model)
         print('first time performance', avg_metric1)
-        avg_metric2 = inference(test_dataset2, BATCH_SIZE, model, audio_only=False, complex=False)
+        avg_metric2 = inference(test_dataset2, BATCH_SIZE, model)
         print('second time performance', avg_metric2)
-        avg_metric3 = inference(test_dataset3, BATCH_SIZE, model, audio_only=False, complex=False)
+        avg_metric3 = inference(test_dataset3, BATCH_SIZE, model)
         print('mask-on performance', avg_metric3)
 

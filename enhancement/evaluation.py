@@ -1,5 +1,6 @@
 import scipy.signal as signal
 import numpy as np
+import torch
 from pesq import pesq
 from joblib import Parallel, delayed
 from pystoi.stoi import stoi
@@ -109,17 +110,45 @@ def batch_pesq(clean, noisy):
 def STOI(ref, est, sr=16000):
     return stoi(ref, est, sr, extended=False)
 
+def batch_ASR(batch, asr_model):
+    batch_size = batch.shape[0]
+    wav_lens = torch.ones(batch_size)
+    pred = asr_model.transcribe_batch(batch, wav_lens)[0]
+    return pred
+def eval_ASR(clean, noisy, asr_model, text):
+    pred_clean = batch_ASR(clean, asr_model)
+    pred_noisy = batch_ASR(noisy, asr_model)
+    batch_size = clean.shape[0]
+    wer_clean = 0
+    for p in pred_clean:
+        wer_clean += wer(text, p)
+    wer_clean /= batch_size
+    wer_noisy = 0
+    for p in pred_noisy:
+        wer_noisy += wer(text, p)
+    wer_noisy /= batch_size
+    return wer_clean, wer_noisy
 if __name__ == "__main__":
     # we evaluate WER and PESQ in this script
-    f = open('survey/survey.txt', 'r', encoding='UTF-8')
-    lines = f.readlines()
-    WER = []
-    for i in range(len(lines)):
-        hy = lines[i].upper().split()
-        if len(hy) < 3:
-            continue
-        gt = sentences[i // int(len(lines) / len(sentences))]
-        WER.append(wer(gt, hy))
-    print(np.mean(WER))
+    # f = open('survey/survey.txt', 'r', encoding='UTF-8')
+    # lines = f.readlines()
+    # WER = []
+    # for i in range(len(lines)):
+    #     hy = lines[i].upper().split()
+    #     if len(hy) < 3:
+    #         continue
+    #     gt = sentences[i // int(len(lines) / len(sentences))]
+    #     WER.append(wer(gt, hy))
+    # print(np.mean(WER))
+
+    from speechbrain.pretrained import EncoderDecoderASR
+    # Uncomment for using another pre-trained model
+    asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
+                                               savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
+                                               run_opts={"device": "cuda"})
+    text = ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"]
+    clean = np.zeros([2, 80000])
+    noisy = np.zeros([2, 80000])
+    eval_ASR(clean, noisy, asr_model, text)
 
 
