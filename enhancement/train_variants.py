@@ -1,10 +1,11 @@
 import torch
 import numpy as np
-from evaluation import batch_pesq, SI_SDR, lsd, STOI
+from evaluation import batch_pesq, SI_SDR, lsd, STOI, eval_ASR
 import torch.nn.functional as F
 from scipy import signal
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from audio_zen.acoustics.feature import drop_band
+from speechbrain.pretrained import EncoderDecoderASR
 '''
 This script contains 4 model's training and test due to their large differences (for concise)
 1. FullSubNet, LSTM, spectrogram magnitude -> cIRM
@@ -20,12 +21,21 @@ rate_mic = 16000
 rate_imu = 1600
 freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
-def eval(clean, predict):
+# Uncomment for using another pre-trained model
+asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
+                                           savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
+                                           run_opts={"device": "cuda"})
+def eval(clean, predict, text=None):
     metric1 = batch_pesq(clean, predict)
     metric2 = SI_SDR(clean, predict)
     metric3 = lsd(clean, predict)
     #metric4 = STOI(clean, predict)
-    return np.stack([metric1, metric2, metric3], axis=1)
+    metrics = [metric1, metric2, metric3]
+    if text is not None:
+        wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
+        metrics.append(wer_clean)
+        metrics.append(wer_noisy)
+    return np.stack(metrics, axis=1)
 def Spectral_Loss(x_mag, y_mag):
     """Calculate forward propagation.
           Args:
@@ -81,7 +91,7 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     loss.backward()
     optimizer.step()
     return loss.item()
-def test_vibvoice(model, acc, noise, clean, device='cuda'):
+def test_vibvoice(model, acc, noise, clean, device='cuda', text=None):
     acc = acc.to(device=device, dtype=torch.float)
     noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)
     noise_pha = torch.angle(noise).to(device=device, dtype=torch.float)
@@ -98,7 +108,7 @@ def test_vibvoice(model, acc, noise, clean, device='cuda'):
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
-    return eval(clean, predict)
+    return eval(clean, predict, text=text)
 
 def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     noise_mag = noise.abs().to(device=device, dtype=torch.float)

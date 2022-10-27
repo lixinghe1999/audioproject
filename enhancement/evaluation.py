@@ -115,18 +115,15 @@ def batch_ASR(batch, asr_model):
     wav_lens = torch.ones(batch_size)
     pred = asr_model.transcribe_batch(batch, wav_lens)[0]
     return pred
-def eval_ASR(clean, noisy, asr_model, text):
+def eval_ASR(clean, noisy, text, asr_model):
     pred_clean = batch_ASR(clean, asr_model)
     pred_noisy = batch_ASR(noisy, asr_model)
-    batch_size = clean.shape[0]
-    wer_clean = 0
-    for p in pred_clean:
-        wer_clean += wer(text, p)
-    wer_clean /= batch_size
-    wer_noisy = 0
-    for p in pred_noisy:
-        wer_noisy += wer(text, p)
-    wer_noisy /= batch_size
+    #batch_size = clean.shape[0]
+    wer_clean = []
+    wer_noisy = []
+    for p_c, p_n, t in zip(pred_clean, pred_noisy, text):
+        wer_clean.append(wer(t, p_c))
+        wer_noisy.append(wer(t, p_n))
     return wer_clean, wer_noisy
 if __name__ == "__main__":
     # we evaluate WER and PESQ in this script
@@ -146,9 +143,10 @@ if __name__ == "__main__":
     asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
                                                savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
                                                run_opts={"device": "cuda"})
-    text = ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"]
+    text = [["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
+            ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"]]
     clean = torch.zeros([2, 80000])
     noisy = torch.zeros([2, 80000])
-    eval_ASR(clean, noisy, asr_model, text)
+    eval_ASR(clean, noisy, text, asr_model)
 
 
