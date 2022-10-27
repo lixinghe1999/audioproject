@@ -35,6 +35,7 @@ def eval(clean, predict, text=None):
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
         metrics.append(wer_clean)
         metrics.append(wer_noisy)
+    print(metrics)
     return np.stack(metrics, axis=1)
 def Spectral_Loss(x_mag, y_mag):
     """Calculate forward propagation.
