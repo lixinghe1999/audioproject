@@ -19,7 +19,7 @@ overlap_imu = 32
 
 rate_mic = 16000
 rate_imu = 1600
-length = 4
+length = 5
 stride = 3
 function_pool = '../transfer_function'
 #N = len(os.listdir(function_pool))
