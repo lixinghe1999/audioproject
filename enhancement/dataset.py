@@ -235,7 +235,8 @@ class NoisyCleanSet:
             self.transfer_function = transfer_function
         else:
             self.augmentation = False
-        if rir is not None:
+        self.rir = rir
+        if self.rir is not None:
             with open(rir, 'r') as f:
                 data = json.load(f)
             self.rir_dataset = BaseDataset(data, sample_rate=16000)
@@ -249,7 +250,7 @@ class NoisyCleanSet:
         clean, file = self.dataset[0][index]
         if self.simulation:
             clean_tmp = clean
-            use_reverb = bool(np.random.random(1) < 0.7)
+            use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.7)
             for i in range(1):
                 # number of noise source, by default 1
                 noise, _ = self.dataset[1][np.random.randint(0, self.length)]
