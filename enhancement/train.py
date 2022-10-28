@@ -364,7 +364,7 @@ if __name__ == "__main__":
         for p in people:
             model.load_state_dict(ckpt_start)
             p_except = [i for i in people if i != p]
-            train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/train_imu.json'],
+            train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'],
                                           person=p_except, simulation=False, text=False)
             ckpt, _, _ = train(train_dataset, 8, 0.001, 32, model)
 
@@ -373,7 +373,7 @@ if __name__ == "__main__":
             model.load_state_dict(ckpt)
             ckpt, _, _ = train(train_dataset, 2, 0.001, 8, model)
 
-            test_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/train_imu.json'], person=p,
+            test_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'], person=p,
                                          simulation=False, text=True)
             model.load_state_dict(ckpt)
             metric = inference(test_dataset, 4, model)
