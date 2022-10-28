@@ -29,11 +29,17 @@ freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
 
+# sentences = [
+#     ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
+#     ["WE", "WANT", "TO", "IMPROVE", "SPEECH", "QUALITY", "IN", "THIS", "PROJECT"],
+#     ["BUT", "WE", "DON'T", "HAVE", "ENOUGH", "DATA", "TO", "TRAIN", "OUR", "MODEL"],
+#     ["TRANSFER", "FUNCTION", "CAN", "BE", "A", "GOOD", "HELPER", "TO", "GENERATE", "DATA"]
+# ]
 sentences = [
-    ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
-    ["WE", "WANT", "TO", "IMPROVE", "SPEECH", "QUALITY", "IN", "THIS", "PROJECT"],
-    ["BUT", "WE", "DON'T", "HAVE", "ENOUGH", "DATA", "TO", "TRAIN", "OUR", "MODEL"],
-    ["TRANSFER", "FUNCTION", "CAN", "BE", "A", "GOOD", "HELPER", "TO", "GENERATE", "DATA"]
+    "HAPPY NEW YEAR PROFESSOR AUSTIN NICE TO MEET YOU",
+    "WE WANT TO IMPROVE SPEECH QUALITY IN THIS PROJECT",
+    "BUT WE DON'T HAVE ENOUGH DATA TO TRAIN OUR MODEL",
+    "TRANSFER FUNCTION CAN BE A GOOD HELPER TO GENERATE DATA"
 ]
 
 def spectrogram(data, nperseg, noverlap, fs):
@@ -227,7 +233,6 @@ class NoisyCleanSet:
                     data = data[:int(len(data) * self.ratio)]
                 else:
                     data = data[int(len(data) * self.ratio):]
-            print(data)
             self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
         if len(json_paths) == 2:
             self.augmentation = True
