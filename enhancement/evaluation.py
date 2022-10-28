@@ -124,33 +124,33 @@ def eval_ASR(clean, noisy, text, asr_model):
     wer_clean = []
     wer_noisy = []
     for p_c, p_n, t in zip(pred_clean, pred_noisy, text):
-        t = t.split()
+        #t = t.split()
         print(p_c, t)
-        wer_clean.append(wer(t, p_c))
-        wer_noisy.append(wer(t, p_n))
+        wer_clean.append(wer(t.split(), p_c.split()))
+        wer_noisy.append(wer(t.split(), p_n.split()))
     return wer_clean, wer_noisy
 if __name__ == "__main__":
     # we evaluate WER and PESQ in this script
-    # f = open('survey/survey.txt', 'r', encoding='UTF-8')
-    # lines = f.readlines()
-    # WER = []
-    # for i in range(len(lines)):
-    #     hy = lines[i].upper().split()
-    #     if len(hy) < 3:
-    #         continue
-    #     gt = sentences[i // int(len(lines) / len(sentences))]
-    #     WER.append(wer(gt, hy))
-    # print(np.mean(WER))
+    f = open('survey/survey.txt', 'r', encoding='UTF-8')
+    lines = f.readlines()
+    WER = []
+    for i in range(len(lines)):
+        hy = lines[i].upper().split()
+        if len(hy) < 3:
+            continue
+        gt = sentences[i // int(len(lines) / len(sentences))]
+        WER.append(wer(gt, hy))
+    print(np.mean(WER))
 
-    from speechbrain.pretrained import EncoderDecoderASR
-    # Uncomment for using another pre-trained model
-    asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
-                                               savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
-                                               run_opts={"device": "cuda"})
-    text = [["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
-            ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"]]
-    clean = torch.zeros([2, 80000])
-    noisy = torch.zeros([2, 80000])
-    eval_ASR(clean, noisy, text, asr_model)
+    # from speechbrain.pretrained import EncoderDecoderASR
+    # # Uncomment for using another pre-trained model
+    # asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
+    #                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
+    #                                            run_opts={"device": "cuda"})
+    # text = [["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"],
+    #         ["HAPPY", "NEW", "YEAR", "PROFESSOR", "AUSTIN", "NICE", "TO", "MEET", "YOU"]]
+    # clean = torch.zeros([2, 80000])
+    # noisy = torch.zeros([2, 80000])
+    # eval_ASR(clean, noisy, text, asr_model)
 
 
