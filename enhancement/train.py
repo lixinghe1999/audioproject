@@ -375,7 +375,7 @@ if __name__ == "__main__":
             # model.load_state_dict(ckpt)
             test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
                                          person=[p], simulation=False, text=True)
-            metric = inference(test_dataset, 1, model)
+            metric = inference(test_dataset, 4, model)
             avg_metric = np.mean(metric, axis=0)
             print(p, avg_metric)
 
