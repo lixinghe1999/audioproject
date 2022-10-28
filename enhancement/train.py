@@ -220,7 +220,7 @@ def inference(dataset, BATCH_SIZE, model):
     test_loader = Data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
-        for data in test_loader:
+        for data in tqdm(test_loader):
             if len(data) == 3:
                 acc, noise, clean = data
                 metric = test_vibvoice(model, acc, noise, clean, device)
