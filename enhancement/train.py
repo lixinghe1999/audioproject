@@ -355,28 +355,29 @@ if __name__ == "__main__":
             result.append(avg_metric)
         print('average performance for all users: ', np.mean(result, axis=0))
     elif args.mode == 3:
-        BATCH_SIZE = 32
-        lr = 0.001
-        EPOCH = 10
-
         ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
         model = A2net().to(device)
-        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        people = ["he", "hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi"]
         for p in people:
             model.load_state_dict(ckpt_start)
             p_except = [i for i in people if i != p]
-            train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'],
+            train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/train_imu.json'],
                                           person=p_except, simulation=False, text=False)
-            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
-                                           person=p, simulation=True, text=False)
-            train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
-            ckpt, loss_curve, metric_best = train(train_dataset, EPOCH, lr, BATCH_SIZE, model)
-            test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_wav.json', 'json/train_imu.json'], person=p,
+            ckpt, _, _ = train(train_dataset, 8, 0.001, 32, model)
+
+            train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+                                          person=p, simulation=True, text=False)
+            model.load_state_dict(ckpt)
+            ckpt, _, _ = train(train_dataset, 2, 0.001, 8, model)
+
+            test_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/train_imu.json'], person=p,
                                          simulation=False, text=True)
+            model.load_state_dict(ckpt)
             metric = inference(test_dataset, 4, model)
-            print(p, metric)
+            avg_metric = np.mean(metric, axis=0)
+            print(p, avg_metric)
 
 
