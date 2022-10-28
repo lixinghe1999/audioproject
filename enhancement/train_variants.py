@@ -31,7 +31,6 @@ def eval(clean, predict, text=None):
     metric3 = lsd(clean, predict)
     #metric4 = STOI(clean, predict)
     metrics = [metric1, metric2, metric3]
-    print('ground_truth', text)
     if text is not None:
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
         metrics.append(wer_clean)

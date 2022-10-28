@@ -116,16 +116,13 @@ def batch_ASR(batch, asr_model):
     pred = asr_model.transcribe_batch(batch, wav_lens)[0]
     return pred
 def eval_ASR(clean, noisy, text, asr_model):
-    clean = torch.from_numpy(clean/np.max(clean, axis=1)[:, np.newaxis])
-    noisy = torch.from_numpy(noisy/np.max(noisy, axis=1)[:, np.newaxis])
+    clean = torch.from_numpy(clean/np.max(clean, axis=1)[:, np.newaxis]) * 0.8
+    noisy = torch.from_numpy(noisy/np.max(noisy, axis=1)[:, np.newaxis]) * 0.8
     pred_clean = batch_ASR(clean, asr_model)
     pred_noisy = batch_ASR(noisy, asr_model)
-    #batch_size = clean.shape[0]
     wer_clean = []
     wer_noisy = []
     for p_c, p_n, t in zip(pred_clean, pred_noisy, text):
-        #t = t.split()
-        print(p_c, t)
         wer_clean.append(wer(t.split(), p_c.split()))
         wer_noisy.append(wer(t.split(), p_n.split()))
     return wer_clean, wer_noisy

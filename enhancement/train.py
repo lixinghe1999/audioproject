@@ -364,15 +364,15 @@ if __name__ == "__main__":
         for p in people:
             model.load_state_dict(ckpt_start)
             p_except = [i for i in people if i != p]
-            # train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'],
-            #                               person=p_except, simulation=False, text=False)
-            # ckpt, _, _ = train(train_dataset, 8, 0.001, 32, model)
-            #
-            # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
-            #                               person=[p], simulation=True, text=False)
-            # model.load_state_dict(ckpt)
-            # ckpt, _, _ = train(train_dataset, 2, 0.001, 8, model)
-            # model.load_state_dict(ckpt)
+            train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'],
+                                          person=p_except, simulation=False, text=False)
+            ckpt, _, _ = train(train_dataset, 8, 0.001, 32, model)
+
+            train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+                                          person=[p], simulation=True, text=False)
+            model.load_state_dict(ckpt)
+            ckpt, _, _ = train(train_dataset, 2, 0.001, 8, model)
+            model.load_state_dict(ckpt)
             test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
                                          person=[p], simulation=False, text=True)
             metric = inference(test_dataset, 4, model)
