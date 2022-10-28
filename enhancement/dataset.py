@@ -227,6 +227,7 @@ class NoisyCleanSet:
                     data = data[:int(len(data) * self.ratio)]
                 else:
                     data = data[int(len(data) * self.ratio):]
+            print(data)
             self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
         if len(json_paths) == 2:
             self.augmentation = True
