@@ -294,7 +294,7 @@ class NoisyCleanSet:
             # imu = imu[:, :, :-1]
         if self.text:
             setence = sentences[int(file.split('/')[4][-1])-1]
-            print(file, setence)
+            #print(file, setence)
             return setence, imu, noise, clean
         else:
             return imu, noise, clean
