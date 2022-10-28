@@ -294,6 +294,7 @@ class NoisyCleanSet:
         else:
             return imu, noise, clean
     def __len__(self):
+        print(len(self.dataset[0]))
         return len(self.dataset[0])
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
