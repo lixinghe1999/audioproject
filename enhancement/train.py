@@ -369,12 +369,12 @@ if __name__ == "__main__":
             ckpt, _, _ = train(train_dataset, 8, 0.001, 32, model)
 
             train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
-                                          person=p, simulation=True, text=False)
+                                          person=[p], simulation=True, text=False)
             model.load_state_dict(ckpt)
             ckpt, _, _ = train(train_dataset, 2, 0.001, 8, model)
 
-            test_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'], person=p,
-                                         simulation=False, text=True)
+            test_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'],
+                                         person=[p], simulation=False, text=True)
             model.load_state_dict(ckpt)
             metric = inference(test_dataset, 4, model)
             avg_metric = np.mean(metric, axis=0)
