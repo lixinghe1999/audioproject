@@ -227,6 +227,7 @@ def inference(dataset, BATCH_SIZE, model):
             else:
                 text, acc, noise, clean = data
                 metric = test_vibvoice(model, acc, noise, clean, device, text)
+                print(metric)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
