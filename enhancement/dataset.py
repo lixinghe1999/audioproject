@@ -287,7 +287,9 @@ class NoisyCleanSet:
             # clean = clean[:, : 8 * (freq_bin_high), :-1]
             # imu = imu[:, :, :-1]
         if self.text:
-            return file, imu, noise, clean
+            setence = sentences[int(file.split('/')[4][-1])]
+            print(setence)
+            return setence, imu, noise, clean
         else:
             return imu, noise, clean
     def __len__(self):
