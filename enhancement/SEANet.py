@@ -64,13 +64,12 @@ class SEANet(nn.Module):
         x1 = torch.cat([audio, acc], dim=1)
         x2 = self.conv1(x1)
         x3 = self.E1(x2)
-
         x4 = self.E2(x3)
         x5 = self.E3(x4)
         x6 = self.E4(x5)
         x = self.conv3(self.conv2(x6)) + x6
-        # up-sample
-        x = self.D1(x) + x5
+        # up-sample, may need padding if the duration is not * 256
+        x = nn.functional.pad(self.D1(x), (0, 2)) + x5
         x = self.D2(x) + x4
         x = self.D3(x) + x3
         x = self.D4(x) + x2
@@ -90,7 +89,7 @@ def model_size(model):
 
 if __name__ == '__main__':
     model = SEANet()
-    acc = torch.randn(4, 1, 3200)
-    audio = torch.randn(4, 1, 32000)
+    acc = torch.randn(4, 1, 4000)
+    audio = torch.randn(4, 1, 40000)
     acc = model(acc, audio)
     print(model_size(model))
