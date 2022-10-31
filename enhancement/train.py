@@ -56,8 +56,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     for e in range(EPOCH):
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
+            loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
+            #loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -65,8 +65,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in test_loader:
-                #metric = test_SEANet(model, acc, noise, clean, device)
-                metric = test_vibvoice(model, acc, noise, clean, device)
+                metric = test_SEANet(model, acc, noise, clean, device)
+                #metric = test_vibvoice(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric)
@@ -76,7 +76,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
             metric_best = avg_metric
             if save_all:
                 torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
-    torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
+    #torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 
 def inference(dataset, BATCH_SIZE, model):
@@ -86,7 +86,8 @@ def inference(dataset, BATCH_SIZE, model):
         for data in test_loader:
             if len(data) == 3:
                 acc, noise, clean = data
-                metric = test_vibvoice(model, acc, noise, clean, device)
+                metric = test_SEANet(model, acc, noise, clean, device)
+                #metric = test_vibvoice(model, acc, noise, clean, device)
             else:
                 text, acc, noise, clean = data
                 metric = test_vibvoice(model, acc, noise, clean, device, text)
@@ -103,17 +104,17 @@ if __name__ == "__main__":
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 128
-        lr = 0.001
-        EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=False, simulation=True,
-                                ratio=1, rir='json/rir_noise.json')
+        BATCH_SIZE = 16
+        lr = 0.0001
+        EPOCH = 50
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=True, simulation=True,
+                                ratio=1, rir=None)
 
-        model = A2net(inference=False).to(device)
+        #model = A2net(inference=False).to(device)
         #model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
         #model = Causal_A2net(inference=False).to(device)
         #model = TSCNet().to(device)
-        #model = SEANet().to(device)
+        model = SEANet().to(device)
 
         #model = nn.DataParallel(model, device_ids=[0, 1])
 
@@ -215,6 +216,7 @@ if __name__ == "__main__":
             result.append(avg_metric)
         print('average performance for all users: ', np.mean(result, axis=0))
     elif args.mode == 3:
+        # evaluation for WER (without reference)
         ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print('loaded checkpoint:', ckpt_name)
