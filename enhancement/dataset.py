@@ -276,6 +276,7 @@ class NoisyCleanSet:
                 imu = signal.istft(imu, rate_imu, nperseg=seg_len_imu, noverlap=overlap_imu)[-1]
             else:
                 imu, _ = self.dataset[2][index]
+                imu = np.transpose(imu)
             clean = np.expand_dims(clean, 0)
             noise = np.expand_dims(noise, 0)
         else:
