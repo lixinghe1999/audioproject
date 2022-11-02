@@ -75,7 +75,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
             metric_best = avg_metric
             if save_all:
                 torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
-    #torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
+    torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 
 def inference(dataset, BATCH_SIZE, model):
