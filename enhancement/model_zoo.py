@@ -121,7 +121,7 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     loss.backward()
     optimizer.step()
     return loss.item()
-def test_fullsubnet(model, acc, noise, clean, device='cuda'):
+def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None):
     noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)
     noise_real = noise.real.to(device=device, dtype=torch.float)
     noise_imag = noise.imag.to(device=device, dtype=torch.float)
@@ -139,7 +139,7 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda'):
     clean = clean.cpu().numpy()
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
-    return eval(clean, predict)
+    return eval(clean, predict, text=text)
 
 def train_conformer(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, device='cuda'):
 
