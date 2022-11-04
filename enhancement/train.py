@@ -107,7 +107,7 @@ if __name__ == "__main__":
     # model = TSCNet().to(device)
     # model = SEANet().to(device)
 
-    #model = nn.DataParallel(model, device_ids=[0, 1])
+    model = nn.DataParallel(model, device_ids=[0, 1])
 
     # discriminator = Discriminator_spectrogram().to(device)
     discriminator = Discriminator_time().to(device)
