@@ -43,8 +43,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.mode == 0:
         directory = "../dataset/"
-        #datasets = ['dev', 'background', 'music', 'train']
-        datasets = ['rir_noise']
+        datasets = ['dev', 'background', 'music', 'train', 'rir_noise']
         for dataset in datasets:
             audio_files = []
             g = os.walk(directory + dataset)

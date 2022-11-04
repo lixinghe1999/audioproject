@@ -85,11 +85,11 @@ def inference(dataset, BATCH_SIZE, model):
         for data in test_loader:
             if len(data) == 3:
                 acc, noise, clean = data
-                metric = test_SEANet(model, acc, noise, clean, device)
+                metric = test_fullsubnet(model, acc, noise, clean, device)
                 #metric = test_vibvoice(model, acc, noise, clean, device)
             else:
                 text, acc, noise, clean = data
-                metric = test_vibvoice(model, acc, noise, clean, device, text)
+                metric = test_fullsubnet(model, acc, noise, clean, device, text)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -101,6 +101,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     audio_only = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    # model = A2net(inference=False).to(device)
+    model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
+    # model = Causal_A2net(inference=False).to(device)
+    # model = TSCNet().to(device)
+    # model = SEANet().to(device)
+
+    #model = nn.DataParallel(model, device_ids=[0, 1])
+
+    # discriminator = Discriminator_spectrogram().to(device)
+    discriminator = Discriminator_time().to(device)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 16
@@ -108,17 +118,6 @@ if __name__ == "__main__":
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=False, simulation=True,
                                 ratio=1, rir=None)
-
-        #model = A2net(inference=False).to(device)
-        model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
-        #model = Causal_A2net(inference=False).to(device)
-        #model = TSCNet().to(device)
-        #model = SEANet().to(device)
-
-        model = nn.DataParallel(model, device_ids=[0, 1])
-
-        #discriminator = Discriminator_spectrogram().to(device)
-        discriminator = Discriminator_time().to(device)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator,
                                                    save_all=True)
         plt.plot(loss_curve)
@@ -133,10 +132,6 @@ if __name__ == "__main__":
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
-
-        #model = FullSubNet(num_freqs=264).to(device)
-        model = A2net(inference=False).to(device)
-        #model = Causal_A2net(inference=False).to(device)
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, ratio=0.8)
@@ -191,10 +186,6 @@ if __name__ == "__main__":
         ckpt_dir = 'pretrain/vibvoice_new'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         ckpt_start = torch.load(ckpt_name)
-
-        model = nn.DataParallel(A2net()).to(device)
-        #model = nn.DataParallel(Model(num_freqs=264).to(device), device_ids=[0, 1])
-
         # synthetic dataset
         result = []
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
@@ -216,12 +207,11 @@ if __name__ == "__main__":
         print('average performance for all users: ', np.mean(result, axis=0))
     elif args.mode == 3:
         # evaluation for WER (without reference)
-        ckpt_dir = 'pretrain/new_vibvoice'
+        ckpt_dir = 'pretrain/new_fullsubnet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
-        model = A2net().to(device)
-        people = ["he", "hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi"]
+        people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
         for p in people:
             model.load_state_dict(ckpt_start)
             p_except = [i for i in people if i != p]
@@ -239,5 +229,15 @@ if __name__ == "__main__":
             metric = inference(test_dataset, 4, model)
             avg_metric = np.mean(metric, axis=0)
             print(p, avg_metric)
+        for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair']:
+            test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
+                                         person=[env], simulation=False, text=True)
+            metric = inference(test_dataset, 4, model)
+            avg_metric = np.mean(metric, axis=0)
+            print('locations/earphones:', avg_metric)
 
-
+        test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/mobile_wav.json', 'json/mobile_imu.json'],
+                                     person=['he'], simulation=False, text=True)
+        metric = inference(test_dataset, 4, model)
+        avg_metric = np.mean(metric, axis=0)
+        print('mobile result', avg_metric)
