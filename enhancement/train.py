@@ -107,7 +107,7 @@ if __name__ == "__main__":
     # model = TSCNet().to(device)
     # model = SEANet().to(device)
 
-    model = nn.DataParallel(model, device_ids=[0, 1])
+    # model = nn.DataParallel(model, device_ids=[0, 1])
 
     # discriminator = Discriminator_spectrogram().to(device)
     discriminator = Discriminator_time().to(device)
@@ -217,7 +217,7 @@ if __name__ == "__main__":
             p_except = [i for i in people if i != p]
             train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/dev.json', 'json/noise_train_imu.json'],
                                           person=p_except, simulation=True, text=False)
-            ckpt, _, _ = train(train_dataset, 4, 0.001, 16, model)
+            ckpt, _, _ = train(train_dataset, 4, 0.001, 8, model)
 
             train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
                                           person=[p], simulation=True, text=False)
