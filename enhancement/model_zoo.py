@@ -127,12 +127,12 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None):
     noise_imag = noise.imag.to(device=device, dtype=torch.float)
     clean = clean.to(device=device).squeeze(1)
 
-    predict1 = model(noise_mag)
-    cRM = decompress_cIRM(predict1.permute(0, 2, 3, 1))
+    predict = model(noise_mag)
+    cRM = decompress_cIRM(predict.permute(0, 2, 3, 1))
     enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
     enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
-    predict1 = torch.complex(enhanced_real, enhanced_imag)
-    predict = predict1.cpu().numpy()
+    predict = torch.complex(enhanced_real, enhanced_imag)
+    predict = predict.cpu().numpy()
     predict = np.pad(predict, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
 
