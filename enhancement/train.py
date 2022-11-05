@@ -212,29 +212,29 @@ if __name__ == "__main__":
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
         people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
-        for p in people:
-            model.load_state_dict(ckpt_start)
-            p_except = [i for i in people if i != p]
-            train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/dev.json', 'json/noise_train_imu.json'],
-                                          person=p_except, simulation=True, text=False)
-            ckpt, _, _ = train(train_dataset, 8, 0.001, 16, model)
-
-            train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
-                                          person=[p], simulation=True, text=False)
-            model.load_state_dict(ckpt)
-            ckpt, _, _ = train(train_dataset, 2, 0.001, 8, model)
-            model.load_state_dict(ckpt)
-            test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-                                         person=[p], simulation=False, text=True)
-            metric = inference(test_dataset, 4, model)
-            avg_metric = np.mean(metric, axis=0)
-            print(p, avg_metric)
-        for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair']:
-            test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-                                         person=[env], simulation=False, text=True)
-            metric = inference(test_dataset, 4, model)
-            avg_metric = np.mean(metric, axis=0)
-            print('locations/earphones:', avg_metric)
+        # for p in people:
+        #     model.load_state_dict(ckpt_start)
+        #     p_except = [i for i in people if i != p]
+        #     train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/dev.json', 'json/noise_train_imu.json'],
+        #                                   person=p_except, simulation=True, text=False)
+        #     ckpt, _, _ = train(train_dataset, 8, 0.001, 16, model)
+        #
+        #     train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+        #                                   person=[p], simulation=True, text=False)
+        #     model.load_state_dict(ckpt)
+        #     ckpt, _, _ = train(train_dataset, 2, 0.001, 8, model)
+        #     model.load_state_dict(ckpt)
+        #     test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
+        #                                  person=[p], simulation=False, text=True)
+        #     metric = inference(test_dataset, 4, model)
+        #     avg_metric = np.mean(metric, axis=0)
+        #     print(p, avg_metric)
+        # for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair']:
+        #     test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
+        #                                  person=[env], simulation=False, text=True)
+        #     metric = inference(test_dataset, 4, model)
+        #     avg_metric = np.mean(metric, axis=0)
+        #     print('locations/earphones:', avg_metric)
 
         test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/mobile_wav.json', 'json/mobile_imu.json'],
                                      person=['he'], simulation=False, text=True)
