@@ -53,7 +53,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        for i, (acc, noise, clean) in enumerate(train_loader):
+        for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
             loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
             #loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
@@ -62,7 +62,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         scheduler.step()
         Metric = []
         with torch.no_grad():
-            for acc, noise, clean in test_loader:
+            for acc, noise, clean in tqdm(test_loader):
                 metric = test_SEANet(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
