@@ -30,7 +30,7 @@ rate_imu = 1600
 
 freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
-def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False, print=False):
+def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False):
     if isinstance(dataset, list):
         # with pre-defined train/ test
         train_dataset, test_dataset = dataset
