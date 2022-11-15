@@ -56,7 +56,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
             loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
             #loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
-            print(loss.item())
+            print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
