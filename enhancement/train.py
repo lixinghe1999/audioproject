@@ -47,17 +47,15 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     if discriminator is not None:
         optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=lr, betas=(0.9, 0.999))
-    #optimizer = torch.optim.Adam(params= filter(lambda p: p.requires_grad, model.parameters()), lr=lr, betas=(0.9, 0.999))
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
-    #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=3,)
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(train_loader):
-            #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
+            loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
+            #loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -65,10 +63,10 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in test_loader:
-                metric = test_fullsubnet(model, acc, noise, clean, device)
+                metric = test_SEANet(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
-        #print(avg_metric)
+        print(avg_metric)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
@@ -102,21 +100,21 @@ if __name__ == "__main__":
     audio_only = False
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     # model = A2net(inference=False).to(device)
-    model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
+    # model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
     # model = Causal_A2net(inference=False).to(device)
     # model = TSCNet().to(device)
-    # model = SEANet().to(device)
+    model = SEANet().to(device)
 
-    model = nn.DataParallel(model, device_ids=[0])
+    model = nn.DataParallel(model, device_ids=[0, 1])
 
     # discriminator = Discriminator_spectrogram().to(device)
     discriminator = Discriminator_time().to(device)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 16
-        lr = 0.001
+        lr = 0.0001
         EPOCH = 30
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=False, simulation=True,
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=True, simulation=True,
                                 ratio=1, rir=None)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator,
                                                    save_all=True)
