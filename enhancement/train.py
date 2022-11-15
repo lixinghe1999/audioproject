@@ -48,7 +48,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     if discriminator is not None:
         optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=lr, betas=(0.9, 0.999))
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
-    loss_best = 1
+    loss_best = 100
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
@@ -56,6 +56,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
             loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
             #loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
+            print(loss.item())
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
