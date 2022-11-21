@@ -108,7 +108,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.5)
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()
@@ -139,19 +139,35 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
             if save_all:
                 torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
     return ckpt_best, loss_curve
+
+def test(dataset, BATCH_SIZE, model):
+    # deep learning-based mapping: from audio to acc
+    if isinstance(dataset, list):
+        # with pre-defined train/ test
+        train_dataset, test_dataset = dataset
+    else:
+        # without pre-defined train/ test
+        length = len(dataset)
+        test_size = min(int(0.1 * length), 2000)
+        train_size = length - test_size
+        train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    Loss_list = []
+    with torch.no_grad():
+        for acc, noise, clean in test_loader:
+            clean = clean.to(device=device, dtype=torch.float)
+            acc = acc.to(device=device, dtype=torch.float)
+            predict = model(clean)
+            loss = nn.functional.l1_loss(predict, acc).item()
+            Loss_list.append(loss)
+    return
 if __name__ == '__main__':
     model = SEANet_mapping()
-    # brief testing
-    # audio = torch.randn(4, 1, 80000)
-    # acc = model(audio)
-    # print(acc.shape)
-    # print(model_size(model))
-
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     # This script is for model pre-training on LibriSpeech
     BATCH_SIZE = 16
     lr = 0.0001
-    EPOCH = 10
+    EPOCH = 30
     people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], time_domain=True,
                             person=people, simulation=True)
