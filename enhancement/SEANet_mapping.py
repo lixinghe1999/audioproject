@@ -182,12 +182,12 @@ if __name__ == '__main__':
                             person=people, simulation=True)
     model = model.to(device)
 
-    # ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
+    ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
     # For the testing: Si-SDR
-    ckpt_dir = 'pretrain/deep_augmentation'
-    ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-    print("load checkpoint: {}".format(ckpt_name))
-    ckpt = torch.load(ckpt_name)
-    model.load_state_dict(ckpt)
-    test(dataset, BATCH_SIZE, model)
+    # ckpt_dir = 'pretrain/deep_augmentation'
+    # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+    # print("load checkpoint: {}".format(ckpt_name))
+    # ckpt = torch.load(ckpt_name)
+    # model.load_state_dict(ckpt)
+    # test(dataset, BATCH_SIZE, model)
