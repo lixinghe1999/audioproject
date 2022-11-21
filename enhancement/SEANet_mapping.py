@@ -157,10 +157,12 @@ def test(dataset, BATCH_SIZE, model):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     sdr_list = []
     with torch.no_grad():
-        for acc, noise, clean in train_loader:
+        for acc, noise, clean in test_loader:
             clean = clean.to(device=device, dtype=torch.float)
             acc = acc.to(device=device, dtype=torch.float)
             predict = model(clean)
+            predict = predict / torch.max(predict, dim=1)
+            acc = acc / torch.max(acc, dim=1)
             loss = nn.functional.l1_loss(predict, acc).item()
             si_sdr = SI_SDR(acc.cpu().numpy(), predict.cpu().numpy())
             print(si_sdr, loss)
