@@ -52,17 +52,15 @@ class SEANet_mapping(nn.Module):
         self.E1 = EncoderBlock(32, 64, 2)
         self.E2 = EncoderBlock(64, 128, 2)
         self.E3 = EncoderBlock(128, 256, 8)
-        self.E4 = EncoderBlock(256, 512, 8)
+        self.E4 = EncoderBlock(256, 512, 10)
 
         self.conv2 = nn.Conv1d(512, 128, kernel_size=7, padding=3)
         self.conv3 = nn.Conv1d(128, 512, kernel_size=7, padding=3)
 
-        self.D1 = DecoderBlock(512, 256, 8)
-        self.D2 = DecoderBlock(256, 128, 8)
-        self.D3 = DecoderBlock(128, 64, 2)
-        self.D4 = DecoderBlock(64, 32, 2)
-        self.conv4 = nn.Conv1d(32, 3, kernel_size=7, padding=3)
-        self.m = nn.AvgPool1d(10, stride=10)
+        self.D1 = DecoderBlock(512, 128, 8)
+        self.D2 = DecoderBlock(128, 64, 2)
+        self.D3 = DecoderBlock(64, 32, 2)
+        self.conv4 = nn.Conv1d(32, 1, kernel_size=7, padding=3)
 
     def forward(self, audio):
         # down-sample
@@ -75,13 +73,10 @@ class SEANet_mapping(nn.Module):
         x6 = self.E4(x5)
         x = self.conv3(self.conv2(x6)) + x6
         # up-sample, may need padding if the duration is not * 256
-        x = nn.functional.pad(self.D1(x), (0, 4)) + x5
-        x = self.D2(x) + x4
-        x = self.D3(x) + x3
-        x = self.D4(x) + x2
+        x = self.D1(x) + x4
+        x = self.D2(x) + x3
+        x = self.D3(x) + x2
         x = self.conv4(x) + x1
-        x = self.m(x)
-
         return x
 def model_size(model):
     param_size = 0
