@@ -277,7 +277,7 @@ class NoisyCleanSet:
                 noise, _ = self.dataset[1][np.random.randint(0, self.length)]
                 snr = np.random.choice(self.snr_list)
                 noise, clean = snr_mix(clean_tmp, noise, snr, -25, 10,
-                rir=self.rir_dataset[np.random.randint(0, self.rir_length)][0] if use_reverb else None
+                rir = self.rir_dataset[np.random.randint(0, self.rir_length)][0] if use_reverb else None
                                        , eps=1e-6)
                 clean_tmp = noise
         else:
@@ -287,6 +287,7 @@ class NoisyCleanSet:
             if self.augmentation:
                 with torch.no_grad():
                     clean = torch.from_numpy(clean).to(device=self.device, dtype=torch.float)
+                    clean = torch.unsqueeze(clean, 0)
                     imu = self.transfer_function(clean)
                 # clean_spec = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
                 # imu = synthetic(np.abs(clean_spec), self.transfer_function, self.variance)
