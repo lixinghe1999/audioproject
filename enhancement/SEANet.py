@@ -60,7 +60,7 @@ class SEANet(nn.Module):
 
     def forward(self, acc, audio):
         # down-sample
-        acc = torch.nn.functional.interpolate(acc, dim=2, scale_factor=10)
+        acc = torch.nn.functional.interpolate(acc, scale_factor=10)
         x1 = torch.cat([audio, acc], dim=1)
         x2 = self.conv1(x1)
         x3 = self.E1(x2)
