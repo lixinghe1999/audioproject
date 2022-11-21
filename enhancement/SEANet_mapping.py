@@ -161,11 +161,10 @@ def test(dataset, BATCH_SIZE, model):
             clean = clean.to(device=device, dtype=torch.float)
             acc = acc.to(device=device, dtype=torch.float)
             predict = model(clean)
-            predict = predict / torch.max(predict, dim=1, keepdim=True)
-            acc = acc / torch.max(acc, dim=1, keepdim=True)
             loss = nn.functional.l1_loss(predict, acc).item()
             si_sdr = SI_SDR(acc.cpu().numpy(), predict.cpu().numpy())
-            print(si_sdr, loss)
+            print(si_sdr)
+            print(loss, torch.max(predict), torch.max(acc))
             sdr_list.append(si_sdr)
     return
 if __name__ == '__main__':
