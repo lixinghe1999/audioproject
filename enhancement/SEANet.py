@@ -56,14 +56,11 @@ class SEANet(nn.Module):
         self.D2 = DecoderBlock(256, 128, 8)
         self.D3 = DecoderBlock(128, 64, 2)
         self.D4 = DecoderBlock(64, 32, 2)
-        self.conv4 = nn.Conv1d(32, 2, kernel_size=7, padding=3)
+        self.conv4 = nn.Conv1d(32, 4, kernel_size=7, padding=3)
 
     def forward(self, acc, audio):
         # down-sample
-        print(acc.shape)
-        acc = torch.nn.functional.interpolate(acc, scale_factor=10)
-        print(acc.shape)
-        print(audio.shape)
+        acc = torch.nn.functional.interpolate(acc, dim=2, scale_factor=10)
         x1 = torch.cat([audio, acc], dim=1)
         x2 = self.conv1(x1)
         x3 = self.E1(x2)
