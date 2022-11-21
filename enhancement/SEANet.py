@@ -69,8 +69,8 @@ class SEANet(nn.Module):
         x6 = self.E4(x5)
         x = self.conv3(self.conv2(x6)) + x6
         # up-sample, may need padding if the duration is not * 256
-        #x = nn.functional.pad(self.D1(x), (0, 4)) + x5
-        x = self.D1(x) + x5
+        x = nn.functional.pad(self.D1(x), (0, 4)) + x5
+        #x = self.D1(x) + x5
         x = self.D2(x) + x4
         x = self.D3(x) + x3
         x = self.D4(x) + x2
