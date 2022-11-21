@@ -111,7 +111,7 @@ if __name__ == "__main__":
     discriminator = Discriminator_time().to(device)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 16
+        BATCH_SIZE = 32
         lr = 0.0001
         EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=True, simulation=True,
