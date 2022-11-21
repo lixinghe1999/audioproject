@@ -43,7 +43,7 @@ class DecoderBlock(nn.Module):
 class SEANet(nn.Module):
     def __init__(self):
         super(SEANet, self).__init__()
-        self.conv1 = nn.Conv1d(2, 32, kernel_size=7, padding=3)
+        self.conv1 = nn.Conv1d(4, 32, kernel_size=7, padding=3)
         self.E1 = EncoderBlock(32, 64, 2)
         self.E2 = EncoderBlock(64, 128, 2)
         self.E3 = EncoderBlock(128, 256, 8)

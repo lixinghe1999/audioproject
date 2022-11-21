@@ -250,7 +250,7 @@ class NoisyCleanSet:
             self.transfer_function = SEANet_mapping().to(self.device)
             ckpt_dir = 'pretrain/deep_augmentation'
             ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-            print("load checkpoint: {}".format(ckpt_name))
+            print("load checkpoint for deep augmentation: {}".format(ckpt_name))
             ckpt = torch.load(ckpt_name)
             self.transfer_function.load_state_dict(ckpt)
         else:
