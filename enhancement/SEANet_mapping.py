@@ -123,7 +123,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
             optimizer.step()
         scheduler.step()
         Loss_list = []
-        metric_list = []
         with torch.no_grad():
             for acc, noise, clean in test_loader:
                 clean = clean.to(device=device, dtype=torch.float)
@@ -131,11 +130,9 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
                 predict = model(clean)
                 loss = nn.functional.l1_loss(predict, acc).item()
                 Loss_list.append(loss)
-                si_sdr = SI_SDR(acc.cpu().numpy(), predict.cpu().numpy())
-                metric_list.append(si_sdr)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
-        print(mean_lost, np.mean(metric_list))
+        print(mean_lost)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
