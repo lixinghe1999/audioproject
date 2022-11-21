@@ -13,10 +13,12 @@ class ResUnit(nn.Module):
     def __init__(self, input, output, dilation):
         super(ResUnit, self).__init__()
         self.conv1 = nn.Conv1d(input, output, kernel_size=3, dilation=dilation, padding=dilation)
+        self.norm1 = nn.BatchNorm1d(output)
         self.conv2 = nn.Conv1d(output, output, kernel_size=1)
+        self.norm2 = nn.BatchNorm1d(output)
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
+        x = self.norm1(self.conv1(x))
+        x = self.norm2(self.conv2(x))
         return x
 
 class EncoderBlock(nn.Module):
@@ -166,7 +168,7 @@ def test(dataset, BATCH_SIZE, model):
             print(si_sdr)
             print(loss, torch.max(predict), torch.max(acc))
             sdr_list.append(si_sdr)
-    return
+
 if __name__ == '__main__':
     model = SEANet_mapping()
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))

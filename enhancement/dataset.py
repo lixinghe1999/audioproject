@@ -9,6 +9,7 @@ import scipy.signal as signal
 import librosa
 from scipy import interpolate
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
+from SEANet_mapping import SEANet_mapping
 from vibvoice import A2net
 from fullsubnet import FullSubNet
 import argparse
@@ -235,12 +236,25 @@ class NoisyCleanSet:
                     data = data[int(len(data) * self.ratio):]
             self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
         if len(json_paths) == 2:
+            # transfer function-based augmentation
             self.augmentation = True
-            transfer_function, variance = read_transfer_function(function_pool)
-            self.variance = variance
-            self.transfer_function = transfer_function
+
+
+            # transfer_function, variance = read_transfer_function(function_pool)
+            # self.variance = variance
+            # self.transfer_function = transfer_function
+
+            # deep augmentation
+            device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+            self.transfer_function = SEANet_mapping().to(device)
+            ckpt_dir = 'pretrain/deep_augmentation'
+            ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+            print("load checkpoint: {}".format(ckpt_name))
+            ckpt = torch.load(ckpt_name)
+            self.transfer_function.load_state_dict(ckpt)
         else:
             self.augmentation = False
+
         self.rir = rir
         if self.rir is not None:
             with open(rir, 'r') as f:
@@ -262,7 +276,7 @@ class NoisyCleanSet:
                 noise, _ = self.dataset[1][np.random.randint(0, self.length)]
                 snr = np.random.choice(self.snr_list)
                 noise, clean = snr_mix(clean_tmp, noise, snr, -25, 10,
-                                       rir=self.rir_dataset[np.random.randint(0, self.rir_length)][0] if use_reverb else None
+                rir=self.rir_dataset[np.random.randint(0, self.rir_length)][0] if use_reverb else None
                                        , eps=1e-6)
                 clean_tmp = noise
         else:
@@ -270,10 +284,12 @@ class NoisyCleanSet:
             noise, clean = snr_norm([clean, noise], -25, 10)
         if self.time_domain:
             if self.augmentation:
-                clean_spec = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
-                imu = synthetic(np.abs(clean_spec), self.transfer_function, self.variance)
-                imu = imu * np.exp(1j * np.angle(clean_spec[0, :freq_bin_high, :]))
-                imu = signal.istft(imu, rate_imu, nperseg=seg_len_imu, noverlap=overlap_imu)[-1]
+                with torch.no_grad():
+                    imu = self.transfer_function(clean)
+                # clean_spec = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
+                # imu = synthetic(np.abs(clean_spec), self.transfer_function, self.variance)
+                # imu = imu * np.exp(1j * np.angle(clean_spec[0, :freq_bin_high, :]))
+                # imu = signal.istft(imu, rate_imu, nperseg=seg_len_imu, noverlap=overlap_imu)[-1]
             else:
                 imu, _ = self.dataset[2][index]
                 imu = np.transpose(imu)
@@ -295,7 +311,6 @@ class NoisyCleanSet:
             # imu = imu[:, :, :-1]
         if self.text:
             setence = sentences[int(file.split('/')[4][-1])-1]
-            #print(file, setence)
             return setence, imu, noise, clean
         else:
             return imu, noise, clean
