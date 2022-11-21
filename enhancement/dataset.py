@@ -9,7 +9,7 @@ import scipy.signal as signal
 import librosa
 from scipy import interpolate
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
-from SEANet_mapping import SEANet_mapping
+from SEANet import SEANet_mapping
 from vibvoice import A2net
 from fullsubnet import FullSubNet
 import argparse
