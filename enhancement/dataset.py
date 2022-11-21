@@ -245,7 +245,8 @@ class NoisyCleanSet:
             # self.transfer_function = transfer_function
 
             # deep augmentation
-            self.device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+            #self.device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+            self.device = torch.device('cpu')
             self.transfer_function = SEANet_mapping().to(self.device)
             ckpt_dir = 'pretrain/deep_augmentation'
             ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
