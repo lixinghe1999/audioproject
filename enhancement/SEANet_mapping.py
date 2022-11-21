@@ -131,7 +131,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
                 predict = model(clean)
                 loss = nn.functional.l1_loss(predict, acc).item()
                 Loss_list.append(loss)
-                si_sdr = SI_SDR(acc, predict)
+                si_sdr = SI_SDR(acc.cpu().numpy(), predict.cpu().numpy())
                 metric_list.append(si_sdr)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
