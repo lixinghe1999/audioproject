@@ -286,9 +286,9 @@ class NoisyCleanSet:
         if self.time_domain:
             if self.augmentation:
                 with torch.no_grad():
-                    clean = torch.from_numpy(clean).to(device=self.device, dtype=torch.float)
-                    clean = torch.unsqueeze(clean, 0)
-                    imu = self.transfer_function(clean)
+                    audio = torch.from_numpy(clean).to(device=self.device, dtype=torch.float)
+                    audio = torch.unsqueeze(audio, 0)
+                    imu = self.transfer_function(audio)
                 # clean_spec = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
                 # imu = synthetic(np.abs(clean_spec), self.transfer_function, self.variance)
                 # imu = imu * np.exp(1j * np.angle(clean_spec[0, :freq_bin_high, :]))
