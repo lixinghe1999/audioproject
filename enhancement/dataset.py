@@ -245,8 +245,8 @@ class NoisyCleanSet:
             # self.transfer_function = transfer_function
 
             # deep augmentation
-            device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-            self.transfer_function = SEANet_mapping().to(device)
+            self.device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+            self.transfer_function = SEANet_mapping().to(self.device)
             ckpt_dir = 'pretrain/deep_augmentation'
             ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
             print("load checkpoint: {}".format(ckpt_name))
@@ -285,6 +285,7 @@ class NoisyCleanSet:
         if self.time_domain:
             if self.augmentation:
                 with torch.no_grad():
+                    clean = torch.from_numpy(clean).to(device=self.device, dtype=torch.float)
                     imu = self.transfer_function(clean)
                 # clean_spec = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
                 # imu = synthetic(np.abs(clean_spec), self.transfer_function, self.variance)
