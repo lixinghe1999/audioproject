@@ -76,7 +76,7 @@ class SEANet(nn.Module):
         x = self.D4(x) + x2
         x = self.conv4(x) + x1
 
-        return x[:, 0, :], x[:, 1, :]
+        return x[:, 0, :], x[:, 1:, :]
 
 class SEANet_mapping(nn.Module):
     def __init__(self):

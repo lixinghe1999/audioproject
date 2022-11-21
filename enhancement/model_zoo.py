@@ -60,6 +60,7 @@ def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discr
     else:
         # generator
         optimizer.zero_grad()
+        print(predict1.shape, clean.shape)
         disc_fake = discriminator(predict1)
         disc_real = discriminator(clean.to(device=device, dtype=torch.float))
         (feats_fake, score_fake), (feats_real, _) = (disc_fake, disc_real)
