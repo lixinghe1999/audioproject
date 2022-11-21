@@ -152,10 +152,12 @@ def test(dataset, BATCH_SIZE, model):
         test_size = min(int(0.1 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE,
+                                               shuffle=True, drop_last=True, pin_memory=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     sdr_list = []
     with torch.no_grad():
-        for acc, noise, clean in test_loader:
+        for acc, noise, clean in train_loader:
             clean = clean.to(device=device, dtype=torch.float)
             acc = acc.to(device=device, dtype=torch.float)
             predict = model(clean)
