@@ -3,6 +3,7 @@ import torch.nn as nn
 from tqdm import tqdm
 import numpy as np
 from dataset import NoisyCleanSet
+from evaluation import SI_SDR
 '''
 this script describe the deep learning mapping proposed by SEANet(google)
 '''
@@ -116,11 +117,12 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
             acc = acc.to(device=device, dtype=torch.float)
             optimizer.zero_grad()
             predict = model(clean)
-            loss = nn.functional.l1_loss(predict, acc)
+            loss = nn.functional.mse_loss(predict, acc)
             loss.backward()
             optimizer.step()
         scheduler.step()
         Loss_list = []
+        metric_list = []
         with torch.no_grad():
             for acc, noise, clean in test_loader:
                 clean = clean.to(device=device, dtype=torch.float)
@@ -128,10 +130,11 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
                 predict = model(clean)
                 loss = nn.functional.l1_loss(predict, acc).item()
                 Loss_list.append(loss)
+                si_sdr = SI_SDR(acc, predict)
+                metric_list.append(si_sdr)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
-
-        print(mean_lost)
+        print(mean_lost, np.mean(metric_list))
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
@@ -148,9 +151,9 @@ if __name__ == '__main__':
 
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     # This script is for model pre-training on LibriSpeech
-    BATCH_SIZE = 8
-    lr = 0.001
-    EPOCH = 20
+    BATCH_SIZE = 16
+    lr = 0.0001
+    EPOCH = 10
     people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], time_domain=True,
                             person=people, simulation=True)
