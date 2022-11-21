@@ -174,13 +174,13 @@ if __name__ == '__main__':
     people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], time_domain=True,
                             person=people, simulation=True)
+    model = model.to(device)
 
-    # model = model.to(device)
     # ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
     # For the testing: Si-SDR
     ckpt_dir = 'pretrain/deep_augmentation'
-    ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+    ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
     print("load checkpoint: {}".format(ckpt_name))
     ckpt = torch.load(ckpt_name)
     model.load_state_dict(ckpt)
