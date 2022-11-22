@@ -205,7 +205,8 @@ class BaseDataset:
 
             return data, file
 class NoisyCleanSet:
-    def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False, ratio=1, snr=(0, 20), rir=None):
+    def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
+                 ratio=1, snr=(0, 20), rir=None, num_noises=1):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -239,7 +240,6 @@ class NoisyCleanSet:
             # transfer function-based augmentation
             self.augmentation = True
 
-
             # transfer_function, variance = read_transfer_function(function_pool)
             # self.variance = variance
             # self.transfer_function = transfer_function
@@ -267,13 +267,13 @@ class NoisyCleanSet:
         self.time_domain = time_domain
         self.length = len(self.dataset[1])
         self.snr_list = np.arange(snr[0], snr[1], 1)
+        self.num_noises = num_noises
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.simulation:
             clean_tmp = clean
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.7)
-            for i in range(1):
-                # number of noise source, by default 1
+            for i in range(self.num_noises):
                 noise, _ = self.dataset[1][np.random.randint(0, self.length)]
                 snr = np.random.choice(self.snr_list)
                 noise, clean = snr_mix(clean_tmp, noise, snr, -25, 10,
