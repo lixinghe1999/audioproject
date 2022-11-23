@@ -66,13 +66,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
                 metric = test_SEANet(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
-        print(avg_metric)
+        print(avg_metric, mean_lost)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
             metric_best = avg_metric
-            if save_all:
-                torch.save(ckpt_best, 'pretrain/' + str(loss_curve[-1]) + '.pth')
+        if save_all:
+            torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
     torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 
