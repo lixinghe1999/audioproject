@@ -216,7 +216,7 @@ if __name__ == "__main__":
         print('average performance for all users: ', np.mean(result, axis=0))
     elif args.mode == 3:
         # evaluation for WER (without reference)
-        ckpt_dir = 'pretrain/new_fullsubnet'
+        ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
