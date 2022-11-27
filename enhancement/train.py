@@ -234,7 +234,6 @@ if __name__ == "__main__":
         #     model.load_state_dict(ckpt)
         #     ckpt, _, _ = train(train_dataset, 2, 0.001, 8, model)
         #     ckpts.append(ckpt)
-        # model.load_state_dict(ckpt)
         # for ckpt, p in zip(ckpts, people):
         #     model.load_state_dict(ckpt)
         #     test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
