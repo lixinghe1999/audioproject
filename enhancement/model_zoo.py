@@ -52,10 +52,11 @@ def Spectral_Loss(x_mag, y_mag):
 
 def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, device='cuda'):
     predict1, predict2 = model(acc.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float))
-
     # without discrinimator
     if discriminator is None:
-        loss = F.mse_loss(predict1, clean.to(device=device, dtype=torch.float))
+        loss = F.mse_loss(torch.unsqueeze(predict1, 1), clean.to(device=device, dtype=torch.float))
+        loss.backward()
+        optimizer.step()
         return loss.item()
     else:
         # generator

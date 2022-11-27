@@ -276,8 +276,7 @@ class NoisyCleanSet:
                 noise, _ = self.dataset[1][np.random.randint(0, self.length)]
                 snr = np.random.choice(self.snr_list)
                 noise, clean = snr_mix(clean_tmp, noise, snr, -25, 10,
-                rir = self.rir_dataset[np.random.randint(0, self.rir_length)][0] if use_reverb else None
-                                       , eps=1e-6)
+                rir = self.rir_dataset[np.random.randint(0, self.rir_length)][0] if use_reverb else None, eps=1e-6)
                 clean_tmp = noise
         else:
             noise, _ = self.dataset[1][index]
@@ -304,9 +303,6 @@ class NoisyCleanSet:
             noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             imu = imu[:, 1:, :-1]
-            # noise = noise[:, : 8 * (freq_bin_high), :-1]
-            # clean = clean[:, : 8 * (freq_bin_high), :-1]
-            # imu = imu[:, :, :-1]
         if self.text:
             setence = sentences[int(file.split('/')[4][-1])-1]
             return setence, imu, noise, clean
