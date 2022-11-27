@@ -122,7 +122,7 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         BATCH_SIZE = 16
-        lr = 0.001
+        lr = 0.00001
         EPOCH = 10
 
         ckpt_dir = 'pretrain/seanet'
