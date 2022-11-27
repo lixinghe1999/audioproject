@@ -190,7 +190,6 @@ class BaseDataset:
                 continue
             duration = 0
             offset = 0
-            print(file)
             if self.length:
                 offset = self.stride * index
                 duration = self.length
@@ -203,7 +202,6 @@ class BaseDataset:
                 data = np.clip(data, -0.05, 0.05)
             else:
                 data, _ = librosa.load(file, offset=offset, duration=duration, sr=rate_mic)
-
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
@@ -299,6 +297,7 @@ class NoisyCleanSet:
             if self.augmentation:
                 imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
             else:
+                print(self.dataset[2][index])
                 imu, _ = self.dataset[2][index]
                 imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
             noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
