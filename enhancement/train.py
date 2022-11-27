@@ -55,7 +55,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
             #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
+            loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -63,7 +63,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
-                metric = test_vibvoice(model, acc, noise, clean, device)
+                metric = test_fullsubnet(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric, mean_lost)
@@ -83,10 +83,10 @@ def inference(dataset, BATCH_SIZE, model):
         for data in test_loader:
             if len(data) == 3:
                 acc, noise, clean = data
-                metric = test_vibvoice(model, acc, noise, clean, device)
+                metric = test_fullsubnet(model, acc, noise, clean, device)
             else:
                 text, acc, noise, clean = data
-                metric = test_vibvoice(model, acc, noise, clean, device, text)
+                metric = test_fullsubnet(model, acc, noise, clean, device, text)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -97,11 +97,11 @@ if __name__ == "__main__":
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    model = A2net(inference=False).to(device)
-    # model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
+    #model = A2net(inference=False).to(device)
+    model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
     # model = Causal_A2net(inference=False).to(device)
     # model = TSCNet().to(device)
-    #model = SEANet().to(device)
+    # model = SEANet().to(device)
     time_domain = False
 
     # model = nn.DataParallel(model, device_ids=[0])
@@ -216,7 +216,7 @@ if __name__ == "__main__":
         print('average performance for all users: ', np.mean(result, axis=0))
     elif args.mode == 3:
         # evaluation for WER (without reference)
-        ckpt_dir = 'pretrain/new_vibvoice'
+        ckpt_dir = 'pretrain/new_fullsubnet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
