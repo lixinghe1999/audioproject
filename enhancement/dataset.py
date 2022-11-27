@@ -298,7 +298,6 @@ class NoisyCleanSet:
             if self.augmentation:
                 imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
             else:
-                #print(self.dataset[2][index])
                 imu, _ = self.dataset[2][index]
                 imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
             noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
