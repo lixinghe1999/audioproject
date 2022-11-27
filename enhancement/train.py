@@ -220,10 +220,9 @@ if __name__ == "__main__":
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
-        #people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
-        people = ['he']
+        people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
         ckpts = []
-        for p in people:
+        for p in ['he']:
             model.load_state_dict(ckpt_start)
             p_except = [i for i in people if i != p]
             train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/dev.json', 'json/noise_train_imu.json'],
