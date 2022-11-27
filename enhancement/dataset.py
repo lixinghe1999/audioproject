@@ -245,7 +245,6 @@ class NoisyCleanSet:
             # self.transfer_function = transfer_function
 
             # deep augmentation
-            #self.device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
             self.device = torch.device('cpu')
             self.transfer_function = SEANet_mapping().to(self.device)
             ckpt_dir = 'pretrain/deep_augmentation'
@@ -289,10 +288,6 @@ class NoisyCleanSet:
                     audio = torch.from_numpy(clean).to(device=self.device, dtype=torch.float)
                     audio = torch.unsqueeze(audio, 0)
                     imu = self.transfer_function(audio)
-                # clean_spec = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
-                # imu = synthetic(np.abs(clean_spec), self.transfer_function, self.variance)
-                # imu = imu * np.exp(1j * np.angle(clean_spec[0, :freq_bin_high, :]))
-                # imu = signal.istft(imu, rate_imu, nperseg=seg_len_imu, noverlap=overlap_imu)[-1]
             else:
                 imu, _ = self.dataset[2][index]
                 imu = np.transpose(imu)

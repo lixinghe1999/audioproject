@@ -22,19 +22,19 @@ rate_imu = 1600
 freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
 # Uncomment for using another pre-trained model
-# asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
-#                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
-#                                            run_opts={"device": "cuda"})
+asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
+                                           savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
+                                           run_opts={"device": "cuda"})
 def eval(clean, predict, text=None):
-    metric1 = batch_pesq(clean, predict)
-    metric2 = SI_SDR(clean, predict)
-    metric3 = lsd(clean, predict)
-    #metric4 = STOI(clean, predict)
-    metrics = [metric1, metric2, metric3]
-    # if text is not None:
-    #     wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
-    #     metrics.append(wer_clean)
-    #     metrics.append(wer_noisy)
+    if text is not None:
+        wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
+        metrics = [wer_clean, wer_noisy]
+    else:
+        metric1 = batch_pesq(clean, predict)
+        metric2 = SI_SDR(clean, predict)
+        metric3 = lsd(clean, predict)
+        #metric4 = STOI(clean, predict)
+        metrics = [metric1, metric2, metric3]
     return np.stack(metrics, axis=1)
 def Spectral_Loss(x_mag, y_mag):
     """Calculate forward propagation.
@@ -79,11 +79,11 @@ def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discr
         discrim_loss.backward()
         optimizer_disc.step()
         return loss.item(), discrim_loss.item()
-def test_SEANet(model, acc, noise, clean, device='cuda'):
+def test_SEANet(model, acc, noise, clean, device='cuda', text=None):
     predict1, predict2 = model(acc.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float))
     clean = clean.squeeze(1).numpy()
     predict = predict1.cpu().numpy()
-    return eval(clean, predict)
+    return eval(clean, predict, text)
 
 def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     acc = acc.to(device=device, dtype=torch.float)

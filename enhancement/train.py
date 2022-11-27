@@ -54,8 +54,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     for e in range(EPOCH):
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            #loss = train_SEANet(model, acc, noise, clean, optimizer, device)
+            #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
+            loss = train_SEANet(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -83,11 +83,10 @@ def inference(dataset, BATCH_SIZE, model):
         for data in test_loader:
             if len(data) == 3:
                 acc, noise, clean = data
-                metric = test_fullsubnet(model, acc, noise, clean, device)
-                #metric = test_vibvoice(model, acc, noise, clean, device)
+                metric = test_SEANet(model, acc, noise, clean, device)
             else:
                 text, acc, noise, clean = data
-                metric = test_fullsubnet(model, acc, noise, clean, device, text)
+                metric = test_SEANet(model, acc, noise, clean, device, text)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -105,8 +104,7 @@ if __name__ == "__main__":
     # model = TSCNet().to(device)
     model = SEANet().to(device)
 
-    model = nn.DataParallel(model, device_ids=[0, 1])
-
+    # model = nn.DataParallel(model, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
     discriminator = Discriminator_time().to(device)
     if args.mode == 0:
@@ -126,19 +124,23 @@ if __name__ == "__main__":
         lr = 0.001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/new_vibvoice'
+        ckpt_dir = 'pretrain/seanet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, ratio=0.8)
-        test_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people, simulation=True, ratio=-0.2)
+        train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+                                       person=people, simulation=True, ratio=0.8, num_noises=3)
+        test_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+                                      person=people, simulation=True, ratio=-0.2, num_noises=3)
 
         # extra dataset for other positions
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=positions, simulation=True, ratio=0.8)
-        test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],person=positions, simulation=True, ratio=-0.2)
+        train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+                                       person=positions, simulation=True, ratio=0.8, num_noises=3)
+        test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+                                      person=positions, simulation=True, ratio=-0.2, num_noises=3)
 
         train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
         test_dataset = torch.utils.data.ConcatDataset([test_dataset1, test_dataset2])
@@ -148,19 +150,32 @@ if __name__ == "__main__":
 
         # Optional Micro-benchmark
         model.load_state_dict(ckpt)
-        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        for p in people:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=[p], simulation=True, ratio=-0.2)
+
+        print('result for number of noise sources')
+        for num_noise in [1, 2, 3]:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people,
+                                    simulation=True, ratio=-0.2, num_noises=num_noise)
+            Metric = inference(dataset, BATCH_SIZE, model)
+            avg_metric = np.mean(Metric, axis=0)
+            print(num_noise, avg_metric)
+
+        print('result for each user')
+        for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+                                    person=[p], simulation=True, ratio=-0.2)
             Metric = inference(dataset, BATCH_SIZE, model)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
 
+        print('result for noise type')
         for noise in ['background.json', 'dev.json', 'music.json']:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'], person=people, simulation=True, ratio=-0.2)
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
+                                    person=people, simulation=True, ratio=-0.2)
             Metric = inference(dataset, BATCH_SIZE, model)
             avg_metric = np.mean(Metric, axis=0)
             print(noise, avg_metric)
 
+        print('result for noise level')
         for level in [11, 6, 1]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
                                     simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
@@ -168,13 +183,14 @@ if __name__ == "__main__":
             avg_metric = np.mean(Metric, axis=0)
             print(level, avg_metric)
 
-        # Micro-benchmark for different positions
+        print('result for attach location')
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         for p in positions:
             dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'], person=[p], simulation=True, ratio=-0.2)
             Metric = inference(dataset, BATCH_SIZE, model)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
+
     elif args.mode == 2:
         # micro-benchmark per-user, length of data
         BATCH_SIZE = 32
