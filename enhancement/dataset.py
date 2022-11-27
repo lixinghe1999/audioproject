@@ -190,6 +190,7 @@ class BaseDataset:
                 continue
             duration = 0
             offset = 0
+            print(file)
             if self.length:
                 offset = self.stride * index
                 duration = self.length
