@@ -55,7 +55,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
             #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            loss = test_vibvoice(model, acc, noise, clean, optimizer, device)
+            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     # model = nn.DataParallel(model, device_ids=[0])
     # discriminator = Discriminator_spectrogram().to(device)
-    #discriminator = Discriminator_time().to(device)
+    discriminator = Discriminator_time().to(device)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 64
