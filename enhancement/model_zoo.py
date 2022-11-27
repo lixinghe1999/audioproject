@@ -51,6 +51,7 @@ def Spectral_Loss(x_mag, y_mag):
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 
 def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, device='cuda'):
+    print(acc.shape, noise.shape )
     predict1, predict2 = model(acc.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float))
 
     # without discrinimator
