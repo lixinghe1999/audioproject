@@ -104,9 +104,10 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None):
     noise_pha = torch.angle(noise).to(device=device, dtype=torch.float)
     clean = clean.to(device=device).squeeze(1)
 
-    predict1, _ = model(acc, noise_mag)
-    predict1 = torch.exp(1j * noise_pha) * predict1
-    predict1 = predict1.squeeze(1)
+    # predict1, _ = model(acc, noise_mag)
+    # predict1 = torch.exp(1j * noise_pha) * predict1
+    # predict1 = predict1.squeeze(1)
+    predict1 = noise.to(device=device).squeeze(1)
 
     predict = predict1.cpu().numpy()
     clean = clean.cpu().numpy()

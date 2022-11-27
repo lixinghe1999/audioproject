@@ -241,7 +241,7 @@ if __name__ == "__main__":
         #     metric = inference(test_dataset, 4, model)
         #     avg_metric = np.mean(metric, axis=0)
         #     print(p, avg_metric)
-        #for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair']:
+        # for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair']:
         for env in ['office', 'corridor', 'stair']:
             test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
                                          person=[env], time_domain=time_domain, simulation=False, text=True)
