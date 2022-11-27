@@ -132,16 +132,16 @@ if __name__ == "__main__":
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         train_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                       time_domain=time_domain, simulation=simulation, person=people, ratio=0.8, num_noises=3)
+                                       time_domain=time_domain, simulation=simulation, person=people, ratio=0.8, num_noises=1)
         test_dataset1 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                      time_domain=time_domain, simulation=simulation, person=people, ratio=-0.2, num_noises=3)
+                                      time_domain=time_domain, simulation=simulation, person=people, ratio=-0.2, num_noises=1)
 
         # extra dataset for other positions
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-                                       time_domain=time_domain, simulation=simulation, person=positions, ratio=0.8, num_noises=3)
+                                       time_domain=time_domain, simulation=simulation, person=positions, ratio=0.8, num_noises=1)
         test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-                                      time_domain=time_domain, simulation=simulation, person=positions, ratio=-0.2, num_noises=3)
+                                      time_domain=time_domain, simulation=simulation, person=positions, ratio=-0.2, num_noises=1)
 
         train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
         test_dataset = torch.utils.data.ConcatDataset([test_dataset1, test_dataset2])
