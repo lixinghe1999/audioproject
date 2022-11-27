@@ -41,8 +41,8 @@ if __name__ == "__main__":
         # synchronize airpods and microphone
         source = 'dataset/raw'
         target = 'dataset/our'
-        for p in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9']:
-        #for p in ['1']:
+        # for p in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9']:
+        for p in ['airpod', 'freebud', 'galaxy']:
         # for p in ['vr-down', 'vr-up', 'headphone-inside', 'headphone-outside', 'glasses']:
         #for p in ['cheek', 'temple', 'back', 'nose']:
             print(p)
@@ -61,9 +61,14 @@ if __name__ == "__main__":
                     imu1 = dict['bmiacc1']
                     imu2 = dict['bmiacc2']
                     gt = dict['mic']
+                    android = False
                     if '新录音' in dict:
                         dual = True
                         wav = dict['新录音']
+                    if '20220209' in dict:
+                        dual = True
+                        android = True
+                        wav = dict['20220209']
                     else:
                         dual = False
                     folder = target + path[11:]
@@ -76,27 +81,13 @@ if __name__ == "__main__":
 
                         data1 = calibrate(os.path.join(path, imu1[i]), T, shift1)
                         data2 = calibrate(os.path.join(path, imu2[i]), T, shift2)
-                        # b, a = signal.butter(4, 80, 'highpass', fs=1600)
-                        # data1 = signal.filtfilt(b, a, data1, axis=0)
-                        # data2 = signal.filtfilt(b, a, data2, axis=0)
-                        # data1 = np.clip(data1, -0.05, 0.05)
-                        # data2 = np.clip(data2, -0.05, 0.05)
                         mic = librosa.load(os.path.join(path, gt[i]), sr=16000)[0]
 
 
-                        # mic = signal.stft(mic, nperseg=640, noverlap=320, fs=16000)[-1]
-                        # mic = np.abs(mic[:33, :])
-                        # data1 = signal.stft(data1, nperseg=64, noverlap=32, fs=1600, axis=0)[-1]
-                        # data1 = np.linalg.norm(np.abs(data1), axis=1)
-                        # data2 = signal.stft(data2, nperseg=64, noverlap=32, fs=1600, axis=0)[-1]
-                        # data2 = np.linalg.norm(np.abs(data2), axis=1)
-                        # data1[:4, :] = 0
-                        # data2[:4, :] = 0
-                        # print(data1.shape, data2.shape)
                         # fig, axs = plt.subplots(3)
-                        # axs[0].imshow(data1)
-                        # axs[1].imshow(data2)
-                        # axs[2].imshow(mic)
+                        # axs[0].plot(data1)
+                        # axs[1].plot(data2)
+                        # axs[2].plot(mic)
                         # plt.show()
 
                         if dual:
@@ -106,11 +97,13 @@ if __name__ == "__main__":
                             airpods = np.pad(airpods, (0, T * 16000 - len(airpods)))
 
                             f2 = wav[i][:-4] + '.wav'
+                            if android:
+                                f2 = 'new' + wav[i][:-4] + '.wav'
                             sf.write(os.path.join(folder, f2), airpods, 16000)
                         f1 = gt[i][:-4] + '.wav'
                         sf.write(os.path.join(folder, f1), mic, 16000)
-                        np.savetxt(os.path.join(folder, imu1[i]), data1, fmt='%.2f')
-                        np.savetxt(os.path.join(folder, imu2[i]), data2, fmt='%.2f')
+                        np.savetxt(os.path.join(folder, imu1[i]), data1, fmt='%1.2f')
+                        np.savetxt(os.path.join(folder, imu2[i]), data2, fmt='%1.2f')
 
 
     elif args.mode == 1:
