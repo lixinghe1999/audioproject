@@ -90,7 +90,7 @@ def synthetic(clean, transfer_function, variance):
     noisy += 2 * background_noise
     return noisy
 
-def snr_mix(clean_y, noise_y, snr, target_dB_FS, target_dB_FS_floating_value, rir=None, eps=1e-6):
+def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, rir=None, eps=1e-6):
         """
         Args:
             clean_y: 纯净语音
@@ -275,12 +275,12 @@ class NoisyCleanSet:
             for i in range(self.num_noises):
                 noise, _ = self.dataset[1][np.random.randint(0, self.length)]
                 snr = np.random.choice(self.snr_list)
-                noise, clean = snr_mix(clean_tmp, noise, snr, -25, 10,
+                noise, clean = snr_mix(noise, clean_tmp, snr, -25, 10,
                 rir = self.rir_dataset[np.random.randint(0, self.rir_length)][0] if use_reverb else None, eps=1e-6)
                 clean_tmp = noise
         else:
             noise, _ = self.dataset[1][index]
-            noise, clean = snr_norm([clean, noise], -25, 10)
+            noise, clean = snr_norm([noise, clean], -25, 10)
         if self.time_domain:
             if self.augmentation:
                 with torch.no_grad():
