@@ -266,6 +266,9 @@ class NoisyCleanSet:
         self.length = len(self.dataset[1])
         self.snr_list = np.arange(snr[0], snr[1], 1)
         self.num_noises = num_noises
+        print(len(self.dataset[0]))
+        print(len(self.dataset[1]))
+        print(len(self.dataset[2]))
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.simulation:
@@ -297,7 +300,7 @@ class NoisyCleanSet:
             if self.augmentation:
                 imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
             else:
-                print(self.dataset[2][index])
+                #print(self.dataset[2][index])
                 imu, _ = self.dataset[2][index]
                 imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
             noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
