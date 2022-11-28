@@ -121,10 +121,10 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         BATCH_SIZE = 16
-        lr = 0.00001
+        lr = 0.0001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/seanet'
+        ckpt_dir = 'pretrain/new_fullsubnet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
@@ -158,34 +158,34 @@ if __name__ == "__main__":
             avg_metric = np.mean(Metric, axis=0)
             print(num_noise, avg_metric)
 
-        for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                    person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(p, avg_metric)
-
-        for noise in ['background.json', 'dev.json', 'music.json']:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
-                                    person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(noise, avg_metric)
-
-        for level in [11, 6, 1]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
-                                    time_domain=time_domain, simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(level, avg_metric)
-
-        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        for p in positions:
-            dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-                                    person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(p, avg_metric)
+        # for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        #                             person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
+        #     Metric = inference(dataset, BATCH_SIZE, model)
+        #     avg_metric = np.mean(Metric, axis=0)
+        #     print(p, avg_metric)
+        #
+        # for noise in ['background.json', 'dev.json', 'music.json']:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
+        #                             person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
+        #     Metric = inference(dataset, BATCH_SIZE, model)
+        #     avg_metric = np.mean(Metric, axis=0)
+        #     print(noise, avg_metric)
+        #
+        # for level in [11, 6, 1]:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
+        #                             time_domain=time_domain, simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
+        #     Metric = inference(dataset, BATCH_SIZE, model)
+        #     avg_metric = np.mean(Metric, axis=0)
+        #     print(level, avg_metric)
+        #
+        # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
+        # for p in positions:
+        #     dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+        #                             person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
+        #     Metric = inference(dataset, BATCH_SIZE, model)
+        #     avg_metric = np.mean(Metric, axis=0)
+        #     print(p, avg_metric)
     elif args.mode == 2:
         # micro-benchmark per-user, length of data
         BATCH_SIZE = 32
