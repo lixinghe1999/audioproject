@@ -234,10 +234,13 @@ if __name__ == "__main__":
                                          person=p_except, time_domain=time_domain, simulation=False, text=False)
             ckpt, _, _ = train(train_dataset, 5, 0.0002, 16, model)
 
-            train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
-                                          person=people, time_domain=time_domain, simulation=True, text=False)
+            # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+            #                               person=[p], time_domain=time_domain, simulation=True, text=False)
+            train_dataset = NoisyCleanSet(
+                ['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'],
+                person=[p], time_domain=time_domain, simulation=False, text=False)
             model.load_state_dict(ckpt)
-            ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
+            ckpt, _, _ = train(train_dataset, 1, 0.0001, 8, model)
             ckpts.append(ckpt)
         for ckpt, p in zip(ckpts, ['hou']):
             model.load_state_dict(ckpt)
