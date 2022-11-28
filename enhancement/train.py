@@ -235,7 +235,7 @@ if __name__ == "__main__":
             ckpt, _, _ = train(train_dataset, 5, 0.0002, 16, model)
 
             train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
-                                          person=[p], time_domain=time_domain, simulation=True, text=False)
+                                          person=people, time_domain=time_domain, simulation=True, text=False)
             model.load_state_dict(ckpt)
             ckpt, _, _ = train(train_dataset, 2, 0.0001, 8, model)
             ckpts.append(ckpt)
