@@ -107,7 +107,7 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None):
     predict1, _ = model(acc, noise_mag)
     predict1 = torch.exp(1j * noise_pha) * predict1
     predict1 = predict1.squeeze(1)
-    #predict1 = noise.to(device=device).squeeze(1)
+
 
     predict = predict1.cpu().numpy()
     clean = clean.cpu().numpy()
@@ -135,18 +135,21 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None):
     noise_imag = noise.imag.to(device=device, dtype=torch.float)
     clean = clean.to(device=device).squeeze(1)
 
-    predict = model(noise_mag)
-    cRM = decompress_cIRM(predict.permute(0, 2, 3, 1))
-    enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
-    enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
-    predict = torch.complex(enhanced_real, enhanced_imag)
-    predict = predict.cpu().numpy()
+    # predict = model(noise_mag)
+    # cRM = decompress_cIRM(predict.permute(0, 2, 3, 1))
+    # enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
+    # enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
+    # predict = torch.complex(enhanced_real, enhanced_imag)
+    # predict = predict.cpu().numpy()
+    predict = noise.squeeze(1).numpy()
     predict = np.pad(predict, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
 
     clean = clean.cpu().numpy()
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+
+
     return eval(clean, predict, text=text)
 
 def train_conformer(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, device='cuda'):
