@@ -239,22 +239,23 @@ if __name__ == "__main__":
         #     model.load_state_dict(ckpt)
         #     ckpt, _, _ = train(train_dataset, 1, 0.0001, 8, model)
         #     ckpts.append(ckpt)
-        for ckpt, p in zip(ckpts, people):
-            model.load_state_dict(ckpt)
+        # for ckpt, p in zip(ckpts, people):
+        #     model.load_state_dict(ckpt)
+        for p in people:
             test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
                                          person=[p], time_domain=time_domain, simulation=False, text=True)
             metric = inference(test_dataset, 4, model)
             avg_metric = np.mean(metric, axis=0)
             print(p, avg_metric)
-        for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair']:
-            test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-                                         person=[env], time_domain=time_domain, simulation=False, text=True)
-            metric = inference(test_dataset, 1, model)
-            avg_metric = np.mean(metric, axis=0)
-            print(env, avg_metric)
-
-        test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/mobile_wav.json', 'json/mobile_imu.json'],
-                                     person=['he'], time_domain=time_domain, simulation=False, text=True)
-        metric = inference(test_dataset, 4, model)
-        avg_metric = np.mean(metric, axis=0)
-        print('mobile result', avg_metric)
+        # for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair']:
+        #     test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
+        #                                  person=[env], time_domain=time_domain, simulation=False, text=True)
+        #     metric = inference(test_dataset, 1, model)
+        #     avg_metric = np.mean(metric, axis=0)
+        #     print(env, avg_metric)
+        #
+        # test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/mobile_wav.json', 'json/mobile_imu.json'],
+        #                              person=['he'], time_domain=time_domain, simulation=False, text=True)
+        # metric = inference(test_dataset, 4, model)
+        # avg_metric = np.mean(metric, axis=0)
+        # print('mobile result', avg_metric)
