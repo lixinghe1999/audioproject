@@ -222,18 +222,18 @@ class NoisyCleanSet:
             # transfer function-based augmentation
             self.augmentation = True
 
-            # transfer_function, variance = read_transfer_function(function_pool)
-            # self.variance = variance
-            # self.transfer_function = transfer_function
+            transfer_function, variance = read_transfer_function(function_pool)
+            self.variance = variance
+            self.transfer_function = transfer_function
 
             # deep augmentation
             self.device = torch.device('cpu')
-            self.transfer_function = SEANet_mapping().to(self.device)
+            self.deep_mapping = SEANet_mapping().to(self.device)
             ckpt_dir = 'pretrain/deep_augmentation'
             ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
             print("load checkpoint for deep augmentation: {}".format(ckpt_name))
             ckpt = torch.load(ckpt_name)
-            self.transfer_function.load_state_dict(ckpt)
+            self.deep_mapping.load_state_dict(ckpt)
         else:
             self.augmentation = False
         if self.EMSB:
@@ -290,7 +290,7 @@ class NoisyCleanSet:
                 with torch.no_grad():
                     audio = torch.from_numpy(clean).to(device=self.device, dtype=torch.float)
                     audio = torch.unsqueeze(audio, 0)
-                    imu = self.transfer_function(audio)
+                    imu = self.deep_mapping(audio)
             else:
                 imu, _ = self.dataset[2][index]
                 if self.EMSB:
