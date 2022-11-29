@@ -228,7 +228,7 @@ if __name__ == "__main__":
 
             train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/dev.json', 'json/noise_train_imu.json'],
                                           person=people, time_domain=time_domain, simulation=True,
-                                          rir='json/rir_noise.json', text=False, snr=[0, 10])
+                                          rir=None, text=False, snr=[0, 10])
             ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
 
             # train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'],
