@@ -100,7 +100,7 @@ if __name__ == "__main__":
                 json.dump(dict[name][2], open('json/' + name + '_wav.json', 'w'), indent=4)
     else:
         # for the EMSB dataset
-        directory = 'C:\\Users\HeLix\Downloads\EMSB'
+        directory = '../dataset/EMSB'
         person = os.listdir(directory)
         dict = {}
         g = os.walk(directory)
