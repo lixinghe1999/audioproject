@@ -109,11 +109,9 @@ if __name__ == "__main__":
             if N > 0:
                 name = path.split('/')[-1]
                 print(file_list)
-                left = file_list[0]
-                right = file_list[1]
-                json_data = [[os.path.join(path, left), torchaudio.info(os.path.join(path, left)).num_frames],
-                             [os.path.join(path, right), torchaudio.info(os.path.join(path, right)).num_frames]]
-
+                json_data = []
+                for f in file_list:
+                    json_data.append([os.path.join(path, f), torchaudio.info(os.path.join(path, f)).num_frames])
                 dict[name] = json_data
         json.dump(dict, open('json/' + 'EMSB.json', 'w'), indent=4)
 
