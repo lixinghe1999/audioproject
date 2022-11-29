@@ -193,7 +193,6 @@ class BaseDataset:
             if self.length:
                 offset = self.stride * index
                 duration = self.length
-            print(file)
             if file[-3:] == 'txt':
                 data = np.loadtxt(file)
                 data = data[offset * self.sample_rate: (offset + duration) * self.sample_rate, :]
@@ -270,9 +269,6 @@ class NoisyCleanSet:
         self.length = len(self.dataset[1])
         self.snr_list = np.arange(snr[0], snr[1], 1)
         self.num_noises = num_noises
-        print(len(self.dataset[0]))
-        print(len(self.dataset[1]))
-        print(len(self.dataset[2]))
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.EMSB:
