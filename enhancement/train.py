@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import torch
 torch.manual_seed(0)
 import torch.utils.data as Data
-import torch.nn as nn
 from dataset import NoisyCleanSet
+import json
 
 from fullsubnet import FullSubNet
 # from vibvoice import A2net
@@ -114,9 +114,12 @@ if __name__ == "__main__":
         EPOCH = 20
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir=None)
-
+        with open('json/EMSB.json', 'r') as f:
+            data = json.load(f)
+            person = data.keys().tolist()
+            print(person)
         EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
-                                ratio=1, rir=None, EMSB=True)
+                                ratio=1, rir=None, EMSB=True, person=person)
 
         ckpt_best, loss_curve, metric_best = train(EMSB_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)
