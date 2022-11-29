@@ -116,7 +116,7 @@ if __name__ == "__main__":
                                 ratio=1, rir=None)
         with open('json/EMSB.json', 'r') as f:
             data = json.load(f)
-            person = data.keys().tolist()
+            person = data.keys()
             print(person)
         EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir=None, EMSB=True, person=person)

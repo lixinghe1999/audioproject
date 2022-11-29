@@ -123,9 +123,6 @@ def eval_ASR(clean, noisy, text, asr_model):
     wer_clean = []
     wer_noisy = []
     for p_c, p_n, t in zip(pred_clean, pred_noisy, text):
-        # print(pred_clean)
-        # print(pred_noisy)
-        # print(text)
         wer_clean.append(wer(t.split(), p_c.split()))
         wer_noisy.append(wer(t.split(), p_n.split()))
     return wer_clean, wer_noisy
