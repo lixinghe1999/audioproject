@@ -269,7 +269,9 @@ class NoisyCleanSet:
         self.length = len(self.dataset[0])
         self.snr_list = np.arange(snr[0], snr[1], 1)
         self.num_noises = num_noises
-
+        print(len(self.dataset[0]))
+        print(len(self.dataset[1]))
+        print(len(self.dataset[2]))
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.EMSB:
