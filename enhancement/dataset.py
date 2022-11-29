@@ -267,7 +267,7 @@ class NoisyCleanSet:
         self.simulation = simulation
         self.text = text
         self.time_domain = time_domain
-        self.length = len(self.dataset[0])
+        self.length = len(self.dataset[1])
         self.snr_list = np.arange(snr[0], snr[1], 1)
         self.num_noises = num_noises
         print(len(self.dataset[0]))
