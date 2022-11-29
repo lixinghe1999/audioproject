@@ -112,13 +112,13 @@ if __name__ == "__main__":
         BATCH_SIZE = 64
         lr = 0.0001
         EPOCH = 20
-        # dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-        #                         ratio=1, rir=None)
-        with open('json/EMSB.json', 'r') as f:
-            data = json.load(f)
-            person = data.keys()
-        EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
-                                ratio=1, rir=None, EMSB=True, person=person)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
+                                ratio=1, rir=None)
+        # with open('json/EMSB.json', 'r') as f:
+        #     data = json.load(f)
+        #     person = data.keys()
+        # EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
+        #                         ratio=1, rir=None, EMSB=True, person=person)
 
         ckpt_best, loss_curve, metric_best = train(EMSB_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)
