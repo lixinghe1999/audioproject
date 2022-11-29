@@ -114,6 +114,5 @@ if __name__ == "__main__":
                              [os.path.join(path, right), torchaudio.info(os.path.join(path, right)).num_frames]]
 
                 dict[name] = json_data
-                break
         json.dump(dict, open('json/' + 'EMSB.json', 'w'), indent=4)
 
