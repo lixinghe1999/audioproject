@@ -108,6 +108,7 @@ if __name__ == "__main__":
             N = len(file_list)
             if N > 0:
                 name = path.split('/')[-1]
+                print(file_list)
                 left = file_list[0]
                 right = file_list[1]
                 json_data = [[os.path.join(path, left), torchaudio.info(os.path.join(path, left)).num_frames],
