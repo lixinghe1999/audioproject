@@ -201,11 +201,11 @@ class BaseDataset:
                 data = signal.filtfilt(b, a, data, axis=0)
                 data = np.clip(data, -0.05, 0.05)
             else:
-                data, _ = librosa.load(file, offset=offset, duration=duration, sr=rate_mic)
+                data, _ = librosa.load(file, mono=False, offset=offset, duration=duration, sr=rate_mic)
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
-                 ratio=1, snr=(0, 20), rir=None, num_noises=1):
+                 ratio=1, snr=(0, 20), rir=None, num_noises=1, EMSB=False):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -217,24 +217,7 @@ class NoisyCleanSet:
         '''
         self.dataset = []
         self.ratio = ratio
-        sr = [16000, 16000, 1600]
-        for i, path in enumerate(json_paths):
-            with open(path, 'r') as f:
-                data = json.load(f)
-            if person is not None and isinstance(data, dict):
-                tmp = []
-                for p in person:
-                    if ratio > 0:
-                        tmp += data[p][:int(len(data[p]) * self.ratio)]
-                    else:
-                        tmp += data[p][int(len(data[p]) * self.ratio):]
-                data = tmp
-            else:
-                if ratio > 0:
-                    data = data[:int(len(data) * self.ratio)]
-                else:
-                    data = data[int(len(data) * self.ratio):]
-            self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
+        self.EMSB = EMSB
         if len(json_paths) == 2:
             # transfer function-based augmentation
             self.augmentation = True
@@ -253,7 +236,27 @@ class NoisyCleanSet:
             self.transfer_function.load_state_dict(ckpt)
         else:
             self.augmentation = False
-
+        if self.EMSB:
+            sr = [16000, 16000, 16000]
+        else:
+            sr = [16000, 16000, 1600]
+        for i, path in enumerate(json_paths):
+            with open(path, 'r') as f:
+                data = json.load(f)
+            if person is not None and isinstance(data, dict):
+                tmp = []
+                for p in person:
+                    if ratio > 0:
+                        tmp += data[p][:int(len(data[p]) * self.ratio)]
+                    else:
+                        tmp += data[p][int(len(data[p]) * self.ratio):]
+                data = tmp
+            else:
+                if ratio > 0:
+                    data = data[:int(len(data) * self.ratio)]
+                else:
+                    data = data[int(len(data) * self.ratio):]
+            self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
         self.rir = rir
         if self.rir is not None:
             with open(rir, 'r') as f:
@@ -269,6 +272,8 @@ class NoisyCleanSet:
 
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
+        if self.EMSB:
+            clean = clean[0]
         if self.simulation:
             clean_tmp = clean
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.7)
@@ -289,6 +294,8 @@ class NoisyCleanSet:
                     imu = self.transfer_function(audio)
             else:
                 imu, _ = self.dataset[2][index]
+                if self.EMSB:
+                    imu = imu[1, ::10]
                 imu = np.transpose(imu)
             clean = np.expand_dims(clean, 0)
             noise = np.expand_dims(noise, 0)
@@ -299,6 +306,8 @@ class NoisyCleanSet:
                 imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
             else:
                 imu, _ = self.dataset[2][index]
+                if self.EMSB:
+                    imu = imu[1, ::10]
                 imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
             noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]

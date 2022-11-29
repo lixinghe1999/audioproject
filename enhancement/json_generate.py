@@ -98,3 +98,22 @@ if __name__ == "__main__":
                 json.dump(dict[name][0], open('json/' + name + '_imu.json', 'w'), indent=4)
                 json.dump(dict[name][1], open('json/' + name + '_gt.json', 'w'), indent=4)
                 json.dump(dict[name][2], open('json/' + name + '_wav.json', 'w'), indent=4)
+    else:
+        # for the EMSB dataset
+        directory = 'C:\\Users\HeLix\Downloads\EMSB'
+        person = os.listdir(directory)
+        dict = {}
+        g = os.walk(directory)
+        for path, dir_list, file_list in g:
+            N = len(file_list)
+            if N > 0:
+                name = path.split('/')[-1]
+                left = file_list[0]
+                right = file_list[1]
+                json_data = [[os.path.join(path, left), torchaudio.info(os.path.join(path, left)).num_frames],
+                             [os.path.join(path, right), torchaudio.info(os.path.join(path, right)).num_frames]]
+
+                dict[name] = json_data
+                break
+        json.dump(dict, open('json/' + 'EMSB.json', 'w'), indent=4)
+

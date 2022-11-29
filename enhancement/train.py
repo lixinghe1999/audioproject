@@ -114,7 +114,11 @@ if __name__ == "__main__":
         EPOCH = 20
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir=None)
-        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator,
+
+        EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
+                                ratio=1, rir=None, EMSB=True)
+
+        ckpt_best, loss_curve, metric_best = train(EMSB_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
