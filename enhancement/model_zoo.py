@@ -87,7 +87,7 @@ def test_SEANet(model, acc, noise, clean, device='cuda', text=None):
     return eval(clean, predict, text)
 
 def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
-    acc = acc.to(device=device, dtype=torch.float)
+    acc = acc.abs().to(device=device, dtype=torch.float)
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
     clean_mag = clean.abs().to(device=device, dtype=torch.float)
     optimizer.zero_grad()
@@ -99,7 +99,7 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     optimizer.step()
     return loss.item()
 def test_vibvoice(model, acc, noise, clean, device='cuda', text=None):
-    acc = acc.to(device=device, dtype=torch.float)
+    acc = acc.abs().to(device=device, dtype=torch.float)
     noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)
     noise_pha = torch.angle(noise).to(device=device, dtype=torch.float)
     clean = clean.to(device=device).squeeze(1)
