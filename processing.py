@@ -188,6 +188,8 @@ if __name__ == "__main__":
 
                         response = estimate_response(clip1, clip2)
                         count += 1
+                        plt.plot(response[0])
+                        plt.show()
                         np.savez('transfer_function_EMSB/' + str(count) + '.npz', response=response[0, :], variance=response[1, :])
                         # full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
                         # for j in range(time_bin):

@@ -78,11 +78,13 @@ def noise_extraction():
     return noise_clip[:, index:index + time_bin]
 
 def synthetic(clean, transfer_function, variance):
-    while 1:
-        index = np.random.randint(0, N)
-        f = transfer_function[index, :]
-        if np.max(f) > 0:
-            break
+    # while 1:
+    #     index = np.random.randint(0, N)
+    #     f = transfer_function[index, :]
+    #     if np.max(f) > 0:
+    #         break
+    index = np.random.randint(0, N)
+    f = transfer_function[index, :]
     f_norm = f / np.max(f)
     v_norm = variance[index, :] / np.max(f)
     response = np.tile(np.expand_dims(f_norm, axis=1), (1, time_bin))
