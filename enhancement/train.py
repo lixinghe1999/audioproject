@@ -102,7 +102,7 @@ if __name__ == "__main__":
     # model = TSCNet().to(device)
     # model = SEANet().to(device)
     time_domain = False
-    torch.cuda.set_device(2)
+    torch.cuda.set_device(1)
     #model = nn.DataParallel(model, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
     discriminator = Discriminator_time().to(device)
