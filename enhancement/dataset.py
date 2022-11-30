@@ -22,9 +22,9 @@ rate_mic = 16000
 rate_imu = 1600
 length = 5
 stride = 3
-function_pool = '../transfer_function'
-#N = len(os.listdir(function_pool))
-N = 300
+function_pool = '../transfer_function_EMSB'
+N = len(os.listdir(function_pool))
+#N = 300
 
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
@@ -193,15 +193,16 @@ class BaseDataset:
             if self.length:
                 offset = self.stride * index
                 duration = self.length
+            b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
             if file[-3:] == 'txt':
                 data = np.loadtxt(file)
                 data = data[offset * self.sample_rate: (offset + duration) * self.sample_rate, :]
                 data /= 2 ** 14
-                b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
                 data = signal.filtfilt(b, a, data, axis=0)
                 data = np.clip(data, -0.05, 0.05)
             else:
                 data, _ = librosa.load(file, mono=False, offset=offset, duration=duration, sr=rate_mic)
+                data = signal.filtfilt(b, a, data, axis=0)
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,

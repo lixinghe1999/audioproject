@@ -24,8 +24,8 @@ overlap_imu = 32
 rate_mic = 16000
 rate_imu = 1600
 T = 30
-segment = 5
-stride = 3
+segment = 30
+stride = 30
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(segment * rate_mic/(seg_len_mic-overlap_mic)) + 1
 time_stride = int(stride * rate_mic/(seg_len_mic-overlap_mic))
@@ -41,7 +41,7 @@ def synchronization(Zxx, imu):
     in2 = np.sum(imu, axis=0)
     shift = np.argmax(signal.correlate(in1, in2)) - len(in2)
     return np.roll(imu, shift, axis=1)
-def estimate_response(Zxx, imu):
+def estimate_response(imu, Zxx):
     select1 = Zxx > 1 * filters.threshold_otsu(Zxx)
     select2 = imu > 1 * filters.threshold_otsu(imu)
     select = select2 & select1
@@ -53,7 +53,7 @@ def estimate_response(Zxx, imu):
             response[1, i] = np.std(Zxx_ratio[i, :], where=select[i, :])
     return response
 def transfer_function(clip1, clip2, response):
-    new_response = estimate_response(clip2, clip1)
+    new_response = estimate_response(clip1, clip2)
     #if filter_function(new_response[0, :]):
     response = 0.25 * new_response + 0.75 * response
     return response
@@ -68,37 +68,7 @@ def ratio_accumulate(Zxx, imu, Zxx_valid):
             new_Zxx = Zxx_ratio[i, select[i, :]].tolist()
             Zxx_valid[i] = Zxx_valid[i] + new_Zxx
     return Zxx_valid
-def ratio_gamma(Zxx_valid):
-    parameters = []
-    count = 0
-    for j in range(freq_bin_high):
-        distribution = np.array(Zxx_valid[j])
-        distribution = distribution[distribution < 30]
-        if len(distribution) > 100:
 
-            fit_alpha, fit_loc, fit_beta = stats.gamma.fit(distribution)
-            pvalue = stats.kstest(distribution, 'gamma', (fit_alpha, fit_loc, fit_beta))[-1]
-            if pvalue > 0.05:
-                count += 1
-                parameters.append([fit_alpha, fit_loc, fit_beta])
-            else:
-                mean, std = np.mean(distribution), np.std(distribution)
-                pvalue = stats.kstest(distribution, 'norm', (mean, std))[-1]
-                if pvalue > 0.05:
-                    count += 1
-                parameters.append([mean, std])
-
-        elif len(distribution) > 1:
-            mean, std = np.mean(distribution), np.std(distribution)
-            pvalue = stats.kstest(distribution, 'norm', (mean, std))[-1]
-            if pvalue > 0.05:
-                count += 1
-            parameters.append([mean, std])
-        else:
-            parameters.append([0, 0])
-            count +=1
-    print(count)
-    return parameters
 def error(imu, Zxx, response, variance):
     num_time = np.shape(imu)[1]
     full_response = np.tile(np.expand_dims(response, axis=1), (1, num_time))
@@ -190,20 +160,49 @@ if __name__ == "__main__":
             #     pickle.dump(parameters, f)
     elif args.mode == 1:
         directory = 'C://Users/HeLix/Downloads/EMSB'
-        person = os.listdir(directory)
-        dict = {}
         g = os.walk(directory)
+        count = 0
         for path, dir_list, file_list in g:
             N = len(file_list)
             if N > 0:
+                print(path)
                 name = path.split('/')[-1]
-                print(file_list)
                 json_data = []
                 for f in file_list:
-                    data, _ = librosa.load(os.path.join(path, f), mono=False)
-                    print(data.shape)
+                    data, _ = librosa.load(os.path.join(path, f), mono=False, sr=rate_mic)
+                    b, a = signal.butter(4, 80, 'highpass', fs=rate_mic)
+
                     audio = data[0]
                     imu = data[1]
+                    audio = signal.filtfilt(b, a, audio, axis=0)
+                    imu = signal.filtfilt(b, a, imu, axis=0)
+
+                    audio = np.abs(signal.stft(audio, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1])
+                    imu = np.abs(signal.stft(imu, nperseg=seg_len_mic, noverlap=overlap_mic, fs=rate_mic)[-1])
+                    T = int(data.shape[1] / rate_mic)
+
+                    for j in range(int((T - segment) / stride) + 1):
+
+                        clip1 = imu[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
+                        clip2 = audio[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
+
+                        response = estimate_response(clip1, clip2)
+                        count += 1
+                        np.savez('transfer_function_EMSB/' + str(count) + '.npz', response=response[0, :], variance=response[1, :])
+                        # full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
+                        # for j in range(time_bin):
+                        #     full_response[:, j] += stats.norm.rvs(response[0, :], response[1, :])
+                        # augmentedZxx = clip2 * full_response
+
+                        # fig, axs = plt.subplots(2, figsize=(4, 2))
+                        # plt.subplots_adjust(left=0.12, bottom=0.16, right=0.98, top=0.98)
+                        # axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                        # axs[0].set_xticks([])
+                        # axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                        # fig.text(0.44, 0.022, 'Time (Sec)', va='center')
+                        # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
+                        # plt.savefig('synthetic_compare.pdf')
+                        # plt.show()
                     break
 
     elif args.mode == 2:
