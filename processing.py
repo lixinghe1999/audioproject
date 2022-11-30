@@ -24,8 +24,8 @@ overlap_imu = 32
 rate_mic = 16000
 rate_imu = 1600
 T = 30
-segment = 60
-stride = 60
+segment = 5
+stride = 5
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(segment * rate_mic/(seg_len_mic-overlap_mic)) + 1
 time_stride = int(stride * rate_mic/(seg_len_mic-overlap_mic))
@@ -159,7 +159,7 @@ if __name__ == "__main__":
             # with open(my_file, 'wb') as f:
             #     pickle.dump(parameters, f)
     elif args.mode == 1:
-        directory = 'dataset/EMSB'
+        directory = 'C://Users/HeLix/Downloads/EMSB'
         g = os.walk(directory)
         count = 0
         for path, dir_list, file_list in g:
@@ -188,22 +188,23 @@ if __name__ == "__main__":
 
                         response = estimate_response(clip1, clip2)
                         count += 1
-                        if np.max(response[0]) > 0 and np.max(response[0]) < 1:
-                            np.savez('transfer_function_EMSB/' + str(count) + '.npz', response=response[0, :], variance=response[1, :])
-                        # full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
-                        # for j in range(time_bin):
-                        #     full_response[:, j] += stats.norm.rvs(response[0, :], response[1, :])
-                        # augmentedZxx = clip2 * full_response
+                        # if np.max(response[0]) > 0 and np.max(response[0]) < 1:
+                        #     np.savez('transfer_function_EMSB/' + str(count) + '.npz', response=response[0, :], variance=response[1, :])
 
-                        # fig, axs = plt.subplots(2, figsize=(4, 2))
-                        # plt.subplots_adjust(left=0.12, bottom=0.16, right=0.98, top=0.98)
-                        # axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
-                        # axs[0].set_xticks([])
-                        # axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
-                        # fig.text(0.44, 0.022, 'Time (Sec)', va='center')
-                        # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
-                        # plt.savefig('synthetic_compare.pdf')
-                        # plt.show()
+                        full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
+                        for j in range(time_bin):
+                            full_response[:, j] += stats.norm.rvs(response[0, :], response[1, :])
+                        augmentedZxx = clip2 * full_response
+
+                        fig, axs = plt.subplots(2, figsize=(4, 2))
+                        plt.subplots_adjust(left=0.12, bottom=0.16, right=0.98, top=0.98)
+                        axs[0].imshow(augmentedZxx, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                        axs[0].set_xticks([])
+                        axs[1].imshow(clip1, extent=[0, 5, 0, 800], aspect='auto', origin='lower')
+                        fig.text(0.44, 0.022, 'Time (Sec)', va='center')
+                        fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
+                        plt.savefig('synthetic_compare.pdf')
+                        plt.show()
 
     elif args.mode == 2:
         for name in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:

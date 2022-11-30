@@ -78,11 +78,6 @@ def noise_extraction():
     return noise_clip[:, index:index + time_bin]
 
 def synthetic(clean, transfer_function, variance):
-    # while 1:
-    #     index = np.random.randint(0, N)
-    #     f = transfer_function[index, :]
-    #     if np.max(f) > 0:
-    #         break
     index = np.random.randint(0, N)
     f = transfer_function[index, :]
     f_norm = f / np.max(f)
@@ -314,11 +309,12 @@ class NoisyCleanSet:
             else:
                 imu, _ = self.dataset[2][index]
                 if self.EMSB:
-                    imu = imu[1, ::10]
-                imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
+                    imu = spectrogram(imu, seg_len_mic, overlap_mic, rate_mic)
+                else:
+                    imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
             noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
-            imu = imu[:, 1:, :-1]
+            imu = imu[:, 1:freq_bin_high, :-1]
         if self.text:
             setence = sentences[int(file.split('/')[4][-1])-1]
             return setence, imu, noise, clean
