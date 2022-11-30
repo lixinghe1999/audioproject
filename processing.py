@@ -159,7 +159,7 @@ if __name__ == "__main__":
             # with open(my_file, 'wb') as f:
             #     pickle.dump(parameters, f)
     elif args.mode == 1:
-        directory = 'C://Users/HeLix/Downloads/EMSB'
+        directory = '../dataset/EMSB'
         g = os.walk(directory)
         count = 0
         for path, dir_list, file_list in g:
@@ -188,9 +188,8 @@ if __name__ == "__main__":
 
                         response = estimate_response(clip1, clip2)
                         count += 1
-                        plt.plot(response[0])
-                        plt.show()
-                        np.savez('transfer_function_EMSB/' + str(count) + '.npz', response=response[0, :], variance=response[1, :])
+                        if np.max(response[0]) > 0 and np.max(response[0]) < 1:
+                            np.savez('transfer_function_EMSB/' + str(count) + '.npz', response=response[0, :], variance=response[1, :])
                         # full_response = np.tile(np.expand_dims(response[0, :], axis=1), (1, time_bin))
                         # for j in range(time_bin):
                         #     full_response[:, j] += stats.norm.rvs(response[0, :], response[1, :])
@@ -205,7 +204,6 @@ if __name__ == "__main__":
                         # fig.text(0.01, 0.52, 'Frequency (Hz)', va='center', rotation='vertical')
                         # plt.savefig('synthetic_compare.pdf')
                         # plt.show()
-                    break
 
     elif args.mode == 2:
         for name in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
