@@ -331,29 +331,29 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.mode == 0:
         # check data
-        dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], time_domain=True, simulation=True, ratio=1)
+        dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], time_domain=False, simulation=True, ratio=1)
         #dataset_train = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json','json/position_imu.json'], imulation=True, person=['headphone'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=2, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
             print(x.shape, noise.shape, y.shape)
 
-            x = x[0, 0].numpy()
-            noise = noise[0, 0].numpy()
-            y = y[0, 0].numpy()
-            fig, axs = plt.subplots(3, 1)
-            axs[0].plot(x)
-            axs[1].plot(noise)
-            axs[2].plot(y)
-            plt.show()
-
             # x = x[0, 0].numpy()
-            # noise = np.abs(noise[0, 0].numpy())
-            # y = np.abs(y[0, 0].numpy())
+            # noise = noise[0, 0].numpy()
+            # y = y[0, 0].numpy()
             # fig, axs = plt.subplots(3, 1)
-            # axs[0].imshow(x, aspect='auto')
-            # axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
-            # axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
+            # axs[0].plot(x)
+            # axs[1].plot(noise)
+            # axs[2].plot(y)
             # plt.show()
+
+            x = x[0, 0].numpy()
+            noise = np.abs(noise[0, 0].numpy())
+            y = np.abs(y[0, 0].numpy())
+            fig, axs = plt.subplots(3, 1)
+            axs[0].imshow(x, aspect='auto')
+            axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
+            axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
+            plt.show()
     elif args.mode == 1:
         # save different positions correlation with audio
         # dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_gt.json', 'json/train_imu'], person=['hou'],
