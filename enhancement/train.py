@@ -104,12 +104,12 @@ if __name__ == "__main__":
     # model = SEANet().to(device)
     time_domain = False
 
-    # model = nn.DataParallel(model, device_ids=[0, 1])
+    #model = nn.DataParallel(model, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
     discriminator = Discriminator_time().to(device)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 32
+        BATCH_SIZE = 128
         lr = 0.0001
         EPOCH = 20
         dataset1 = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
