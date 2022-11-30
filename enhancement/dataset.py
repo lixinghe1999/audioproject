@@ -78,8 +78,11 @@ def noise_extraction():
     return noise_clip[:, index:index + time_bin]
 
 def synthetic(clean, transfer_function, variance):
-    index = np.random.randint(0, N)
-    f = transfer_function[index, :]
+    while 1:
+        index = np.random.randint(0, N)
+        f = transfer_function[index, :]
+        if np.max(f) > 0:
+            break
     f_norm = f / np.max(f)
     v_norm = variance[index, :] / np.max(f)
     response = np.tile(np.expand_dims(f_norm, axis=1), (1, time_bin))
@@ -219,22 +222,29 @@ class NoisyCleanSet:
         self.dataset = []
         self.ratio = ratio
         self.EMSB = EMSB
+        self.simulation = simulation
+        self.text = text
+        self.time_domain = time_domain
+
+        self.snr_list = np.arange(snr[0], snr[1], 1)
+        self.num_noises = num_noises
         if len(json_paths) == 2:
             # transfer function-based augmentation
             self.augmentation = True
-
-            transfer_function, variance = read_transfer_function(function_pool)
-            self.variance = variance
-            self.transfer_function = transfer_function
-
             # deep augmentation
-            self.device = torch.device('cpu')
-            self.deep_mapping = SEANet_mapping().to(self.device)
-            ckpt_dir = 'pretrain/deep_augmentation'
-            ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-            print("load checkpoint for deep augmentation: {}".format(ckpt_name))
-            ckpt = torch.load(ckpt_name)
-            self.deep_mapping.load_state_dict(ckpt)
+            if self.time_domain:
+                self.device = torch.device('cpu')
+                self.deep_mapping = SEANet_mapping().to(self.device)
+                ckpt_dir = 'pretrain/deep_augmentation'
+                ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+                print("load checkpoint for deep augmentation: {}".format(ckpt_name))
+                ckpt = torch.load(ckpt_name)
+                self.deep_mapping.load_state_dict(ckpt)
+            else:
+                transfer_function, variance = read_transfer_function(function_pool)
+                self.variance = variance
+                self.transfer_function = transfer_function
+
         else:
             self.augmentation = False
         if self.EMSB:
@@ -264,12 +274,7 @@ class NoisyCleanSet:
                 data = json.load(f)
             self.rir_dataset = BaseDataset(data, sample_rate=16000)
             self.rir_length = len(self.rir_dataset)
-        self.simulation = simulation
-        self.text = text
-        self.time_domain = time_domain
-        self.length = len(self.dataset[1])
-        self.snr_list = np.arange(snr[0], snr[1], 1)
-        self.num_noises = num_noises
+        self.noise_length = len(self.dataset[1])
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.EMSB:
@@ -278,7 +283,7 @@ class NoisyCleanSet:
             clean_tmp = clean
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.7)
             for i in range(self.num_noises):
-                noise, _ = self.dataset[1][np.random.randint(0, self.length)]
+                noise, _ = self.dataset[1][np.random.randint(0, self.noise_length)]
                 snr = np.random.choice(self.snr_list)
                 noise, clean = snr_mix(noise, clean_tmp, snr, -25, 10,
                 rir = self.rir_dataset[np.random.randint(0, self.rir_length)][0] if use_reverb else None, eps=1e-6)
