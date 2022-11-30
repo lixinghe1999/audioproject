@@ -137,7 +137,7 @@ if __name__ == "__main__":
         ckpt = torch.load(ckpt_name)
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        for n in [2, 3]:
+        for n in [3]:
             train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                            time_domain=time_domain, simulation=True, person=people, ratio=0.8, num_noises=n)
             test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
