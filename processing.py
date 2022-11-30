@@ -144,7 +144,7 @@ if __name__ == "__main__":
                 response = np.zeros((2, freq_bin_high))
                 wave, Zxx, phase = micplot.load_stereo(path + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
                 data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
-                #data2, imu1 = imuplot.read_data(path + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
+                # data2, imu1 = imuplot.read_data(path + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
                 # Zxx = librosa.feature.melspectrogram(S=Zxx, sr=rate_mic, n_mels=264)
                 # imu1 = librosa.feature.melspectrogram(S=imu1, sr=rate_imu, n_mels=33)
                 imu1 = synchronization(Zxx, imu1)
@@ -152,7 +152,6 @@ if __name__ == "__main__":
 
                     clip2 = Zxx[:freq_bin_high, j * time_stride:j * time_stride + time_bin]
                     clip1 = imu1[:, j * time_stride:j * time_stride + time_bin]
-
 
                     # store gamma distribution parameters
                     # Zxx_valid = ratio_accumulate(clip2, clip1, Zxx_valid)
@@ -230,61 +229,6 @@ if __name__ == "__main__":
                 # np.savez('transfer_function/' + str(count) + '_' + name + '_transfer_function.npz',
                 #          response=r2, variance=v2)
         plt.show()
-    elif args.mode == 2:
-        candidate = ["he", "liang", "hou", "shi", "shuai", "wu", "yan", "jiang", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-        for i in range(len(candidate)):
-            count = 0
-            e = []
-            for folder in ['/train/', '/noise_train/']:
-                path = 'exp7/' + candidate[i] + folder
-                files = os.listdir(path)
-                N = int(len(files)/4)
-                files_imu1 = files[:N]
-                files_imu2 = files[N:2*N]
-                files_mic1 = files[2*N:3*N]
-                files_mic2 = files[3*N:]
-                r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high)
-                for index in range(N):
-                    wave, Zxx, phase = micplot.load_stereo(path + files_mic2[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
-                    data1, imu1 = imuplot.read_data(path + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
-                    data2, imu2 = imuplot.read_data(path + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
-                    imu1 = synchronization(Zxx, imu1)
-                    imu2 = synchronization(Zxx, imu2)
-                    for j in range(int((T - segment) / stride) + 1):
-                        mfcc = np.mean(micplot.MFCC(Zxx[:, j * time_stride:j * time_stride + time_bin], rate_mic), axis=1)
-                        r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
-                        r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
-                        e.append(error(imu1, Zxx, r1, v1))
-                        e.append(error(imu2, Zxx, r2, v2))
-                        np.savez('transfer_function/' + str(i) + '_' + str(count) + '.npz',
-                                 r1=r1, r2=r2, v1=v1, v2=v2, mfcc=mfcc)
-                        count += 1
-            print(sum(e)/len(e))
-    elif args.mode == 3:
-        for loc in ['box', 'human']:
-            candidate = os.listdir(os.path.join('attack', loc))
-            for i in range(len(candidate)):
-                count = 0
-                path = os.path.join('attack', loc, candidate[i])
-                files = os.listdir(path)
-                N = int(len(files) / 3)
-                files_imu1 = files[:N]
-                files_imu2 = files[N:2 * N]
-                files_mic1 = files[2 * N:]
-                for index in range(N):
-                    r1, r2, v1, v2 = np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high), np.zeros(freq_bin_high)
-                    wave, Zxx, phase = micplot.load_stereo(path + '/' + files_mic1[index], T, seg_len_mic, overlap_mic, rate_mic, normalize=True)
-                    data1, imu1 = imuplot.read_data(path + '/' + files_imu1[index], seg_len_imu, overlap_imu, rate_imu)
-                    data2, imu2 = imuplot.read_data(path + '/' + files_imu2[index], seg_len_imu, overlap_imu, rate_imu)
-                    # imu1 = synchronization(Zxx, imu1)
-                    # imu2 = synchronization(Zxx, imu2)
-                    for j in range(int((T - segment) / stride) + 1):
-                        mfcc = np.mean(micplot.MFCC(Zxx[:, j * time_stride:j * time_stride + time_bin], rate_mic), axis=1)
-                        r1, v1 = transfer_function(j, imu1, Zxx, r1, v1)
-                        r2, v2 = transfer_function(j, imu2, Zxx, r2, v2)
-                        np.savez('attack_transfer_function/' + loc + '/' + str(i) + '_' + str(count) + '.npz',
-                                 r1=r1, r2=r2, v1=v1, v2=v2, mfcc=mfcc)
-                        count += 1
     else:
         count = 0
         Mean = []
