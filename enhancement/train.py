@@ -9,7 +9,6 @@ import json
 from fullsubnet import FullSubNet
 # from vibvoice import A2net
 from new_vibvoice import A2net
-from causal_vibvoice import Causal_A2net
 from conformer import TSCNet
 from SEANet import SEANet
 
@@ -109,19 +108,21 @@ if __name__ == "__main__":
     discriminator = Discriminator_time().to(device)
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 64
+        BATCH_SIZE = 128
         lr = 0.0001
         EPOCH = 20
-        # dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-        #                         ratio=1, rir=None)
+        dataset1 = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
+                                ratio=1, rir=None)
+        dataset2 = NoisyCleanSet(['json/train_360.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
+                                ratio=1, rir=None)
+        train_dataset = torch.utils.data.ConcatDataset([dataset1, dataset2])
+        # with open('json/EMSB.json', 'r') as f:
+        #     data = json.load(f)
+        #     person = data.keys()
+        # EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
+        #                         ratio=1, rir=None, EMSB=True, person=person)
 
-        with open('json/EMSB.json', 'r') as f:
-            data = json.load(f)
-            person = data.keys()
-        EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
-                                ratio=1, rir=None, EMSB=True, person=person)
-
-        ckpt_best, loss_curve, metric_best = train(EMSB_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
+        ckpt_best, loss_curve, metric_best = train(train_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
