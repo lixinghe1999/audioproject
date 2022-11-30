@@ -95,6 +95,7 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
+    torch.cuda.set_device(1)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     model = A2net(inference=False).to(device)
     #model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
@@ -102,8 +103,8 @@ if __name__ == "__main__":
     # model = TSCNet().to(device)
     # model = SEANet().to(device)
     time_domain = False
-    torch.cuda.set_device(1)
-    #model = nn.DataParallel(model, device_ids=[0, 1])
+
+    # model = nn.DataParallel(model, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
     discriminator = Discriminator_time().to(device)
     if args.mode == 0:
