@@ -159,7 +159,7 @@ if __name__ == "__main__":
             # with open(my_file, 'wb') as f:
             #     pickle.dump(parameters, f)
     elif args.mode == 1:
-        directory = '../dataset/EMSB'
+        directory = '/dataset/EMSB'
         g = os.walk(directory)
         count = 0
         for path, dir_list, file_list in g:
