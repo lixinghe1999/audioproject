@@ -1,3 +1,4 @@
+import librosa
 import matplotlib.pyplot as plt
 from matplotlib import rc
 rc('text', usetex=True)
@@ -126,7 +127,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.mode == 0:
         candidate = ["he", "liang", "wu", "hou", "zhao", "shi", "shen", "shuai"]
-        #
         for i in range(len(candidate)):
             Zxx_valid = [[]] * freq_bin_high
             name = candidate[i]
@@ -189,6 +189,24 @@ if __name__ == "__main__":
             # with open(my_file, 'wb') as f:
             #     pickle.dump(parameters, f)
     elif args.mode == 1:
+        directory = 'C://Users/HeLix/Downloads/EMSB'
+        person = os.listdir(directory)
+        dict = {}
+        g = os.walk(directory)
+        for path, dir_list, file_list in g:
+            N = len(file_list)
+            if N > 0:
+                name = path.split('/')[-1]
+                print(file_list)
+                json_data = []
+                for f in file_list:
+                    data, _ = librosa.load(os.path.join(path, f), mono=False)
+                    print(data.shape)
+                    audio = data[0]
+                    imu = data[1]
+                    break
+
+    elif args.mode == 2:
         for name in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8"]:
             print(name)
             count = 0
