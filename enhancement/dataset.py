@@ -57,18 +57,18 @@ def read_transfer_function(path):
         npz = np.load(path + '/' + npzs[i])
         transfer_function[i, :] = npz['response']
         variance[i, :] = npz['variance']
-    new_transfer_function = np.zeros((N, freq_bin_high))
-    new_variance = np.zeros((N, freq_bin_high))
-    for j in range(freq_bin_high):
-        x = np.linspace(0, 1, len(npzs))
-        freq_r = np.sort(transfer_function[:, j])
-        freq_v = np.sort(variance[:, j])
-        f1 = interpolate.interp1d(x, freq_r)
-        f2 = interpolate.interp1d(x, freq_v)
-        xnew = np.linspace(0, 1, N)
-        new_transfer_function[:, j] = f1(xnew)
-        new_variance[:, j] = f2(xnew)
-    return new_transfer_function, new_variance
+    # new_transfer_function = np.zeros((N, freq_bin_high))
+    # new_variance = np.zeros((N, freq_bin_high))
+    # for j in range(freq_bin_high):
+    #     x = np.linspace(0, 1, len(npzs))
+    #     freq_r = np.sort(transfer_function[:, j])
+    #     freq_v = np.sort(variance[:, j])
+    #     f1 = interpolate.interp1d(x, freq_r)
+    #     f2 = interpolate.interp1d(x, freq_v)
+    #     xnew = np.linspace(0, 1, N)
+    #     new_transfer_function[:, j] = f1(xnew)
+    #     new_variance[:, j] = f2(xnew)
+    return transfer_function, variance
 
 def noise_extraction():
     noise_list = os.listdir('../dataset/noise/')
