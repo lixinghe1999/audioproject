@@ -110,13 +110,14 @@ if __name__ == "__main__":
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 128
-        lr = 0.0001
-        EPOCH = 20
+        lr = 0.00001
+        EPOCH = 10
         dataset1 = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir=None)
         dataset2 = NoisyCleanSet(['json/train_360.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir=None)
         train_dataset = torch.utils.data.ConcatDataset([dataset1, dataset2])
+        model.load_state_dict(torch.load('pretrain/0.35409978383899.pth'))
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()
