@@ -39,7 +39,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         test_size = min(int(0.1 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    train_loader = Data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
+    train_loader = Data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
                                    pin_memory=True)
     test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
