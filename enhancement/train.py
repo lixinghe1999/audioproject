@@ -202,19 +202,19 @@ if __name__ == "__main__":
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
-        people_train = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi"]
-        people_test = ["he", "hou"]
+        people_train = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu"]
+        people_test = ["he", "hou", "liang", "shuai", "shi"]
         model.load_state_dict(ckpt_start)
 
-        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                       person=people_train, time_domain=time_domain, simulation=True, ratio=1, text=False)
         ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
         model.load_state_dict(ckpt)
 
         train_dataset = NoisyCleanSet(
-            ['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+            ['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
             person=people_test, time_domain=time_domain, simulation=True, text=False, ratio=0.8)
-        ckpt, _, _ = train(train_dataset, 3, 0.00001, 4, model)
+        ckpt, _, _ = train(train_dataset, 5, 0.00001, 4, model)
 
     elif args.mode == 3:
         # evaluation for WER (without reference)
