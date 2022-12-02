@@ -37,7 +37,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
     loss_best = 1
     loss_curve = []
     ckpt_best = model.state_dict()
