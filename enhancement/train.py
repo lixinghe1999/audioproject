@@ -53,8 +53,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     for e in range(EPOCH):
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
+            loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
+            #loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -62,7 +62,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
-                metric = test_fullsubnet(model, acc, noise, clean, device)
+                metric = test_SEANet(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric, mean_lost)
@@ -95,14 +95,14 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    torch.cuda.set_device(1)
+    #torch.cuda.set_device(1)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     #model = A2net(inference=False).to(device)
-    model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
+    #model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
     # model = Causal_A2net(inference=False).to(device)
     # model = TSCNet().to(device)
-    # model = SEANet().to(device)
-    time_domain = False
+    model = SEANet().to(device)
+    time_domain = True
 
     model = torch.nn.DataParallel(model, device_ids=[1])
     # discriminator = Discriminator_spectrogram().to(device)
@@ -134,7 +134,7 @@ if __name__ == "__main__":
         lr = 0.0001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/new_fullsubnet'
+        ckpt_dir = 'pretrain/seanet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
