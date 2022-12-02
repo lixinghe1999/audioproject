@@ -63,10 +63,12 @@ def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discr
         optimizer.zero_grad()
         disc_fake = discriminator(predict1)
         disc_real = discriminator(clean.to(device=device, dtype=torch.float))
-        (feats_fake, score_fake), (feats_real, _) = (disc_fake, disc_real)
-        loss = torch.mean(torch.sum(torch.pow(score_fake - 1.0, 2), dim=[1, 2]))
-        for feat_f, feat_r in zip(feats_fake, feats_real):
-            loss += 100 * torch.mean(torch.abs(feat_f - feat_r))
+        loss = 0
+        for (feats_fake, score_fake), (feats_real, _) in zip(disc_fake, disc_real):
+            loss += torch.mean(torch.sum(torch.pow(score_fake - 1.0, 2), dim=[1, 2]))
+            for feat_f, feat_r in zip(feats_fake, feats_real):
+                #loss += 100 * torch.mean(torch.abs(feat_f - feat_r))
+                loss += 10 * F.mse_loss(feat_f, feat_r)
         loss.backward()
         optimizer.step()
 
@@ -74,9 +76,10 @@ def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discr
         optimizer_disc.zero_grad()
         disc_fake = discriminator(predict1.detach())
         disc_real = discriminator(clean.to(device=device, dtype=torch.float))
-        (_, score_fake), (_, score_real) = (disc_fake, disc_real)
-        discrim_loss = torch.mean(torch.sum(torch.pow(score_real - 1.0, 2), dim=[1, 2]))
-        discrim_loss += torch.mean(torch.sum(torch.pow(score_fake, 2), dim=[1, 2]))
+        discrim_loss = 0
+        for (_, score_fake), (_, score_real) in zip(disc_fake, disc_real):
+            discrim_loss += torch.mean(torch.sum(torch.pow(score_real - 1.0, 2), dim=[1, 2]))
+            discrim_loss += torch.mean(torch.sum(torch.pow(score_fake, 2), dim=[1, 2]))
         discrim_loss.backward()
         optimizer_disc.step()
         return loss.item(), discrim_loss.item()
@@ -135,13 +138,13 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None):
     noise_imag = noise.imag.to(device=device, dtype=torch.float)
     clean = clean.to(device=device).squeeze(1)
 
-    # predict = model(noise_mag)
-    # cRM = decompress_cIRM(predict.permute(0, 2, 3, 1))
-    # enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
-    # enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
-    # predict = torch.complex(enhanced_real, enhanced_imag)
-    # predict = predict.cpu().numpy()
-    predict = noise.squeeze(1).numpy()
+    predict = model(noise_mag)
+    cRM = decompress_cIRM(predict.permute(0, 2, 3, 1))
+    enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
+    enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
+    predict = torch.complex(enhanced_real, enhanced_imag)
+
+    predict = predict.cpu().numpy()
     predict = np.pad(predict, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
 

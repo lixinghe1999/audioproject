@@ -106,16 +106,48 @@ class Discriminator_time(nn.Module):
             features.append(x)
         return features[:-1], features[-1]
 
+class Identity(nn.Module):
+    def __init__(self):
+        super(Identity, self).__init__()
+
+    def forward(self, x):
+        return x
+
+class MultiScaleDiscriminator(nn.Module):
+    def __init__(self):
+        super(MultiScaleDiscriminator, self).__init__()
+
+        self.discriminators = nn.ModuleList(
+            [Discriminator_time() for _ in range(3)]
+        )
+
+        self.pooling = nn.ModuleList(
+            [Identity()] +
+            [nn.AvgPool1d(kernel_size=4, stride=2, padding=1, count_include_pad=False) for _ in range(1, 3)]
+        )
+
+    def forward(self, x):
+        ret = list()
+        for pool, disc in zip(self.pooling, self.discriminators):
+            x = pool(x)
+            ret.append(disc(x))
+        return ret
+
 if __name__ == '__main__':
     model_s = Discriminator_spectrogram()
     model_t = Discriminator_time()
+    model_m = MultiScaleDiscriminator()
 
-    x_t = torch.randn(4, 1, 64000)
+    x_t = torch.randn(4, 1, 80000)
     x_s = torch.randn(4, 1, 256, 200)
 
-    features, score = model_t(x_t)
-    for feat in features:
-        print(feat.shape)
-    print(score.shape)
-    metric = model_s(x_s, x_s)
-    print(metric.shape)
+    #features, score = model_t(x_t)
+    multi_scale_output = model_m(x_t)
+    for scale in multi_scale_output:
+        feats, score = scale
+        for feat in feats:
+            print(feat.shape)
+        print('score', score.shape)
+
+    # metric = model_s(x_s, x_s)
+    # print(metric.shape)
