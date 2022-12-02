@@ -201,22 +201,60 @@ if __name__ == "__main__":
         ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print('loaded checkpoint:', ckpt_name)
+        ckpt_name = 'pretrain/[ 2.6519329  15.54417844  3.54972677].pth'
         ckpt_start = torch.load(ckpt_name)
         people_train = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu"]
         people_test = ["he", "hou", "liang", "shuai", "shi"]
         model.load_state_dict(ckpt_start)
 
-        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-            person=people_train, time_domain=time_domain, simulation=True, text=False, ratio=1)
-        ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
-        model.load_state_dict(ckpt)
+        # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        #     person=people_train, time_domain=time_domain, simulation=True, text=False, ratio=1)
+        # ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
+        # model.load_state_dict(ckpt)
+        #
+        # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        #     person=people_test, time_domain=time_domain, simulation=True, text=False, ratio=0.8)
+        # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        #     person=people_test, time_domain=time_domain, simulation=True, text=False, ratio=-0.2)
+        # ckpt, _, _ = train([train_dataset, test_dataset], 5, 0.00001, 8, model)
 
-        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-            person=people_test, time_domain=time_domain, simulation=True, text=False, ratio=0.8)
-        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-            person=people_test, time_domain=time_domain, simulation=True, text=False, ratio=-0.2)
-        ckpt, _, _ = train([train_dataset, test_dataset], 5, 0.00001, 8, model)
+        #model.load_state_dict(ckpt)
 
+        for num_noise in [1, 2, 3]:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people_test,
+                                    time_domain=time_domain, simulation=True, ratio=-0.2, num_noises=num_noise)
+            Metric = inference(dataset, 4, model)
+            avg_metric = np.mean(Metric, axis=0)
+            print(num_noise, avg_metric)
+
+        for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+                                    person=people_test, time_domain=time_domain, simulation=True, ratio=-0.2)
+            Metric = inference(dataset, 4, model)
+            avg_metric = np.mean(Metric, axis=0)
+            print(p, avg_metric)
+
+        for noise in ['background.json', 'dev.json', 'music.json']:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
+                                    person=people_test, time_domain=time_domain, simulation=True, ratio=-0.2)
+            Metric = inference(dataset, 4, model)
+            avg_metric = np.mean(Metric, axis=0)
+            print(noise, avg_metric)
+
+        for level in [11, 6, 1]:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people_test,
+                                    time_domain=time_domain, simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
+            Metric = inference(dataset, 4, model)
+            avg_metric = np.mean(Metric, axis=0)
+            print(level, avg_metric)
+
+        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
+        for p in positions:
+            dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+                                    person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
+            Metric = inference(dataset, 4, model)
+            avg_metric = np.mean(Metric, axis=0)
+            print(p, avg_metric)
     elif args.mode == 3:
         # evaluation for WER (without reference)
         ckpt_dir = 'pretrain/new_vibvoice'
