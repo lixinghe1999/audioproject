@@ -32,7 +32,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         test_size = min(int(0.1 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
                                    pin_memory=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
@@ -80,8 +80,6 @@ def test(dataset, BATCH_SIZE, model):
         test_size = min(int(0.1 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE,
-                                               shuffle=True, drop_last=True, pin_memory=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     sdr_list = []
     with torch.no_grad():
@@ -100,9 +98,9 @@ if __name__ == '__main__':
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
     # This script is for model pre-training on LibriSpeech
-    BATCH_SIZE = 16
-    lr = 0.0001
-    EPOCH = 30
+    BATCH_SIZE = 64
+    lr = 0.001
+    EPOCH = 10
     people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], time_domain=True,
                             person=people, simulation=True)
