@@ -209,8 +209,8 @@ if __name__ == "__main__":
             p_except = [i for i in people if i != p]
 
             train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
-                                          person=p_except, time_domain=time_domain, simulation=True, text=False)
-            ckpt, _, _ = train(train_dataset, 3, 0.00001, 16, model)
+                                          person=p_except, time_domain=time_domain, simulation=True, ratio=0.8, text=False)
+            ckpt, _, _ = train(train_dataset, 3, 0.0001, 16, model)
             model.load_state_dict(ckpt)
 
             train_dataset = NoisyCleanSet(
