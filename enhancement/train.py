@@ -15,7 +15,7 @@ from SEANet import SEANet
 import numpy as np
 from tqdm import tqdm
 import argparse
-from discriminator import Discriminator_time, Discriminator_spectrogram
+from discriminator import Discriminator_time, Discriminator_spectrogram, MultiScaleDiscriminator, SingleScaleDiscriminator
 from model_zoo import train_SEANet, test_SEANet, train_vibvoice, test_vibvoice, train_fullsubnet, test_fullsubnet, \
     train_conformer, test_conformer
 
@@ -103,30 +103,31 @@ if __name__ == "__main__":
     # model = TSCNet().to(device)
     model = SEANet().to(device)
 
-    discriminator = Discriminator_time().to(device)
+    discriminator = MultiScaleDiscriminator().to(device)
     time_domain = True
 
     model = torch.nn.DataParallel(model, device_ids=[0, 1])
+    discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 128
-        lr = 0.00001
-        EPOCH = 10
-        dataset1 = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
+        BATCH_SIZE = 16
+        lr = 0.0001
+        EPOCH = 20
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir=None)
-        dataset2 = NoisyCleanSet(['json/train_360.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-                                ratio=1, rir=None)
-        train_dataset = torch.utils.data.ConcatDataset([dataset1, dataset2])
-        model.load_state_dict(torch.load('pretrain/0.35409978383899.pth'))
+        # dataset = NoisyCleanSet(['json/train_360.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
+        #                         ratio=1, rir=None)
+        #train_dataset = torch.utils.data.ConcatDataset([dataset1, dataset2])
+
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()
         # EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
         #                         ratio=1, rir=None, EMSB=True, person=person)
 
-        ckpt_best, loss_curve, metric_best = train(train_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
+        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=discriminator,
                                                    save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')

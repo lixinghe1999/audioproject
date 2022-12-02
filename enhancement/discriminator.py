@@ -132,6 +132,16 @@ class MultiScaleDiscriminator(nn.Module):
             x = pool(x)
             ret.append(disc(x))
         return ret
+class SingleScaleDiscriminator(nn.Module):
+    def __init__(self):
+        super(SingleScaleDiscriminator, self).__init__()
+
+        self.discriminators = nn.ModuleList(
+            [Discriminator_time() for _ in range(1)]
+        )
+
+    def forward(self, x):
+        return self.discriminators(x)
 
 if __name__ == '__main__':
     model_s = Discriminator_spectrogram()

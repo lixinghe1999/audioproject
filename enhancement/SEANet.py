@@ -8,9 +8,9 @@ class ResUnit(nn.Module):
         self.conv1 = nn.Conv1d(input, output, kernel_size=3, dilation=dilation, padding=dilation)
         self.conv2 = nn.Conv1d(output, output, kernel_size=1)
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
-        return x
+        y = self.conv1(x)
+        y = self.conv2(y)
+        return y + x
 
 class EncoderBlock(nn.Module):
     def __init__(self, input_channel, output_channel, S):
@@ -43,6 +43,7 @@ class DecoderBlock(nn.Module):
 class SEANet(nn.Module):
     def __init__(self):
         super(SEANet, self).__init__()
+        self.norm = nn.BatchNorm1d(4)
         self.conv1 = nn.Conv1d(4, 32, kernel_size=7, padding=3)
         self.E1 = EncoderBlock(32, 64, 2)
         self.E2 = EncoderBlock(64, 128, 2)
@@ -62,6 +63,7 @@ class SEANet(nn.Module):
         # down-sample
         acc = torch.nn.functional.interpolate(acc, scale_factor=10)
         x1 = torch.cat([audio, acc], dim=1)
+        x1 = self.norm(x1)
         x2 = self.conv1(x1)
         x3 = self.E1(x2)
         x4 = self.E2(x3)
@@ -125,7 +127,7 @@ def model_size(model):
 
 if __name__ == '__main__':
     model = SEANet()
-    acc = torch.randn(4, 1, 8000)
+    acc = torch.randn(4, 3, 8000)
     audio = torch.randn(4, 1, 80000)
     acc = model(acc, audio)
     print(model_size(model))
