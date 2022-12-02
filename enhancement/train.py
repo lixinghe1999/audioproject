@@ -104,7 +104,7 @@ if __name__ == "__main__":
     # model = SEANet().to(device)
     time_domain = False
 
-    model = nn.DataParallel(model, device_ids=[1])
+    model = torch.nn.DataParallel(model, device_ids=[1])
     # discriminator = Discriminator_spectrogram().to(device)
     discriminator = Discriminator_time().to(device)
     if args.mode == 0:
