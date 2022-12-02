@@ -4,8 +4,8 @@ from tqdm import tqdm
 import numpy as np
 from dataset import NoisyCleanSet
 from SEANet import SEANet_mapping
-from evaluation import SI_SDR
-import os
+import matplotlib.pyplot as plt
+
 '''
 this script describe the deep learning mapping proposed by SEANet(google)
 '''
@@ -81,37 +81,36 @@ def test(dataset, BATCH_SIZE, model):
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
-    sdr_list = []
     with torch.no_grad():
         for acc, noise, clean in test_loader:
             clean = clean.to(device=device, dtype=torch.float)
             acc = acc.to(device=device, dtype=torch.float)
             predict = model(clean)
             loss = nn.functional.l1_loss(predict, acc).item()
-            si_sdr = SI_SDR(acc.cpu().numpy(), predict.cpu().numpy())
-            print(si_sdr)
-            print(loss, torch.max(predict), torch.max(acc))
-            sdr_list.append(si_sdr)
+            acc = acc[0].cpu().numpy()
+            predict = predict[0].cpu().numpy()
+            #si_sdr = SI_SDR(acc.cpu().numpy(), predict.cpu().numpy())
+            print(loss)
+            fig, axs = plt.subplots(2)
+            axs[0].plot(acc.T)
+            axs[1].plot(predict.T)
+            plt.show()
 
 if __name__ == '__main__':
-    model = SEANet_mapping()
-    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-
-    # This script is for model pre-training on LibriSpeech
-    BATCH_SIZE = 32
-    lr = 0.0001
-    EPOCH = 10
+    device = torch.device('cpu')
+    #device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    model = SEANet_mapping().to(device)
     people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], time_domain=True,
-                            person=people, simulation=True)
-    model = model.to(device)
-
-    ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
+                             person=people, simulation=True)
+    # This script is for model pre-training on LibriSpeech
+    # BATCH_SIZE = 32
+    # lr = 0.0001
+    # EPOCH = 10
+    # ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
     # For the testing: Si-SDR
-    # ckpt_dir = 'pretrain/deep_augmentation'
-    # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-    # print("load checkpoint: {}".format(ckpt_name))
-    # ckpt = torch.load(ckpt_name)
-    # model.load_state_dict(ckpt)
-    # test(dataset, BATCH_SIZE, model)
+    ckpt_name = '0.007877069246023893.pth'
+    ckpt = torch.load(ckpt_name)
+    model.load_state_dict(ckpt)
+    test(dataset, 1, model)
