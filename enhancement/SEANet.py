@@ -92,10 +92,10 @@ class SEANet_mapping(nn.Module):
         self.conv2 = nn.Conv1d(512, 128, kernel_size=7, padding=3)
         self.conv3 = nn.Conv1d(128, 512, kernel_size=7, padding=3)
 
-        self.D1 = DecoderBlock(512, 256, 8)
-        self.D2 = DecoderBlock(256, 128, 2)
-        self.D3 = DecoderBlock(128, 64, 2)
-        self.conv4 = nn.Conv1d(64, 3, kernel_size=7, padding=3)
+        self.D1 = DecoderBlock(512, 128, 8)
+        self.D2 = DecoderBlock(128, 64, 2)
+        self.D3 = DecoderBlock(64, 32, 2)
+        self.conv4 = nn.Conv1d(32, 3, kernel_size=7, padding=3)
         self.down = nn.AvgPool1d(10, stride=10)
 
     def forward(self, audio):
