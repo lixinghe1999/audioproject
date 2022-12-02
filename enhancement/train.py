@@ -134,7 +134,7 @@ if __name__ == "__main__":
         lr = 0.00001
         EPOCH = 10
 
-        ckpt_dir = 'pretrain/vibvoice_EMSB'
+        ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
@@ -198,32 +198,33 @@ if __name__ == "__main__":
             print(p, avg_metric)
     elif args.mode == 2:
         # micro-benchmark per-user, length of data
-        BATCH_SIZE = 32
-        lr = 0.001
-        EPOCH = 3
-
-        ckpt_dir = 'pretrain/vibvoice_new'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+        ckpt_dir = 'pretrain/new_vibvoice'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
-        # synthetic dataset
-        result = []
-        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
+        people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
+        ckpts = []
         for p in people:
             model.load_state_dict(ckpt_start)
             p_except = [i for i in people if i != p]
-            train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=p_except, simulation=True)
-            test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=[p], simulation=True)
 
-            # involve part of the target user data
-            # length = len(test_dataset)
-            # train_size = int(0.1 * length)
-            # test_size = length - train_size
-            # train_dataset_target, test_dataset = torch.utils.data.random_split(test_dataset, [train_size, test_size])
-            # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset_target])
+            train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+                                          person=p_except, time_domain=time_domain, simulation=True, text=False)
+            ckpt, _, _ = train(train_dataset, 3, 0.00001, 16, model)
+            model.load_state_dict(ckpt)
 
-            _, _, avg_metric = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
-            result.append(avg_metric)
-        print('average performance for all users: ', np.mean(result, axis=0))
+            train_dataset = NoisyCleanSet(
+                ['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+                person=[p], time_domain=time_domain, simulation=True, text=False, ratio=0.5)
+            ckpt, _, _ = train(train_dataset, 1, 0.00001, 4, model)
+            ckpts.append(ckpt)
+        for ckpt, p in zip(ckpts, people):
+
+            test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+                                         person=[p], time_domain=time_domain, simulation=True, text=True, ratio=-0.5)
+            metric = inference(test_dataset, 4, model)
+            avg_metric = np.mean(metric, axis=0)
+            print(p, avg_metric)
     elif args.mode == 3:
         # evaluation for WER (without reference)
         ckpt_dir = 'pretrain/new_vibvoice'
