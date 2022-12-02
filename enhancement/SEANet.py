@@ -109,9 +109,9 @@ class SEANet_mapping(nn.Module):
         x6 = self.E4(x5)
         x = self.conv3(self.conv2(x6)) + x6
         # up-sample, may need padding if the duration is not * 256
-        x = self.D1(x) + self.down(x5)
-        x = self.D2(x) + self.down(x4)
-        x = self.D3(x) + self.down(x3)
+        x = self.D1(x) + self.down(x4)
+        x = self.D2(x) + self.down(x3)
+        x = self.D3(x) + self.down(x2)
         x = self.conv4(x) + self.down(x1)
         # x = self.D1(x)
         # x = self.D2(x)
