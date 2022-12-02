@@ -207,14 +207,15 @@ if __name__ == "__main__":
         model.load_state_dict(ckpt_start)
 
         train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                      person=people_train, time_domain=time_domain, simulation=True, ratio=1, text=False)
+            person=people_train, time_domain=time_domain, simulation=True, text=False, ratio=1)
         ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
         model.load_state_dict(ckpt)
 
-        train_dataset = NoisyCleanSet(
-            ['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
             person=people_test, time_domain=time_domain, simulation=True, text=False, ratio=0.8)
-        ckpt, _, _ = train(train_dataset, 5, 0.00001, 4, model)
+        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+            person=people_test, time_domain=time_domain, simulation=True, text=False, ratio=-0.2)
+        ckpt, _, _ = train([train_dataset, test_dataset], 5, 0.00001, 8, model)
 
     elif args.mode == 3:
         # evaluation for WER (without reference)
