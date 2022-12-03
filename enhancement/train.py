@@ -120,7 +120,7 @@ if __name__ == "__main__":
         lr = 0.0001
         EPOCH = 20
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-                                ratio=1, rir=None)
+                                ratio=0.2, rir=None)
         # dataset = NoisyCleanSet(['json/train_360.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
         #                         ratio=1, rir=None)
         #train_dataset = torch.utils.data.ConcatDataset([dataset1, dataset2])
