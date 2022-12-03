@@ -139,7 +139,7 @@ if __name__ == "__main__":
         ckpt_dir = 'pretrain/seanet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
-        #ckpt = torch.load(ckpt_name)
+        ckpt = torch.load(ckpt_name)
         for n in [2, 3]:
             people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
             train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
@@ -157,7 +157,7 @@ if __name__ == "__main__":
             # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
             # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
-            model.load_state_dict(ckpt)
+            #model.load_state_dict(ckpt)
             ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
 
         # Optional Micro-benchmark
