@@ -134,12 +134,12 @@ if __name__ == "__main__":
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         BATCH_SIZE = 16
         lr = 0.0001
-        EPOCH = 10
+        EPOCH = 30
 
         ckpt_dir = 'pretrain/seanet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
-        ckpt = torch.load(ckpt_name)
+        #ckpt = torch.load(ckpt_name)
         for n in [2, 3]:
             people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
             train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
