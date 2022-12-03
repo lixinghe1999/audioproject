@@ -70,11 +70,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         print(avg_metric, mean_lost)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
+            disc_best = discriminator.state_dict()
             loss_best = mean_lost
             metric_best = avg_metric
         if save_all:
             torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
     torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
+    torch.save(disc_best, 'pretrain/disc_' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 
 def inference(dataset, BATCH_SIZE, model):
