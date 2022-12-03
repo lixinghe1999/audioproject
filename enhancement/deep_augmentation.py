@@ -104,13 +104,13 @@ if __name__ == '__main__':
     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], time_domain=True,
                              person=people, simulation=True)
     # This script is for model pre-training on LibriSpeech
-    # BATCH_SIZE = 32
-    # lr = 0.0001
-    # EPOCH = 10
-    # ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
+    BATCH_SIZE = 32
+    lr = 0.0001
+    EPOCH = 10
+    ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
     # For the testing: Si-SDR
-    ckpt_name = '0.007877069246023893.pth'
-    ckpt = torch.load(ckpt_name)
-    model.load_state_dict(ckpt)
-    test(dataset, 1, model)
+    # ckpt_name = '0.007877069246023893.pth'
+    # ckpt = torch.load(ckpt_name)
+    # model.load_state_dict(ckpt)
+    # test(dataset, 1, model)
