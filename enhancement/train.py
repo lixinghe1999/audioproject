@@ -161,7 +161,7 @@ if __name__ == "__main__":
             ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
 
         # Optional Micro-benchmark
-        model.load_state_dict(ckpt)
+        #model.load_state_dict(ckpt)
 
         # for num_noise in [1, 2, 3]:
         #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], person=people,
