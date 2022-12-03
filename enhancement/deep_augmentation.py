@@ -110,7 +110,7 @@ if __name__ == '__main__':
     ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
 
     # For the testing: Si-SDR
-    # ckpt_name = '0.007877069246023893.pth'
+    # ckpt_name = '0.0005085448271864535.pth'
     # ckpt = torch.load(ckpt_name)
     # model.load_state_dict(ckpt)
     # test(dataset, 1, model)
