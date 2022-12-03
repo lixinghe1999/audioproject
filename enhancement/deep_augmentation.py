@@ -97,14 +97,14 @@ def test(dataset, BATCH_SIZE, model):
             plt.show()
 
 if __name__ == '__main__':
-    device = torch.device('cpu')
-    #device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    #device = torch.device('cpu')
+    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     model = SEANet_mapping().to(device)
     people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'], time_domain=True,
                              person=people, simulation=True)
     # This script is for model pre-training on LibriSpeech
-    BATCH_SIZE = 32
+    BATCH_SIZE = 16
     lr = 0.0001
     EPOCH = 10
     ckpt_best, loss_curve = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
