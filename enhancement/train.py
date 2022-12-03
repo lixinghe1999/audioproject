@@ -54,8 +54,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     for e in range(EPOCH):
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
-            loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            #loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
+            #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
+            loss = train_SEANet(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -69,13 +69,11 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         print(avg_metric, mean_lost)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
-            disc_best = discriminator.state_dict()
             loss_best = mean_lost
             metric_best = avg_metric
         if save_all:
             torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
     torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
-    torch.save(disc_best, 'pretrain/disc_' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 
 def inference(dataset, BATCH_SIZE, model):
@@ -119,7 +117,7 @@ if __name__ == "__main__":
         lr = 0.0001
         EPOCH = 20
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-                                ratio=0.2, rir=None)
+                                ratio=1, rir=None)
         # dataset = NoisyCleanSet(['json/train_360.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
         #                         ratio=1, rir=None)
         #train_dataset = torch.utils.data.ConcatDataset([dataset1, dataset2])
@@ -130,7 +128,7 @@ if __name__ == "__main__":
         # EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
         #                         ratio=1, rir=None, EMSB=True, person=person)
 
-        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=discriminator,
+        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
