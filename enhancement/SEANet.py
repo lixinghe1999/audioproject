@@ -8,12 +8,12 @@ class ResUnit(nn.Module):
         self.conv1 = nn.Conv1d(input, output, kernel_size=3, dilation=dilation, padding=dilation)
         self.conv2 = nn.Conv1d(output, output, kernel_size=1)
     def forward(self, x):
-        # y = self.conv1(x)
-        # y = self.conv2(y)
-        # return y + x
-        x = self.conv1(x)
-        x = self.conv2(x)
-        return x
+        y = self.conv1(x)
+        y = self.conv2(y)
+        return y + x
+        # x = self.conv1(x)
+        # x = self.conv2(x)
+        # return x
 
 class EncoderBlock(nn.Module):
     def __init__(self, input_channel, output_channel, S):

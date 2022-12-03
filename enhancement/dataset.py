@@ -293,6 +293,8 @@ class NoisyCleanSet:
                 if self.EMSB:
                     imu = imu[1, ::10]
                 imu = np.transpose(imu)
+            imu = (imu - np.mean(imu))/np.var(imu)
+            print(imu.shape)
             clean = np.expand_dims(clean, 0)
             noise = np.expand_dims(noise, 0)
         else:
