@@ -46,7 +46,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     if discriminator is not None:
         optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=lr, betas=(0.9, 0.999))
-        scheduler_disc = torch.optim.lr_scheduler.StepLR(optimizer_disc, step_size=5, gamma=0.5)
+        #scheduler_disc = torch.optim.lr_scheduler.StepLR(optimizer_disc, step_size=5, gamma=0.5)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
     loss_best = 100
     loss_curve = []
@@ -60,7 +60,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
         scheduler.step()
-        scheduler_disc.step()
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
@@ -163,7 +162,7 @@ if __name__ == "__main__":
             # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
             model.load_state_dict(ckpt)
-            ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=discriminator)
+            ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
 
         # Optional Micro-benchmark
         model.load_state_dict(ckpt)
