@@ -12,34 +12,38 @@ class IMU_branch(nn.Module):
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True))
         self.conv2 = nn.Sequential(
-            nn.Conv2d(16, 32, kernel_size=(5, 3), padding=(4, 1), dilation=(2, 1)),
+            nn.Conv2d(16, 32, kernel_size=(3, 3), padding=(2, 1), dilation=(2, 1)),
+            #nn.MaxPool2d(kernel_size=(2, 1)),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
         self.conv3 = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(1, 2)),
-            nn.Conv2d(32, 64, kernel_size=(5, 3), padding=(4, 1), dilation=(2, 1)),
+            nn.Conv2d(32, 64, kernel_size=(3, 3), padding=(2, 1), dilation=(2, 1)),
+            nn.MaxPool2d(kernel_size=(2, 1)),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
         self.conv4 = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(3, 1)),
-            nn.Conv2d(64, 128, kernel_size=(5, 3), padding=(4, 1), dilation=(2, 1)),
+            nn.Conv2d(64, 128, kernel_size=(3, 3), padding=(2, 1), dilation=(2, 1)),
+            nn.MaxPool2d(kernel_size=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
         self.inference = inference
         if not inference:
             self.conv5 = nn.Sequential(
                 nn.Conv2d(128, 64, kernel_size=(3, 3), padding=(1, 1)),
+                #nn.ConvTranspose2d(64, 64, kernel_size=(2, 1), stride=(2, 1)),
                 nn.BatchNorm2d(64),
                 nn.ReLU(inplace=True))
             self.conv6 = nn.Sequential(
                 nn.Conv2d(64, 32, kernel_size=(3, 3), padding=(1, 1)),
+                nn.ConvTranspose2d(32, 32, kernel_size=(2, 1), stride=(2, 1)),
                 nn.BatchNorm2d(32),
                 nn.ReLU(inplace=True))
             self.conv7 = nn.Sequential(
-                nn.ConvTranspose2d(32, 16, kernel_size=(3, 2), stride=(3, 2)),
-                nn.Conv2d(16, 1, kernel_size=(3, 3), padding=(1, 1)),
-                nn.BatchNorm2d(1),
+                nn.Conv2d(32, 16, kernel_size=(3, 3), padding=(1, 1)),
+                nn.ConvTranspose2d(16, 16, kernel_size=(2, 1), stride=(2, 1)),
+                nn.BatchNorm2d(16),
                 nn.ReLU(inplace=True))
+            self.final = nn.Conv2d(16, 1, kernel_size=1)
     def forward(self, x):
         # down-sample
         x = self.conv1(x)
@@ -51,7 +55,7 @@ class IMU_branch(nn.Module):
             x = self.conv5(x_mid)
             x = self.conv6(x)
             x = self.conv7(x)
-            x = F.pad(x, [0, 1, 0, 0])
+            x = self.final(x)
             return x_mid, x
         else:
             return x_mid
@@ -59,73 +63,81 @@ class Audio_branch(nn.Module):
     def __init__(self):
         super(Audio_branch, self).__init__()
         self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=5, padding=2),
+            nn.Conv2d(1, 16, kernel_size=3, padding=1),
+            nn.MaxPool2d(kernel_size=(2, 1)),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True),
         )
         self.conv2 = nn.Sequential(
+            nn.Conv2d(16, 32, kernel_size=5, padding=4, dilation=2),
             nn.MaxPool2d(kernel_size=(2, 1)),
-            nn.Conv2d(16, 32, kernel_size=5, padding=6, dilation=3),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True)
             )
         self.conv3 = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(2, 1)),
             nn.Conv2d(32, 64, kernel_size=5, padding=4, dilation=2),
+            nn.MaxPool2d(kernel_size=(2, 1)),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True)
             )
         self.conv4 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=5, padding=2, dilation=1),
             nn.MaxPool2d(kernel_size=(2, 1)),
-            nn.Conv2d(64, 128, kernel_size=5, padding=2),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
             )
         self.conv5 = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(3, 2)),
-            nn.Conv2d(128, 128, kernel_size=3, padding=1),
-            nn.BatchNorm2d(128),
+            nn.Conv2d(128, 256, kernel_size=5, padding=2, dilation=1),
+            nn.MaxPool2d(kernel_size=(2, 1)),
+            nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
             )
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
-        x = self.conv4(x)
-        x = self.conv5(x)
-        return x
+        x1 = self.conv1(x)
+        x2 = self.conv2(x1)
+        x3 = self.conv3(x2)
+        x4 = self.conv4(x3)
+        x5 = self.conv5(x4)
+        return [x1, x2, x3, x4, x5]
 
 class Residual_Block(nn.Module):
     def __init__(self, in_channels):
         super(Residual_Block, self).__init__()
         self.r1 = nn.Sequential(
-            nn.Conv2d(in_channels, 256, kernel_size=5, padding=2),
-            nn.BatchNorm2d(256),
-            nn.ReLU(inplace=True))
-        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=(2, 1), stride=(2, 1))
-        self.r2 = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=5, padding=4, dilation=2),
+            nn.Conv2d(in_channels, 128, kernel_size=5, padding=2, dilation=1),
+            nn.ConvTranspose2d(128, 128, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
-        self.up2 = nn.ConvTranspose2d(128, 64, kernel_size=(2, 1), stride=(2, 1))
-        self.r3 = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=5, padding=4, dilation=2),
+        self.r2 = nn.Sequential(
+            nn.Conv2d(256, 64, kernel_size=5, padding=2, dilation=1),
+            nn.ConvTranspose2d(64, 64, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
-        self.up3 = nn.ConvTranspose2d(64, 32, kernel_size=(2, 1), stride=(2, 1))
-        self.r4 = nn.Sequential(
-            nn.Conv2d(32, 32, kernel_size=5, padding=4, dilation=2),
+        self.r3 = nn.Sequential(
+            nn.Conv2d(128, 32, kernel_size=5, padding=4, dilation=2),
+            nn.ConvTranspose2d(32, 32, kernel_size=(2, 1), stride=(2, 1)),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
-        self.up4 = nn.ConvTranspose2d(32, 16, kernel_size=(3, 2), stride=(3, 2))
-        self.final = nn.Conv2d(16, 1, kernel_size=1)
-    def forward(self, x):
-        x = self.up1(self.r1(x) + x)
-        x = self.up2(self.r2(x) + x)
-        x = self.up3(self.r3(x) + x)
-        x = self.up4(self.r4(x) + x)
-        x = F.pad(x, [0, 1, 0, 0])
-        return self.final(x)
+        self.r4 = nn.Sequential(
+            nn.Conv2d(64, 16, kernel_size=5, padding=4, dilation=2),
+            nn.ConvTranspose2d(16, 16, kernel_size=(2, 1), stride=(2, 1)),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True))
+        self.final = nn.Sequential(
+            nn.Conv2d(32, 16, kernel_size=3, padding=1),
+            nn.ConvTranspose2d(16, 1, kernel_size=(2, 1), stride=(2, 1)),
+            nn.Sigmoid()
+            )
+    def forward(self, acc, audios):
+
+        [x1, x2, x3, x4, x5] = audios
+        x = torch.cat([acc, x5], dim=1)
+        x = torch.cat([self.r1(x), x4], dim=1)
+        x = torch.cat([self.r2(x), x3], dim=1)
+        x = torch.cat([self.r3(x), x2], dim=1)
+        x = torch.cat([self.r4(x), x1], dim=1)
+        x = self.final(x)
+        return x
 
 class A2net(nn.Module):
     def __init__(self, inference=False):
@@ -133,17 +145,15 @@ class A2net(nn.Module):
         self.inference = inference
         self.IMU_branch = IMU_branch(self.inference)
         self.Audio_branch = Audio_branch()
-        self.Residual_block = Residual_Block(256)
+        self.Residual_block = Residual_Block(384)
     def forward(self, x1, x2):
         x1 = self.IMU_branch(x1)
         if self.inference:
-            x = torch.cat([x1, self.Audio_branch(x2)], dim=1)
-            x = self.Residual_block(x) * x2
+            x = self.Residual_block(x1, self.Audio_branch(x2)) * x2
             return x
         else:
             x1, x_extra = x1
-            x = torch.cat([x1, self.Audio_branch(x2)], dim=1)
-            x = self.Residual_block(x) * x2
+            x = self.Residual_block(x1, self.Audio_branch(x2)) * x2
             return x, x_extra
 
 def model_size(model):
@@ -177,12 +187,14 @@ def model_speed(model, input):
     return (time.time() - t_start)/step
 if __name__ == "__main__":
 
-    imu = torch.rand(1, 1, 33, 151)
-    audio = torch.rand(1, 1, 264, 151)
+    acc = torch.rand(1, 1, 32, 250)
+    audio = torch.rand(1, 1, 256, 250)
     model = A2net(inference=False)
+    audio, acc = model(acc, audio)
+    print(audio.shape, acc.shape)
 
     size_all_mb = model_size(model)
     print('model size: {:.3f}MB'.format(size_all_mb))
 
-    latency = model_speed(model, [imu, audio])
+    latency = model_speed(model, [acc, audio])
     print('model latency: {:.3f}S'.format(latency))
