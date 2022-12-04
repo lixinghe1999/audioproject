@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
         for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                    person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
+                                    person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
             Metric = inference(dataset, BATCH_SIZE, model)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
