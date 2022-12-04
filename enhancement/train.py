@@ -132,8 +132,8 @@ if __name__ == "__main__":
         plt.savefig('loss.png')
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
-        BATCH_SIZE = 16
-        lr = 0.0001
+        BATCH_SIZE = 32
+        lr = 0.00001
         EPOCH = 20
         n = 1
         ckpt_dir = 'pretrain/seanet'
