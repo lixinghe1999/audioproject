@@ -132,10 +132,10 @@ if __name__ == "__main__":
         plt.savefig('loss.png')
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
-        BATCH_SIZE = 32
-        lr = 0.00001
+        BATCH_SIZE = 16
+        lr = 0.000004
         EPOCH = 20
-        n = 2
+        n = 1
         ckpt_dir = 'pretrain/seanet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
