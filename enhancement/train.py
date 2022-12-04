@@ -83,10 +83,10 @@ def inference(dataset, BATCH_SIZE, model):
         for data in test_loader:
             if len(data) == 3:
                 acc, noise, clean = data
-                metric = test_vibvoice(model, acc, noise, clean, device)
+                metric = test_SEANet(model, acc, noise, clean, device)
             else:
                 text, acc, noise, clean = data
-                metric = test_vibvoice(model, acc, noise, clean, device, text)
+                metric = test_SEANet(model, acc, noise, clean, device, text)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         BATCH_SIZE = 16
-        lr = 0.00001
+        lr = 0.0001
         EPOCH = 20
         n = 1
         ckpt_dir = 'pretrain/seanet'
