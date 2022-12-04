@@ -135,7 +135,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 32
         lr = 0.00001
         EPOCH = 20
-        n = 1
+        n = 2
         ckpt_dir = 'pretrain/seanet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
