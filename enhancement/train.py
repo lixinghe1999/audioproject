@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                           time_domain=time_domain, simulation=True, person=people, ratio=0.8, num_noises=n)
+                                           time_domain=time_domain, simulation=True, person=people, ratio=0.4, num_noises=n)
         test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                           time_domain=time_domain, simulation=True, person=people, ratio=-0.2, num_noises=n)
 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
         model.load_state_dict(ckpt)
-        #ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
+        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
 
         # Optional Micro-benchmark
         model.load_state_dict(ckpt)
