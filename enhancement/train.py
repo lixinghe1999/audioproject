@@ -133,7 +133,7 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         BATCH_SIZE = 16
-        lr = 0.000004
+        lr = 0.00001
         EPOCH = 20
         n = 1
         ckpt_dir = 'pretrain/seanet'
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
         model.load_state_dict(ckpt)
-        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
+        #ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
 
         # Optional Micro-benchmark
         model.load_state_dict(ckpt)
