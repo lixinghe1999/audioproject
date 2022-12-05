@@ -1312,7 +1312,7 @@ class Driver:
   # @getFIFOCount()).
   #
   # @return Data frames from FIFO buffer
-  def getFIFOBytes(self, *data):
+  def getFIFOBytes(self, *data, length):
     # TODO fix here
     if (length):
       data[0] = registers.FIFO_DATA
