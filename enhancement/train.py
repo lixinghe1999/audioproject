@@ -104,8 +104,8 @@ if __name__ == "__main__":
     discriminator = MultiScaleDiscriminator().to(device)
     time_domain = False
 
-    #model = torch.nn.DataParallel(model, device_ids=[0])
-    #discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
+    # model = torch.nn.DataParallel(model, device_ids=[0])
+    # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
 
     if args.mode == 0:
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         BATCH_SIZE = 16
-        lr = 0.00001
+        lr = 0.0001
         EPOCH = 20
         n = 1
         ckpt_dir = 'pretrain/new_vibvoice'
