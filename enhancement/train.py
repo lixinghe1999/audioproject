@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import torch
 torch.manual_seed(0)
-import torch.utils.data as Data
+
 from dataset import NoisyCleanSet
 import json
 
@@ -38,9 +38,9 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         test_size = min(int(0.1 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    train_loader = Data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
                                    pin_memory=True)
-    test_loader = Data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     if discriminator is not None:
@@ -54,7 +54,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
             #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            loss = train_SEANet(model, acc, noise, clean, optimizer, device)
+            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -62,7 +62,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
-                metric = test_SEANet(model, acc, noise, clean, device)
+                metric = test_vibvoice(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric, mean_lost)
@@ -76,16 +76,16 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     return ckpt_best, loss_curve, metric_best
 
 def inference(dataset, BATCH_SIZE, model):
-    test_loader = Data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
         for data in test_loader:
             if len(data) == 3:
                 acc, noise, clean = data
-                metric = test_SEANet(model, acc, noise, clean, device)
+                metric = test_vibvoice(model, acc, noise, clean, device)
             else:
                 text, acc, noise, clean = data
-                metric = test_SEANet(model, acc, noise, clean, device, text)
+                metric = test_vibvoice(model, acc, noise, clean, device, text)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -97,12 +97,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # torch.cuda.set_device(1)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    # model = A2net(inference=False).to(device)
+    model = A2net(inference=False).to(device)
     # model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
-    model = SEANet().to(device)
+    #model = SEANet().to(device)
 
     discriminator = MultiScaleDiscriminator().to(device)
-    time_domain = True
+    time_domain = False
 
     model = torch.nn.DataParallel(model, device_ids=[0])
     #discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
@@ -135,7 +135,7 @@ if __name__ == "__main__":
         lr = 0.00001
         EPOCH = 20
         n = 1
-        ckpt_dir = 'pretrain/seanet'
+        ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
@@ -162,34 +162,34 @@ if __name__ == "__main__":
         # Optional Micro-benchmark
         model.load_state_dict(ckpt)
 
-        for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                    person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(p, avg_metric)
-
-        for noise in ['background.json', 'dev.json', 'music.json']:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
-                                    person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(noise, avg_metric)
-
-        for level in [11, 6, 1]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
-                                    time_domain=time_domain, simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(level, avg_metric)
-
-        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        for p in positions:
-            dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-                                    person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, BATCH_SIZE, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(p, avg_metric)
+        # for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        #                             person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
+        #     Metric = inference(dataset, BATCH_SIZE, model)
+        #     avg_metric = np.mean(Metric, axis=0)
+        #     print(p, avg_metric)
+        #
+        # for noise in ['background.json', 'dev.json', 'music.json']:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
+        #                             person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
+        #     Metric = inference(dataset, BATCH_SIZE, model)
+        #     avg_metric = np.mean(Metric, axis=0)
+        #     print(noise, avg_metric)
+        #
+        # for level in [11, 6, 1]:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
+        #                             time_domain=time_domain, simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
+        #     Metric = inference(dataset, BATCH_SIZE, model)
+        #     avg_metric = np.mean(Metric, axis=0)
+        #     print(level, avg_metric)
+        #
+        # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
+        # for p in positions:
+        #     dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+        #                             person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
+        #     Metric = inference(dataset, BATCH_SIZE, model)
+        #     avg_metric = np.mean(Metric, axis=0)
+        #     print(p, avg_metric)
     elif args.mode == 2:
         # micro-benchmark per-user, length of data
         ckpt_dir = 'pretrain/new_vibvoice'
@@ -225,7 +225,7 @@ if __name__ == "__main__":
                                     person=people_test, time_domain=time_domain, simulation=True, ratio=-0.2)
         Metric = inference(dataset, 4, model)
         avg_metric = np.mean(Metric, axis=0)
-        print(p, avg_metric)
+        print(avg_metric)
 
         for noise in ['background.json', 'dev.json', 'music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],

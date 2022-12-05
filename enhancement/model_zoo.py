@@ -33,7 +33,6 @@ def eval(clean, predict, text=None):
         metric1 = batch_pesq(clean, predict)
         metric2 = SI_SDR(clean, predict)
         metric3 = lsd(clean, predict)
-        #metric4 = STOI(clean, predict)
         metrics = [metric1, metric2, metric3]
     return np.stack(metrics, axis=1)
 def Spectral_Loss(x_mag, y_mag):
@@ -101,7 +100,7 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     loss.backward()
     optimizer.step()
     return loss.item()
-def test_vibvoice(model, acc, noise, clean, device='cuda', text=None):
+def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False):
     acc = acc.abs().to(device=device, dtype=torch.float)
     noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)
     noise_pha = torch.angle(noise).to(device=device, dtype=torch.float)
@@ -110,8 +109,6 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None):
     predict1, _ = model(acc, noise_mag)
     predict1 = torch.exp(1j * noise_pha) * predict1
     predict1 = predict1.squeeze(1)
-
-
     predict = predict1.cpu().numpy()
     clean = clean.cpu().numpy()
 
@@ -119,7 +116,10 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None):
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
-    return eval(clean, predict, text=text)
+    if data:
+        return predict, clean
+    else:
+        return eval(clean, predict, text=text)
 
 def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
@@ -132,7 +132,7 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     loss.backward()
     optimizer.step()
     return loss.item()
-def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None):
+def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=False):
     noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)
     noise_real = noise.real.to(device=device, dtype=torch.float)
     noise_imag = noise.imag.to(device=device, dtype=torch.float)
@@ -151,9 +151,10 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None):
     clean = clean.cpu().numpy()
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
-
-
-    return eval(clean, predict, text=text)
+    if data:
+        return predict, clean
+    else:
+        return eval(clean, predict, text=text)
 
 def train_conformer(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, device='cuda'):
 
