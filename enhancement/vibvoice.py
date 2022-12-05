@@ -168,15 +168,15 @@ def model_size(model):
 
 def model_save(model):
     model.eval()
-    x = torch.rand((1, 1, 33, 151))
-    noise = torch.rand((1, 1, 264, 151))
+    x = torch.rand((1, 1, 32, 250))
+    noise = torch.rand((1, 1, 256, 250))
     scripted_module = torch.jit.trace(model, [x, noise])
     #scripted_module.save("inference.pt")
     optimized_scripted_module = optimize_for_mobile(scripted_module)
-    optimized_scripted_module._save_for_lite_interpreter("inference.ptl")
+    optimized_scripted_module._save_for_lite_interpreter("vibvoice.ptl")
 
-    save_image(x, 'input1.jpg')
-    save_image(noise, 'input2.jpg')
+    # save_image(x, 'input1.jpg')
+    # save_image(noise, 'input2.jpg')
 
 def model_speed(model, input):
     t_start = time.time()
@@ -196,5 +196,7 @@ if __name__ == "__main__":
     size_all_mb = model_size(model)
     print('model size: {:.3f}MB'.format(size_all_mb))
 
-    latency = model_speed(model, [acc, audio])
-    print('model latency: {:.3f}S'.format(latency))
+    # latency = model_speed(model, [acc, audio])
+    # print('model latency: {:.3f}S'.format(latency))
+
+    model_save(model)

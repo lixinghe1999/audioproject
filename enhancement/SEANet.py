@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-
-
+import time
+from torch.utils.mobile_optimizer import optimize_for_mobile
+from torch.jit.mobile import _get_model_bytecode_version, _backport_for_mobile
 class ResUnit(nn.Module):
     def __init__(self, input, output, dilation):
         super(ResUnit, self).__init__()
@@ -46,7 +47,6 @@ class DecoderBlock(nn.Module):
 class SEANet(nn.Module):
     def __init__(self):
         super(SEANet, self).__init__()
-        #self.norm = nn.BatchNorm1d(4)
         self.conv1 = nn.Conv1d(4, 32, kernel_size=7, padding=3)
         self.E1 = EncoderBlock(32, 64, 2)
         self.E2 = EncoderBlock(64, 128, 2)
@@ -66,7 +66,6 @@ class SEANet(nn.Module):
         # down-sample
         acc = torch.nn.functional.interpolate(acc, scale_factor=10)
         x1 = torch.cat([audio, acc], dim=1)
-        #x1 = self.norm(x1)
         x2 = self.conv1(x1)
         x3 = self.E1(x2)
         x4 = self.E2(x3)
@@ -128,13 +127,31 @@ def model_size(model):
     buffer_size = 0
     for buffer in model.buffers():
         buffer_size += buffer.nelement() * buffer.element_size()
-
     size_all_mb = (param_size + buffer_size) / 1024 ** 2
     return size_all_mb
 
+def model_speed(model, input):
+    t_start = time.time()
+    step = 100
+    with torch.no_grad():
+        for i in range(step):
+            model(*input)
+    return (time.time() - t_start)/step
+def model_save(model):
+    model.eval()
+    acc = torch.rand((1, 3, 8000))
+    noise = torch.rand((1, 1, 80000))
+    scripted_module = torch.jit.trace(model, [acc, noise])
+    optimized_scripted_module = optimize_for_mobile(scripted_module)
+    optimized_scripted_module._save_for_lite_interpreter("seanet.ptl")
+    print("model version", _get_model_bytecode_version(f_input="seanet.ptl"))
+    # _backport_for_mobile(f_input="seanet.ptl", f_output="seanet_v5.ptl", to_version=5)
+    # print("new model version", _get_model_bytecode_version("seanet_v5.ptl"))
 if __name__ == '__main__':
     model = SEANet()
-    acc = torch.randn(4, 3, 8000)
-    audio = torch.randn(4, 1, 80000)
-    acc = model(acc, audio)
-    print(model_size(model))
+
+    acc = torch.randn(1, 3, 8000)
+    audio = torch.randn(1, 1, 80000)
+    #print(model_size(model))
+    #print(model_speed(model, [acc, audio]))
+    model_save(model)

@@ -177,16 +177,14 @@ def model_save(model, audio):
                 _backport_for_mobile,
                 _get_model_bytecode_version,
             )
-    model.eval()
+    # model.eval()
     # traced_script_module = torch.jit.trace(model, audio)
-    # traced_script_module.save("model.pt")
     # traced_script_module_optimized = optimize_for_mobile(traced_script_module)
-    # traced_script_module_optimized._save_for_lite_interpreter("model.ptl")
-    # #torch.jit.save(traced_script_module_optimized, "model.ptl")
+    # traced_script_module_optimized._save_for_lite_interpreter("fullsubnet.ptl")
     # convert2version5 = True
     # if convert2version5:
-    #     MODEL_INPUT_FILE = "model.ptl"
-    #     MODEL_OUTPUT_FILE = "model_v5.ptl"
+    #     MODEL_INPUT_FILE = "fullsubnet.ptl"
+    #     MODEL_OUTPUT_FILE = "fullsubnet_v5.ptl"
     #
     #     print("model version", _get_model_bytecode_version(f_input=MODEL_INPUT_FILE))
     #
@@ -194,11 +192,10 @@ def model_save(model, audio):
     #
     #     print("new model version", _get_model_bytecode_version(MODEL_OUTPUT_FILE))
     scripted_module = torch.jit.trace(model, audio)
-    scripted_module.save("inference.pt")
     optimized_scripted_module = optimize_for_mobile(scripted_module)
-    optimized_scripted_module._save_for_lite_interpreter("inference_optimized.ptl")
-    print("model version", _get_model_bytecode_version(f_input="inference.ptl"))
-    save_image(audio, 'input.jpg')
+    optimized_scripted_module._save_for_lite_interpreter("fullsubnet.ptl")
+    print("model version", _get_model_bytecode_version(f_input="fullsubnet.ptl"))
+
 if __name__ == "__main__":
 
     audio = torch.rand(1, 1, 264, 151)
