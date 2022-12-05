@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     bmiaccframe = args.time * 1600
     bmigyroframe = args.time * 1600
-    micframe = args.time * 44100
+    micframe = args.time * 16000
     camframe = args.time * 15
     device = args.device
     if args.mode == 0:
