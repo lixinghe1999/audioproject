@@ -29,15 +29,15 @@ if __name__ == "__main__":
     with torch.no_grad():
         for data in test_loader:
             acc, noise, clean = data
-            metric1, predict1, gt = test_vibvoice(vibvoice, acc, noise, clean, device, data=True)
-            metric2, predict2, gt = test_fullsubnet(fullsubnet, acc, noise, clean, device, data=True)
+            metric1, predict1, original = test_vibvoice(vibvoice, acc, noise, clean, device, data=True)
+            metric2, predict2, original = test_fullsubnet(fullsubnet, acc, noise, clean, device, data=True)
             pesq1, snr1, lsd1 = metric1[0]
             pesq2, snr2, lsd2 = metric2[0]
             print(metric1, metric2)
             if (pesq1 - pesq2) > 0.3:
                 wav.write(str(count) + '_vibvoice.wav', 16000, predict1[0])
                 wav.write(str(count) + '_baseline.wav', 16000, predict2[0])
-                wav.write(str(count) + '_original.wav', 16000, gt[0])
+                wav.write(str(count) + '_original.wav', 16000, original[0])
                 count += 1
                 print(count)
 

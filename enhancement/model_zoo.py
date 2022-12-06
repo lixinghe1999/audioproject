@@ -109,15 +109,21 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     predict1, _ = model(acc, noise_mag)
     predict1 = torch.exp(1j * noise_pha) * predict1
     predict1 = predict1.squeeze(1)
-    predict = predict1.cpu().numpy()
-    clean = clean.cpu().numpy()
 
+
+
+    predict = predict1.cpu().numpy()
     predict = np.pad(predict, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+
+    clean = clean.cpu().numpy()
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     if data:
-        return eval(clean, predict, text=text), predict, clean
+        noise = noise.numpy()
+        noise = np.pad(noise, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+        noise = signal.istft(noise, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+        return eval(clean, predict, text=text), predict, noise
     else:
         return eval(clean, predict, text=text)
 
@@ -126,7 +132,6 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     optimizer.zero_grad()
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, clean.real, clean.imag)
     cIRM = cIRM.to(device=device, dtype=torch.float)
-    #cIRM = drop_band(cIRM, model.num_groups_in_drop_band)
     predict1 = model(noise_mag)
     loss = F.l1_loss(predict1, cIRM)
     loss.backward()
@@ -152,7 +157,10 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     if data:
-        return eval(clean, predict, text=text), predict, clean
+        noise = noise.numpy()
+        noise = np.pad(noise, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+        noise = signal.istft(noise, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+        return eval(clean, predict, text=text), predict, noise
     else:
         return eval(clean, predict, text=text)
 
