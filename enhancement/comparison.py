@@ -3,6 +3,7 @@ from vibvoice import A2net
 from dataset import NoisyCleanSet
 from model_zoo import test_vibvoice, test_fullsubnet
 import soundfile as sf
+import scipy.io.wavfile as wav
 import torch
 '''
 This Script will save the result from vibvoice and fullsubnet for demonstration 
@@ -24,8 +25,7 @@ if __name__ == "__main__":
     noise = 'background.json'
     dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise, 'json/train_imu.json'],
                             person=['he'], time_domain=False, simulation=True, ratio=-0.2)
-    test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=1, batch_size=1, shuffle=False)
-    print(len(dataset))
+    test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=1, batch_size=1, shuffle=True)
     with torch.no_grad():
         for data in test_loader:
             acc, noise, clean = data
@@ -35,9 +35,9 @@ if __name__ == "__main__":
             pesq2, snr2, lsd2 = metric2[0]
             print(metric1, metric2)
             if (pesq1 - pesq2) > 0.4:
-                sf.write(str(count) + '_vibvoice.wav', predict1, 16000)
-                sf.write(str(count) + '_baseline.wav', predict2, 16000)
-                sf.write(str(count) + '_original.wav', gt, 16000)
+                wav.write(str(count) + '_vibvoice.wav', 16000, predict1)
+                wav.write(str(count) + '_baseline.wav', 16000, predict2)
+                wav.write(str(count) + '_original.wav', 16000, gt)
                 count += 1
                 print(count)
 
