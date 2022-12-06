@@ -5,8 +5,8 @@ rc('text', usetex=True)
 plt.rcParams.update({'font.size': 10})
 import pickle
 import os
-import imuplot
-import micplot
+import imu_data
+import mic_data
 import numpy as np
 import argparse
 import scipy.signal as signal

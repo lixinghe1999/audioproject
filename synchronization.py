@@ -2,13 +2,13 @@ import os
 
 import matplotlib.pyplot as plt
 
-from imuplot import calibrate, read_data
+from imu_data import calibrate, read_data
 import librosa
 import numpy as np
 import scipy.signal as signal
 import soundfile as sf
 import argparse
-import micplot
+import mic_data
 from skimage import filters, morphology
 
 # basically use this script to
