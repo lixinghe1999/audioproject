@@ -35,6 +35,7 @@ if __name__ == "__main__":
             pesq2, snr2, lsd2 = metric2[0]
             print(metric1, metric2)
             if (pesq1 - pesq2) > 0.4:
+                print(predict1.shape)
                 wav.write(str(count) + '_vibvoice.wav', 16000, predict1)
                 wav.write(str(count) + '_baseline.wav', 16000, predict2)
                 wav.write(str(count) + '_original.wav', 16000, gt)
