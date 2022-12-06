@@ -35,4 +35,5 @@ if __name__ == "__main__":
                 sf.write(str(count) + '_vibvoice.wav', predict1, 16000)
                 sf.write(str(count) + '_fullsubnet.wav', predict2, 16000)
                 count += 1
+                print(count)
 
