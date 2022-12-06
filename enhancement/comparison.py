@@ -16,7 +16,7 @@ fullsubnet = torch.nn.DataParallel(fullsubnet, device_ids=[0])
 ckpt_vibvoice = torch.load('vibvoice.pth')
 vibvoice.load_state_dict(ckpt_vibvoice)
 
-ckpt_fullsubnet = torch.load('fullsubnet.pth ')
+ckpt_fullsubnet = torch.load('fullsubnet.pth')
 fullsubnet.load_state_dict(ckpt_fullsubnet)
 if __name__ == "__main__":
     count = 0
