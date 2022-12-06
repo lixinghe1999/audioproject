@@ -31,10 +31,13 @@ if __name__ == "__main__":
             acc, noise, clean = data
             metric1, predict1, gt = test_vibvoice(vibvoice, acc, noise, clean, device, data=True)
             metric2, predict2, gt = test_fullsubnet(fullsubnet, acc, noise, clean, device, data=True)
+            pesq1, snr1, lsd1 = metric1[0]
+            pesq2, snr2, lsd2 = metric2[0]
             print(metric1, metric2)
             if (pesq1 - pesq2) > 0.4:
                 sf.write(str(count) + '_vibvoice.wav', predict1, 16000)
-                sf.write(str(count) + '_fullsubnet.wav', predict2, 16000)
+                sf.write(str(count) + '_baseline.wav', predict2, 16000)
+                sf.write(str(count) + '_original.wav', gt, 16000)
                 count += 1
                 print(count)
 
