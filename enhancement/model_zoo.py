@@ -120,8 +120,7 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     if data:
-        noise = noise.numpy()
-        print(noise.shape)
+        noise = noise.squeeze(1).numpy()
         noise = np.pad(noise, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
         noise = signal.istft(noise, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
         return eval(clean, predict, text=text), predict, noise
@@ -158,8 +157,7 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     if data:
-        noise = noise.numpy()
-
+        noise = noise.squeeze(1).numpy()
         noise = np.pad(noise, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
         noise = signal.istft(noise, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
         return eval(clean, predict, text=text), predict, noise
