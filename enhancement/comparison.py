@@ -29,8 +29,9 @@ if __name__ == "__main__":
     with torch.no_grad():
         for data in test_loader:
             acc, noise, clean = data
-            [pesq1, snr1, lsd1], predict1, gt = test_vibvoice(vibvoice, acc, noise, clean, device, data=True)
-            [pesq2, snr2, lsd2], predict2, gt = test_fullsubnet(fullsubnet, acc, noise, clean, device, data=True)
+            metric1, predict1, gt = test_vibvoice(vibvoice, acc, noise, clean, device, data=True)
+            metric2, predict2, gt = test_fullsubnet(fullsubnet, acc, noise, clean, device, data=True)
+            print(metric1, metric2)
             if (pesq1 - pesq2) > 0.4:
                 sf.write(str(count) + '_vibvoice.wav', predict1, 16000)
                 sf.write(str(count) + '_fullsubnet.wav', predict2, 16000)
