@@ -3,7 +3,7 @@ import wave
 import time
 
 FORMAT = pyaudio.paInt32
-CHANNELS = 2
+CHANNELS = 1
 RATE = 16000
 CHUNK = 1024
 

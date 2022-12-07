@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/computing/wav2vec" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/immersive/SignalGraph" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/immersive/WSCM-MUSIC" vcs="Git" />
   </component>
