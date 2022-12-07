@@ -110,8 +110,6 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     predict1 = torch.exp(1j * noise_pha) * predict1
     predict1 = predict1.squeeze(1)
 
-
-
     predict = predict1.cpu().numpy()
     predict = np.pad(predict, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
