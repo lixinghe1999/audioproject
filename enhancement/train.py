@@ -251,6 +251,7 @@ if __name__ == "__main__":
         # evaluation for WER (without reference)
         ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        ckpt_name = 'vibvoice.pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
         people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
