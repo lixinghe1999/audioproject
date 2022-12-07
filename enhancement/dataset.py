@@ -192,13 +192,14 @@ class BaseDataset:
                 data = np.loadtxt(file)
                 data = data[offset * self.sample_rate: (offset + duration) * self.sample_rate, :]
                 data /= 2 ** 14
+                print(data.shape)
                 data = signal.filtfilt(b, a, data, axis=0)
                 data = np.clip(data, -0.05, 0.05)
             else:
                 print(file)
                 data, _ = librosa.load(file, mono=False, offset=offset, duration=duration, sr=rate_mic)
                 print(data.shape)
-                data = signal.filtfilt(b, a, data, axis=0)
+                data = signal.filtfilt(b, a, data, axis=1)
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
