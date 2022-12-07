@@ -195,7 +195,9 @@ class BaseDataset:
                 data = signal.filtfilt(b, a, data, axis=0)
                 data = np.clip(data, -0.05, 0.05)
             else:
+                print(file)
                 data, _ = librosa.load(file, mono=False, offset=offset, duration=duration, sr=rate_mic)
+                print(data.shape)
                 data = signal.filtfilt(b, a, data, axis=0)
             return data, file
 class NoisyCleanSet:
@@ -293,8 +295,6 @@ class NoisyCleanSet:
                 if self.EMSB:
                     imu = imu[1, ::10]
                 imu = np.transpose(imu)
-                #imu = np.linalg.norm(np.transpose(imu), 2, axis=0, keepdims=True)
-                #imu = imu/np.max(imu, axis=1)
             clean = np.expand_dims(clean, 0)
             noise = np.expand_dims(noise, 0)
         else:
