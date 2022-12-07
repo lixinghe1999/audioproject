@@ -24,7 +24,7 @@ if __name__ == "__main__":
     target = 'dataset/our'
     # for p in ['he', 'yan', 'hou', 'shi', 'shuai', 'wu', 'liang', "1", "2", "3", "4", "5", "6", "7", "8", 'jiang', '9']:
     #for p in ['airpod', 'freebud', 'galaxy','vr-down', 'vr-up', 'headphone-inside', 'headphone-outside', 'glasses', 'cheek', 'temple', 'back', 'nose']:
-    for p in ['human-corridor']:
+    for p in ['human-corridor', 'human-outdoor', 'human-hall']:
         print(p)
         g = os.walk(os.path.join(source, p))
         for path, dir_list, file_list in g:
