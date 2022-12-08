@@ -135,7 +135,7 @@ if __name__ == "__main__":
         lr = 0.0001
         EPOCH = 20
         n = 1
-        ckpt_dir = 'pretrain/new_fullsubnet'
+        ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)

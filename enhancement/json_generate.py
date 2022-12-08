@@ -42,25 +42,26 @@ if __name__ == "__main__":
                         help='mode of processing, 0-audio only, 1-audio+acc')
     args = parser.parse_args()
     if args.mode == 0:
-        # directory = "../dataset/"
-        # datasets = ['dev', 'background', 'music', 'train', 'rir_noise']
-        # for dataset in datasets:
-        #     audio_files = []
-        #     g = os.walk(directory + dataset)
-        #     for path, dir_list, file_list in g:
-        #         for file_name in file_list:
-        #             if file_name[-3:] in ['wav', 'lac']:
-        #                 audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
-        #     json.dump(audio_files, open('json/' + dataset + '.json', 'w'), indent=4)
+        directory = "../dataset/"
+        #datasets = ['dev', 'background', 'music', 'train', 'rir_noise']
+        datasets = ['roomacoustic']
+        for dataset in datasets:
+            audio_files = []
+            g = os.walk(directory + dataset)
+            for path, dir_list, file_list in g:
+                for file_name in file_list:
+                    if file_name[-3:] in ['wav', 'lac']:
+                        audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
+            json.dump(audio_files, open('json/' + dataset + '.json', 'w'), indent=4)
 
-        audio_files = []
-        g = os.walk('/hdd0/LibriSpeech/train-clean-360')
-        for path, dir_list, file_list in g:
-            for file_name in file_list:
-                if file_name[-3:] in ['wav', 'lac']:
-                    audio_files.append(
-                        [os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
-        json.dump(audio_files, open('json/' + 'train_360.json', 'w'), indent=4)
+        # audio_files = []
+        # g = os.walk('/hdd0/LibriSpeech/train-clean-360')
+        # for path, dir_list, file_list in g:
+        #     for file_name in file_list:
+        #         if file_name[-3:] in ['wav', 'lac']:
+        #             audio_files.append(
+        #                 [os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
+        # json.dump(audio_files, open('json/' + 'train_360.json', 'w'), indent=4)
 
         # get mixed noise with balance possibility
         # data = {}

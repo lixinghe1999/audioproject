@@ -7,7 +7,8 @@ import torch.utils.data as Data
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
-from scipy import interpolate
+
+import pyroomacoustics as pra
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
 from SEANet import SEANet_mapping
 from vibvoice import A2net
@@ -51,17 +52,6 @@ def read_transfer_function(path):
         npz = np.load(path + '/' + npzs[i])
         transfer_function[i, :] = npz['response']
         variance[i, :] = npz['variance']
-    # new_transfer_function = np.zeros((N, freq_bin_high))
-    # new_variance = np.zeros((N, freq_bin_high))
-    # for j in range(freq_bin_high):
-    #     x = np.linspace(0, 1, len(npzs))
-    #     freq_r = np.sort(transfer_function[:, j])
-    #     freq_v = np.sort(variance[:, j])
-    #     f1 = interpolate.interp1d(x, freq_r)
-    #     f2 = interpolate.interp1d(x, freq_v)
-    #     xnew = np.linspace(0, 1, N)
-    #     new_transfer_function[:, j] = f1(xnew)
-    #     new_variance[:, j] = f2(xnew)
     return transfer_function, variance
 
 def noise_extraction():
@@ -153,6 +143,8 @@ def snr_norm(signals, target_dB_FS, target_dB_FS_floating_value):
             signal, _, _ = tailor_dB_FS(signal, noisy_target_dB_FS)
             new_signal.append(signal)
         return new_signal
+
+
 class BaseDataset:
     def __init__(self, files=None, pad=False, sample_rate=16000):
         """
@@ -216,7 +208,6 @@ class NoisyCleanSet:
         self.simulation = simulation
         self.text = text
         self.time_domain = time_domain
-
         self.snr_list = np.arange(snr[0], snr[1], 1)
         self.num_noises = num_noises
         if len(json_paths) == 2:
@@ -259,25 +250,27 @@ class NoisyCleanSet:
                 else:
                     data = data[int(len(data) * self.ratio):]
             self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
-        self.rir = rir
-        if self.rir is not None:
+        if rir is not None:
             with open(rir, 'r') as f:
                 data = json.load(f)
-            self.rir_dataset = BaseDataset(data, sample_rate=16000)
-            self.rir_length = len(self.rir_dataset)
+            self.rir = data
+            self.rir_length = len(self.rir)
         self.noise_length = len(self.dataset[1])
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.EMSB:
             clean = clean[0]
         if self.simulation:
+            # use rir dataset to add noise
             clean_tmp = clean
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.7)
             for i in range(self.num_noises):
                 noise, _ = self.dataset[1][np.random.randint(0, self.noise_length)]
                 snr = np.random.choice(self.snr_list)
                 noise, clean = snr_mix(noise, clean_tmp, snr, -25, 10,
-                rir = self.rir_dataset[np.random.randint(0, self.rir_length)][0] if use_reverb else None, eps=1e-6)
+                rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic)[0] if use_reverb else None, eps=1e-6)
+                if use_reverb:
+                    print(librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic)[0].shape)
                 clean_tmp = noise
         else:
             noise, _ = self.dataset[1][index]
@@ -323,7 +316,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.mode == 0:
         # check data
-        dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], time_domain=False, simulation=True, ratio=1)
+        dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], time_domain=False, simulation=True, ratio=1,
+                                      rir='json/roomacoustic.json')
         #dataset_train = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json','json/position_imu.json'], imulation=True, person=['headphone'])
         loader = Data.DataLoader(dataset=dataset_train, batch_size=2, shuffle=False)
         for step, (x, noise, y) in enumerate(loader):
