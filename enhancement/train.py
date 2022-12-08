@@ -132,8 +132,8 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        BATCH_SIZE = 32
-        lr = 0.0001
+        BATCH_SIZE = 16
+        lr = 0.00005
         EPOCH = 20
         n = 1
         ckpt_dir = 'pretrain/new_vibvoice'
