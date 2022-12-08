@@ -136,7 +136,7 @@ if __name__ == "__main__":
         lr = 0.0001
         EPOCH = 20
         n = 1
-        ckpt_dir = 'pretrain/new_fullsubnet'
+        ckpt_dir = 'pretrain/rir_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         #ckpt_name = 'pretrain/[ 2.65652786 13.35144708  3.20824826].pth'
         print("load checkpoint: {}".format(ckpt_name))
