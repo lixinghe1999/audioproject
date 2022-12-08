@@ -104,7 +104,7 @@ if __name__ == "__main__":
     discriminator = MultiScaleDiscriminator().to(device)
     time_domain = False
 
-    model = torch.nn.DataParallel(model, device_ids=[0])
+    model = torch.nn.DataParallel(model, device_ids=[1])
     # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
 
