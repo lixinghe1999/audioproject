@@ -192,7 +192,7 @@ class BaseDataset:
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
-                 ratio=1, snr=(0, 20), rir=None, num_noises=1, EMSB=False):
+                 ratio=1, snr=(0, 20), rir='json/roomacoustic.json', num_noises=1, EMSB=False):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -269,8 +269,6 @@ class NoisyCleanSet:
                 snr = np.random.choice(self.snr_list)
                 noise, clean = snr_mix(noise, clean_tmp, snr, -25, 10,
                 rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic)[0] if use_reverb else None, eps=1e-6)
-                if use_reverb:
-                    print(librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic)[0].shape)
                 clean_tmp = noise
         else:
             noise, _ = self.dataset[1][index]
