@@ -75,8 +75,8 @@ def synthetic(clean, transfer_function, variance):
 def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, rir=None, eps=1e-6):
         """
         Args:
-            clean_y: 纯净语音
             noise_y: 噪声
+            clean_y: 纯净语音
             snr (int): 信噪比
             target_dB_FS (int):
             target_dB_FS_floating_value (int):
@@ -190,7 +190,7 @@ class BaseDataset:
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
-                 ratio=1, snr=(0, 20), rir='json/roomacoustic.json', num_noises=1, EMSB=False):
+                 ratio=1, snr=(0, 20), rir='json/rir_noise.json', num_noises=1, EMSB=False):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -261,12 +261,13 @@ class NoisyCleanSet:
         if self.simulation:
             # use rir dataset to add noise
             clean_tmp = clean
-            use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.7)
+            use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
             for i in range(self.num_noises):
                 noise, _ = self.dataset[1][np.random.randint(0, self.noise_length)]
                 snr = np.random.choice(self.snr_list)
                 noise, clean = snr_mix(noise, clean_tmp, snr, -25, 10,
-                rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic)[0] if use_reverb else None, eps=1e-6)
+                rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic, mono=False)[0]
+                if use_reverb else None, eps=1e-6)
                 clean_tmp = noise
         else:
             noise, _ = self.dataset[1][index]
