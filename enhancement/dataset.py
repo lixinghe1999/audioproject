@@ -7,8 +7,6 @@ import torch.utils.data as Data
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
-
-import pyroomacoustics as pra
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
 from SEANet import SEANet_mapping
 from vibvoice import A2net
