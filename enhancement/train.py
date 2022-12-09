@@ -142,10 +142,10 @@ if __name__ == "__main__":
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
 
-        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                         time_domain=time_domain, simulation=True, person=people, ratio=0.8,
                                       num_noises=n, snr=(0, 20))
-        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
+        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                           time_domain=time_domain, simulation=True, person=people, ratio=-0.2,
                                      num_noises=n, snr=(0, 20))
 
