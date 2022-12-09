@@ -142,24 +142,24 @@ if __name__ == "__main__":
         print("load checkpoint: {}".format(ckpt_name))
         ckpt = torch.load(ckpt_name)
 
-        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
                                         time_domain=time_domain, simulation=True, person=people, ratio=0.8,
-                                      num_noises=n, snr=(-2, 3))
-        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+                                      num_noises=n, snr=(-2, 2))
+        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
                                           time_domain=time_domain, simulation=True, person=people, ratio=-0.2,
-                                     num_noises=n, snr=(-2, 3))
+                                     num_noises=n, snr=(-2, 2))
 
         # extra dataset for other positions
-        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-                                       time_domain=time_domain, simulation=True, person=positions, ratio=0.8,
-                                       num_noises=n, snr=(-2, 3))
-        test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-                                      time_domain=time_domain, simulation=True, person=positions, ratio=-0.2,
-                                      num_noises=n, snr=(-2, 3))
-
-        train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
-        test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
+        # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
+        # train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+        #                                time_domain=time_domain, simulation=True, person=positions, ratio=0.8,
+        #                                num_noises=n, snr=(-2, 3))
+        # test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+        #                               time_domain=time_domain, simulation=True, person=positions, ratio=-0.2,
+        #                               num_noises=n, snr=(-2, 3))
+        #
+        # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
+        # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
         model.load_state_dict(ckpt)
         ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
