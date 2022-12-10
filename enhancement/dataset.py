@@ -253,8 +253,6 @@ class NoisyCleanSet:
         self.noise_length = len(self.dataset[1])
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
-        if self.EMSB:
-            clean = clean[0]
         if self.simulation:
             if self.rir_earphone is not None:
                 clean = signal.fftconvolve(clean, librosa.load(self.rir_earphone, sr=rate_mic)[0])[:len(clean)]
