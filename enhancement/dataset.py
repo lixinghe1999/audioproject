@@ -324,11 +324,9 @@ class EMSBDataset:
                 datasets = []
                 for p in person:
                     dataset = BaseDataset(data[p], sample_rate=sr)
-                    print(len(dataset))
-                    if ratio > 0:
-                        dataset = dataset[:int(len(dataset) * self.ratio)]
-                    else:
-                        dataset = dataset[int(len(dataset) * self.ratio):]
+                    size1 = int(len(dataset) * self.ratio)
+                    size2 = len(dataset) - size2
+                    dataset, _ = torch.utils.data.random_split(dataset, [size1, size2])
                     datasets.append(dataset)
                 datasets = torch.utils.data.ConcatDataset(datasets)
             self.dataset.append(datasets)
