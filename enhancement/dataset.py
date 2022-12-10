@@ -346,6 +346,7 @@ class EMSBDataset:
         data, file = self.dataset[0][index]
         clean = data[0]
         imu = data[1]
+
         if self.simulation:
             # use rir dataset to add noise
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
@@ -357,6 +358,7 @@ class EMSBDataset:
         else:
             noise, _ = self.dataset[1][index]
             noise, clean = snr_norm([noise, clean], -25, 10)
+        print(clean.shape, noise.shape, imu.shape)
         if self.time_domain:
             clean = np.expand_dims(clean, 0)
             noise = np.expand_dims(noise, 0)
@@ -367,6 +369,7 @@ class EMSBDataset:
             noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             imu = imu[:, 1:freq_bin_high, :-1]
+        print(clean.shape, noise.shape, imu.shape)
         if self.text:
             setence = sentences[int(file.split('/')[4][-1])-1]
             return setence, imu, noise, clean
