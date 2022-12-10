@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import torch
 torch.manual_seed(0)
 
-from dataset import NoisyCleanSet
+from dataset import NoisyCleanSet, EMSBDataset
 import json
 
 from fullsubnet import FullSubNet
@@ -113,19 +113,15 @@ if __name__ == "__main__":
         BATCH_SIZE = 64
         lr = 0.0001
         EPOCH = 20
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-                                ratio=1, rir='json/rir_noise.json')
-        # dataset = NoisyCleanSet(['json/train_360.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-        #                        ratio=1, rir=None)
-        # train_dataset = torch.utils.data.ConcatDataset([dataset1, dataset2])
+        # dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
+        #                         ratio=1, rir='json/rir_noise.json')
+        with open('json/EMSB.json', 'r') as f:
+            data = json.load(f)
+            person = data.keys()
+        EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
+                                ratio=1, person=person)
 
-        # with open('json/EMSB.json', 'r') as f:
-        #     data = json.load(f)
-        #     person = data.keys()
-        # EMSB_dataset = NoisyCleanSet(['json/EMSB.json', 'json/all_noise.json', 'json/EMSB.json'], time_domain=time_domain, simulation=True,
-        #                         ratio=1, rir=None, EMSB=True, person=person)
-
-        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
+        ckpt_best, loss_curve, metric_best = train(EMSB_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')

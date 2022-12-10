@@ -185,7 +185,7 @@ class BaseDataset:
                 data = signal.filtfilt(b, a, data, axis=0)
                 data = np.clip(data, -0.05, 0.05)
             else:
-                data, _ = librosa.load(file, offset=offset, duration=duration, sr=rate_mic)
+                data, _ = librosa.load(file, offset=offset, duration=duration, mono=False, sr=rate_mic)
                 data = signal.filtfilt(b, a, data)
             return data, file
 class NoisyCleanSet:
@@ -288,6 +288,83 @@ class NoisyCleanSet:
             else:
                 imu, _ = self.dataset[2][index]
                 imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
+            noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
+            clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
+            imu = imu[:, 1:freq_bin_high, :-1]
+        if self.text:
+            setence = sentences[int(file.split('/')[4][-1])-1]
+            return setence, imu, noise, clean
+        else:
+            return imu, noise, clean
+    def __len__(self):
+        return len(self.dataset[0])
+
+class EMSBDataset:
+    def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
+                 ratio=1, snr=(0, 20), rir='json/rir_noise.json'):
+        '''
+        :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
+        :param text: whether output the text, only apply to Sentences
+        :param person: person we want to involve
+        :param simulation: whether the noise is simulation
+        :param time_domain: use frequency domain (complex) or time domain
+        :param ratio: ratio of the data we use
+        :param snr: SNR range of the synthetic dataset
+        '''
+        self.dataset = []
+        self.ratio = ratio
+        self.simulation = simulation
+        self.text = text
+        self.time_domain = time_domain
+        self.snr_list = np.arange(snr[0], snr[1], 1)
+        sr = [16000, 16000]
+        for i, path in enumerate(json_paths):
+            with open(path, 'r') as f:
+                data = json.load(f)
+            if person is not None and isinstance(data, dict):
+                tmp = []
+                for p in person:
+                    if ratio > 0:
+                        tmp += data[p][:int(len(data[p]) * self.ratio)]
+                    else:
+                        tmp += data[p][int(len(data[p]) * self.ratio):]
+                data = tmp
+            else:
+                if ratio > 0:
+                    data = data[:int(len(data) * self.ratio)]
+                else:
+                    data = data[int(len(data) * self.ratio):]
+            self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
+        self.rir = rir
+        if self.rir is not None:
+            with open(rir, 'r') as f:
+                data = json.load(f)
+            self.rir = data
+            self.rir_length = len(self.rir)
+        self.noise_length = len(self.dataset[1])
+    def __getitem__(self, index):
+        data, file = self.dataset[0][index]
+        clean = data[0]
+        imu = data[1]
+        print(clean.shape, imu.shape)
+        if self.simulation:
+            # use rir dataset to add noise
+            use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
+            noise, _ = self.dataset[1][np.random.randint(0, self.noise_length)]
+            snr = np.random.choice(self.snr_list)
+            noise, clean = snr_mix(noise, clean, snr, -25, 10,
+            rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic, mono=False)[0]
+            if use_reverb else None, eps=1e-6)
+        else:
+            noise, _ = self.dataset[1][index]
+            noise, clean = snr_norm([noise, clean], -25, 10)
+        if self.time_domain:
+            clean = np.expand_dims(clean, 0)
+            noise = np.expand_dims(noise, 0)
+        else:
+            noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
+            clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
+            imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
             noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             imu = imu[:, 1:freq_bin_high, :-1]
