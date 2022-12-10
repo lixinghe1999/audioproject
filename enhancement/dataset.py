@@ -345,7 +345,7 @@ class EMSBDataset:
     def __getitem__(self, index):
         data, file = self.dataset[0][index]
         clean = data[0]
-        imu = data[1]
+        imu = data[1, ::10]
 
         if self.simulation:
             # use rir dataset to add noise
