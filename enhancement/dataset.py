@@ -317,24 +317,20 @@ class EMSBDataset:
         self.text = text
         self.time_domain = time_domain
         self.snr_list = np.arange(snr[0], snr[1], 1)
-        sr = [16000, 16000]
+        sr = 16000
         for i, path in enumerate(json_paths):
             with open(path, 'r') as f:
                 data = json.load(f)
-            if person is not None and isinstance(data, dict):
-                tmp = []
+                datasets = []
                 for p in person:
+                    dataset = BaseDataset(data[p], sample_rate=sr)
                     if ratio > 0:
-                        tmp += data[p][:int(len(data[p]) * self.ratio)]
+                        dataset = dataset[:int(len(dataset) * self.ratio)]
                     else:
-                        tmp += data[p][int(len(data[p]) * self.ratio):]
-                data = tmp
-            else:
-                if ratio > 0:
-                    data = data[:int(len(data) * self.ratio)]
-                else:
-                    data = data[int(len(data) * self.ratio):]
-            self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
+                        dataset = dataset[int(len(dataset) * self.ratio):]
+                    datasets.append(dataset)
+                datasets = torch.utils.data.ConcatDataset(datasets)
+            self.dataset.append(datasets)
         self.rir = rir
         if self.rir is not None:
             with open(rir, 'r') as f:
@@ -346,7 +342,6 @@ class EMSBDataset:
         data, file = self.dataset[0][index]
         clean = data[0]
         imu = data[1, ::10]
-
         if self.simulation:
             # use rir dataset to add noise
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
