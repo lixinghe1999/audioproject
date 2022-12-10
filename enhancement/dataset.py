@@ -321,18 +321,26 @@ class EMSBDataset:
         for i, path in enumerate(json_paths):
             with open(path, 'r') as f:
                 data = json.load(f)
-                datasets = []
-                for p in person:
-                    print(p)
-                    print(data[p], sr)
-                    dataset = BaseDataset(data[p], sample_rate=sr)
-                    print(len(dataset))
-                    size1 = int(len(dataset) * self.ratio)
-                    size2 = len(dataset) - size1
-                    dataset, _ = torch.utils.data.random_split(dataset, [size1, size2])
-                    datasets.append(dataset)
-                datasets = torch.utils.data.ConcatDataset(datasets)
-            self.dataset.append(datasets)
+
+                if person is not None and isinstance(data, dict):
+                    datasets = []
+                    for p in person:
+                        print(p)
+                        print(data[p], sr)
+                        dataset = BaseDataset(data[p], sample_rate=sr)
+                        print(len(dataset))
+                        size1 = int(len(dataset) * self.ratio)
+                        size2 = len(dataset) - size1
+                        dataset, _ = torch.utils.data.random_split(dataset, [size1, size2])
+                        datasets.append(dataset)
+                    dataset = torch.utils.data.ConcatDataset(datasets)
+                else:
+                    if ratio > 0:
+                        data = data[:int(len(data) * self.ratio)]
+                    else:
+                        data = data[int(len(data) * self.ratio):]
+                    dataset = BaseDataset(data, sample_rate=sr)
+            self.dataset.append(dataset)
         self.rir = rir
         if self.rir is not None:
             with open(rir, 'r') as f:
