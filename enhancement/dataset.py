@@ -324,6 +324,7 @@ class EMSBDataset:
                 datasets = []
                 for p in person:
                     dataset = BaseDataset(data[p], sample_rate=sr)
+                    print(len(dataset))
                     if ratio > 0:
                         dataset = dataset[:int(len(dataset) * self.ratio)]
                     else:
