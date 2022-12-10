@@ -95,7 +95,7 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    #torch.cuda.set_device(1)
+    torch.cuda.set_device(1)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     #model = A2net(inference=False).to(device)
     model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     #discriminator = MultiScaleDiscriminator().to(device)
     time_domain = False
 
-    model = torch.nn.DataParallel(model, device_ids=[0, 1])
+    model = torch.nn.DataParallel(model, device_ids=[1])
     # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         rir = 'json/rir_noise.json'
-        BATCH_SIZE = 16
+        BATCH_SIZE = 8
         lr = 0.0001
         EPOCH = 20
         r = 0.8
