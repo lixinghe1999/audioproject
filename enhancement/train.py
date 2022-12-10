@@ -172,7 +172,7 @@ if __name__ == "__main__":
         for rir, rir_earphone in zip(rirs, rirs_earphone):
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                     person=people, time_domain=time_domain, simulation=True, ratio=-0.2,
-                                    rir=rir, rir_earphone=rir_earphone)
+                                    rir=rir, rir_earphone=None)
             Metric = inference(dataset, BATCH_SIZE, model)
             avg_metric = np.mean(Metric, axis=0)
             print(rir, avg_metric)
