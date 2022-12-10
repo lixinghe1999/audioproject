@@ -323,6 +323,7 @@ class EMSBDataset:
                 data = json.load(f)
                 datasets = []
                 for p in person:
+                    print(p)
                     print(data[p], sr)
                     dataset = BaseDataset(data[p], sample_rate=sr)
                     print(len(dataset))
