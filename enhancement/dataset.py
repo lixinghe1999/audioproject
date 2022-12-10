@@ -346,7 +346,6 @@ class EMSBDataset:
         data, file = self.dataset[0][index]
         clean = data[0]
         imu = data[1]
-        print(clean.shape, imu.shape)
         if self.simulation:
             # use rir dataset to add noise
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)

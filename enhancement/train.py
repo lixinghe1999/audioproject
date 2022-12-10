@@ -54,7 +54,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
             #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
+            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -62,7 +62,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
-                metric = test_fullsubnet(model, acc, noise, clean, device)
+                metric = test_vibvoice(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric, mean_lost)
@@ -82,10 +82,10 @@ def inference(dataset, BATCH_SIZE, model):
         for data in test_loader:
             if len(data) == 3:
                 acc, noise, clean = data
-                metric = test_fullsubnet(model, acc, noise, clean, device)
+                metric = test_vibvoice(model, acc, noise, clean, device)
             else:
                 text, acc, noise, clean = data
-                metric = test_fullsubnet(model, acc, noise, clean, device, text)
+                metric = test_vibvoice(model, acc, noise, clean, device, text)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -97,14 +97,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
     torch.cuda.set_device(1)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    #model = A2net(inference=False).to(device)
-    model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
+    model = A2net(inference=False).to(device)
+    # model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
     # model = SEANet().to(device)
 
     #discriminator = MultiScaleDiscriminator().to(device)
     time_domain = False
 
-    model = torch.nn.DataParallel(model, device_ids=[1])
+    # model = torch.nn.DataParallel(model, device_ids=[1])
     # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
 
