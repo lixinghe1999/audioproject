@@ -321,7 +321,6 @@ class EMSBDataset:
         for i, path in enumerate(json_paths):
             with open(path, 'r') as f:
                 data = json.load(f)
-
                 if person is not None and isinstance(data, dict):
                     datasets = []
                     for p in person:
