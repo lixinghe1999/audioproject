@@ -27,7 +27,7 @@ if __name__ == "__main__":
         room = init_room(dim)
         random_loc = np.append(np.random.random(2) * dim[0], np.random.random() * 2)
         delay = np.random.random() * 1
-        room.add_source(random_loc, delay=delay)
+        room.add_source(random_loc)
         room.compute_rir()
         wav.write(size + 'rir.wav', 16000, room.rir[0][0])
         for i in range(num_rir):
