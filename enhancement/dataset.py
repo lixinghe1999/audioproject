@@ -190,7 +190,7 @@ class BaseDataset:
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
-                 ratio=1, snr=(0, 20), rir='json/rir_noise.json', num_noises=1, EMSB=False):
+                 ratio=1, snr=(0, 20), rir='json/rir_noise.json', num_noises=1):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -202,7 +202,6 @@ class NoisyCleanSet:
         '''
         self.dataset = []
         self.ratio = ratio
-        self.EMSB = EMSB
         self.simulation = simulation
         self.text = text
         self.time_domain = time_domain
@@ -227,10 +226,7 @@ class NoisyCleanSet:
 
         else:
             self.augmentation = False
-        if self.EMSB:
-            sr = [16000, 16000, 16000]
-        else:
-            sr = [16000, 16000, 1600]
+        sr = [16000, 16000, 1600]
         for i, path in enumerate(json_paths):
             with open(path, 'r') as f:
                 data = json.load(f)
@@ -281,8 +277,6 @@ class NoisyCleanSet:
                     imu = self.deep_mapping(audio)
             else:
                 imu, _ = self.dataset[2][index]
-                if self.EMSB:
-                    imu = imu[1, ::10]
                 imu = np.transpose(imu)
             clean = np.expand_dims(clean, 0)
             noise = np.expand_dims(noise, 0)
@@ -293,10 +287,7 @@ class NoisyCleanSet:
                 imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
             else:
                 imu, _ = self.dataset[2][index]
-                if self.EMSB:
-                    imu = spectrogram(imu, seg_len_mic, overlap_mic, rate_mic)
-                else:
-                    imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
+                imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
             noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
             imu = imu[:, 1:freq_bin_high, :-1]
