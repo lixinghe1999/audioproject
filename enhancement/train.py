@@ -139,7 +139,7 @@ if __name__ == "__main__":
         n = 1
         ckpt_dir = 'pretrain/new_vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/[ 2.59540767 15.58160323  3.52378989].pth'
+        ckpt_name = 'pretrain/[ 2.60799066 15.65192995  3.50711789].pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         # for r in [0.2, 0.4, 0.6, 0.8]:
