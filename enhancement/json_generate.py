@@ -42,9 +42,9 @@ if __name__ == "__main__":
                         help='mode of processing, 0-audio only, 1-audio+acc')
     args = parser.parse_args()
     if args.mode == 0:
-        directory = "../dataset/roomacoustic/"
+        directory = "../dataset/rir_noise/simulated_rirs/"
         #datasets = ['dev', 'background', 'music', 'train', 'rir_noise']
-        datasets = ['large_room', 'middle_room', 'small_room']
+        datasets = ['largeroom', 'mediumroom', 'smallroom']
         for dataset in datasets:
             audio_files = []
             g = os.walk(directory + dataset)

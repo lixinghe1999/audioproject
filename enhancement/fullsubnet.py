@@ -5,7 +5,6 @@ from torch.nn import functional
 from audio_zen.model.base_model import BaseModel
 from audio_zen.model.module.sequence_model import SequenceModel
 import time
-from torchvision.utils import save_image
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
 def drop_band(input, num_groups=2):

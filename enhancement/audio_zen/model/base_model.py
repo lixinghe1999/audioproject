@@ -5,7 +5,6 @@ from torch.nn import functional
 
 from audio_zen.constant import EPSILON
 
-
 class BaseModel(nn.Module):
     def __init__(self):
         super(BaseModel, self).__init__()

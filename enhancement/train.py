@@ -178,7 +178,6 @@ if __name__ == "__main__":
             avg_metric = np.mean(Metric, axis=0)
             print(rir, avg_metric)
 
-        #
         # for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
         #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
         #                             person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
