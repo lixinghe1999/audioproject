@@ -35,7 +35,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     else:
         # without pre-defined train/ test
         length = len(dataset)
-        test_size = min(int(0.03 * length), 2000)
+        test_size = min(int(0.1 * length), 1000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 64
+        BATCH_SIZE = 128
         lr = 0.0001
         EPOCH = 20
         # dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             data = json.load(f)
             person = data.keys()
         EMSB_dataset = EMSBDataset(['json/EMSB.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-                                ratio=0.3, person=person)
+                                ratio=0.6, person=person)
 
         ckpt_best, loss_curve, metric_best = train(EMSB_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)

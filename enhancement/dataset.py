@@ -190,7 +190,7 @@ class BaseDataset:
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
-                 ratio=1, snr=(0, 20), rir='json/rir_noise.json', num_noises=1, rir_earphone=None):
+                 ratio=1, snr=(0, 20), rir='json/rir_noise.json', num_noises=1):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -207,7 +207,6 @@ class NoisyCleanSet:
         self.time_domain = time_domain
         self.snr_list = np.arange(snr[0], snr[1], 1)
         self.num_noises = num_noises
-        self.rir_earphone = rir_earphone
         if len(json_paths) == 2:
             # transfer function-based augmentation
             self.augmentation = True
@@ -254,8 +253,6 @@ class NoisyCleanSet:
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.simulation:
-            if self.rir_earphone is not None:
-                clean = signal.fftconvolve(clean, librosa.load(self.rir_earphone, sr=rate_mic)[0])[:len(clean)]
             # use rir dataset to add noise
             clean_tmp = clean
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
