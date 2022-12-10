@@ -133,7 +133,7 @@ if __name__ == "__main__":
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         rir = 'json/rir_noise.json'
-        BATCH_SIZE = 12
+        BATCH_SIZE = 8
         lr = 0.0001
         EPOCH = 20
         r = 0.8
