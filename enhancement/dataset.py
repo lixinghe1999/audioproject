@@ -325,10 +325,7 @@ class EMSBDataset:
                 if person is not None and isinstance(data, dict):
                     datasets = []
                     for p in person:
-                        print(p)
-                        print(data[p], sr)
                         dataset = BaseDataset(data[p], sample_rate=sr)
-                        print(len(dataset))
                         size1 = int(len(dataset) * self.ratio)
                         size2 = len(dataset) - size1
                         dataset, _ = torch.utils.data.random_split(dataset, [size1, size2])
