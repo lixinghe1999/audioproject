@@ -35,7 +35,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     else:
         # without pre-defined train/ test
         length = len(dataset)
-        test_size = min(int(0.1 * length), 2000)
+        test_size = min(int(0.03 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    torch.cuda.set_device(1)
+    torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     model = A2net(inference=False).to(device)
     # model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             data = json.load(f)
             person = data.keys()
         EMSB_dataset = EMSBDataset(['json/EMSB.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-                                ratio=0.2, person=person)
+                                ratio=0.3, person=person)
 
         ckpt_best, loss_curve, metric_best = train(EMSB_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)
