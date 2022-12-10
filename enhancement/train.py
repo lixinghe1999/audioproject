@@ -119,7 +119,7 @@ if __name__ == "__main__":
             data = json.load(f)
             person = data.keys()
         EMSB_dataset = EMSBDataset(['json/EMSB.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-                                ratio=1, person=person)
+                                ratio=0.1, person=person)
 
         ckpt_best, loss_curve, metric_best = train(EMSB_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)
