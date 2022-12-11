@@ -33,7 +33,7 @@ def inference_torch(quant_model, sample_input):
     return fps
 if __name__ == "__main__":
     torch.set_num_threads(1)
-    #sample_input = np.random.random((1, 1, 512, 300))
-    #print(inference_onnx('identification.onnx', sample_input))
-    sample_input = torch.randn([1, 1, 512, 300])
-    print(inference_torch('identification_quant.pth', sample_input))
+    sample_input = np.random.random((1, 1, 512, 300))
+    print(inference_onnx('identification.onnx', sample_input))
+    # sample_input = torch.randn([1, 1, 512, 300])
+    # print(inference_torch('identification_quant.pth', sample_input))
