@@ -3,6 +3,7 @@ import onnxruntime as ort
 import numpy as np
 import torch
 import time
+from identification.vggm import VGGM
 
 def inference_onnx(onnx_model, sample_input):
     ort_session = ort.InferenceSession(onnx_model, providers=['CPUExecutionProvider'])
@@ -18,9 +19,10 @@ def inference_onnx(onnx_model, sample_input):
 
 def inference_torch(quant_model, sample_input):
     torch.backends.quantized.engine = 'qnnpack'
-    # jit model to take it from ~20fps to ~30fps
-    model = torch.load(quant_model)
-    #model = torch.jit.script(model)
+    model = VGGM(1251)
+    ckpt = torch.load(quant_model)
+    model = model.load_state_dict(ckpt)
+    model = torch.jit.script(model)
     t_start = time.time()
     step = 100
     for i in range(step):
