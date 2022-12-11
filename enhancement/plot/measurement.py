@@ -4,7 +4,6 @@ from matplotlib import rc
 
 rc('text', usetex=True)
 plt.rcParams.update({'font.size': 10})
-import imu_data
 import os
 
 import librosa

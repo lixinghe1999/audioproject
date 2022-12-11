@@ -1,13 +1,26 @@
 import os
 
 import matplotlib.pyplot as plt
-
-from imu_data import calibrate, read_data
 import librosa
 import numpy as np
 import scipy.signal as signal
 import soundfile as sf
 import argparse
+import scipy.interpolate as interpolate
+
+def calibrate(file, T, shift):
+    data = np.loadtxt(file)
+    timestamp = data[:, -1]
+    # data = data[:, :3] / 2 ** 14
+    # data = data - np.mean(data, axis=0)
+    data = data[:, :3]
+    f = interpolate.interp1d(timestamp - timestamp[0], data, axis=0, kind='nearest')
+    t = min((timestamp[-1] - timestamp[0]), T)
+    num_sample = int(T * rate_imu)
+    data = np.zeros((num_sample, 3))
+    xnew = np.linspace(0, t, num_sample)
+    data[shift:num_sample, :] = f(xnew)[:-shift, :]
+    return data
 def directory_decompose(files):
     import itertools
     dict = {}
