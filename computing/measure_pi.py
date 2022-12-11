@@ -19,7 +19,8 @@ def inference_onnx(onnx_model, sample_input):
 def inference_torch(quant_model, sample_input):
     torch.backends.quantized.engine = 'qnnpack'
     # jit model to take it from ~20fps to ~30fps
-    model = torch.jit.script(quant_model)
+    model = torch.load(quant_model)
+    model = torch.jit.script(model)
     t_start = time.time()
     step = 100
     for i in range(step):
