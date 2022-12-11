@@ -47,6 +47,7 @@ def model_quantize_save(model, name):
     torch.save(quantized_model.state_dict(), name + "_quant.pth")
 
 def model_quantize(model):
+    model.eval()
     qconfig = get_default_qconfig("fbgemm")
     qconfig_dict = {
         "": qconfig,
