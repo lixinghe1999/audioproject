@@ -40,9 +40,9 @@ def model_quantize_save(model, name):
     }
     model_to_quantize = copy.deepcopy(model)
     prepared_model = prepare_fx(model_to_quantize, qconfig_dict)
-    print("prepared model: ", prepared_model)
+    #print("prepared model: ", prepared_model)
     quantized_model = convert_fx(prepared_model)
-    print("quantized model: ", quantized_model)
+    #print("quantized model: ", quantized_model)
     torch.save(model.state_dict(), name + ".pth")
     torch.save(quantized_model.state_dict(), name + "_quant.pth")
 
