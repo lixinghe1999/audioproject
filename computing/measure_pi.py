@@ -24,7 +24,7 @@ def inference_torch(quant_model, sample_input):
     ckpt = torch.load(quant_model)
     model_int8.load_state_dict(ckpt)
     model_int8.eval()
-    model_int8 = torch.jit.script(model_int8)
+    #model_int8 = torch.jit.script(model_int8)
     t_start = time.time()
     step = 100
     for i in range(step):
@@ -32,6 +32,7 @@ def inference_torch(quant_model, sample_input):
     fps = (time.time() - t_start) / step
     return fps
 if __name__ == "__main__":
+    torch.set_num_threads(1)
     #sample_input = np.random.random((1, 1, 512, 300))
     #print(inference_onnx('identification.onnx', sample_input))
     sample_input = torch.randn([1, 1, 512, 300])
