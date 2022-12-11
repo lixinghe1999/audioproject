@@ -1,4 +1,4 @@
-
+import utils
 import onnxruntime as ort
 import numpy as np
 import torch
@@ -20,13 +20,14 @@ def inference_onnx(onnx_model, sample_input):
 def inference_torch(quant_model, sample_input):
     torch.backends.quantized.engine = 'qnnpack'
     model = VGGM(1251)
+    model_int8 = utils.model_quantize(model)
     ckpt = torch.load(quant_model)
-    model = model.load_state_dict(ckpt)
-    model = torch.jit.script(model)
+    model_int8 = model_int8.load_state_dict(ckpt)
+    model_int8 = torch.jit.script(model_int8)
     t_start = time.time()
     step = 100
     for i in range(step):
-        output = model(sample_input)
+        output = model_int8(sample_input)
     fps = (time.time() - t_start) / step
     return fps
 if __name__ == "__main__":

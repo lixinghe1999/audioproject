@@ -9,9 +9,6 @@ Created on Fri Apr 10 12:52:25 2020
 import torch
 import torch.nn as nn
 from collections import OrderedDict
-import numpy as np
-from utils import model_speed
-
 
 class VGGM(nn.Module):
     def __init__(self, n_classes=1251):

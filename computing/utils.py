@@ -34,7 +34,7 @@ def model_onnx(model, name, sample_input):
     onnx.checker.check_model(onnx_model)
     print('The model has been saved at: {}.onnx'.format(name))
 
-def model_quantize(model, name):
+def model_quantize_save(model, name):
     model.eval()
     qconfig = get_default_qconfig("fbgemm")
     qconfig_dict = {
@@ -47,6 +47,15 @@ def model_quantize(model, name):
     print("quantized model: ", quantized_model)
     torch.save(model.state_dict(), name + ".pth")
     torch.save(quantized_model.state_dict(), name + "_quant.pth")
+
+def model_quantize(model):
+    qconfig = get_default_qconfig("fbgemm")
+    qconfig_dict = {
+        "": qconfig,
+    }
+    model_prepared = prepare_fx(model, qconfig_dict)
+    model_int8 = convert_fx(model_prepared)
+    return model_int8
 
 def model_speed(model, sample_input):
     t_start = time.time()
