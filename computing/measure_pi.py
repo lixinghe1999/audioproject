@@ -24,7 +24,7 @@ def inference_torch(quant_model, sample_input):
     ckpt = torch.load(quant_model)
     model_int8.load_state_dict(ckpt)
     model_int8.eval()
-    #model_int8 = torch.jit.script(model_int8)
+    model_int8 = torch.jit.script(model_int8)
     t_start = time.time()
     step = 100
     for i in range(step):
