@@ -31,4 +31,5 @@ if __name__ == "__main__":
     #sample_input = np.random.random((1, 1, 512, 300))
     #print(inference_onnx('identification.onnx', sample_input))
     sample_input = torch.randint(0, 255, (1, 512, 300), dtype=torch.uint8)
+    print(type(sample_input))
     print(inference_torch('identification_quant.pth', sample_input))
