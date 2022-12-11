@@ -18,9 +18,7 @@ def model_save_android(model, name, sample_input):
 def model_onnx(model, name, sample_input):
     model.eval()
     torch.save(model, name + ".pt")
-
     output_model_file = name + '.onnx'
-
     torch.onnx.export(model,  # model being run
                       sample_input,  # model input (or a tuple for multiple inputs)
                       output_model_file,  # where to save the model (can be a file or file-like object)
