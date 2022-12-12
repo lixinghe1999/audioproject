@@ -9,7 +9,7 @@ from preprocess import preprocess
 def inference_onnx(onnx_model, sample_input):
     ort_session = ort.InferenceSession(onnx_model, providers=['CPUExecutionProvider'])
     t_start = time.time()
-    step = 100
+    step = 30
     for i in range(step):
         spec = preprocess(sample_input)
         spec = np.expand_dims(spec, (0, 1))
@@ -29,7 +29,7 @@ def inference_torch(quant_model, sample_input):
     model_int8.eval()
     #model_int8 = torch.jit.script(model_int8)
     t_start = time.time()
-    step = 100
+    step = 30
     for i in range(step):
         spec = preprocess(sample_input)
         spec = np.expand_dims(spec, (0, 1))
