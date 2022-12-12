@@ -1,5 +1,5 @@
 import utils
-from identification.vggm import VGGM
+from model.identification import VGGM
 import torch
 if __name__ == "__main__":
     device = torch.device("cpu")

@@ -21,7 +21,7 @@ def inference_onnx(onnx_model, sample_input):
     return fps
 
 def inference_torch(quant_model, sample_input):
-
+    torch.backends.quantized.engine = 'qnnpack'
     model = VGGM(1251)
     model_int8 = utils.model_quantize(model)
     ckpt = torch.load(quant_model)
