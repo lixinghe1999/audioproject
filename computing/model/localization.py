@@ -78,6 +78,7 @@ class DeepEar(nn.Module):
         self.decode3 = nn.Linear(400, 200)
         self.subnet = SubNet()
     def forward(self, Binaural):
+        Binaural = Binaural.permute((0, 1, 3, 2))
         # TOFIX: add cross-correlation based on GCC-PHAT
         left = Binaural[:, 0, ...]
         right = Binaural[:, 1, ...]

@@ -11,6 +11,6 @@ if __name__ == "__main__":
     # utils.model_onnx(identification, 'identification', sample_input)
 
     localization = DeepEar()
-    sample_input = torch.rand((1, 2, 300, 512))
+    sample_input = torch.rand((1, 2, 512, 300))
     #utils.model_quantize_save(identification, 'identification')
     utils.model_onnx(localization, 'localization', sample_input)
