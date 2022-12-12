@@ -58,9 +58,9 @@ def model_quantize(model):
 
 def model_speed(model, sample_input):
     t_start = time.time()
-    step = 100
+    step = 30
     with torch.no_grad():
         for i in range(step):
             model(sample_input)
-    return (time.time() - t_start) / step
+    return step / (time.time() - t_start)
 
