@@ -12,7 +12,8 @@ def inference_onnx(onnx_model, sample_input):
     step = 30
     for i in range(step):
         spec = preprocess(sample_input)
-        spec = np.expand_dims(spec, (0, 1))
+        print(spec.shape)
+        spec = np.expand_dims(spec, (0))
         output = ort_session.run(
             None,
             {"input": spec.astype(np.float32)},
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     # print('identification FPS onnx', inference_onnx('identification.onnx', sample_input))
     # print('identification FPS quantized torch', inference_torch('identification_quant.pth', sample_input))
 
-    sample_input = np.random.random((48320))
+    sample_input = np.random.random((2, 48320))
     torch.set_num_threads(1)
     print('localization FPS onnx', inference_onnx('localization.onnx', sample_input))
     #print('localization FPS quantized torch', inference_torch('identification_quant.pth', sample_input))

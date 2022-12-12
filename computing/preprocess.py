@@ -96,12 +96,14 @@ def preprocess(audio, buckets=None, sr=16000, Ws=25, Ss=10, alpha=0.97, cross=Fa
                      boundary=None)
 
     mag = normalize_frames(np.abs(mag))
-    # Get the largest bucket smaller than number of column vectors i.e. frames
-    rsize = max(i for i in buckets if i <= mag.shape[1])
-    rstart = (mag.shape[1] - rsize) // 2
-    # Return truncated spectrograms
+    return mag
+    # # Get the largest bucket smaller than number of column vectors i.e. frames
+    # rsize = max(i for i in buckets if i <= mag.shape[1])
+    # rstart = (mag.shape[1] - rsize) // 2
+    # # Return truncated spectrograms
+    # return mag[:, rstart:rstart + rsize]
 
-    return mag[:, rstart:rstart + rsize]
+
 
 
 
