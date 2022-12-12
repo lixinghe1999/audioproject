@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.signal import lfilter, stft
-import matplotlib.pyplot as plt
 
 def gcc_phat(sig, refsig, fs=1, max_tau=None, interp=16):
     '''
