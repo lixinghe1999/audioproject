@@ -5,48 +5,16 @@ Created on Fri Apr 10 15:12:22 2020
 
 @author: darp_lord
 """
-
-import os
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
-from torch.utils.data import Subset, Dataset, DataLoader
+from torch.utils.data import Subset, DataLoader
 from torchvision import transforms
 from tqdm.auto import tqdm
-from scipy.io import wavfile
-from vggm import VGGM
-import json
-import signal_utils as sig
-import argparse
+from computing.dataset import AudioDataset
+from model.identification import VGGM
 
 transformers = transforms.ToTensor()
-
-class AudioDataset(Dataset):
-    def __init__(self, file, croplen=160000, is_train=True):
-        with open(file, 'r') as f:
-            dataset = json.load(f)
-        self.X = []
-        self.Y = []
-        for wav, id in dataset:
-            self.X.append(wav)
-            self.Y.append(int(id))
-        self.is_train=is_train
-        self.croplen=croplen
-
-    def __len__(self):
-        return len(self.Y)
-
-    def __getitem__(self, idx):
-        label=self.Y[idx]
-        sr, audio=wavfile.read(self.X[idx])
-        if(self.is_train):
-            start = np.random.randint(0,audio.shape[0]-self.croplen+1)
-            audio = audio[start:start+self.croplen]
-        audio = sig.preprocess(audio).astype(np.float32)
-        audio = np.expand_dims(audio, 2)
-        return transformers(audio), label
 
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
@@ -90,7 +58,7 @@ if __name__=="__main__":
             "val":1,
             "test":1}
 
-    Dataloaders={}
+    Dataloaders = {}
     dataset = AudioDataset('id.json')
     num = len(dataset)
     train_set, val_set = torch.utils.data.random_split(dataset, [int(0.8 * num), num - int(0.8 * num)])
@@ -99,7 +67,6 @@ if __name__=="__main__":
     # Dataloaders['test']=[DataLoader(Datasets['test'], batch_size=batch_sizes['test'], shuffle=False)]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #device = torch.device("cpu")
     model = VGGM(16).to(device)
 
     pretrain = torch.load('VGGM300_BEST_140_81.99.pth')

@@ -3,22 +3,25 @@ import onnxruntime as ort
 import numpy as np
 import torch
 import time
-from identification.vggm import VGGM
+from model.identification import VGGM
+from preprocess import preprocess
 
 def inference_onnx(onnx_model, sample_input):
     ort_session = ort.InferenceSession(onnx_model, providers=['CPUExecutionProvider'])
     t_start = time.time()
     step = 100
     for i in range(step):
-        outputs = ort_session.run(
+        spec = preprocess(sample_input)
+        spec = np.expand_dims(spec, (0, 1))
+        output = ort_session.run(
             None,
-            {"input": sample_input.astype(np.float32)},
+            {"input": spec.astype(np.float32)},
         )
-    fps = (time.time() - t_start) / step
+    fps = step / (time.time() - t_start)
     return fps
 
 def inference_torch(quant_model, sample_input):
-    torch.backends.quantized.engine = 'qnnpack'
+
     model = VGGM(1251)
     model_int8 = utils.model_quantize(model)
     ckpt = torch.load(quant_model)
@@ -28,13 +31,18 @@ def inference_torch(quant_model, sample_input):
     t_start = time.time()
     step = 100
     for i in range(step):
-        output = model_int8(sample_input)
-    fps = (time.time() - t_start) / step
+        spec = preprocess(sample_input)
+        spec = np.expand_dims(spec, (0, 1))
+        spec = torch.from_numpy(spec).type(torch.float)
+        output = model_int8(spec)
+    fps = step / (time.time() - t_start)
     return fps
 if __name__ == "__main__":
+
+    sample_input = np.random.random((48320))
     torch.set_num_threads(1)
-    sample_input = np.random.random((1, 1, 512, 300))
+    # sample_input = np.random.random((1, 1, 512, 300))
+    # sample_input = torch.randn([1, 1, 512, 300])
     print('identification FPS onnx', inference_onnx('identification.onnx', sample_input))
 
-    sample_input = torch.randn([1, 1, 512, 300])
     print('identification FPS quantized torch', inference_torch('identification_quant.pth', sample_input))
