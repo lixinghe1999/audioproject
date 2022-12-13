@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 8
+        BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 20
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,

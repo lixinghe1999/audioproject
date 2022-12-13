@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from scipy import signal
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from audio_zen.acoustics.feature import drop_band
+from torch.cuda.amp import autocast
 from speechbrain.pretrained import EncoderDecoderASR
 '''
 This script contains 4 model's training and test due to their large differences (for concise)
@@ -131,8 +132,9 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, clean.real, clean.imag)
     cIRM = drop_band(cIRM, 2)
     cIRM = cIRM.to(device=device, dtype=torch.float)
-    predict1 = model(noise_mag)
-    loss = F.l1_loss(predict1, cIRM)
+    with autocast(enabled=True):
+        predict1 = model(noise_mag)
+        loss = F.l1_loss(predict1, cIRM)
     loss.backward()
     optimizer.step()
     return loss.item()
