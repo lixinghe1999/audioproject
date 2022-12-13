@@ -129,6 +129,9 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
     optimizer.zero_grad()
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, clean.real, clean.imag)
+    cIRM = drop_band(
+        cIRM.permute(0, 3, 1, 2), 2,  # [B, 2, F ,T]
+    ).permute(0, 2, 3, 1)
     cIRM = cIRM.to(device=device, dtype=torch.float)
     predict1 = model(noise_mag)
     loss = F.l1_loss(predict1, cIRM)
