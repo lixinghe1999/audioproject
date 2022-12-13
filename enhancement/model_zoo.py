@@ -127,15 +127,11 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
 
 def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
-    print(noise.shape)
     optimizer.zero_grad()
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, clean.real, clean.imag)
-    print(cIRM.shape)
-    cIRM = drop_band(
-        cIRM, 2)
+    cIRM = drop_band(cIRM, 2)
     cIRM = cIRM.to(device=device, dtype=torch.float)
     predict1 = model(noise_mag)
-    print(predict1.shape, cIRM.shape)
     loss = F.l1_loss(predict1, cIRM)
     loss.backward()
     optimizer.step()
