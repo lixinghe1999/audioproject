@@ -40,7 +40,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
                                    pin_memory=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=1, shuffle=False)
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     if discriminator is not None:
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(1)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     #model = A2net().to(device)
-    model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
+    model = FullSubNet(num_freqs=256, num_groups_in_drop_band=2).to(device)
     # model = SEANet().to(device)
 
     #discriminator = MultiScaleDiscriminator().to(device)
