@@ -134,6 +134,7 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     ).permute(0, 2, 3, 1)
     cIRM = cIRM.to(device=device, dtype=torch.float)
     predict1 = model(noise_mag)
+    print(predict1.shape, cIRM.shape)
     loss = F.l1_loss(predict1, cIRM)
     loss.backward()
     optimizer.step()
