@@ -130,7 +130,7 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     print(noise.shape)
     optimizer.zero_grad()
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, clean.real, clean.imag)
-    print(cIRM)
+    print(cIRM.shape)
     cIRM = drop_band(
         cIRM.permute(0, 3, 1, 2), 2,  # [B, 2, F ,T]
     ).permute(0, 2, 3, 1)
