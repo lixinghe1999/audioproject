@@ -130,13 +130,16 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
     optimizer.zero_grad()
     cIRM = build_complex_ideal_ratio_mask(noise.real, noise.imag, clean.real, clean.imag)
-    cIRM = drop_band(cIRM, 1)
+    cIRM = drop_band(cIRM, 2)
     cIRM = cIRM.to(device=device, dtype=torch.float)
     with autocast(enabled=True):
         predict1 = model(noise_mag)
         loss = F.l1_loss(predict1, cIRM)
     loss.backward()
     optimizer.step()
+    torch.nn.utils.clip_grad_norm_(
+        model.parameters(), 10
+    )
     return loss.item()
 def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=False):
     noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)

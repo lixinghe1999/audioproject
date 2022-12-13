@@ -98,7 +98,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(1)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     #model = A2net().to(device)
-    model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
+    model = FullSubNet(num_freqs=256, num_groups_in_drop_band=2).to(device)
     # model = SEANet().to(device)
 
     #discriminator = MultiScaleDiscriminator().to(device)
@@ -110,8 +110,8 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 12
-        lr = 0.0001
+        BATCH_SIZE = 16
+        lr = 0.001
         EPOCH = 20
         dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir='json/rir_noise.json')
