@@ -94,9 +94,9 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     clean_mag = clean.abs().to(device=device, dtype=torch.float)
     optimizer.zero_grad()
     # VibVoice
-    predict1, predict2 = model(acc, noise_mag)
+    predict1 = model(acc, noise_mag)
     loss = Spectral_Loss(predict1, clean_mag)
-    loss += 0.5 * F.mse_loss(predict2, clean_mag[:, :, :32, :])
+    #loss += 0.5 * F.mse_loss(predict2, clean_mag[:, :, :32, :])
     loss.backward()
     optimizer.step()
     return loss.item()
@@ -106,7 +106,7 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     noise_pha = torch.angle(noise).to(device=device, dtype=torch.float)
     clean = clean.to(device=device).squeeze(1)
 
-    predict1, _ = model(acc, noise_mag)
+    predict1 = model(acc, noise_mag)
     predict1 = torch.exp(1j * noise_pha) * predict1
     predict1 = predict1.squeeze(1)
 

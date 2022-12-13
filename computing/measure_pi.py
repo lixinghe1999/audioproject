@@ -12,7 +12,6 @@ def inference_onnx(onnx_model, sample_input):
     step = 30
     for i in range(step):
         spec = preprocess(sample_input)
-        print(spec.shape)
         spec = np.expand_dims(spec, (0))
         output = ort_session.run(
             None,

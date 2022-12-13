@@ -7,7 +7,7 @@ from dataset import NoisyCleanSet, EMSBDataset
 import json
 
 from fullsubnet import FullSubNet
-from vibvoice import A2net
+from new_vibvoice import A2net
 from conformer import TSCNet
 from SEANet import SEANet
 
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    model = A2net(inference=False).to(device)
+    model = A2net().to(device)
     # model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
     # model = SEANet().to(device)
 
@@ -113,15 +113,15 @@ if __name__ == "__main__":
         BATCH_SIZE = 64
         lr = 0.0001
         EPOCH = 20
-        # dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-        #                         ratio=1, rir='json/rir_noise.json')
-        with open('json/EMSB.json', 'r') as f:
-            data = json.load(f)
-            person = data.keys()
-        EMSB_dataset = EMSBDataset(['json/EMSB.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
-                                ratio=0.6, person=person)
+        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
+                                ratio=1, rir='json/rir_noise.json')
+        # with open('json/EMSB.json', 'r') as f:
+        #     data = json.load(f)
+        #     person = data.keys()
+        # dataset = EMSBDataset(['json/EMSB.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
+        #                         ratio=0.6, person=person)
 
-        ckpt_best, loss_curve, metric_best = train(EMSB_dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
+        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
                                                    save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
