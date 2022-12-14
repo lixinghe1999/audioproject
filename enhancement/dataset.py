@@ -19,11 +19,10 @@ overlap_imu = 32
 
 rate_mic = 16000
 rate_imu = 1600
-length = 5
+length = 3
 stride = 3
 function_pool = '../transfer_function_EMSB'
 N = len(os.listdir(function_pool))
-#N = 300
 
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
@@ -177,8 +176,9 @@ class BaseDataset:
             if self.length:
                 offset = self.stride * index
                 duration = self.length
-            b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
+
             if file[-3:] == 'txt':
+                b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
                 data = np.loadtxt(file)
                 data = data[offset * self.sample_rate: (offset + duration) * self.sample_rate, :]
                 data /= 2 ** 14
@@ -186,11 +186,10 @@ class BaseDataset:
                 data = np.clip(data, -0.05, 0.05)
             else:
                 data, _ = librosa.load(file, offset=offset, duration=duration, mono=True, sr=rate_mic)
-                data = signal.filtfilt(b, a, data)
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
-                 ratio=1, snr=(0, 20), rir='json/rir_noise.json', num_noises=1):
+                 ratio=1, snr=(-5, 20), rir='json/rir_noise.json', num_noises=1):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences

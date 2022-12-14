@@ -46,7 +46,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     if discriminator is not None:
         optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=lr, betas=(0.9, 0.999))
         #scheduler_disc = torch.optim.lr_scheduler.StepLR(optimizer_disc, step_size=5, gamma=0.5)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     loss_best = 100
     loss_curve = []
     ckpt_best = model.state_dict()
@@ -54,7 +54,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Loss_list = []
         for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
             #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
-            loss = train_fullsubnet(model, acc, noise, clean, optimizer, device)
+            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -110,9 +110,9 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 12
-        lr = 0.001
-        EPOCH = 20
+        BATCH_SIZE = 64
+        lr = 0.0001
+        EPOCH = 30
         dataset = NoisyCleanSet(['json/train.json', 'json/tr.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir='json/rir_noise.json')
         # with open('json/EMSB.json', 'r') as f:
@@ -121,8 +121,7 @@ if __name__ == "__main__":
         # dataset = EMSBDataset(['json/EMSB.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
         #                         ratio=0.6, person=person)
 
-        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None,
-                                                   save_all=True)
+        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
     elif args.mode == 1:
