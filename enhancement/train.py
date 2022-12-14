@@ -113,6 +113,9 @@ if __name__ == "__main__":
         BATCH_SIZE = 128
         lr = 0.0001
         EPOCH = 30
+        ckpt_start = torch.load('pretrain/0.46906685339063947.pth')
+        model.load_state_dict(ckpt_start)
+
         dataset = NoisyCleanSet(['json/train.json', 'json/tr.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir='json/rir_noise.json')
         # with open('json/EMSB.json', 'r') as f:
