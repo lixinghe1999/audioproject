@@ -243,6 +243,7 @@ class NoisyCleanSet:
                 else:
                     data = data[int(len(data) * self.ratio):]
             self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
+            print(len(self.dataset[-1]))
         self.rir = rir
         if self.rir is not None:
             with open(rir, 'r') as f:
