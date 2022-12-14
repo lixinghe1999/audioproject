@@ -62,7 +62,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Metric = []
         with torch.no_grad():
             for acc, noise, clean in tqdm(test_loader):
-                metric = test_fullsubnet(model, acc, noise, clean, device)
+                metric = test_vibvoice(model, acc, noise, clean, device)
                 Metric.append(metric)
         avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
         print(avg_metric, mean_lost)
