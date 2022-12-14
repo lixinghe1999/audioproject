@@ -113,7 +113,7 @@ if __name__ == "__main__":
         BATCH_SIZE = 12
         lr = 0.001
         EPOCH = 20
-        dataset = NoisyCleanSet(['json/train.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
+        dataset = NoisyCleanSet(['json/train.json', 'json/tt.json'], time_domain=time_domain, simulation=True,
                                 ratio=1, rir='json/rir_noise.json')
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
