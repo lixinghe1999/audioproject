@@ -98,7 +98,7 @@ def tailor_dB_FS(y, target_dB_FS=-25, eps=1e-6):
 
 
 def is_clipped(y, clipping_threshold=0.999):
-    return any(np.abs(y) > clipping_threshold)
+    return (np.abs(y) > clipping_threshold).any()
 
 
 def load_wav(file, sr=16000):
