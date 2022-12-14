@@ -176,7 +176,6 @@ class BaseDataset:
             if self.length:
                 offset = self.stride * index
                 duration = self.length
-
             if file[-3:] == 'txt':
                 b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
                 data = np.loadtxt(file)
@@ -242,7 +241,6 @@ class NoisyCleanSet:
                 else:
                     data = data[int(len(data) * self.ratio):]
             self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
-            print(len(self.dataset[-1]))
         self.rir = rir
         if self.rir is not None:
             with open(rir, 'r') as f:
@@ -295,7 +293,6 @@ class NoisyCleanSet:
             return imu, noise, clean
     def __len__(self):
         return len(self.dataset[0])
-
 class EMSBDataset:
     def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
                  ratio=1, snr=(0, 20), rir='json/rir_noise.json'):
