@@ -147,7 +147,7 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     cRM = decompress_cIRM(predict.permute(0, 2, 3, 1)).cpu()
     enhanced_real = cRM[..., 0] * noisy_real.squeeze(1) - cRM[..., 1] * noisy_imag.squeeze(1)
     enhanced_imag = cRM[..., 1] * noisy_real.squeeze(1) + cRM[..., 0] * noisy_imag.squeeze(1)
-    predict = istft(enhanced_real, enhanced_imag, 512, 256, 512, input_type="real_imag").numpy()
+    predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, input_type="real_imag").numpy()
 
     clean = clean.numpy()
     if data:
