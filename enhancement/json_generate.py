@@ -50,11 +50,12 @@ if __name__ == "__main__":
             audio_files = []
             g = os.walk(directory + dataset)
             dataset_name = dataset.split('/')[-1]
+            print(dataset_name)
             for path, dir_list, file_list in g:
                 for file_name in file_list:
                     if file_name[-3:] in ['wav', 'lac']:
                         audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
-            json.dump(audio_files, open('json/' + dataset + '.json', 'w'), indent=4)
+            json.dump(audio_files, open('json/' + dataset_name + '.json', 'w'), indent=4)
 
     elif args.mode == 1:
         directory = '../dataset/our'
