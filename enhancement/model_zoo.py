@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import torch
 import numpy as np
 import soundfile as sf
@@ -34,6 +35,9 @@ def eval(clean, predict, text=None):
         metrics = [wer_clean, wer_noisy]
     else:
         print(clean.shape, predict.shape)
+        plt.plot(clean[0])
+        plt.plot(predict[0])
+        plt.savefig('demo.png')
         metric1 = batch_pesq(clean, predict)
         metric2 = SI_SDR(clean, predict)
         metric3 = lsd(clean, predict)
