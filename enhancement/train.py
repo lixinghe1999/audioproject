@@ -130,12 +130,10 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        rir = 'json/rir_noise.json'
         BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 10
         r = 0.8
-        n = 1
 
         # ckpt_dir = 'pretrain/vibvoice_rir'
         # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
@@ -151,20 +149,16 @@ if __name__ == "__main__":
 
         #
         # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-        #                                 time_domain=time_domain, simulation=True, person=people, ratio=r,
-        #                               num_noises=n, rir=rir)
+        #                                 time_domain=time_domain, simulation=True, person=people, ratio=r,)
         # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-        #                                   time_domain=time_domain, simulation=True, person=people, ratio=-0.2,
-        #                              num_noises=n, rir=rir)
+        #                                   time_domain=time_domain, simulation=True, person=people, ratio=-0.2,)
 
         # extra dataset for other positions
         # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         # train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-        #                                time_domain=time_domain, simulation=True, person=positions, ratio=r,
-        #                                num_noises=n, snr=(0, 20), rir=rir)
+        #                                time_domain=time_domain, simulation=True, person=positions, ratio=r,)
         # test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-        #                               time_domain=time_domain, simulation=True, person=positions, ratio=-0.2,
-        #                               num_noises=n, snr=(0, 20), rir=rir)
+        #                               time_domain=time_domain, simulation=True, person=positions, ratio=-0.2,)
 
         # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
         # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
