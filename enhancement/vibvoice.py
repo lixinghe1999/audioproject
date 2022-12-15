@@ -7,8 +7,6 @@ import os
 import numpy as np
 from audio_zen.acoustics.feature import stft, istft
 
-function_pool = '../transfer_function_EMSB'
-N = len(os.listdir(function_pool))
 freq_bin_high = 33
 
 seg_len_mic = 640
