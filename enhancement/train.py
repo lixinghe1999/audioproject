@@ -63,14 +63,14 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
-        # Loss_list = []
-        # for i, sample in enumerate(tqdm(train_loader)):
-        #     text, clean, noise, acc = parse_sample(sample)
-        #     loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
-        #     Loss_list.append(loss)
-        # mean_lost = np.mean(Loss_list)
-        # loss_curve.append(mean_lost)
-        # scheduler.step()
+        Loss_list = []
+        for i, sample in enumerate(tqdm(train_loader)):
+            text, clean, noise, acc = parse_sample(sample)
+            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
+            Loss_list.append(loss)
+        mean_lost = np.mean(Loss_list)
+        loss_curve.append(mean_lost)
+        scheduler.step()
 
         avg_metric = inference(test_dataset, 4, model)
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         lr = 0.0001
         EPOCH = 30
 
-        dataset = NoisyCleanSet(['json/train.json', 'json/tr.json'], simulation=True, ratio=0.05, rir='json/rir.json')
+        dataset = NoisyCleanSet(['json/train.json', 'json/tr.json'], simulation=True, ratio=1, rir='json/rir.json')
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()
