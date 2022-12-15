@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import soundfile as sf
 from evaluation import batch_pesq, SI_SDR, lsd, STOI, eval_ASR
 import torch.nn.functional as F
 from scipy import signal
@@ -163,6 +164,11 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     enhanced_imag = cRM[..., 1] * noisy_real + cRM[..., 0] * noisy_imag
     predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag").numpy()
 
+    amp = np.iinfo(np.int16).max
+    predict = np.int16(0.8 * amp * predict / np.max(np.abs(predict)))
+    sf.write(
+        "my.wav", predict, 16000,
+    )
     clean = clean.numpy()
     print(predict.shape, clean.shape)
     if data:

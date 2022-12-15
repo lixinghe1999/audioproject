@@ -39,6 +39,7 @@ def inference(dataset, BATCH_SIZE, model):
             metric = test_fullsubnet(model, acc, noise, clean, device)
             print(metric)
             Metric.append(metric)
+            break
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
 
