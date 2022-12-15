@@ -178,7 +178,7 @@ if __name__ == "__main__":
                                     person=[p], simulation=True, ratio=-0.2)
             avg_metric = inference(dataset, 4, model)
             print(p, avg_metric)
-        #
+
         # for noise in ['background.json', 'dev.json', 'music.json']:
         #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
         #                             person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
