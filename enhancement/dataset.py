@@ -12,8 +12,8 @@ from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped
 import argparse
 rate_mic = 16000
 rate_imu = 1600
-length = 3
-stride = 3
+length = 10
+stride = 10
 
 
 sentences = [
