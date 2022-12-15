@@ -31,7 +31,7 @@ def parse_sample(sample):
     return text, clean, noise, acc
 
 def inference(dataset, BATCH_SIZE, model):
-    test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=1, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
         for sample in test_loader:
