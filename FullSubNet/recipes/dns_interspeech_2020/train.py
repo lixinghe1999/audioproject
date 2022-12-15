@@ -11,7 +11,7 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader, DistributedSampler
 
 sys.path.append(
-    os.path.abspath(os.path.join(__file__, "../..", "..", ".."))
+    os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 )  # without installation, add /path/to/Audio-ZEN
 import audio_zen.loss as loss
 from audio_zen.utils import initialize_module
