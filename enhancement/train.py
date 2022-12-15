@@ -142,7 +142,7 @@ if __name__ == "__main__":
         model.load_state_dict(checkpoint['model'])
 
         dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoisy.json'],
-                                person=people, simulation=False, ratio=-0.2)
+                                simulation=False, ratio=1)
         avg_metric = inference(dataset, 4, model)
         print(avg_metric)
 
