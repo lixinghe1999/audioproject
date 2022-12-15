@@ -35,7 +35,7 @@ def synthetic(clean, transfer_function, N):
     return acc
 
 class IMU_branch(nn.Module):
-    def __init__(self, inference=False):
+    def __init__(self):
         super(IMU_branch, self).__init__()
         self.conv1 = nn.Sequential(
             nn.Conv2d(1, 16, kernel_size=(3, 3), padding=(1, 1)),
@@ -56,39 +56,40 @@ class IMU_branch(nn.Module):
             nn.MaxPool2d(kernel_size=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
-        self.inference = inference
-        if not inference:
-            self.conv5 = nn.Sequential(
-                nn.Conv2d(128, 64, kernel_size=(3, 3), padding=(1, 1)),
-                #nn.ConvTranspose2d(64, 64, kernel_size=(2, 1), stride=(2, 1)),
-                nn.BatchNorm2d(64),
-                nn.ReLU(inplace=True))
-            self.conv6 = nn.Sequential(
-                nn.Conv2d(64, 32, kernel_size=(3, 3), padding=(1, 1)),
-                nn.ConvTranspose2d(32, 32, kernel_size=(2, 1), stride=(2, 1)),
-                nn.BatchNorm2d(32),
-                nn.ReLU(inplace=True))
-            self.conv7 = nn.Sequential(
-                nn.Conv2d(32, 16, kernel_size=(3, 3), padding=(1, 1)),
-                nn.ConvTranspose2d(16, 16, kernel_size=(2, 1), stride=(2, 1)),
-                nn.BatchNorm2d(16),
-                nn.ReLU(inplace=True))
-            self.final = nn.Conv2d(16, 1, kernel_size=1)
+        # self.inference = inference
+        # if not inference:
+        #     self.conv5 = nn.Sequential(
+        #         nn.Conv2d(128, 64, kernel_size=(3, 3), padding=(1, 1)),
+        #         #nn.ConvTranspose2d(64, 64, kernel_size=(2, 1), stride=(2, 1)),
+        #         nn.BatchNorm2d(64),
+        #         nn.ReLU(inplace=True))
+        #     self.conv6 = nn.Sequential(
+        #         nn.Conv2d(64, 32, kernel_size=(3, 3), padding=(1, 1)),
+        #         nn.ConvTranspose2d(32, 32, kernel_size=(2, 1), stride=(2, 1)),
+        #         nn.BatchNorm2d(32),
+        #         nn.ReLU(inplace=True))
+        #     self.conv7 = nn.Sequential(
+        #         nn.Conv2d(32, 16, kernel_size=(3, 3), padding=(1, 1)),
+        #         nn.ConvTranspose2d(16, 16, kernel_size=(2, 1), stride=(2, 1)),
+        #         nn.BatchNorm2d(16),
+        #         nn.ReLU(inplace=True))
+        #     self.final = nn.Conv2d(16, 1, kernel_size=1)
     def forward(self, x):
         # down-sample
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
-        x_mid = self.conv4(x)
+        x = self.conv4(x)
+        return x
         # up-sample with supervision
-        if not self.inference:
-            x = self.conv5(x_mid)
-            x = self.conv6(x)
-            x = self.conv7(x)
-            x = self.final(x)
-            return x_mid, x
-        else:
-            return x_mid
+        # if not self.inference:
+        #     x = self.conv5(x_mid)
+        #     x = self.conv6(x)
+        #     x = self.conv7(x)
+        #     x = self.final(x)
+        #     return x_mid, x
+        # else:
+        #     return x_mid
 
 class Audio_branch(nn.Module):
     def __init__(self):
@@ -171,10 +172,10 @@ class Residual_Block(nn.Module):
         return x
 
 class A2net(nn.Module):
-    def __init__(self, inference=False):
+    def __init__(self):
         super(A2net, self).__init__()
-        self.inference = inference
-        self.IMU_branch = IMU_branch(self.inference)
+        #self.inference = inference
+        self.IMU_branch = IMU_branch()
         self.Audio_branch = Audio_branch()
         self.Residual_block = Residual_Block(384)
 
