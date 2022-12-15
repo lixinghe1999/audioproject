@@ -7,6 +7,7 @@ from scipy import signal
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from audio_zen.acoustics.feature import drop_band, stft, istft
 from torch.cuda.amp import autocast
+from pathlib import Path
 from speechbrain.pretrained import EncoderDecoderASR
 '''
 This script contains 4 model's training and test due to their large differences (for concise)
@@ -167,7 +168,7 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     amp = np.iinfo(np.int16).max
     predict = np.int16(0.8 * amp * predict / np.max(np.abs(predict)))
     sf.write(
-        'new_file.flac', predict, 16000,
+        'new_file.wav', predict, 16000
     )
     clean = clean.numpy()
     if data:
