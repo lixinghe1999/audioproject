@@ -20,7 +20,7 @@ def noise_extraction(time_bin):
     index = np.random.randint(0, noise_clip.shape[1] - time_bin)
     return noise_clip[:, index:index + time_bin]
 
-def synthetic(clean, transfer_function):
+def synthetic(clean, transfer_function, N):
     time_bin = clean.shape[-1]
     index = np.random.randint(0, N)
     f = transfer_function[index, 0]
@@ -178,11 +178,12 @@ class A2net(nn.Module):
         self.Residual_block = Residual_Block(384)
 
         self.transfer_function = np.load('transfer_function_EMSB_32.npy')
+        self.length_transfer_function = self.transfer_function.shape[0]
 
     def forward(self, noisy, acc=None):
         # Preprocessing
         if acc == None:
-            acc = synthetic(torch.abs(noisy), self.transfer_function)
+            acc = synthetic(torch.abs(noisy), self.transfer_function, self.length_transfer_function)
         acc = acc / torch.max(acc)
 
         acc = self.IMU_branch(acc)
