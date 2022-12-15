@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
         # Load pre-trained FullSubnet
         checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
-        print(checkpoint['best_score'])
+        print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
         model.load_state_dict(checkpoint['model'])
 
         # dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoisy.json'],
@@ -174,7 +174,7 @@ if __name__ == "__main__":
         #     print(rir, avg_metric)
 
         for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+            dataset = NoisyCleanSet(['json/train.json', 'json/cv.json', 'json/train_imu.json'],
                                     person=[p], simulation=True, ratio=-0.2)
             avg_metric = inference(dataset, 4, model)
             print(p, avg_metric)
