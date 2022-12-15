@@ -82,10 +82,10 @@ def inference(dataset, BATCH_SIZE, model):
         for data in test_loader:
             if len(data) == 3:
                 acc, noise, clean = data
-                metric = test_vibvoice(model, acc, noise, clean, device)
+                metric = test_fullsubnet(model, acc, noise, clean, device)
             else:
                 text, acc, noise, clean = data
-                metric = test_vibvoice(model, acc, noise, clean, device, text)
+                metric = test_fullsubnet(model, acc, noise, clean, device, text)
             Metric.append(metric)
     Metric = np.concatenate(Metric, axis=0)
     return Metric
@@ -95,10 +95,10 @@ if __name__ == "__main__":
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
                         help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
     args = parser.parse_args()
-    torch.cuda.set_device(1)
+    torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    model = A2net().to(device)
-    #model = FullSubNet(num_freqs=256, num_groups_in_drop_band=1).to(device)
+    # model = A2net().to(device)
+    model = FullSubNet(num_freqs=257, num_groups_in_drop_band=1).to(device)
     # model = SEANet().to(device)
 
     #discriminator = MultiScaleDiscriminator().to(device)
@@ -136,18 +136,26 @@ if __name__ == "__main__":
         EPOCH = 10
         r = 0.8
         n = 1
-        ckpt_dir = 'pretrain/vibvoice_rir'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/0.4294044267669987.pth'
-        print("load checkpoint: {}".format(ckpt_name))
-        ckpt_start = torch.load(ckpt_name)
+
+        # ckpt_dir = 'pretrain/vibvoice_rir'
+        # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        # ckpt_name = 'pretrain/0.4294044267669987.pth'
+        # print("load checkpoint: {}".format(ckpt_name))
+        # ckpt_start = torch.load(ckpt_name)
+        # model.load_state_dict(ckpt_start)
+
+        # Load pre-trained FullSubnet
+        checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
+        print(checkpoint['best_score'])
+        model.load_state_dict(checkpoint['model'])
+
         #
-        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                        time_domain=time_domain, simulation=True, person=people, ratio=r,
-                                      num_noises=n, rir=rir)
-        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                          time_domain=time_domain, simulation=True, person=people, ratio=-0.2,
-                                     num_noises=n, rir=rir)
+        # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        #                                 time_domain=time_domain, simulation=True, person=people, ratio=r,
+        #                               num_noises=n, rir=rir)
+        # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        #                                   time_domain=time_domain, simulation=True, person=people, ratio=-0.2,
+        #                              num_noises=n, rir=rir)
 
         # extra dataset for other positions
         # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
@@ -161,11 +169,11 @@ if __name__ == "__main__":
         # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
         # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
-        model.load_state_dict(ckpt_start)
-        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
 
+        # ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
+        # model.load_state_dict(ckpt)
         # Optional Micro-benchmark
-        model.load_state_dict(ckpt)
+
         rirs = ['json/smallroom.json', 'json/mediumroom.json', 'json/largeroom.json']
         for rir in rirs:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
