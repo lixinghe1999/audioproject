@@ -145,6 +145,11 @@ if __name__ == "__main__":
         # avg_metric = inference(dataset, 4, model)
         # print(avg_metric)
 
+        dataset = NoisyCleanSet(['json/train.json', 'json/cv.json'],
+                                   simulation=True, ratio=0.05, rir='json/rir.json')
+        avg_metric = inference(dataset, 4, model)
+        print(avg_metric)
+
         # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
         #                                 time_domain=time_domain, simulation=True, person=people, ratio=r,)
         # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
@@ -173,11 +178,11 @@ if __name__ == "__main__":
         #     avg_metric = np.mean(Metric, axis=0)
         #     print(rir, avg_metric)
 
-        for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
-            dataset = NoisyCleanSet(['json/train.json', 'json/cv.json', 'json/train_imu.json'],
-                                    simulation=True, ratio=-0.05)
-            avg_metric = inference(dataset, 4, model)
-            print(p, avg_metric)
+        # for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+        #                             person=[p], simulation=True, ratio=-0.2)
+        #     avg_metric = inference(dataset, 4, model)
+        #     print(p, avg_metric)
 
         # for noise in ['background.json', 'dev.json', 'music.json']:
         #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],

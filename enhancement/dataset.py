@@ -139,7 +139,8 @@ class BaseDataset:
                 data, _ = librosa.load(file, offset=offset, duration=duration, mono=True, sr=rate_mic)
             return data, file
 class NoisyCleanSet:
-    def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(-5, 20), rir=None, num_noises=1):
+    def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(-5, 20),
+                 rir=None, num_noises=1):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
