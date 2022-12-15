@@ -161,11 +161,11 @@ if __name__ == "__main__":
         # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
         # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
-        # model.load_state_dict(ckpt_start)
-        # ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
+        model.load_state_dict(ckpt_start)
+        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
 
         # Optional Micro-benchmark
-        model.load_state_dict(ckpt_start)
+        model.load_state_dict(ckpt)
         rirs = ['json/smallroom.json', 'json/mediumroom.json', 'json/largeroom.json']
         for rir in rirs:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
