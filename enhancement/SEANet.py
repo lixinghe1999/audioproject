@@ -3,6 +3,7 @@ import torch.nn as nn
 import time
 from torch.utils.mobile_optimizer import optimize_for_mobile
 from torch.jit.mobile import _get_model_bytecode_version, _backport_for_mobile
+import os
 class ResUnit(nn.Module):
     def __init__(self, input, output, dilation):
         super(ResUnit, self).__init__()
@@ -61,6 +62,14 @@ class SEANet(nn.Module):
         self.D3 = DecoderBlock(128, 64, 2)
         self.D4 = DecoderBlock(64, 32, 2)
         self.conv4 = nn.Conv1d(32, 4, kernel_size=7, padding=3)
+
+        self.device = torch.device('cpu')
+        self.deep_mapping = SEANet_mapping().to(self.device)
+        ckpt_dir = 'pretrain/deep_augmentation'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
+        print("load checkpoint for deep augmentation: {}".format(ckpt_name))
+        ckpt = torch.load(ckpt_name)
+        self.deep_mapping.load_state_dict(ckpt)
 
     def forward(self, acc, audio):
         # down-sample

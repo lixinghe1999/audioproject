@@ -8,11 +8,9 @@ import matplotlib.pyplot as plt
 import scipy.signal as signal
 import librosa
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
-from SEANet import SEANet_mapping
-from vibvoice import A2net
-from fullsubnet import FullSubNet
+
 import argparse
-seg_len_mic = 512
+seg_len_mic = 640
 overlap_mic = 256
 seg_len_imu = 64
 overlap_imu = 32
@@ -21,11 +19,9 @@ rate_mic = 16000
 rate_imu = 1600
 length = 3
 stride = 3
-function_pool = '../transfer_function_EMSB'
-N = len(os.listdir(function_pool))
+
 
 freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
-freq_bin_low = int(200 / rate_mic * int(seg_len_mic / 2)) + 1
 time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
 
 sentences = [
@@ -34,42 +30,6 @@ sentences = [
     "BUT WE DON'T HAVE ENOUGH DATA TO TRAIN OUR MODEL",
     "TRANSFER FUNCTION CAN BE A GOOD HELPER TO GENERATE DATA"
 ]
-
-def spectrogram(data, nperseg, noverlap, fs):
-    Zxx = signal.stft(data, nperseg=nperseg, noverlap=noverlap, fs=fs, axis=0)[-1]
-    if len(Zxx.shape) == 3:
-        Zxx = np.linalg.norm(np.abs(Zxx), axis=1)
-    Zxx = np.expand_dims(Zxx, 0)
-    return Zxx
-def read_transfer_function(path):
-    npzs = os.listdir(path)
-    transfer_function = np.zeros((len(npzs), freq_bin_high))
-    variance = np.zeros((len(npzs), freq_bin_high))
-    for i in range(len(npzs)):
-        npz = np.load(path + '/' + npzs[i])
-        transfer_function[i, :] = npz['response']
-        variance[i, :] = npz['variance']
-    return transfer_function, variance
-
-def noise_extraction():
-    noise_list = os.listdir('../dataset/noise/')
-    index = np.random.randint(0, len(noise_list))
-    noise_clip = np.load('../dataset/noise/' + noise_list[index])
-    index = np.random.randint(0, noise_clip.shape[1] - time_bin)
-    return noise_clip[:, index:index + time_bin]
-
-def synthetic(clean, transfer_function, variance):
-    index = np.random.randint(0, N)
-    f = transfer_function[index, :]
-    f_norm = f / np.max(f)
-    v_norm = variance[index, :] / np.max(f)
-    response = np.tile(np.expand_dims(f_norm, axis=1), (1, time_bin))
-    for j in range(time_bin):
-        response[:, j] += np.random.normal(0, v_norm, (freq_bin_high))
-    noisy = clean[:, :freq_bin_high, :] * response
-    background_noise = noise_extraction()
-    noisy += 2 * background_noise
-    return noisy
 
 def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, rir=None, eps=1e-6):
         """
@@ -187,8 +147,7 @@ class BaseDataset:
                 data, _ = librosa.load(file, offset=offset, duration=duration, mono=True, sr=rate_mic)
             return data, file
 class NoisyCleanSet:
-    def __init__(self, json_paths, text=False, person=None, simulation=False, time_domain=False,
-                 ratio=1, snr=(-5, 20), rir='json/rir.json', num_noises=1):
+    def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(-5, 20), rir=None, num_noises=1):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -202,25 +161,11 @@ class NoisyCleanSet:
         self.ratio = ratio
         self.simulation = simulation
         self.text = text
-        self.time_domain = time_domain
         self.snr_list = np.arange(snr[0], snr[1], 1)
         self.num_noises = num_noises
         if len(json_paths) == 2:
-            # transfer function-based augmentation
+            # only clean + noise
             self.augmentation = True
-            # deep augmentation
-            if self.time_domain:
-                self.device = torch.device('cpu')
-                self.deep_mapping = SEANet_mapping().to(self.device)
-                ckpt_dir = 'pretrain/deep_augmentation'
-                ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-                print("load checkpoint for deep augmentation: {}".format(ckpt_name))
-                ckpt = torch.load(ckpt_name)
-                self.deep_mapping.load_state_dict(ckpt)
-            else:
-                transfer_function, variance = read_transfer_function(function_pool)
-                self.variance = variance
-                self.transfer_function = transfer_function
         else:
             self.augmentation = False
         sr = [16000, 16000, 1600]
@@ -264,33 +209,17 @@ class NoisyCleanSet:
         else:
             noise, _ = self.dataset[1][index]
             noise, clean = snr_norm([noise, clean], -25, 10)
-        if self.time_domain:
-            if self.augmentation:
-                with torch.no_grad():
-                    audio = torch.from_numpy(clean).to(device=self.device, dtype=torch.float)
-                    audio = torch.unsqueeze(audio, 0)
-                    imu = self.deep_mapping(audio)
-            else:
-                imu, _ = self.dataset[2][index]
-                imu = np.transpose(imu)
-            clean = np.expand_dims(clean, 0)
-            noise = np.expand_dims(noise, 0)
+        if self.augmentation:
+            data = [clean, noise, None]
         else:
-            noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
-            clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
-            if self.augmentation:
-                imu = synthetic(np.abs(clean), self.transfer_function, self.variance)
-            else:
-                imu, _ = self.dataset[2][index]
-                imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
-            # noise = noise[:, : 8 * (freq_bin_high - 1) + 1, :-1]
-            # clean = clean[:, : 8 * (freq_bin_high - 1) + 1, :-1]
-            # imu = imu[:, :freq_bin_high, :-1]
+            acc, _ = self.dataset[2][index]
+            acc = np.transpose(acc)
+            data = [clean, noise, acc]
         if self.text:
             setence = sentences[int(file.split('/')[4][-1])-1]
-            return setence, imu, noise, clean
+            return setence, data
         else:
-            return imu, noise, clean
+            return None, data
     def __len__(self):
         return len(self.dataset[0])
 class EMSBDataset:
@@ -377,12 +306,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.mode == 0:
         # check data
-        dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], time_domain=False, simulation=True, ratio=1,
-                                      rir='json/roomacoustic.json')
-        #dataset_train = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json','json/position_imu.json'], imulation=True, person=['headphone'])
+        dataset_train = NoisyCleanSet(['json/train.json', 'json/dev.json'], simulation=True, ratio=1)
         loader = Data.DataLoader(dataset=dataset_train, batch_size=2, shuffle=False)
-        for step, (x, noise, y) in enumerate(loader):
-            print(x.shape, noise.shape, y.shape)
+        for step, (clean, noise) in enumerate(loader):
+            print(noise.shape, clean.shape)
 
             # x = x[0, 0].numpy()
             # noise = noise[0, 0].numpy()
@@ -393,14 +320,6 @@ if __name__ == "__main__":
             # axs[2].plot(y)
             # plt.show()
 
-            x = x[0, 0].numpy()
-            noise = np.abs(noise[0, 0].numpy())
-            y = np.abs(y[0, 0].numpy())
-            fig, axs = plt.subplots(3, 1)
-            axs[0].imshow(x, aspect='auto')
-            axs[1].imshow(np.abs(noise[:freq_bin_high, :]), aspect='auto')
-            axs[2].imshow(np.abs(y[:freq_bin_high, :]), aspect='auto')
-            plt.show()
     elif args.mode == 1:
         # save different positions correlation with audio
         # dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_gt.json', 'json/train_imu'], person=['hou'],

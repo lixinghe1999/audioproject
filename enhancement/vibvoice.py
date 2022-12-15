@@ -1,7 +1,41 @@
+import matplotlib.pyplot as plt
 import torch.nn as nn
 import torch
 import time
 from torch.utils.mobile_optimizer import optimize_for_mobile
+import os
+import numpy as np
+from audio_zen.acoustics.feature import stft, istft
+
+function_pool = '../transfer_function_EMSB'
+N = len(os.listdir(function_pool))
+freq_bin_high = 33
+
+seg_len_mic = 640
+overlap_mic = 256
+seg_len_imu = 64
+overlap_imu = 32
+
+def noise_extraction(time_bin):
+    noise_list = os.listdir('../dataset/noise/')
+    index = np.random.randint(0, len(noise_list))
+    noise_clip = np.load('../dataset/noise/' + noise_list[index])
+    index = np.random.randint(0, noise_clip.shape[1] - time_bin)
+    return noise_clip[:, index:index + time_bin]
+
+def synthetic(clean, transfer_function):
+    time_bin = clean.shape[-1]
+    index = np.random.randint(0, N)
+    f = transfer_function[index, 0]
+    v = transfer_function[index, 1]
+    response = np.tile(np.expand_dims(f, axis=1), (1, time_bin))
+    for j in range(time_bin):
+        response[:, j] += np.random.normal(0, v, (freq_bin_high))
+    acc = clean[..., :freq_bin_high, :] * response
+    # background_noise = noise_extraction(time_bin)
+    # noisy += 2 * background_noise
+    return acc
+
 class IMU_branch(nn.Module):
     def __init__(self, inference=False):
         super(IMU_branch, self).__init__()
@@ -57,6 +91,7 @@ class IMU_branch(nn.Module):
             return x_mid, x
         else:
             return x_mid
+
 class Audio_branch(nn.Module):
     def __init__(self):
         super(Audio_branch, self).__init__()
@@ -144,14 +179,22 @@ class A2net(nn.Module):
         self.IMU_branch = IMU_branch(self.inference)
         self.Audio_branch = Audio_branch()
         self.Residual_block = Residual_Block(384)
-    def forward(self, x1, x2):
-        x1 = self.IMU_branch(x1)
+
+        self.transfer_function = np.load('transfer_function_EMSB_32.npy')
+
+    def forward(self, clean, acc=None):
+        # Preprocessing
+        if acc == None:
+            acc = synthetic(torch.abs(clean), self.transfer_function)
+        acc = acc / torch.max(acc)
+
+        acc = self.IMU_branch(acc)
         if self.inference:
-            x = self.Residual_block(x1, self.Audio_branch(x2)) * x2
+            x = self.Residual_block(acc, self.Audio_branch(clean)) * clean
             return x
         else:
-            x1, x_extra = x1
-            x = self.Residual_block(x1, self.Audio_branch(x2)) * x2
+            acc, x_extra = acc
+            x = self.Residual_block(acc, self.Audio_branch(clean)) * clean
             return x, x_extra
 
 def model_size(model):
@@ -172,10 +215,6 @@ def model_save(model):
     #scripted_module.save("inference.pt")
     optimized_scripted_module = optimize_for_mobile(scripted_module)
     optimized_scripted_module._save_for_lite_interpreter("vibvoice.ptl")
-
-    # save_image(x, 'input1.jpg')
-    # save_image(noise, 'input2.jpg')
-
 def model_speed(model, input):
     t_start = time.time()
     step = 100
@@ -188,13 +227,13 @@ if __name__ == "__main__":
     acc = torch.rand(1, 1, 32, 250)
     audio = torch.rand(1, 1, 256, 250)
     model = A2net(inference=False)
-    audio, acc = model(acc, audio)
+    audio, acc = model(audio)
     print(audio.shape, acc.shape)
 
-    size_all_mb = model_size(model)
-    print('model size: {:.3f}MB'.format(size_all_mb))
+    # size_all_mb = model_size(model)
+    # print('model size: {:.3f}MB'.format(size_all_mb))
 
-    # latency = model_speed(model, [acc, audio])
+    latency = model_speed(model, [audio])
     # print('model latency: {:.3f}S'.format(latency))
 
-    model_save(model)
+    #model_save(model)

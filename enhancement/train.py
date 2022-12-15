@@ -7,7 +7,7 @@ from dataset import NoisyCleanSet, EMSBDataset
 import json
 
 from fullsubnet import FullSubNet
-from new_vibvoice import A2net
+from vibvoice import A2net
 from conformer import TSCNet
 from SEANet import SEANet
 
@@ -18,6 +18,17 @@ from discriminator import Discriminator_time, Discriminator_spectrogram, MultiSc
 from model_zoo import train_SEANet, test_SEANet, train_vibvoice, test_vibvoice, train_fullsubnet, test_fullsubnet, \
     train_conformer, test_conformer
 
+def inference(dataset, BATCH_SIZE, model):
+    test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
+    Metric = []
+    with torch.no_grad():
+        for sample in test_loader:
+            text, data = sample
+            clean, noise, acc = data
+            metric = test_fullsubnet(model, acc, noise, clean, device)
+            Metric.append(metric)
+    avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
+    return avg_metric
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False):
     if isinstance(dataset, list):
@@ -31,7 +42,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
                                    pin_memory=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=1, shuffle=False)
+
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     if discriminator is not None:
@@ -50,12 +61,9 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
         scheduler.step()
-        Metric = []
-        with torch.no_grad():
-            for acc, noise, clean in tqdm(test_loader):
-                metric = test_vibvoice(model, acc, noise, clean, device)
-                Metric.append(metric)
-        avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
+
+        avg_metric = inference(test_dataset, 4, model)
+
         print(avg_metric, mean_lost)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
@@ -66,20 +74,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 
-def inference(dataset, BATCH_SIZE, model):
-    test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
-    Metric = []
-    with torch.no_grad():
-        for data in test_loader:
-            if len(data) == 3:
-                acc, noise, clean = data
-                metric = test_fullsubnet(model, acc, noise, clean, device)
-            else:
-                text, acc, noise, clean = data
-                metric = test_fullsubnet(model, acc, noise, clean, device, text)
-            Metric.append(metric)
-    Metric = np.concatenate(Metric, axis=0)
-    return Metric
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -88,26 +83,24 @@ if __name__ == "__main__":
     args = parser.parse_args()
     torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    # model = A2net().to(device)
-    model = FullSubNet(num_freqs=257, num_groups_in_drop_band=1).to(device)
+
+    model = A2net(inference=True).to(device)
+    # model = FullSubNet(num_freqs=257, num_groups_in_drop_band=1).to(device)
     # model = SEANet().to(device)
 
-    #discriminator = MultiScaleDiscriminator().to(device)
-    time_domain = False
+    # discriminator = MultiScaleDiscriminator().to(device)
 
     # model = torch.nn.DataParallel(model, device_ids=[1])
-    # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
+    # discriminator = torch.nn.DataParallel(d iscriminator, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 128
+        BATCH_SIZE = 64
         lr = 0.0001
         EPOCH = 30
-        ckpt_start = torch.load('pretrain/0.46906685339063947.pth')
-        model.load_state_dict(ckpt_start)
 
-        dataset = NoisyCleanSet(['json/train.json', 'json/tr.json'], time_domain=time_domain, simulation=True,
+        dataset = NoisyCleanSet(['json/train.json', 'json/tr.json'], simulation=True,
                                 ratio=1, rir='json/rir_noise.json')
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)

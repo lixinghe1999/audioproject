@@ -2,79 +2,70 @@ import torch.nn as nn
 import torch
 import time
 from torch.utils.mobile_optimizer import optimize_for_mobile
+class Conv_Block(nn.Module):
+    def __init__(self, input, output):
+        super(Conv_Block, self).__init__()
+        self.conv = nn.Conv2d(input, output, kernel_size=(3, 3))
+        self.batch = nn.BatchNorm2d(output)
+        self.relu = nn.ReLU(inplace=True)
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.batch(x)
+        x = self.relu(x)
+        return x
+class Res_Block(nn.Module):
+    def __init__(self, input, output):
+        super(Res_Block, self).__init__()
+        self.conv1 = nn.Conv2d(input, input, kernel_size=(3, 3))
+        self.batch = nn.BatchNorm2d(input)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(input, output, kernel_size=(3, 3))
+    def forward(self, x):
+        x = self.relu(self.batch(self.conv(x))) + x
+        x = self.conv2(x)
+        return x
 class IMU_branch(nn.Module):
     def __init__(self):
         super(IMU_branch, self).__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=(3, 3), padding=(1, 1)),
-            nn.BatchNorm2d(16),
-            nn.ReLU(inplace=True))
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(16, 32, kernel_size=(3, 3), padding=(1, 1)),
-            nn.BatchNorm2d(32),
-            nn.ReLU(inplace=True))
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=(3, 3), padding=(1, 1)),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True))
-        self.conv4 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=(3, 3), padding=(1, 1)),
-            nn.MaxPool2d(kernel_size=(2, 1)),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True))
-        self.conv5 = nn.Sequential(
-            nn.Conv2d(128, 256, kernel_size=(3, 3), padding=(1, 1)),
-            nn.MaxPool2d(kernel_size=(2, 1)),
-            nn.BatchNorm2d(256),
-            nn.ReLU(inplace=True))
+        self.conv1 = Conv_Block(1, 16)
+        self.conv2 = Conv_Block(16, 32)
+        self.conv3 = Conv_Block(32, 64)
+        self.conv4 = Conv_Block(64, 128)
+        self.downsample1 = nn.MaxPool2d(kernel_size=(2, 1))
+        self.conv5 = Conv_Block(128, 256)
+        self.downsample2 = nn.MaxPool2d(kernel_size=(2, 1))
     def forward(self, x):
         # down-sample
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
+        x = self.downsample1(x)
         x = self.conv4(x)
+        x = self.downsample2(x)
         x = self.conv5(x)
         return x
 class Audio_branch(nn.Module):
     def __init__(self):
         super(Audio_branch, self).__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3, padding=1),
-            nn.MaxPool2d(kernel_size=(2, 1)),
-            nn.BatchNorm2d(16),
-            nn.ReLU(inplace=True),
-        )
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(16, 32, kernel_size=5, padding=4, dilation=2),
-            nn.MaxPool2d(kernel_size=(2, 1)),
-            nn.BatchNorm2d(32),
-            nn.ReLU(inplace=True)
-            )
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=5, padding=4, dilation=2),
-            nn.MaxPool2d(kernel_size=(2, 1)),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True)
-            )
-        self.conv4 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=5, padding=2, dilation=1),
-            nn.MaxPool2d(kernel_size=(2, 1)),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True),
-            )
-        self.conv5 = nn.Sequential(
-            nn.Conv2d(128, 256, kernel_size=5, padding=2, dilation=1),
-            nn.MaxPool2d(kernel_size=(2, 1)),
-            nn.BatchNorm2d(256),
-            nn.ReLU(inplace=True),
-            )
+        self.conv1 = Conv_Block(1, 16)
+        self.conv2 = Conv_Block(16, 32)
+        self.conv3 = Conv_Block(32, 64)
+        self.conv4 = Conv_Block(64, 128)
+        self.conv5 = Conv_Block(128, 256)
+        self.downsample1 = nn.MaxPool2d(kernel_size=(2, 1))
+        self.downsample2 = nn.MaxPool2d(kernel_size=(2, 1))
+        self.downsample3 = nn.MaxPool2d(kernel_size=(2, 1))
+
     def forward(self, x):
-        x1 = self.conv1(x)
-        x2 = self.conv2(x1)
-        x3 = self.conv3(x2)
-        x4 = self.conv4(x3)
-        x5 = self.conv5(x4)
-        return [x1, x2, x3, x4, x5]
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.downsample1(x)
+        x = self.conv3(x)
+        x = self.downsample2(x)
+        x = self.conv4(x)
+        x = self.downsample3(x)
+        x = self.conv5(x)
+        return x
 
 class Attention_block(nn.Module):
     def __init__(self):
@@ -89,16 +80,20 @@ class Attention_block(nn.Module):
     def forward(self, acc, audio):
         z = self.Pooling(acc)
         z = self.fc(z.reshape((-1, 256))).reshape((-1, 256, 1, 1))
-        output = torch.cat([audio * z, audio, acc], dim=1)
-        return output
+        return audio * z
 class Residual_Block(nn.Module):
     def __init__(self, in_channels):
         super(Residual_Block, self).__init__()
-        self.r1 = nn.Sequential(
-            nn.Conv2d(in_channels, 128, kernel_size=5, padding=2, dilation=1),
-            nn.ConvTranspose2d(128, 128, kernel_size=(2, 1), stride=(2, 1)),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True))
+        self.r1 = Res_Block(in_channels)
+        self.upsample1 = nn.ConvTranspose2d(in_channels, 128, kernel_size=(2, 1), stride=(2, 1)),
+        self.r2 = Res_Block(128)
+        self.r3 = Res_Block(in_channels)
+        self.upsample1 = nn.ConvTranspose2d(in_channels, 128, kernel_size=(2, 1), stride=(2, 1)),
+        self.r4 = Res_Block(in_channels)
+        self.upsample1 = nn.ConvTranspose2d(in_channels, 128, kernel_size=(2, 1), stride=(2, 1)),
+        self.r5 = Res_Block(in_channels)
+        self.upsample1 = nn.ConvTranspose2d(in_channels, 128, kernel_size=(2, 1), stride=(2, 1)),
+
         self.r2 = nn.Sequential(
             nn.Conv2d(256, 64, kernel_size=5, padding=2, dilation=1),
             nn.ConvTranspose2d(64, 64, kernel_size=(2, 1), stride=(2, 1)),
