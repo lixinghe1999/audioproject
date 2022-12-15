@@ -36,7 +36,7 @@ def inference(dataset, BATCH_SIZE, model):
     with torch.no_grad():
         for sample in test_loader:
             text, clean, noise, acc = parse_sample(sample)
-            metric = test_vibvoice(model, acc, noise, clean, device)
+            metric = test_fullsubnet(model, acc, noise, clean, device)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
@@ -160,8 +160,7 @@ if __name__ == "__main__":
         # ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
         # model.load_state_dict(ckpt)
         # Optional Micro-benchmark
-        dataset = NoisyCleanSet(['json/dev.json', 'json/cv.json', 'json/train_imu.json'],
-                                     time_domain=time_domain, simulation=True, ratio=-0.2)
+        dataset = NoisyCleanSet(['json/dev.json', 'json/cv.json', 'json/train_imu.json'], simulation=True, ratio=-0.2)
         Metric = inference(dataset, 4, model)
         avg_metric = np.mean(Metric, axis=0)
         print(avg_metric)

@@ -122,7 +122,6 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
         return eval(clean, predict, text=text), predict, noise
     else:
         return eval(clean, predict, text=text)
-
 def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
     optimizer.zero_grad()
@@ -138,25 +137,19 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
         model.parameters(), 10
     )
     return loss.item()
+
 def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=False):
-    noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)
-    noise_real = noise.real.to(device=device, dtype=torch.float)
-    noise_imag = noise.imag.to(device=device, dtype=torch.float)
-    clean = clean.to(device=device).squeeze(1)
+    noisy_mag, noisy_phase, noisy_real, noisy_imag = stft(noise, 512, 256, 512)
 
-    predict = model(noise_mag)
+    noisy_mag = noisy_mag.to(device=device).unsqueeze(1)
+
+    predict = model(noisy_mag)
     cRM = decompress_cIRM(predict.permute(0, 2, 3, 1))
-    enhanced_real = cRM[..., 0] * noise_real.squeeze(1) - cRM[..., 1] * noise_imag.squeeze(1)
-    enhanced_imag = cRM[..., 1] * noise_real.squeeze(1) + cRM[..., 0] * noise_imag.squeeze(1)
-    predict = torch.complex(enhanced_real, enhanced_imag)
+    enhanced_real = cRM[..., 0] * noisy_real.squeeze(1) - cRM[..., 1] * noisy_imag.squeeze(1)
+    enhanced_imag = cRM[..., 1] * noisy_real.squeeze(1) + cRM[..., 0] * noisy_imag.squeeze(1)
+    predict = istft(enhanced_real, enhanced_imag, 512, 256, 512, input_type="real_imag").cpu().numpy()
 
-    predict = predict.cpu().numpy()
-    #predict = np.pad(predict, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
-    predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
-
-    clean = clean.cpu().numpy()
-    #clean = np.pad(clean, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
-    clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+    clean = clean.numpy()
     if data:
         noise = noise.squeeze(1).numpy()
         noise = np.pad(noise, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
