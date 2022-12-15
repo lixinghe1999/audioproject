@@ -138,16 +138,16 @@ if __name__ == "__main__":
         n = 1
         ckpt_dir = 'pretrain/vibvoice_rir'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        #ckpt_name = 'pretrain/[ 2.52787821 14.42417432  3.50193285].pth'
+        ckpt_name = 'pretrain/0.4294044267669987.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         #
-        # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-        #                                 time_domain=time_domain, simulation=True, person=people, ratio=r,
-        #                               num_noises=n, snr=(0, 20), rir=rir)
-        # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-        #                                   time_domain=time_domain, simulation=True, person=people, ratio=-0.2,
-        #                              num_noises=n, snr=(0, 20), rir=rir)
+        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+                                        time_domain=time_domain, simulation=True, person=people, ratio=r,
+                                      num_noises=n, rir=rir)
+        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+                                          time_domain=time_domain, simulation=True, person=people, ratio=-0.2,
+                                     num_noises=n, rir=rir)
 
         # extra dataset for other positions
         # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
@@ -188,7 +188,7 @@ if __name__ == "__main__":
             avg_metric = np.mean(Metric, axis=0)
             print(noise, avg_metric)
 
-        for level in [11, 6, 1]:
+        for level in [5, 1, -3]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
                                     time_domain=time_domain, simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
             Metric = inference(dataset, BATCH_SIZE, model)
