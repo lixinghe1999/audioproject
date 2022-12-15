@@ -38,9 +38,9 @@ def inference(dataset, BATCH_SIZE, model):
             text, clean, noise, acc = parse_sample(sample)
             metric = test_fullsubnet(model, acc, noise, clean, device)
             print(metric)
-            Metric += metric
+            Metric.append(metric)
             print(Metric)
-    avg_metric = np.mean(Metric, axis=0)
+    avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False):
