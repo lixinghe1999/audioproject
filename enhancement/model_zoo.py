@@ -35,9 +35,7 @@ def eval(clean, predict, text=None):
         metrics = [wer_clean, wer_noisy]
     else:
         print(clean.shape, predict.shape)
-        plt.plot(clean[0])
-        plt.plot(predict[0])
-        plt.savefig('demo.png')
+
         metric1 = batch_pesq(clean, predict)
         metric2 = SI_SDR(clean, predict)
         metric3 = lsd(clean, predict)
@@ -171,20 +169,24 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag")
     predict = predict.numpy()
 
-    # clean = clean.numpy()
-    # amp = np.iinfo(np.int16).max
-    # clean = np.int16(0.8 * amp * clean / np.max(np.abs(clean)))
-    # print(clean.shape)
-    # sf.write(
-    #     'clean.wav', predict.transpose(), samplerate=16000,
-    # )
-    #
-    # amp = np.iinfo(np.int16).max
-    # predict = np.int16(0.8 * amp * predict / np.max(np.abs(predict)))
-    # print(predict.shape)
-    # sf.write(
-    #     'my.wav', predict.transpose(), samplerate=16000,
-    # )
+    plt.plot(clean[0])
+    plt.plot(predict[0])
+    plt.savefig('demo.png')
+
+    clean = clean.numpy()
+    amp = np.iinfo(np.int16).max
+    clean = np.int16(0.8 * amp * clean / np.max(np.abs(clean)))
+    print(clean.shape)
+    sf.write(
+        'clean.wav', predict.transpose(), samplerate=16000,
+    )
+
+    amp = np.iinfo(np.int16).max
+    predict = np.int16(0.8 * amp * predict / np.max(np.abs(predict)))
+    print(predict.shape)
+    sf.write(
+        'predict.wav', predict.transpose(), samplerate=16000,
+    )
 
 
     if data:
