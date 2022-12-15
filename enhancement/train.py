@@ -131,9 +131,9 @@ if __name__ == "__main__":
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         rir = 'json/rir_noise.json'
-        BATCH_SIZE = 8
+        BATCH_SIZE = 16
         lr = 0.0001
-        EPOCH = 20
+        EPOCH = 10
         r = 0.8
         n = 1
         ckpt_dir = 'pretrain/vibvoice_rir'
