@@ -160,7 +160,8 @@ if __name__ == "__main__":
         # ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
         # model.load_state_dict(ckpt)
         # Optional Micro-benchmark
-        dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'], simulation=True, ratio=-0.2)
+        dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+                                person=people, simulation=True, ratio=-0.2)
         Metric = inference(dataset, 4, model)
         avg_metric = np.mean(Metric, axis=0)
         print(avg_metric)
