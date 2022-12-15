@@ -14,8 +14,8 @@ This script contains 4 model's training and test due to their large differences 
 3. A2Net (VibVoice), spectrogram magnitude -> spectrogram magnitude
 4. Conformer, GAN, spectrogram real+imag -> real+imag
 '''
-seg_len_mic = 640
-overlap_mic = 320
+seg_len_mic = 512
+overlap_mic = 256
 seg_len_imu = 64
 overlap_imu = 32
 rate_mic = 16000
