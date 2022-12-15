@@ -90,15 +90,11 @@ def test_SEANet(model, acc, noise, clean, device='cuda', text=None):
     return eval(clean, predict, text)
 
 def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
-
     noisy_mag, _, _, _ = stft(noise, 640, 320, 640)
     clean_mag, _, _, _ = stft(clean, 640, 320, 640)
-    print(noisy_mag.shape, clean_mag.shape)
-
     optimizer.zero_grad()
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
-
     clean_mag = clean_mag.to(device=device)
     clean_mag = torch.unsqueeze(clean_mag[:, 1:257, 1:], 1)
     predict = model(noisy_mag, acc)
@@ -109,25 +105,20 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     optimizer.step()
     return loss.item()
 def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False):
-    acc = acc.abs().to(device=device, dtype=torch.float)
-    noise_mag = torch.abs(noise).to(device=device, dtype=torch.float)
-    noise_pha = torch.angle(noise).to(device=device, dtype=torch.float)
-    clean = clean.to(device=device).squeeze(1)
 
-    predict1 = model(acc, noise_mag)
-    predict1 = torch.exp(1j * noise_pha) * predict1
-    predict1 = predict1.squeeze(1)
+    noisy_mag, noisy_phase, _, _ = stft(noise, 640, 320, 640)
+    # VibVoice
+    noisy_mag = noisy_mag.to(device=device)
 
-    predict = predict1.cpu().numpy()
-    predict = np.pad(predict, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    predict = model(noisy_mag, acc).squeeze(1)
+    predict = torch.exp(1j * noisy_phase) * predict
+
+    predict = predict.cpu().numpy()
+    predict = np.pad(predict, ((0, 0), (1, 321-257), (1, 0)))
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
-
-    clean = clean.cpu().numpy()
-    clean = np.pad(clean, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
-    clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     if data:
         noise = noise.squeeze(1).numpy()
-        noise = np.pad(noise, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+        noise = np.pad(noise, ((0, 0), (1, 321-257), (1, 0)))
         noise = signal.istft(noise, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
         return eval(clean, predict, text=text), predict, noise
     else:

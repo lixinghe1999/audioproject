@@ -54,7 +54,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
                                    pin_memory=True)
 
-
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     if discriminator is not None:
         optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=lr, betas=(0.9, 0.999))
@@ -95,7 +94,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
-    model = A2net(inference=True).to(device)
+    model = A2net().to(device)
     # model = FullSubNet(num_freqs=257, num_groups_in_drop_band=1).to(device)
     # model = SEANet().to(device)
 

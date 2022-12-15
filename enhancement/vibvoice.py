@@ -185,18 +185,19 @@ class A2net(nn.Module):
         # Preprocessing
         if acc == None:
             acc = synthetic(torch.abs(noisy), self.transfer_function, self.length_transfer_function)
+        else:
+            acc = torch.abs(torch.stft(acc, 64, 32, 64, window=torch.hann_window(64, device=noisy.device), return_complex=True))
         acc = acc / torch.max(acc)
         noisy = torch.unsqueeze(noisy[:, 1:257, 1:], 1)
         acc = torch.unsqueeze(acc[:, 1:, 1:], 1)
-        print(noisy.shape, acc.shape)
         acc = self.IMU_branch(acc)
-        if self.inference:
-            x = self.Residual_block(acc, self.Audio_branch(noisy)) * noisy
-            return x
-        else:
-            acc, x_extra = acc
-            x = self.Residual_block(acc, self.Audio_branch(noisy)) * noisy
-            return x, x_extra
+        mask = self.Residual_block(acc, self.Audio_branch(noisy))
+        clean = mask * noisy
+        return clean
+        # else:
+        #     acc, x_extra = acc
+        #     x = self.Residual_block(acc, self.Audio_branch(noisy)) * noisy
+        #     return x, x_extra
 
 def model_size(model):
     param_size = 0
