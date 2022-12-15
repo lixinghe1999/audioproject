@@ -28,7 +28,7 @@ def synthetic(clean, transfer_function, N):
     response = np.tile(np.expand_dims(f, axis=1), (1, time_bin))
     for j in range(time_bin):
         response[:, j] += np.random.normal(0, v, (freq_bin_high))
-    response = torch.from_numpy(response)
+    response = torch.from_numpy(response).to(clean.device)
     acc = clean[..., :freq_bin_high, :] * response
     # background_noise = noise_extraction(time_bin)
     # noisy += 2 * background_noise
