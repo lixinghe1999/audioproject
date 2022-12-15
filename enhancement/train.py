@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
         dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoisy.json'],
                                 person=people, simulation=False, ratio=-0.2)
-        Metric = inference(dataset, 4, model)
+        Metric = inference(dataset, 1, model)
         avg_metric = np.mean(Metric, axis=0)
         print(avg_metric)
         #
