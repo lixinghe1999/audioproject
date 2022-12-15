@@ -147,7 +147,7 @@ if __name__ == "__main__":
         # print(avg_metric)
 
         dataset = NoisyCleanSet(['json/dev.json', 'json/cv.json'],
-                                   simulation=True, ratio=1, rir='json/rir.json')
+                                   simulation=True, ratio=0.1, rir='json/rir.json')
         avg_metric = inference(dataset, 4, model)
         print(avg_metric)
 
