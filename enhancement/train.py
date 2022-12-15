@@ -63,14 +63,14 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     loss_curve = []
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
-        Loss_list = []
-        for i, sample in enumerate(tqdm(train_loader)):
-            text, clean, noise, acc = parse_sample(sample)
-            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
-            Loss_list.append(loss)
-        mean_lost = np.mean(Loss_list)
-        loss_curve.append(mean_lost)
-        scheduler.step()
+        # Loss_list = []
+        # for i, sample in enumerate(tqdm(train_loader)):
+        #     text, clean, noise, acc = parse_sample(sample)
+        #     loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
+        #     Loss_list.append(loss)
+        # mean_lost = np.mean(Loss_list)
+        # loss_curve.append(mean_lost)
+        # scheduler.step()
 
         avg_metric = inference(test_dataset, 4, model)
 

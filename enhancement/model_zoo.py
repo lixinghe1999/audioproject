@@ -115,6 +115,7 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
 
     predict = np.exp(1j * noisy_phase) * predict
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+    print(predict.shape, clean.shape)
     if data:
         noise = noise.squeeze(1).numpy()
         noise = np.pad(noise, ((0, 0), (1, 321-257), (1, 0)))
