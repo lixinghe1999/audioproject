@@ -90,14 +90,18 @@ def test_SEANet(model, acc, noise, clean, device='cuda', text=None):
     return eval(clean, predict, text)
 
 def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
-    print(acc.shape, noise.shape, clean.shape)
-    acc = acc.abs().to(device=device, dtype=torch.float)
-    noise_mag = noise.abs().to(device=device, dtype=torch.float)
-    clean_mag = clean.abs().to(device=device, dtype=torch.float)
+
+    noisy_mag, _, _, _ = stft(noise, 640, 320, 640)
+    clean_mag, _, _, _ = stft(clean, 640, 320, 640)
+    print(noisy_mag.shape, clean_mag.shape)
+
     optimizer.zero_grad()
     # VibVoice
-    predict1 = model(acc, noise_mag)
-    loss = Spectral_Loss(predict1, clean_mag)
+    noisy_mag = noisy_mag.to(device=device)
+    clean_mag = clean_mag.to(device=device)
+    predict = model(noisy_mag, acc)
+
+    loss = Spectral_Loss(predict, clean_mag)
     #loss += 0.5 * F.mse_loss(predict2, clean_mag[:, :, :32, :])
     loss.backward()
     optimizer.step()

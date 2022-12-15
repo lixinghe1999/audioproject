@@ -179,19 +179,19 @@ class A2net(nn.Module):
 
         self.transfer_function = np.load('transfer_function_EMSB_32.npy')
 
-    def forward(self, clean, acc=None):
+    def forward(self, noisy, acc=None):
         # Preprocessing
         if acc == None:
-            acc = synthetic(torch.abs(clean), self.transfer_function)
+            acc = synthetic(torch.abs(noisy), self.transfer_function)
         acc = acc / torch.max(acc)
 
         acc = self.IMU_branch(acc)
         if self.inference:
-            x = self.Residual_block(acc, self.Audio_branch(clean)) * clean
+            x = self.Residual_block(acc, self.Audio_branch(noisy)) * noisy
             return x
         else:
             acc, x_extra = acc
-            x = self.Residual_block(acc, self.Audio_branch(clean)) * clean
+            x = self.Residual_block(acc, self.Audio_branch(noisy)) * noisy
             return x, x_extra
 
 def model_size(model):
