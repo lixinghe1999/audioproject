@@ -17,7 +17,7 @@ overlap_imu = 32
 
 rate_mic = 16000
 rate_imu = 1600
-length = 3
+length = 6
 stride = 3
 
 
