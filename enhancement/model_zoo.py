@@ -98,7 +98,9 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     optimizer.zero_grad()
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
+    noisy_mag = torch.unsqueeze(noisy_mag[:, 1:257, 1:], 1)
     clean_mag = clean_mag.to(device=device)
+    clean_mag = torch.unsqueeze(clean_mag[:, 1:257, 1:], 1)
     predict = model(noisy_mag, acc)
 
     loss = Spectral_Loss(predict, clean_mag)

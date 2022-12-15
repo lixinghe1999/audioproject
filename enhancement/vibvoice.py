@@ -186,7 +186,7 @@ class A2net(nn.Module):
         if acc == None:
             acc = synthetic(torch.abs(noisy), self.transfer_function, self.length_transfer_function)
         acc = acc / torch.max(acc)
-        noisy = torch.unsqueeze(noisy[:, 1:257, 1:], 1)
+
         acc = torch.unsqueeze(acc[:, 1:, 1:], 1)
         print(noisy.shape, acc.shape)
         acc = self.IMU_branch(acc)
