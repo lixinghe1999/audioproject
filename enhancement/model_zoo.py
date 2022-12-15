@@ -163,13 +163,14 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     cRM = decompress_cIRM(predict.permute(0, 2, 3, 1)).cpu()
     enhanced_real = cRM[..., 0] * noisy_real - cRM[..., 1] * noisy_imag
     enhanced_imag = cRM[..., 1] * noisy_real + cRM[..., 0] * noisy_imag
-    predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag").numpy()
+    predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag")
+    predict = predict.squeeze(0).numpy()
 
     amp = np.iinfo(np.int16).max
     predict = np.int16(0.8 * amp * predict / np.max(np.abs(predict)))
     print(predict.shape)
     sf.write(
-        '~/src/audioproject/my.wav', predict, 16000
+        'my.wav', predict, samplerate=16000,
     )
     clean = clean.numpy()
     if data:

@@ -182,7 +182,6 @@ class BaseInferencer:
             amp = np.iinfo(np.int16).max
             enhanced = np.int16(0.8 * amp * enhanced / np.max(np.abs(enhanced)))
             file_name = self.enhanced_dir / f"{name}.wav"
-            print(file_name)
             sf.write(
                 file_name,
                 enhanced,
