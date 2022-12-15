@@ -141,7 +141,7 @@ if __name__ == "__main__":
         print(checkpoint['best_score'])
         model.load_state_dict(checkpoint['model'])
 
-        dataset = NoisyCleanSet(['json/clean.json', 'json/noisy.json'],
+        dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoisy.json'],
                                 person=people, simulation=False, ratio=-0.2)
         Metric = inference(dataset, 4, model)
         avg_metric = np.mean(Metric, axis=0)
