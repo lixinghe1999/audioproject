@@ -167,7 +167,7 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     amp = np.iinfo(np.int16).max
     predict = np.int16(0.8 * amp * predict / np.max(np.abs(predict)))
     sf.write(
-        "1.wav", predict, 16000,
+        '1.wav', predict, 16000,
     )
     clean = clean.numpy()
     if data:
