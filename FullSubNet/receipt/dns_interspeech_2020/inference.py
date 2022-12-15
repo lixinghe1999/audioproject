@@ -5,7 +5,7 @@ from pathlib import Path
 
 import toml
 
-sys.path.append(os.path.abspath(os.path.join(__file__, "..", "..", "..")))
+sys.path.append(os.path.abspath(os.path.join(__file__, "../..", "..", "..")))
 from audio_zen.utils import initialize_module
 
 
