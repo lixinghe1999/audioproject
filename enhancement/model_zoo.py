@@ -154,11 +154,11 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     predict = torch.complex(enhanced_real, enhanced_imag)
 
     predict = predict.cpu().numpy()
-    predict = np.pad(predict, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    #predict = np.pad(predict, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
 
     clean = clean.cpu().numpy()
-    clean = np.pad(clean, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
+    #clean = np.pad(clean, ((0, 0), (0, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
     clean = signal.istft(clean, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     if data:
         noise = noise.squeeze(1).numpy()

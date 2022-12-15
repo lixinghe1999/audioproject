@@ -12,8 +12,8 @@ from SEANet import SEANet_mapping
 from vibvoice import A2net
 from fullsubnet import FullSubNet
 import argparse
-seg_len_mic = 640
-overlap_mic = 320
+seg_len_mic = 512
+overlap_mic = 256
 seg_len_imu = 64
 overlap_imu = 32
 
@@ -283,9 +283,9 @@ class NoisyCleanSet:
             else:
                 imu, _ = self.dataset[2][index]
                 imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
-            noise = noise[:, : 8 * (freq_bin_high - 1) + 1, :-1]
-            clean = clean[:, : 8 * (freq_bin_high - 1) + 1, :-1]
-            imu = imu[:, :freq_bin_high, :-1]
+            # noise = noise[:, : 8 * (freq_bin_high - 1) + 1, :-1]
+            # clean = clean[:, : 8 * (freq_bin_high - 1) + 1, :-1]
+            # imu = imu[:, :freq_bin_high, :-1]
         if self.text:
             setence = sentences[int(file.split('/')[4][-1])-1]
             return setence, imu, noise, clean

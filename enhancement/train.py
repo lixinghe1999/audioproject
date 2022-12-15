@@ -18,15 +18,6 @@ from discriminator import Discriminator_time, Discriminator_spectrogram, MultiSc
 from model_zoo import train_SEANet, test_SEANet, train_vibvoice, test_vibvoice, train_fullsubnet, test_fullsubnet, \
     train_conformer, test_conformer
 
-seg_len_mic = 640
-overlap_mic = 320
-seg_len_imu = 64
-overlap_imu = 32
-rate_mic = 16000
-rate_imu = 1600
-
-
-freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False):
     if isinstance(dataset, list):
