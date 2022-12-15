@@ -17,14 +17,25 @@ import argparse
 from discriminator import Discriminator_time, Discriminator_spectrogram, MultiScaleDiscriminator, SingleScaleDiscriminator
 from model_zoo import train_SEANet, test_SEANet, train_vibvoice, test_vibvoice, train_fullsubnet, test_fullsubnet, \
     train_conformer, test_conformer
+def parse_sample(sample):
+    if isinstance(sample, list):
+        data = sample
+        text = None
+    else:
+        text, data = sample
+    if len(data) == 3:
+        clean, noise, acc = data
+    else:
+        clean, noise = data
+        acc = None
+    return text, clean, noise, acc
 
 def inference(dataset, BATCH_SIZE, model):
     test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
         for sample in test_loader:
-            text, data = sample
-            clean, noise, acc = data
+            text, clean, noise, acc = parse_sample(sample)
             metric = test_fullsubnet(model, acc, noise, clean, device)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
@@ -54,7 +65,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        for i, (acc, noise, clean) in enumerate(tqdm(train_loader)):
+        for i, sample in enumerate(tqdm(train_loader)):
+            text, clean, noise, acc = parse_sample(sample)
             #loss, discrim_loss = train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc, discriminator, device)
             loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)

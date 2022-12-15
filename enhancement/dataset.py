@@ -210,16 +210,17 @@ class NoisyCleanSet:
             noise, _ = self.dataset[1][index]
             noise, clean = snr_norm([noise, clean], -25, 10)
         if self.augmentation:
-            data = [clean, noise, None]
+            data = [clean, noise]
         else:
             acc, _ = self.dataset[2][index]
             acc = np.transpose(acc)
             data = [clean, noise, acc]
         if self.text:
-            setence = sentences[int(file.split('/')[4][-1])-1]
-            return setence, data
+            sentence = sentences[int(file.split('/')[4][-1])-1]
+            return sentence, data
         else:
-            return None, data
+            return data
+
     def __len__(self):
         return len(self.dataset[0])
 class EMSBDataset:
