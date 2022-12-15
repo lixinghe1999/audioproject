@@ -142,21 +142,6 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     return loss.item()
 
 def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=False):
-    # noisy_mag, _, noisy_real, noisy_imag = self.torch_stft(noisy)
-    #
-    # noisy_mag = noisy_mag.unsqueeze(1)
-    # pred_crm = self.model(noisy_mag)
-    # pred_crm = pred_crm.permute(0, 2, 3, 1)
-    #
-    # pred_crm = decompress_cIRM(pred_crm)
-    # enhanced_real = pred_crm[..., 0] * noisy_real - pred_crm[..., 1] * noisy_imag
-    # enhanced_imag = pred_crm[..., 1] * noisy_real + pred_crm[..., 0] * noisy_imag
-    # enhanced = self.torch_istft(
-    #     (enhanced_real, enhanced_imag), length=noisy.size(-1), input_type="real_imag"
-    # )
-    # enhanced = enhanced.detach().squeeze(0).cpu().numpy()
-    # return enhanced
-
     noisy_mag, _, noisy_real, noisy_imag = stft(noise, 512, 256, 512)
 
     noisy_mag = noisy_mag.to(device=device).unsqueeze(1)
@@ -164,12 +149,7 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     cRM = decompress_cIRM(predict.permute(0, 2, 3, 1)).cpu()
     enhanced_real = cRM[..., 0] * noisy_real - cRM[..., 1] * noisy_imag
     enhanced_imag = cRM[..., 1] * noisy_real + cRM[..., 0] * noisy_imag
-    predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag")
-    predict = predict.numpy()
-
-    # plt.plot(clean[0])
-    # plt.plot(predict[0])
-    # plt.savefig('demo.png')
+    predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag").numpy()
 
     clean = clean.numpy()
 
