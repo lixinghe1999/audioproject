@@ -4,7 +4,7 @@ from evaluation import batch_pesq, SI_SDR, lsd, STOI, eval_ASR
 import torch.nn.functional as F
 from scipy import signal
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
-from audio_zen.acoustics.feature import drop_band
+from audio_zen.acoustics.feature import drop_band, stft, istft
 from torch.cuda.amp import autocast
 from speechbrain.pretrained import EncoderDecoderASR
 '''
@@ -90,6 +90,7 @@ def test_SEANet(model, acc, noise, clean, device='cuda', text=None):
     return eval(clean, predict, text)
 
 def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
+    print(acc.shape, noise.shape, clean.shape)
     acc = acc.abs().to(device=device, dtype=torch.float)
     noise_mag = noise.abs().to(device=device, dtype=torch.float)
     clean_mag = clean.abs().to(device=device, dtype=torch.float)
