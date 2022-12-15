@@ -159,17 +159,17 @@ if __name__ == "__main__":
         # model.load_state_dict(ckpt)
         # Optional Micro-benchmark
 
-        rirs = ['json/smallroom.json', 'json/mediumroom.json', 'json/largeroom.json']
-        for rir in rirs:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                    person=people, time_domain=time_domain, simulation=True, ratio=-0.2,)
-            Metric = inference(dataset, 4, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(rir, avg_metric)
+        # rirs = ['json/smallroom.json', 'json/mediumroom.json', 'json/largeroom.json']
+        # for rir in rirs:
+        #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+        #                             person=people, time_domain=time_domain, simulation=True, ratio=-0.2, rir=rir)
+        #     Metric = inference(dataset, 4, model)
+        #     avg_metric = np.mean(Metric, axis=0)
+        #     print(rir, avg_metric)
 
         for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
-                                    person=people, time_domain=time_domain, simulation=True, ratio=-0.2)
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+                                    person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
             Metric = inference(dataset, 4, model)
             avg_metric = np.mean(Metric, axis=0)
             print(p, avg_metric)
@@ -182,7 +182,7 @@ if __name__ == "__main__":
             print(noise, avg_metric)
 
         for level in [5, 1, -3]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json',  'json/train_imu.json'], person=people,
                                     time_domain=time_domain, simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
             Metric = inference(dataset, 4, model)
             avg_metric = np.mean(Metric, axis=0)
@@ -190,7 +190,7 @@ if __name__ == "__main__":
 
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         for p in positions:
-            dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+            dataset = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
                                     person=[p], time_domain=time_domain, simulation=True, ratio=-0.2)
             Metric = inference(dataset, 4, model)
             avg_metric = np.mean(Metric, axis=0)
