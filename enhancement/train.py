@@ -94,8 +94,8 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
-    model = A2net().to(device)
-    # model = FullSubNet(num_freqs=257, num_groups_in_drop_band=1).to(device)
+    #model = A2net().to(device)
+    model = FullSubNet(num_freqs=257, num_groups_in_drop_band=1).to(device)
     # model = SEANet().to(device)
 
     # discriminator = MultiScaleDiscriminator().to(device)
