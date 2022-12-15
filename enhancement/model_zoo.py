@@ -110,11 +110,10 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
 
-    predict = model(noisy_mag, acc).squeeze(1)
-    predict = torch.exp(1j * noisy_phase[:, 1:257, 1:]) * predict
+    predict = model(noisy_mag, acc).squeeze(1).cpu().numpy()
+    predict = np.pad(predict, ((0, 0), (1, 321 - 257), (1, 0)))
 
-    predict = predict.cpu().numpy()
-    predict = np.pad(predict, ((0, 0), (1, 321-257), (1, 0)))
+    predict = np.exp(1j * noisy_phase) * predict
     predict = signal.istft(predict, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
     if data:
         noise = noise.squeeze(1).numpy()
