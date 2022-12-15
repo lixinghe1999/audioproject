@@ -38,8 +38,9 @@ def inference(dataset, BATCH_SIZE, model):
             text, clean, noise, acc = parse_sample(sample)
             metric = test_fullsubnet(model, acc, noise, clean, device)
             print(metric)
-            Metric.append(metric)
-    avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
+            Metric += metric
+            print(Metric)
+    avg_metric = np.mean(Metric, axis=0)
     return avg_metric
 
 def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False):
@@ -143,8 +144,7 @@ if __name__ == "__main__":
 
         dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoisy.json'],
                                 person=people, simulation=False, ratio=-0.2)
-        Metric = inference(dataset, 4, model)
-        avg_metric = np.mean(Metric, axis=0)
+        avg_metric = inference(dataset, 4, model)
         print(avg_metric)
         #
         # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
