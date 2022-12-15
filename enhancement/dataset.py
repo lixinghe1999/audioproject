@@ -10,11 +10,6 @@ import librosa
 from audio_zen.acoustics.feature import norm_amplitude, tailor_dB_FS, is_clipped, load_wav, subsample
 
 import argparse
-seg_len_mic = 640
-overlap_mic = 256
-seg_len_imu = 64
-overlap_imu = 32
-
 rate_mic = 16000
 rate_imu = 1600
 length = 6

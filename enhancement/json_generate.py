@@ -45,18 +45,18 @@ if __name__ == "__main__":
         # For the audio-only dataset
         directory = "../dataset/"
         # datasets = ['dev', 'background', 'music', 'train', 'rir_noise', 'wham_noise/tr', 'wham_noise/cv', 'wham_noise/tt']
-        datasets = ['rir_fullsubnet/rir']
+        #datasets = ['rir_fullsubnet/rir']
+        datasets = ['DNS-challenge/test_set/synthetic/with_reverb/noisy', 'DNS-challenge/test_set/synthetic/with_reverb/noisy']
         for dataset in datasets:
             audio_files = []
             g = os.walk(directory + dataset)
-            dataset_name = dataset.split('/')[-1]
+            dataset_name = 'DNS' + dataset.split('/')[-1]
             print(dataset_name)
             for path, dir_list, file_list in g:
                 for file_name in file_list:
                     if file_name[-3:] in ['wav', 'lac']:
                         audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
             json.dump(audio_files, open('json/' + dataset_name + '.json', 'w'), indent=4)
-
     elif args.mode == 1:
         directory = '../dataset/our'
         person = os.listdir(directory)
