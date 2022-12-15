@@ -100,8 +100,7 @@ if __name__ == "__main__":
         lr = 0.0001
         EPOCH = 30
 
-        dataset = NoisyCleanSet(['json/train.json', 'json/tr.json'], simulation=True,
-                                ratio=1, rir='json/rir_noise.json')
+        dataset = NoisyCleanSet(['json/train.json', 'json/tr.json'], simulation=True, ratio=1, rir='json/rir.json')
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()
