@@ -141,6 +141,11 @@ if __name__ == "__main__":
         print(checkpoint['best_score'])
         model.load_state_dict(checkpoint['model'])
 
+        dataset = NoisyCleanSet(['json/clean.json', 'json/noisy.json'],
+                                person=people, simulation=False, ratio=-0.2)
+        Metric = inference(dataset, 4, model)
+        avg_metric = np.mean(Metric, axis=0)
+        print(avg_metric)
         #
         # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
         #                                 time_domain=time_domain, simulation=True, person=people, ratio=r,)
@@ -161,11 +166,8 @@ if __name__ == "__main__":
         # ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
         # model.load_state_dict(ckpt)
         # Optional Micro-benchmark
-        dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                person=people, simulation=True, ratio=-0.2)
-        Metric = inference(dataset, 4, model)
-        avg_metric = np.mean(Metric, axis=0)
-        print(avg_metric)
+
+
         # rirs = ['json/smallroom.json', 'json/mediumroom.json', 'json/largeroom.json']
         # for rir in rirs:
         #     dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],

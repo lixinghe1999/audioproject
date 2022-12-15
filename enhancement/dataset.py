@@ -16,9 +16,6 @@ length = 6
 stride = 3
 
 
-freq_bin_high = int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
-time_bin = int(length * rate_mic/(seg_len_mic-overlap_mic)) + 1
-
 sentences = [
     "HAPPY NEW YEAR PROFESSOR AUSTIN NICE TO MEET YOU",
     "WE WANT TO IMPROVE SPEECH QUALITY IN THIS PROJECT",
@@ -203,7 +200,7 @@ class NoisyCleanSet:
                 clean_tmp = noise
         else:
             noise, _ = self.dataset[1][index]
-            noise, clean = snr_norm([noise, clean], -25, 10)
+            # noise, clean = snr_norm([noise, clean], -25, 10)
         if self.augmentation:
             data = [clean.astype(np.float32), noise.astype(np.float32)]
         else:
