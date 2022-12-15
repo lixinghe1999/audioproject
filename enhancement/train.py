@@ -31,7 +31,7 @@ def parse_sample(sample):
     return text, clean, noise, acc
 
 def inference(dataset, BATCH_SIZE, model):
-    test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=1, batch_size=BATCH_SIZE, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
         for sample in test_loader:
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
         dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoisy.json'],
                                 person=people, simulation=False, ratio=-0.2)
-        Metric = inference(dataset, 1, model)
+        Metric = inference(dataset, 4, model)
         avg_metric = np.mean(Metric, axis=0)
         print(avg_metric)
         #
