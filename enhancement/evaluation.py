@@ -71,7 +71,8 @@ def SI_SDR(reference, estimation, sr=16000):
     projection = optimal_scaling * reference
 
     noise = estimation - projection
-
+    print(np.sum(projection ** 2, axis=-1))
+    print(np.sum(noise ** 2, axis=-1))
     ratio = np.sum(projection ** 2, axis=-1) / np.sum(noise ** 2, axis=-1)
     return 10 * np.log10(ratio)
 def snr(gt, est):

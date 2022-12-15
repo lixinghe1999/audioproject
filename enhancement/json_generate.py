@@ -44,14 +44,12 @@ if __name__ == "__main__":
     if args.mode == 0:
         # For the audio-only dataset
         directory = "../dataset/"
-        # datasets = ['dev', 'background', 'music', 'train', 'rir_noise', 'wham_noise/tr', 'wham_noise/cv', 'wham_noise/tt']
+        datasets = ['dev', 'background', 'music', 'train', 'rir_noise', 'wham_noise/tr', 'wham_noise/cv', 'wham_noise/tt']
         #datasets = ['rir_fullsubnet/rir']
-        datasets = ['DNS-Challenge/test_set/synthetic/with_reverb/noisy', 'DNS-Challenge/test_set/synthetic/with_reverb/clean']
         for dataset in datasets:
             audio_files = []
             g = os.walk(directory + dataset)
-            dataset_name = 'DNS' + dataset.split('/')[-1]
-            print(dataset_name)
+            dataset_name = dataset.split('/')[-1]
             for path, dir_list, file_list in g:
                 for file_name in file_list:
                     if file_name[-3:] in ['wav', 'lac']:
