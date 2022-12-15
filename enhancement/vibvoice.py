@@ -186,7 +186,7 @@ class A2net(nn.Module):
         if acc == None:
             acc = synthetic(torch.abs(noisy), self.transfer_function, self.length_transfer_function)
         acc = acc / torch.max(acc)
-
+        print(noisy.shape, acc.shape)
         acc = self.IMU_branch(acc)
         if self.inference:
             x = self.Residual_block(acc, self.Audio_branch(noisy)) * noisy
