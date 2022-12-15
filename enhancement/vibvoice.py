@@ -5,7 +5,6 @@ import time
 from torch.utils.mobile_optimizer import optimize_for_mobile
 import os
 import numpy as np
-from audio_zen.acoustics.feature import stft, istft
 
 freq_bin_high = 33
 
