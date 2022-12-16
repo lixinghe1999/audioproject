@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import torch
 import numpy as np
 import soundfile as sf
-from evaluation import batch_pesq, SI_SDR, lsd, STOI, eval_ASR
+from evaluation import batch_pesq, SI_SDR, lsd, batch_stoi, eval_ASR
 import torch.nn.functional as F
 from scipy import signal
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
@@ -37,7 +37,7 @@ def eval(clean, predict, text=None):
         metric1 = batch_pesq(clean, predict)
         metric2 = SI_SDR(clean, predict)
         metric3 = lsd(clean, predict)
-        metric4 = STOI(clean, predict)
+        metric4 = batch_stoi(clean, predict)
         metrics = [metric1, metric2, metric3, metric4]
     return np.stack(metrics, axis=1)
 def Spectral_Loss(x_mag, y_mag):
