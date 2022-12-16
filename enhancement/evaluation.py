@@ -100,6 +100,11 @@ def batch_pesq(clean, noisy):
     pesq_score = np.array(pesq_score)
     return pesq_score
 
+def batch_stoi(clean, noisy):
+    stoi = Parallel(n_jobs=-1)(delayed(STOI())(c, n) for c, n in zip(clean, noisy))
+    stoi = np.array(stoi)
+    return stoi
+
 def STOI(ref, est, sr=16000):
     return stoi(ref, est, sr, extended=False)
 
