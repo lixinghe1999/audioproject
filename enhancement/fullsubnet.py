@@ -40,7 +40,7 @@ def drop_band(input, num_groups=2):
 
     return torch.cat(output, dim=0)
 
-class FullSubNet(BaseModel):
+class fullsubnet(BaseModel):
     def __init__(self,
                  num_freqs=257,
                  look_ahead=2,

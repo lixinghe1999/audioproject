@@ -171,9 +171,9 @@ class Residual_Block(nn.Module):
         x = self.final(x)
         return x
 
-class A2net(nn.Module):
+class vibvoice(nn.Module):
     def __init__(self):
-        super(A2net, self).__init__()
+        super(vibvoice, self).__init__()
         #self.inference = inference
         self.IMU_branch = IMU_branch()
         self.Audio_branch = Audio_branch()

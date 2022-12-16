@@ -6,8 +6,8 @@ torch.manual_seed(0)
 from dataset import NoisyCleanSet, EMSBDataset
 import json
 
-from fullsubnet import FullSubNet
-from vibvoice import A2net
+from fullsubnet import fullsubnet
+from vibvoice import vibvoice
 from conformer import TSCNet
 from SEANet import SEANet
 
@@ -15,8 +15,9 @@ import numpy as np
 from tqdm import tqdm
 import argparse
 from discriminator import Discriminator_time, Discriminator_spectrogram, MultiScaleDiscriminator, SingleScaleDiscriminator
-from model_zoo import train_SEANet, test_SEANet, train_vibvoice, test_vibvoice, train_fullsubnet, test_fullsubnet, \
-    train_conformer, test_conformer
+# from model_zoo import train_SEANet, test_SEANet, train_vibvoice, test_vibvoice, train_fullsubnet, test_fullsubnet, \
+#     train_conformer, test_conformer
+import model_zoo
 def parse_sample(sample):
     if isinstance(sample, list):
         data = sample
@@ -36,7 +37,7 @@ def inference(dataset, BATCH_SIZE, model):
     with torch.no_grad():
         for sample in test_loader:
             text, clean, noise, acc = parse_sample(sample)
-            metric = test_fullsubnet(model, acc, noise, clean, device)
+            metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device)
             print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
@@ -95,8 +96,9 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 
-    #model = A2net().to(device)
-    model = FullSubNet(num_freqs=257, num_groups_in_drop_band=1).to(device)
+    model_name = 'fullsubnet'
+    #model = vibvoice().to(device)
+    model = globals()[model_name](num_freqs=257, num_groups_in_drop_band=1).to(device)
     # model = SEANet().to(device)
 
     # discriminator = MultiScaleDiscriminator().to(device)
