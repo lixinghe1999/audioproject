@@ -168,7 +168,6 @@ class Residual_Block(nn.Module):
 class vibvoice(nn.Module):
     def __init__(self):
         super(vibvoice, self).__init__()
-        #self.inference = inference
         self.IMU_branch = IMU_branch()
         self.Audio_branch = Audio_branch()
         self.Residual_block = Residual_Block(384)
@@ -182,7 +181,7 @@ class vibvoice(nn.Module):
             acc = synthetic(torch.abs(noisy), self.transfer_function, self.length_transfer_function)
         else:
             acc = torch.abs(torch.stft(acc, 64, 32, 64, window=torch.hann_window(64, device=noisy.device), return_complex=True))
-        acc = acc / torch.max(acc)
+        acc = acc * torch.mean(noisy) / torch.mean(acc)
         noisy = torch.unsqueeze(noisy[:, 1:257, 1:], 1)
         acc = torch.unsqueeze(acc[:, 1:, 1:], 1)
         acc = self.IMU_branch(acc)
