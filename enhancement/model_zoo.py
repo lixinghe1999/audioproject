@@ -66,7 +66,6 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     predict = model(noisy_mag, acc)
 
     loss = Spectral_Loss(predict, clean_mag)
-    print(loss.item())
     #loss += 0.5 * F.mse_loss(predict2, clean_mag[:, :, :32, :])
     loss.backward()
     optimizer.step()
