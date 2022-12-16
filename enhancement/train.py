@@ -75,7 +75,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
 
         avg_metric = inference(test_dataset, 4, model)
 
-        print(avg_metric, mean_lost)
+        print(avg_metric)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
