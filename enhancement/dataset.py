@@ -200,8 +200,10 @@ class NoisyCleanSet:
                 if use_reverb else None, eps=1e-6)
                 clean_tmp = noise
         else:
+            # already added noisy
             noise, file = self.dataset[1][index]
             #noise, clean = snr_norm([noise, clean], -25, 10)
+
         if self.augmentation:
             data = [clean.astype(np.float32), noise.astype(np.float32)]
         else:
