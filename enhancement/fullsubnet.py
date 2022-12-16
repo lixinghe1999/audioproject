@@ -52,7 +52,7 @@ class fullsubnet(BaseModel):
                  fb_model_hidden_size=512,
                  sb_model_hidden_size=384,
                  norm_type="offline_laplace_norm",
-                 num_groups_in_drop_band=2,
+                 num_groups_in_drop_band=1,
                  weight_init=True,
                  ):
         """

@@ -54,44 +54,6 @@ def Spectral_Loss(x_mag, y_mag):
     log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 
-def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, device='cuda'):
-    predict1, predict2 = model(acc.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float))
-    # without discrinimator
-    if discriminator is None:
-        loss = F.mse_loss(torch.unsqueeze(predict1, 1), clean.to(device=device, dtype=torch.float))
-        loss.backward()
-        optimizer.step()
-        return loss.item()
-    else:
-        # generator
-        optimizer.zero_grad()
-        disc_fake = discriminator(predict1)
-        disc_real = discriminator(clean.to(device=device, dtype=torch.float))
-        loss = 0
-        for (feats_fake, score_fake), (feats_real, _) in zip(disc_fake, disc_real):
-            loss += torch.mean(torch.sum(torch.pow(score_fake - 1.0, 2), dim=[1, 2]))
-            for feat_f, feat_r in zip(feats_fake, feats_real):
-                loss += 100 * torch.mean(torch.abs(feat_f - feat_r))
-                #loss += 100 * F.mse_loss(feat_f, feat_r)
-        loss.backward()
-        optimizer.step()
-
-        # discriminator
-        optimizer_disc.zero_grad()
-        disc_fake = discriminator(predict1.detach())
-        disc_real = discriminator(clean.to(device=device, dtype=torch.float))
-        discrim_loss = 0
-        for (_, score_fake), (_, score_real) in zip(disc_fake, disc_real):
-            discrim_loss += torch.mean(torch.sum(torch.pow(score_real - 1.0, 2), dim=[1, 2]))
-            discrim_loss += torch.mean(torch.sum(torch.pow(score_fake, 2), dim=[1, 2]))
-        discrim_loss.backward()
-        optimizer_disc.step()
-        return loss.item(), discrim_loss.item()
-def test_SEANet(model, acc, noise, clean, device='cuda', text=None):
-    predict1, predict2 = model(acc.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float))
-    clean = clean.squeeze(1).numpy()
-    predict = predict1.cpu().numpy()
-    return eval(clean, predict, text)
 
 def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag, _, _, _ = stft(noise, 640, 320, 640)
@@ -161,6 +123,44 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
         return eval(clean, predict, text=text), predict, noise
     else:
         return eval(clean, predict, text=text)
+def train_SEANet(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, device='cuda'):
+    predict1, predict2 = model(acc.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float))
+    # without discrinimator
+    if discriminator is None:
+        loss = F.mse_loss(torch.unsqueeze(predict1, 1), clean.to(device=device, dtype=torch.float))
+        loss.backward()
+        optimizer.step()
+        return loss.item()
+    else:
+        # generator
+        optimizer.zero_grad()
+        disc_fake = discriminator(predict1)
+        disc_real = discriminator(clean.to(device=device, dtype=torch.float))
+        loss = 0
+        for (feats_fake, score_fake), (feats_real, _) in zip(disc_fake, disc_real):
+            loss += torch.mean(torch.sum(torch.pow(score_fake - 1.0, 2), dim=[1, 2]))
+            for feat_f, feat_r in zip(feats_fake, feats_real):
+                loss += 100 * torch.mean(torch.abs(feat_f - feat_r))
+                #loss += 100 * F.mse_loss(feat_f, feat_r)
+        loss.backward()
+        optimizer.step()
+
+        # discriminator
+        optimizer_disc.zero_grad()
+        disc_fake = discriminator(predict1.detach())
+        disc_real = discriminator(clean.to(device=device, dtype=torch.float))
+        discrim_loss = 0
+        for (_, score_fake), (_, score_real) in zip(disc_fake, disc_real):
+            discrim_loss += torch.mean(torch.sum(torch.pow(score_real - 1.0, 2), dim=[1, 2]))
+            discrim_loss += torch.mean(torch.sum(torch.pow(score_fake, 2), dim=[1, 2]))
+        discrim_loss.backward()
+        optimizer_disc.step()
+        return loss.item(), discrim_loss.item()
+def test_SEANet(model, acc, noise, clean, device='cuda', text=None):
+    predict1, predict2 = model(acc.to(device=device, dtype=torch.float), noise.to(device=device, dtype=torch.float))
+    clean = clean.squeeze(1).numpy()
+    predict = predict1.cpu().numpy()
+    return eval(clean, predict, text)
 
 def train_conformer(model, acc, noise, clean, optimizer, optimizer_disc=None, discriminator=None, device='cuda'):
 

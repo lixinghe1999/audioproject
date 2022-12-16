@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import torch.nn as nn
 import torch
 import time
@@ -7,11 +6,6 @@ import os
 import numpy as np
 
 freq_bin_high = 33
-
-seg_len_mic = 640
-overlap_mic = 256
-seg_len_imu = 64
-overlap_imu = 32
 
 def noise_extraction(time_bin):
     noise_list = os.listdir('../dataset/noise/')
@@ -229,8 +223,8 @@ if __name__ == "__main__":
 
     acc = torch.rand(1, 1, 32, 250)
     audio = torch.rand(1, 1, 256, 250)
-    model = A2net(inference=False)
-    audio, acc = model(audio)
+    model = vibvoice()
+    audio = model(audio)
     print(audio.shape, acc.shape)
 
     # size_all_mb = model_size(model)
