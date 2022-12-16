@@ -38,7 +38,6 @@ def inference(dataset, BATCH_SIZE, model):
         for sample in test_loader:
             text, clean, noise, acc = parse_sample(sample)
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device)
-            print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
@@ -68,7 +67,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         Loss_list = []
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
-            loss = train_vibvoice(model, acc, noise, clean, optimizer, device)
+            loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
@@ -95,11 +94,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-
+    # select available model from vibvoice, fullsubnet, conformer,
     model_name = 'fullsubnet'
-    #model = vibvoice().to(device)
-    model = globals()[model_name](num_freqs=257, num_groups_in_drop_band=1).to(device)
-    # model = SEANet().to(device)
+    model = globals()[model_name]().to(device)
 
     # discriminator = MultiScaleDiscriminator().to(device)
 

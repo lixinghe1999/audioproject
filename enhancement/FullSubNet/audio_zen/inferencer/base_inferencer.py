@@ -170,7 +170,6 @@ class BaseInferencer:
         inference_args = self.inference_config["args"]
 
         for noisy, name in tqdm(self.dataloader, desc="Inference"):
-            print(noisy.shape)
             assert len(name) == 1, "The batch size of inference stage must 1."
             name = name[0]
 
