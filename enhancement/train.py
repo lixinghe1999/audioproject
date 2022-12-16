@@ -95,7 +95,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     # select available model from vibvoice, fullsubnet, conformer,
-    model_name = 'fullsubnet'
+    model_name = 'vibvoice'
     model = globals()[model_name]().to(device)
 
     # discriminator = MultiScaleDiscriminator().to(device)
@@ -110,7 +110,8 @@ if __name__ == "__main__":
         lr = 0.0001
         EPOCH = 30
 
-        dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoise.json'], simulation=True, ratio=0.1, rir='json/rir.json')
+        dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoise.json'], simulation=True,
+                                ratio=0.1, rir='json/rir.json')
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()
