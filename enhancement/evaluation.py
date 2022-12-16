@@ -73,12 +73,6 @@ def SI_SDR(reference, estimation, sr=16000):
     noise = estimation - projection
     ratio = np.sum(projection ** 2, axis=-1) / np.sum(noise ** 2, axis=-1)
     return 10 * np.log10(ratio)
-def snr(gt, est):
-    # ordinary snr
-    n = gt - est
-    power_n = np.mean(np.abs(n) ** 2, axis=1)
-    power_gt = np.mean(np.abs(gt) ** 2, axis=1)
-    return 10 * np.log10(power_gt / power_n)
 
 def safe_log10(x, eps=1e-10):
     result = np.where(x > eps, x, -10)

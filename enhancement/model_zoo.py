@@ -37,7 +37,8 @@ def eval(clean, predict, text=None):
         metric1 = batch_pesq(clean, predict)
         metric2 = SI_SDR(clean, predict)
         metric3 = lsd(clean, predict)
-        metrics = [metric1, metric2, metric3]
+        metric4 = STOI(clean, predict)
+        metrics = [metric1, metric2, metric3, metric4]
     return np.stack(metrics, axis=1)
 def Spectral_Loss(x_mag, y_mag):
     """Calculate forward propagation.
