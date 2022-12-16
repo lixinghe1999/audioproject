@@ -106,12 +106,12 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 64
+        BATCH_SIZE = 128
         lr = 0.0001
         EPOCH = 30
 
-        dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoise.json'], simulation=True,
-                                ratio=0.1, rir='json/rir.json')
+        dataset = NoisyCleanSet(['json/DNSclean.json', 'json/tr.json'], simulation=True,
+                                ratio=1, rir='json/rir.json')
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()
