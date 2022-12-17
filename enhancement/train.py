@@ -241,7 +241,7 @@ if __name__ == "__main__":
         print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
         model.load_state_dict(checkpoint['model'])
 
-        dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoise.json'],
+        dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoisy.json'],
                                 simulation=False, ratio=1)
         avg_metric = inference(dataset, 1, model)
         print(avg_metric)
