@@ -20,7 +20,7 @@ from discriminator import Discriminator_time, Discriminator_spectrogram, MultiSc
 import model_zoo
 def parse_sample(sample, text=False):
     if text:
-        data, text = sample
+        data, text = sample[:-1], sample[-1]
     else:
         data = sample
     if len(data) == 3:
