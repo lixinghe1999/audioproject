@@ -19,6 +19,7 @@ from discriminator import Discriminator_time, Discriminator_spectrogram, MultiSc
 #     train_conformer, test_conformer
 import model_zoo
 def parse_sample(sample):
+    print(sample)
     if isinstance(sample, list):
         data = sample
         text = None
