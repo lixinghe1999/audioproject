@@ -128,7 +128,7 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     clean = clean.numpy()
     plt.plot(predict)
     plt.plot(clean)
-    plt.show()
+    plt.savefig('demo.png')
     # clean = clean / np.max(clean) * 0.8
     # predict = predict / np.max(predict) * 0.8
     if data:
