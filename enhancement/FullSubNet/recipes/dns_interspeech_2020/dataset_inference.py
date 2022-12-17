@@ -37,9 +37,6 @@ class Dataset(BaseDataset):
 
     def __getitem__(self, item):
         noisy_file_path = self.noisy_file_path_list[item]
-        print(noisy_file_path)
         noisy_y = librosa.load(noisy_file_path, sr=self.sr)[0]
         noisy_y = noisy_y.astype(np.float32)
-        print(noisy_y.shape)
-
         return noisy_y, basename(noisy_file_path)[0]

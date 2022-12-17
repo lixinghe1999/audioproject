@@ -82,7 +82,8 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
 
-    predict = model(noisy_mag, acc).squeeze(1).cpu().numpy()
+    clean, acc = model(noisy_mag, acc)
+    predict = clean.squeeze(1).cpu().numpy()
     predict = np.pad(predict, ((0, 0), (1, 321 - 257), (1, 0)))
     predict = np.exp(1j * noisy_phase) * predict
     predict = signal.istft(predict, 16000, nperseg=640, noverlap=320)[-1]
@@ -124,8 +125,8 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     enhanced_imag = cRM[..., 1] * noisy_real + cRM[..., 0] * noisy_imag
     predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag").numpy()
 
-    clean = clean.numpy()
-
+    clean = clean.numpy() / np.max(clean) * 0.8
+    predict = predict / np.max(predict) * 0.8
     if data:
         noise = noise.squeeze(1).numpy()
         noise = np.pad(noise, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
