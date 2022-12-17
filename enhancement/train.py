@@ -23,6 +23,7 @@ def parse_sample(sample, text=False):
         data, text = sample[:-1], sample[-1]
     else:
         data = sample
+        text = None
     if len(data) == 3:
         clean, noise, acc = data
     else:
@@ -31,12 +32,14 @@ def parse_sample(sample, text=False):
     return text, clean, noise, acc
 
 def inference(dataset, BATCH_SIZE, model, text=False):
+    text_inference = text
     test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
         for sample in test_loader:
-            text, clean, noise, acc = parse_sample(sample, text=text)
-            metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device)
+            text, clean, noise, acc = parse_sample(sample, text=text_inference)
+            metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device, text)
+            print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric

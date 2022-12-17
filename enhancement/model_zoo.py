@@ -26,9 +26,9 @@ rate_imu = 1600
 freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
 
 # Uncomment for using another pre-trained model
-# asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
-#                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
-#                                            run_opts={"device": "cuda"})
+asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
+                                           savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
+                                           run_opts={"device": "cuda"})
 def eval(clean, predict, text=None):
     if text is not None:
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
@@ -116,7 +116,6 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     return loss.item()
 
 def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=False):
-    print(noise.shape)
     noisy_mag, _, noisy_real, noisy_imag = stft(noise, 512, 256, 512)
     noisy_mag = noisy_mag.to(device=device).unsqueeze(1)
     predict = model(noisy_mag)
