@@ -38,7 +38,6 @@ def inference(dataset, BATCH_SIZE, model):
         for sample in test_loader:
             text, clean, noise, acc = parse_sample(sample)
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device)
-            print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
@@ -100,9 +99,9 @@ if __name__ == "__main__":
     # select available model from vibvoice, fullsubnet, conformer,
     model_name = args.model
     model = globals()[model_name]().to(device)
+    people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
 
     # discriminator = MultiScaleDiscriminator().to(device)
-
     # model = torch.nn.DataParallel(model, device_ids=[1])
     # discriminator = torch.nn.DataParallel(d iscriminator, device_ids=[0, 1])
     # discriminator = Discriminator_spectrogram().to(device)
@@ -196,43 +195,43 @@ if __name__ == "__main__":
         #     print(p, avg_metric)
     elif args.mode == 2:
         # evaluation for WER
-        ckpt_dir = 'pretrain/vibvoice'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/vibvoice_rir/[ 2.52787821 14.42417432  3.50193285].pth'
-        print('loaded checkpoint:', ckpt_name)
-        ckpt_start = torch.load(ckpt_name)
-        people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
-        ckpts = []
-        for p in ['he']:
-            model.load_state_dict(ckpt_start)
-            p_except = [i for i in people if i != p]
-            train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'],
-                                         person=p_except, time_domain=time_domain, simulation=False, text=False)
-            ckpt, _, _ = train(train_dataset, 1, 0.0001, 16, model)
+        checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
+        print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
+        model.load_state_dict(checkpoint['model'])
+
+        # ckpt_dir = 'pretrain/vibvoice'
+        # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        # print('loaded checkpoint:', ckpt_name)
+        # ckpt_start = torch.load(ckpt_name)
+
+        # ckpts = []
+        # for p in ['he']:
+        #     model.load_state_dict(ckpt_start)
+        #     p_except = [i for i in people if i != p]
+        #     train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'],
+        #                                  person=p_except, simulation=False, text=False)
+        #     ckpt, _, _ = train(train_dataset, 1, 0.0001, 16, model)
         #
         #     train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
         #                                   person=[p], time_domain=time_domain, simulation=True,
         #                                   rir=None, text=False, snr=(0, 20))
         #     ckpt, _, _ = train(train_dataset, 2, 0.0001, 16, model)
-            ckpts.append(ckpt)
-        for ckpt, p in zip(ckpts,  ['he']):
-            model.load_state_dict(ckpt)
+        #    ckpts.append(ckpt)
+        for p in people:
+            #model.load_state_dict(ckpt)
             test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-                                         person=[p], time_domain=time_domain, simulation=False, text=True)
-            metric = inference(test_dataset, 4, model)
-            avg_metric = np.mean(metric, axis=0)
+                                         person=[p], simulation=False, text=True)
+            avg_metric = inference(test_dataset, 4, model)
             print(p, avg_metric)
         for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']:
             test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-                                         person=[env], time_domain=time_domain, simulation=False, text=True)
-            metric = inference(test_dataset, 4, model)
-            avg_metric = np.mean(metric, axis=0)
+                                         person=[env], simulation=False, text=True)
+            avg_metric = inference(test_dataset, 4, model)
             print(env, avg_metric)
         #
         test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/mobile_wav.json', 'json/mobile_imu.json'],
-                                     person=['he'], time_domain=time_domain, simulation=False, text=True)
-        metric = inference(test_dataset, 8, model)
-        avg_metric = np.mean(metric, axis=0)
+                                     person=['he'], simulation=False, text=True)
+        avg_metric = inference(test_dataset, 4, model)
         print('mobile result', avg_metric)
     else:
         # investigate the performance of FullSubnet
