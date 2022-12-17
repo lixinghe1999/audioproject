@@ -18,13 +18,11 @@ from discriminator import Discriminator_time, Discriminator_spectrogram, MultiSc
 # from model_zoo import train_SEANet, test_SEANet, train_vibvoice, test_vibvoice, train_fullsubnet, test_fullsubnet, \
 #     train_conformer, test_conformer
 import model_zoo
-def parse_sample(sample):
-    print(sample)
-    if isinstance(sample, list):
-        data = sample
-        text = None
+def parse_sample(sample, text=False):
+    if text:
+        data, text = sample
     else:
-        text, data = sample
+        data = sample
     if len(data) == 3:
         clean, noise, acc = data
     else:
@@ -32,12 +30,12 @@ def parse_sample(sample):
         acc = None
     return text, clean, noise, acc
 
-def inference(dataset, BATCH_SIZE, model):
+def inference(dataset, BATCH_SIZE, model, text=False):
     test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
         for sample in test_loader:
-            text, clean, noise, acc = parse_sample(sample)
+            text, clean, noise, acc = parse_sample(sample, text=text)
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
@@ -222,17 +220,17 @@ if __name__ == "__main__":
             #model.load_state_dict(ckpt)
             test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
                                          person=[p], simulation=False, text=True)
-            avg_metric = inference(test_dataset, 4, model)
+            avg_metric = inference(test_dataset, 4, model, text=True)
             print(p, avg_metric)
         for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']:
             test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
                                          person=[env], simulation=False, text=True)
-            avg_metric = inference(test_dataset, 4, model)
+            avg_metric = inference(test_dataset, 4, model, text=True)
             print(env, avg_metric)
         #
         test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/mobile_wav.json', 'json/mobile_imu.json'],
                                      person=['he'], simulation=False, text=True)
-        avg_metric = inference(test_dataset, 4, model)
+        avg_metric = inference(test_dataset, 4, model, text=True)
         print('mobile result', avg_metric)
     else:
         # investigate the performance of FullSubnet

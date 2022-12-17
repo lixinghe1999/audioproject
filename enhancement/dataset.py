@@ -212,9 +212,8 @@ class NoisyCleanSet:
             data = [clean.astype(np.float32), noise.astype(np.float32), acc.astype(np.float32)]
         if self.text:
             sentence = sentences[int(file.split('/')[4][-1])-1]
-            return sentence, data
-        else:
-            return data
+            data.append(sentence)
+        return data
     def __len__(self):
         return len(self.dataset[0])
 class EMSBDataset:
