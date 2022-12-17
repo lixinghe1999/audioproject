@@ -124,9 +124,10 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     enhanced_real = cRM[..., 0] * noisy_real - cRM[..., 1] * noisy_imag
     enhanced_imag = cRM[..., 1] * noisy_real + cRM[..., 0] * noisy_imag
     predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag").numpy()
-    print(predict.shape)
-    # clean = clean.numpy()
-    # plt.plot(predict)
+
+    clean = clean.numpy()
+    print(predict.shape, clean.shape)
+    plt.plot(clean[0])
     plt.plot(predict[0])
     plt.savefig('demo.png')
     # clean = clean / np.max(clean) * 0.8
