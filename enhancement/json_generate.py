@@ -58,7 +58,8 @@ if __name__ == "__main__":
 
     if args.mode == 1:
         directory = "../dataset/DNS-Challenge/"
-        datasets = ['test_set/synthetic/with_reverb/noisy', 'test_set/synthetic/with_reverb/clean']
+        datasets = ['test_set/synthetic/with_reverb/noisy', 'test_set/synthetic/with_reverb/clean',
+                    'train_noise', 'train_clean']
         for dataset in datasets:
             audio_files = []
             g = os.walk(directory + dataset)

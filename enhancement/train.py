@@ -40,7 +40,6 @@ def inference(dataset, BATCH_SIZE, model):
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device)
             print(metric)
             Metric.append(metric)
-            break
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
 
@@ -243,7 +242,7 @@ if __name__ == "__main__":
 
         dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoisy.json'],
                                 simulation=False, ratio=1)
-        avg_metric = inference(dataset, 1, model)
+        avg_metric = inference(dataset, 4, model)
         print(avg_metric)
 
         # dataset = NoisyCleanSet(['json/dev.json', 'json/cv.json'],

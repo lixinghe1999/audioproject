@@ -126,10 +126,6 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag").numpy()
 
     clean = clean.numpy()
-    print(predict.shape, clean.shape)
-    plt.plot(clean[0], c='b')
-    plt.plot(predict[0], c='r')
-    plt.savefig('demo.png')
     # clean = clean / np.max(clean) * 0.8
     # predict = predict / np.max(predict) * 0.8
     if data:
