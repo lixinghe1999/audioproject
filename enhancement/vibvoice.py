@@ -18,7 +18,8 @@ def synthetic(clean, transfer_function, N):
     time_bin = clean.shape[-1]
     index = np.random.randint(0, N)
     f = transfer_function[index, 0]
-    v = transfer_function[index, 1]
+    f = f / np.max(f)
+    v = transfer_function[index, 1] / np.max(f)
     response = np.tile(np.expand_dims(f, axis=1), (1, time_bin))
     for j in range(time_bin):
         response[:, j] += np.random.normal(0, v, (freq_bin_high))
@@ -210,16 +211,19 @@ def model_speed(model, input):
     return (time.time() - t_start)/step
 if __name__ == "__main__":
 
-    acc = torch.rand(1, 1, 32, 250)
-    audio = torch.rand(1, 1, 256, 250)
+    #acc = torch.rand(1, 1, 32, 250)
+    audio = torch.rand(1, 321, 251)
     model = vibvoice()
-    audio = model(audio)
-    print(audio.shape, acc.shape)
+    tf = model.transfer_function
+    for f in tf:
+        if (np.isnan(f)).any():
+            print('find!')
+    audio, acc = model(audio)
 
     # size_all_mb = model_size(model)
     # print('model size: {:.3f}MB'.format(size_all_mb))
 
-    latency = model_speed(model, [audio])
+    #latency = model_speed(model, [audio])
     # print('model latency: {:.3f}S'.format(latency))
 
     #model_save(model)
