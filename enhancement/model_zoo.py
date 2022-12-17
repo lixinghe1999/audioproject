@@ -116,8 +116,8 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     return loss.item()
 
 def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=False):
-    noisy_mag, _, noisy_real, noisy_imag = stft(noise, 512, 256, 512)
 
+    noisy_mag, _, noisy_real, noisy_imag = stft(noise, 512, 256, 512)
     noisy_mag = noisy_mag.to(device=device).unsqueeze(1)
     predict = model(noisy_mag)
     cRM = decompress_cIRM(predict.permute(0, 2, 3, 1)).cpu()
@@ -127,7 +127,7 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     print(predict.shape)
     # clean = clean.numpy()
     # plt.plot(predict)
-    plt.plot(predict)
+    plt.plot(predict[0])
     plt.savefig('demo.png')
     # clean = clean / np.max(clean) * 0.8
     # predict = predict / np.max(predict) * 0.8
