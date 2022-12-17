@@ -126,8 +126,8 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag").numpy()
 
     clean = clean.numpy()
-    clean = clean / np.max(clean) * 0.8
-    predict = predict / np.max(predict) * 0.8
+    # clean = clean / np.max(clean) * 0.8
+    # predict = predict / np.max(predict) * 0.8
     if data:
         noise = noise.squeeze(1).numpy()
         noise = np.pad(noise, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
