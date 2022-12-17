@@ -90,12 +90,14 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', action="store", type=int, default=0, required=False,
-                        help='mode of processing, 0-pre train, 1-main benchmark, 2-mirco benchmark')
+                        help='mode of the script')
+    parser.add_argument('--model', action="store", type=str, default='vibvoice', required=False,
+                        help='choose the model')
     args = parser.parse_args()
     torch.cuda.set_device(0)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     # select available model from vibvoice, fullsubnet, conformer,
-    model_name = 'vibvoice'
+    model_name = args.model
     model = globals()[model_name]().to(device)
 
     # discriminator = MultiScaleDiscriminator().to(device)
