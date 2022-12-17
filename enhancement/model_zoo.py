@@ -116,7 +116,9 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     return loss.item()
 
 def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=False):
-
+    plt.plot(clean[0], c='b')
+    plt.plot(noise[0], c='r')
+    plt.savefig('input.png')
     noisy_mag, _, noisy_real, noisy_imag = stft(noise, 512, 256, 512)
     noisy_mag = noisy_mag.to(device=device).unsqueeze(1)
     predict = model(noisy_mag)
