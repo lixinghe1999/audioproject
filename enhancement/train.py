@@ -243,7 +243,7 @@ if __name__ == "__main__":
 
         dataset = NoisyCleanSet(['json/DNSclean.json', 'json/DNSnoise.json'],
                                 simulation=False, ratio=1)
-        avg_metric = inference(dataset, 1, model)
+        avg_metric = inference(dataset, 4, model)
         print(avg_metric)
 
         # dataset = NoisyCleanSet(['json/dev.json', 'json/cv.json'],
