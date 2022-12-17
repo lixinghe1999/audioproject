@@ -203,8 +203,8 @@ class NoisyCleanSet:
             # already added noisy
             noise, file = self.dataset[1][index]
             #noise, clean = snr_norm([noise, clean], -25, 10)
-        plt.plot(clean[0], c='b')
-        plt.plot(noise[0], c='r')
+        plt.plot(clean, c='b')
+        plt.plot(noise, c='r')
         plt.savefig('input.png')
 
         if self.augmentation:
