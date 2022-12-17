@@ -50,40 +50,34 @@ class IMU_branch(nn.Module):
             nn.MaxPool2d(kernel_size=(2, 1)),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
-        # self.inference = inference
-        # if not inference:
-        #     self.conv5 = nn.Sequential(
-        #         nn.Conv2d(128, 64, kernel_size=(3, 3), padding=(1, 1)),
-        #         #nn.ConvTranspose2d(64, 64, kernel_size=(2, 1), stride=(2, 1)),
-        #         nn.BatchNorm2d(64),
-        #         nn.ReLU(inplace=True))
-        #     self.conv6 = nn.Sequential(
-        #         nn.Conv2d(64, 32, kernel_size=(3, 3), padding=(1, 1)),
-        #         nn.ConvTranspose2d(32, 32, kernel_size=(2, 1), stride=(2, 1)),
-        #         nn.BatchNorm2d(32),
-        #         nn.ReLU(inplace=True))
-        #     self.conv7 = nn.Sequential(
-        #         nn.Conv2d(32, 16, kernel_size=(3, 3), padding=(1, 1)),
-        #         nn.ConvTranspose2d(16, 16, kernel_size=(2, 1), stride=(2, 1)),
-        #         nn.BatchNorm2d(16),
-        #         nn.ReLU(inplace=True))
-        #     self.final = nn.Conv2d(16, 1, kernel_size=1)
+        self.conv5 = nn.Sequential(
+            nn.Conv2d(128, 64, kernel_size=(3, 3), padding=(1, 1)),
+            #nn.ConvTranspose2d(64, 64, kernel_size=(2, 1), stride=(2, 1)),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True))
+        self.conv6 = nn.Sequential(
+            nn.Conv2d(64, 32, kernel_size=(3, 3), padding=(1, 1)),
+            nn.ConvTranspose2d(32, 32, kernel_size=(2, 1), stride=(2, 1)),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True))
+        self.conv7 = nn.Sequential(
+            nn.Conv2d(32, 16, kernel_size=(3, 3), padding=(1, 1)),
+            nn.ConvTranspose2d(16, 16, kernel_size=(2, 1), stride=(2, 1)),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True))
+        self.final = nn.Conv2d(16, 1, kernel_size=1)
     def forward(self, x):
         # down-sample
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
-        x = self.conv4(x)
-        return x
-        # up-sample with supervision
-        # if not self.inference:
-        #     x = self.conv5(x_mid)
-        #     x = self.conv6(x)
-        #     x = self.conv7(x)
-        #     x = self.final(x)
-        #     return x_mid, x
-        # else:
-        #     return x_mid
+        x_mid = self.conv4(x)
+        # up-sample with supervisi
+        x = self.conv5(x_mid)
+        x = self.conv6(x)
+        x = self.conv7(x)
+        x = self.final(x)
+        return x_mid, x
 
 class Audio_branch(nn.Module):
     def __init__(self):
@@ -184,14 +178,10 @@ class vibvoice(nn.Module):
         acc = acc * torch.mean(noisy) / torch.mean(acc)
         noisy = torch.unsqueeze(noisy[:, 1:257, 1:], 1)
         acc = torch.unsqueeze(acc[:, 1:, 1:], 1)
-        acc = self.IMU_branch(acc)
-        mask = self.Residual_block(acc, self.Audio_branch(noisy))
+        acc_mid, acc_output = self.IMU_branch(acc)
+        mask = self.Residual_block(acc_mid, self.Audio_branch(noisy))
         clean = mask * noisy
-        return clean
-        # else:
-        #     acc, x_extra = acc
-        #     x = self.Residual_block(acc, self.Audio_branch(noisy)) * noisy
-        #     return x, x_extra
+        return clean, acc_output
 
 def model_size(model):
     param_size = 0

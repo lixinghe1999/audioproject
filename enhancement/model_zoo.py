@@ -62,14 +62,12 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
     clean_mag = clean_mag.to(device=device)
-    #print('input', torch.isnan(noisy_mag).any())
-    #print('target', torch.isnan(clean_mag).any())
+    print(noisy_mag.mean(), clean_mag.mean())
     clean_mag = torch.unsqueeze(clean_mag[:, 1:257, 1:], 1)
-    predict = model(noisy_mag, acc)
-    #print('output', torch.isnan(predict).any())
+    clean, acc = model(noisy_mag, acc)
 
-    loss = Spectral_Loss(predict, clean_mag)
-    # loss += 0.5 * F.mse_loss(predict2, clean_mag[:, :, :32, :])
+    loss = Spectral_Loss(clean, clean_mag)
+    loss += 0.5 * F.mse_loss(acc, clean_mag[:, :, :32, :])
     loss.backward()
 
     for name, param in model.named_parameters():
