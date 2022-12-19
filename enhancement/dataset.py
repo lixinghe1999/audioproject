@@ -73,26 +73,6 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
             clean_y = clean_y / noisy_y_scalar
 
         return noisy_y, clean_y
-def snr_norm(signals, target_dB_FS, target_dB_FS_floating_value):
-        """
-        Args:
-            signals: list of signal
-            target_dB_FS (int):
-            target_dB_FS_floating_value (int):
-        Returns:
-            (noisy_y，clean_y)
-        """
-        noisy_target_dB_FS = np.random.randint(
-            target_dB_FS - target_dB_FS_floating_value,
-            target_dB_FS + target_dB_FS_floating_value
-        )
-        new_signal = []
-        for signal in signals:
-            signal, _ = norm_amplitude(signal)
-            signal, _, _ = tailor_dB_FS(signal, noisy_target_dB_FS)
-            new_signal.append(signal)
-        return new_signal
-
 
 class BaseDataset:
     def __init__(self, files=None, pad=False, sample_rate=16000):
@@ -140,7 +120,7 @@ class BaseDataset:
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(-5, 20),
-                 rir=None, num_noises=1):
+                 rir=None, num_noises=1, dvector=None):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -156,6 +136,12 @@ class NoisyCleanSet:
         self.text = text
         self.snr_list = np.arange(snr[0], snr[1], 1)
         self.num_noises = num_noises
+        if dvector is not None:
+            people = os.listdir(dvector)
+            self.dvector = {}
+            for p in people:
+                x = np.load(os.path.join(dvector, p))
+                self.dvector[p.split('.')[0]] = x
         if len(json_paths) == 2:
             # only clean + noise
             self.augmentation = True
@@ -179,13 +165,13 @@ class NoisyCleanSet:
                 else:
                     data = data[int(len(data) * self.ratio):]
             self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
+        self.noise_length = len(self.dataset[1])
         self.rir = rir
         if self.rir is not None:
             with open(rir, 'r') as f:
                 data = json.load(f)
             self.rir = data
             self.rir_length = len(self.rir)
-        self.noise_length = len(self.dataset[1])
     def __getitem__(self, index):
         clean, file = self.dataset[0][index]
         if self.simulation:
@@ -201,14 +187,17 @@ class NoisyCleanSet:
                 clean_tmp = noise
         else:
             # already added noisy
-            noise, file = self.dataset[1][index]
-            #noise, clean = snr_norm([noise, clean], -25, 10)
-
+            noise, _ = self.dataset[1][index]
         if self.augmentation:
             data = [clean.astype(np.float32), noise.astype(np.float32)]
         else:
-            acc, _ = self.dataset[2][index]
-            acc = np.transpose(acc)
+            # We have two kind of additional signal 1) Accelerometer 2) speaker embeddings (More coming soon)
+            if self.dvector:
+                spk = file.split('/')[-3]
+                acc = np.random.choice(self.dvector[spk])
+            else:
+                acc, _ = self.dataset[2][index]
+                acc = np.transpose(acc)
             data = [clean.astype(np.float32), noise.astype(np.float32), acc.astype(np.float32)]
         if self.text:
             sentence = sentences[int(file.split('/')[4][-1])-1]
@@ -275,17 +264,6 @@ class EMSBDataset:
             if use_reverb else None, eps=1e-6)
         else:
             noise, _ = self.dataset[1][index]
-            noise, clean = snr_norm([noise, clean], -25, 10)
-        if self.time_domain:
-            clean = np.expand_dims(clean, 0)
-            noise = np.expand_dims(noise, 0)
-        else:
-            noise = spectrogram(noise, seg_len_mic, overlap_mic, rate_mic)
-            clean = spectrogram(clean, seg_len_mic, overlap_mic, rate_mic)
-            imu = spectrogram(imu, seg_len_imu, overlap_imu, rate_imu)
-            noise = noise[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
-            clean = clean[:, 1: 8 * (freq_bin_high - 1) + 1, :-1]
-            imu = imu[:, 1:freq_bin_high, :-1]
         if self.text:
             setence = sentences[int(file.split('/')[4][-1])-1]
             return setence, imu, noise, clean
@@ -313,27 +291,3 @@ if __name__ == "__main__":
             # axs[1].plot(noise)
             # axs[2].plot(y)
             # plt.show()
-
-    elif args.mode == 1:
-        # save different positions correlation with audio
-        # dataset = NoisyCleanSet(['json/train_gt.json', 'json/train_gt.json', 'json/train_imu'], person=['hou'],
-        #                               simulation=True, ratio=1)
-        for position in ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']:
-            dataset = NoisyCleanSet(['json/position_gt.json', 'json/position_gt.json', 'json/position_imu.json'],
-                                          simulation=True, person=[position])
-            loader = Data.DataLoader(dataset=dataset, batch_size=1, shuffle=False)
-            Corr = []
-            for step, (x, noise, y) in enumerate(loader):
-                x = x[0, 0].numpy()
-                noise = torch.abs(noise[0, 0]).numpy()
-                y = torch.abs(y[0, 0]).numpy()
-                # wave_x = np.mean(x, axis=0)
-                # wave_y = np.mean(y, axis=0)
-                _, wave_x = signal.istft(x, fs=rate_imu, nperseg=seg_len_imu, noverlap=overlap_imu)
-                _, wave_y = signal.istft(y, fs=rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)
-                corr = np.corrcoef(wave_x, wave_y[::10])[0, 1]
-                if corr != corr:
-                    continue
-                else:
-                    Corr.append(corr)
-            print(position, np.mean(Corr))

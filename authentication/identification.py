@@ -11,10 +11,12 @@ from sklearn.ensemble import VotingClassifier
 from sklearn.model_selection import train_test_split
 import argparse
 from experiment import Experiment, MyDataSet, MyDataSet_Constrastive
-from model import ResNet18
+from resnet18 import ResNet18
 import yaml
 import json
 from torch.utils.data import ConcatDataset
+from sklearn.manifold import TSNE
+import seaborn as sns
 
 
 def identification(X, Y, ratio=0.3):
@@ -30,13 +32,10 @@ def load_data(path):
     X = []
     Y = []
     for i, p in enumerate(people):
-        person_path = os.path.join(path, p)
-        files = os.listdir(person_path)
-        for f in files:
-            x = np.load(os.path.join(person_path, f)).reshape(-1)
-            X.append(x)
-            Y.append(i)
-    return np.stack(X, axis=0), Y
+        x = np.load(os.path.join(path, p))
+        X.append(x)
+        Y.append([i] * len(x))
+    return np.concatenate(X, axis=0), np.concatenate(Y, axis=0)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--mode', action="store", type=int, default=0, required=False)
@@ -44,15 +43,18 @@ if __name__ == "__main__":
     # mode 1: deep learning
     # mode 2: phone-level embeddings
     args = parser.parse_args()
-    # palette = sns.color_palette("bright", 17)
-    # X_embedded = TSNE(n_components=2, learning_rate='auto', init='random').fit_transform(X2)
-    # sns.scatterplot(x=X_embedded[:, 0], y=X_embedded[:, 1], hue=Y, legend='full', palette=palette)
-    # plt.show()
+
     if args.mode == 0:
-        X, Y = load_data('speaker_embedding/noise_dependent')
-        #X = np.concatenate([X2, X3], axis=1)
+        X, Y = load_data('speaker_embedding/voicefilter')
+        print(X.shape, Y.shape)
         gt, p, clf = identification(X, Y)
-        print(balanced_accuracy_score(gt, p))
+        print('Machine learning result:', balanced_accuracy_score(gt, p))
+
+        # palette = sns.color_palette("bright", 15)
+        # X_embedded = TSNE(n_components=2, learning_rate='auto', init='random').fit_transform(X)
+        # sns.scatterplot(x=X_embedded[:, 0], y=X_embedded[:, 1], hue=Y, legend='full', palette=palette)
+        # plt.show()
+
         mat = confusion_matrix(gt, p, normalize='true')
         plt.imshow(mat)
         plt.colorbar()

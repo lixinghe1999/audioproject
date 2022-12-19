@@ -54,6 +54,20 @@ def Spectral_Loss(x_mag, y_mag):
     log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 
+def train_voicefilter(model, acc, noise, clean, optimizer, device='cuda'):
+    noisy_mag, _, _, _ = stft(noise, 1200, 160, 400)
+    clean_mag, _, _, _ = stft(clean, 1200, 160, 400)
+    optimizer.zero_grad()
+
+    noisy_mag = noisy_mag.to(device=device)
+    clean_mag = clean_mag.to(device=device)
+    mask = model(noisy_mag, devector)
+    clean = noisy_mag * mask
+
+    loss = F.mse_loss(clean, clean_mag)
+    loss.backward()
+    optimizer.step()
+    return loss.item()
 
 def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag, _, _, _ = stft(noise, 640, 320, 640)

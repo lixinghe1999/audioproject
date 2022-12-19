@@ -6,7 +6,7 @@ from tqdm import tqdm
 import numpy as np
 import os
 from torch.utils.data import Dataset
-from model import GE2ELoss, get_centroids, get_cossim, Swap, Mask
+from resnet18 import GE2ELoss, get_centroids, get_cossim, Swap, Mask
 from torchvision import transforms
 from sklearn.manifold import TSNE
 import seaborn as sns

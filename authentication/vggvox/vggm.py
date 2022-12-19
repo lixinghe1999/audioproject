@@ -51,7 +51,7 @@ class VGGM(nn.Module):
     def forward(self, inp):
         inp=self.features(inp)
         #inp=inp.view(inp.size()[0],-1)
-        inp=self.classifier(inp)
+        #inp=self.classifier(inp)
         return inp
 
 if __name__=="__main__":
