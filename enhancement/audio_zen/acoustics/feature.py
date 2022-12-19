@@ -32,7 +32,7 @@ def stft(y, n_fft, hop_length, win_length):
     if num_dims == 3:
         y = y.reshape(-1, num_samples)
 
-    complex_stft = torch.stft(y, n_fft, hop_length, win_length, window=torch.hann_window(n_fft, device=y.device),
+    complex_stft = torch.stft(y, n_fft, hop_length, win_length, window=torch.hann_window(win_length, device=y.device),
                               return_complex=True)
     _, num_freqs, num_frames = complex_stft.shape
 

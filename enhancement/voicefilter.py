@@ -142,6 +142,6 @@ if __name__ == "__main__":
 
 
     noisy = torch.rand(2, 160, 601).to('cuda')
-    filter = VoiceFilter().to('cuda')
+    filter = voicefilter().to('cuda')
     clean = filter(noisy, vector)
     print(clean.shape)
