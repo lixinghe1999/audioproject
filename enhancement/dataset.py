@@ -192,8 +192,9 @@ class NoisyCleanSet:
             if self.dvector is not None:
                 spk = file.split('/')[-3]
                 print(spk)
-                print(self.dvector[spk].shape)
-                acc = np.random.choice(self.dvector[spk])
+                vectors = self.dvector[spk]
+                r_idx = np.random.randint(0, vectors.shape[0])
+                acc = vectors[r_idx]
                 data = [clean.astype(np.float32), noise.astype(np.float32), acc.astype(np.float32)]
             else:
                 data = [clean.astype(np.float32), noise.astype(np.float32)]
