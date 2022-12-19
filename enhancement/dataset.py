@@ -191,7 +191,6 @@ class NoisyCleanSet:
         if self.augmentation:
             if self.dvector is not None:
                 spk = file.split('/')[-3]
-                print(spk)
                 vectors = self.dvector[spk]
                 r_idx = np.random.randint(0, vectors.shape[0])
                 acc = vectors[r_idx]
