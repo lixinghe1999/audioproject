@@ -114,7 +114,7 @@ if __name__ == "__main__":
         EPOCH = 30
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector='voicefilter')
+                                ratio=0.01, rir='json/rir.json', dvector='voicefilter')
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()

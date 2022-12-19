@@ -55,14 +55,12 @@ def Spectral_Loss(x_mag, y_mag):
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 
 def train_voicefilter(model, acc, noise, clean, optimizer, device='cuda'):
-    print(noise.shape, acc.shape, clean.shape)
     noisy_mag, _, _, _ = stft(noise, 1200, 160, 400)
     clean_mag, _, _, _ = stft(clean, 1200, 160, 400)
     optimizer.zero_grad()
 
     noisy_mag = noisy_mag.to(device=device)
     clean_mag = clean_mag.to(device=device)
-    print(noisy_mag.shape)
     mask = model(noisy_mag.permute(0, 2, 1), acc.to(device=device)).permute(0, 2, 1)
     clean = noisy_mag * mask
 
@@ -70,6 +68,18 @@ def train_voicefilter(model, acc, noise, clean, optimizer, device='cuda'):
     loss.backward()
     optimizer.step()
     return loss.item()
+def test_voicefilter(model, acc, noise, clean, device='cuda', text=None, data=False):
+    noisy_mag, noisy_phase, _, _ = stft(noise, 1200, 160, 400)
+
+    noisy_mag = noisy_mag.to(device=device)
+    mask = model(noisy_mag.permute(0, 2, 1), acc.to(device=device)).permute(0, 2, 1)
+    clean = noisy_mag * mask
+
+    predict = clean.cpu().numpy()
+    predict = np.exp(1j * noisy_phase) * predict
+    predict = istft(predict, 1200, 160, 400, input_type="complex")
+    clean = clean.numpy()
+    return eval(clean, predict, text=text)
 
 def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag, _, _, _ = stft(noise, 640, 320, 640)
@@ -139,7 +149,6 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     enhanced_real = cRM[..., 0] * noisy_real - cRM[..., 1] * noisy_imag
     enhanced_imag = cRM[..., 1] * noisy_real + cRM[..., 0] * noisy_imag
     predict = istft((enhanced_real, enhanced_imag), 512, 256, 512, length=noise.size(-1), input_type="real_imag").numpy()
-
     clean = clean.numpy()
     # clean = clean / np.max(clean) * 0.8
     # predict = predict / np.max(predict) * 0.8
