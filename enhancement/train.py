@@ -93,7 +93,7 @@ if __name__ == "__main__":
     parser.add_argument('--model', action="store", type=str, default='vibvoice', required=False,
                         help='choose the model')
     args = parser.parse_args()
-    torch.cuda.set_device(0)
+    torch.cuda.set_device(1)
     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
     # select available model from vibvoice, fullsubnet, conformer,
     model_name = args.model
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 8
+        BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 20
 
