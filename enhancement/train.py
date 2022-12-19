@@ -66,16 +66,14 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        # for i, sample in enumerate(tqdm(train_loader)):
-        #     text, clean, noise, acc = parse_sample(sample)
-        #     loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-        #     Loss_list.append(loss)
-        # mean_lost = np.mean(Loss_list)
-        # loss_curve.append(mean_lost)
-        # scheduler.step()
-
+        for i, sample in enumerate(tqdm(train_loader)):
+            text, clean, noise, acc = parse_sample(sample)
+            loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
+            Loss_list.append(loss)
+        mean_lost = np.mean(Loss_list)
+        loss_curve.append(mean_lost)
+        scheduler.step()
         avg_metric = inference(test_dataset, 4, model)
-
         print(avg_metric)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
@@ -109,12 +107,12 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 4
+        BATCH_SIZE = 8
         lr = 0.0001
-        EPOCH = 30
+        EPOCH = 20
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
-                                ratio=0.01, rir='json/rir.json', dvector='voicefilter')
+                                ratio=1, rir='json/rir.json', dvector='voicefilter')
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()
