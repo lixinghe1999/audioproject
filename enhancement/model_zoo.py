@@ -53,7 +53,6 @@ def Spectral_Loss(x_mag, y_mag):
     spectral_convergenge_loss = torch.norm(y_mag - x_mag, p="fro") / torch.norm(y_mag, p="fro")
     log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
-
 def train_voicefilter(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag, _, _, _ = stft(noise, 1200, 160, 400)
     clean_mag, _, _, _ = stft(clean, 1200, 160, 400)
