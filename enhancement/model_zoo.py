@@ -75,9 +75,8 @@ def test_voicefilter(model, acc, noise, clean, device='cuda', text=None, data=Fa
     mask = model(noisy_mag.permute(0, 2, 1), acc.to(device=device)).permute(0, 2, 1)
     clean = noisy_mag * mask
 
-    predict = clean.cpu().numpy()
-    noisy_phase = noisy_phase.numpy()
-    predict = istft((predict, noisy_phase), 1200, 160, 400, input_type="mag_phase")
+    predict = clean.cpu()
+    predict = istft((predict, noisy_phase), 1200, 160, 400, input_type="mag_phase").numpy()
     clean = clean.numpy()
     return eval(clean, predict, text=text)
 
@@ -111,6 +110,7 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     predict, acc = model(noisy_mag, acc)
     predict = predict.squeeze(1).cpu().numpy()
     predict = np.pad(predict, ((0, 0), (1, 321 - 257), (1, 0)))
+    noisy_phase = noisy_phase.numpy()
     predict = istft((predict, noisy_phase), 640, 320, 320, input_type="mag_phase")
     clean = clean.numpy()
     if data:
