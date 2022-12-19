@@ -73,9 +73,9 @@ def test_voicefilter(model, acc, noise, clean, device='cuda', text=None, data=Fa
 
     noisy_mag = noisy_mag.to(device=device)
     mask = model(noisy_mag.permute(0, 2, 1), acc.to(device=device)).permute(0, 2, 1)
-    clean = noisy_mag * mask
+    predict = noisy_mag * mask
 
-    predict = clean.cpu()
+    predict = predict.cpu()
     predict = istft((predict, noisy_phase), 1200, 160, 400, input_type="mag_phase").numpy()
     clean = clean.numpy()
     return eval(clean, predict, text=text)
