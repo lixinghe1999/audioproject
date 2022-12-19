@@ -96,6 +96,9 @@ class voicefilter(nn.Module):
         self.fc2 = nn.Linear(fc1_dim, fc2_dim)
 
     def forward(self, x, dvec):
+        dvec = dvec.unsqueeze(1)
+        dvec = dvec.repeat(1, x.size(1), 1)
+
         x = torch.cat((x, dvec), dim=2) # [B, T, 8*num_freq + emb_dim]
         x, _ = self.lstm(x) # [B, T, 2*lstm_dim]
         x = F.relu(x)
