@@ -189,15 +189,16 @@ class NoisyCleanSet:
             # already added noisy
             noise, _ = self.dataset[1][index]
         if self.augmentation:
-            data = [clean.astype(np.float32), noise.astype(np.float32)]
-        else:
-            # We have two kind of additional signal 1) Accelerometer 2) speaker embeddings (More coming soon)
-            if self.dvector:
+            if self.dvector is not None:
                 spk = file.split('/')[-3]
                 acc = np.random.choice(self.dvector[spk])
+                data = [clean.astype(np.float32), noise.astype(np.float32), acc.astype(np.float32)]
             else:
-                acc, _ = self.dataset[2][index]
-                acc = np.transpose(acc)
+                data = [clean.astype(np.float32), noise.astype(np.float32)]
+        else:
+            # We have two kind of additional signal 1) Accelerometer 2) speaker embeddings (More coming soon)
+            acc, _ = self.dataset[2][index]
+            acc = np.transpose(acc)
             data = [clean.astype(np.float32), noise.astype(np.float32), acc.astype(np.float32)]
         if self.text:
             sentence = sentences[int(file.split('/')[4][-1])-1]
