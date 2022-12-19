@@ -62,9 +62,9 @@ def train_voicefilter(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag = noisy_mag.to(device=device)
     clean_mag = clean_mag.to(device=device)
     mask = model(noisy_mag.permute(0, 2, 1), acc.to(device=device)).permute(0, 2, 1)
-    clean = noisy_mag * mask
+    predict = noisy_mag * mask
 
-    loss = F.mse_loss(clean, clean_mag)
+    loss = F.mse_loss(predict, clean_mag)
     loss.backward()
     optimizer.step()
     return loss.item()
@@ -76,6 +76,7 @@ def test_voicefilter(model, acc, noise, clean, device='cuda', text=None, data=Fa
     clean = noisy_mag * mask
 
     predict = clean.cpu().numpy()
+    noisy_phase = noisy_phase.numpy()
     predict = istft((predict, noisy_phase), 1200, 160, 400, input_type="mag_phase")
     clean = clean.numpy()
     return eval(clean, predict, text=text)
@@ -107,11 +108,11 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
 
-    clean, acc = model(noisy_mag, acc)
-    predict = clean.squeeze(1).cpu().numpy()
+    predict, acc = model(noisy_mag, acc)
+    predict = predict.squeeze(1).cpu().numpy()
     predict = np.pad(predict, ((0, 0), (1, 321 - 257), (1, 0)))
-    predict = np.exp(1j * noisy_phase) * predict
-    predict = signal.istft(predict, 16000, nperseg=640, noverlap=320)[-1]
+    predict = istft((predict, noisy_phase), 640, 320, 320, input_type="mag_phase")
+    clean = clean.numpy()
     if data:
         noise = noise.squeeze(1).numpy()
         noise = np.pad(noise, ((0, 0), (1, 321-257), (1, 0)))
