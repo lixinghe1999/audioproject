@@ -44,8 +44,9 @@ if __name__ == "__main__":
     if args.mode == 0:
         # For the audio-only dataset
         directory = "../dataset/"
-        datasets = ['dev', 'background', 'music', 'rir_noise', 'train'
-                    'wham_noise/tr', 'wham_noise/cv', 'wham_noise/tt', 'rir_fullsubnet/rir']
+        # datasets = ['dev', 'background', 'music', 'rir_noise'
+        #             'wham_noise/tr', 'wham_noise/cv', 'wham_noise/tt', 'rir_fullsubnet/rir']
+        datasets = ['librispeech-100']
         for dataset in datasets:
             audio_files = []
             g = os.walk(directory + dataset)

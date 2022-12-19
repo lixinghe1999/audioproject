@@ -61,7 +61,7 @@ def train_voicefilter(model, acc, noise, clean, optimizer, device='cuda'):
 
     noisy_mag = noisy_mag.to(device=device)
     clean_mag = clean_mag.to(device=device)
-    mask = model(noisy_mag, devector)
+    mask = model(noisy_mag, acc)
     clean = noisy_mag * mask
 
     loss = F.mse_loss(clean, clean_mag)
