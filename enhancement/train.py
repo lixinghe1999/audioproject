@@ -10,13 +10,12 @@ from fullsubnet import fullsubnet
 from vibvoice import vibvoice
 from conformer import TSCNet
 from SEANet import SEANet
+from voicefilter import voicefilter
 
 import numpy as np
 from tqdm import tqdm
 import argparse
 from discriminator import Discriminator_time, Discriminator_spectrogram, MultiScaleDiscriminator, SingleScaleDiscriminator
-# from model_zoo import train_SEANet, test_SEANet, train_vibvoice, test_vibvoice, train_fullsubnet, test_fullsubnet, \
-#     train_conformer, test_conformer
 import model_zoo
 def parse_sample(sample, text=False):
     if text:

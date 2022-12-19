@@ -4,9 +4,9 @@ import torch.nn.functional as F
 import librosa
 import numpy as np
 
-class VoiceFilter(nn.Module):
+class voicefilter(nn.Module):
     def __init__(self, num_freq=601, lstm_dim=400, emb_dim=256, fc1_dim=600, fc2_dim=601):
-        super(VoiceFilter, self).__init__()
+        super(voicefilter, self).__init__()
         self.conv = nn.Sequential(
             # cnn1
             nn.ZeroPad2d((3, 3, 0, 0)),
