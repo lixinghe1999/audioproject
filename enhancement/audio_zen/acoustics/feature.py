@@ -74,7 +74,7 @@ def istft(features, n_fft, hop_length, win_length, length=None, input_type="comp
     else:
         raise NotImplementedError("Only 'real_imag', 'complex', and 'mag_phase' are supported")
 
-    return torch.istft(features, n_fft, hop_length, win_length, window=torch.hann_window(n_fft, device=features.device),
+    return torch.istft(features, n_fft, hop_length, win_length, window=torch.hann_window(win_length, device=features.device),
                        length=length)
 
 
