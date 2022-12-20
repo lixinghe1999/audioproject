@@ -110,7 +110,7 @@ if __name__ == '__main__':
             print(embeddings.shape)
             np.save(store_path + '/' + str(k), embeddings)
     elif args.mode == 1:
-        directory = '../dataset/librispeech-100'
+        directory = '../dataset/librispeech-dev'
         person = os.listdir(directory)
         for p in person:
             count = 0

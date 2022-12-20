@@ -112,14 +112,16 @@ if __name__ == "__main__":
         EPOCH = 20
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector='voicefilter')
+                                ratio=1, rir='json/rir.json', dvector='voicefilter/librispeech-100')
+        test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
+                                ratio=1, rir='json/rir.json', dvector='voicefilter/librispeech-dev')
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()
         # dataset = EMSBDataset(['json/EMSB.json', 'json/all_noise.json'], time_domain=time_domain, simulation=True,
         #                         ratio=0.6, person=person)
 
-        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=True)
+        ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
     elif args.mode == 1:
