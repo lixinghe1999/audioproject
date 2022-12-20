@@ -93,9 +93,6 @@ def lsd(gt, est):
 #         # error can happen due to silent period
 #         pesq_score = 1
 #     return pesq_score
-def pesq_loss(clean, noisy, mode):
-    pesq_score = pesq_batch(16000, clean, noisy, mode, on_error=1)
-    return pesq_score
 
 def batch_pesq(clean, noisy, mode):
     pesq_score = Parallel(n_jobs=-1)(delayed(pesq)(16000, c, n, mode, on_error=1) for c, n in zip(clean, noisy))
