@@ -116,7 +116,7 @@ if __name__ == "__main__":
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
                                 ratio=0.5, rir='json/rir.json', dvector=None)
         test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
-                                ratio=0.2, rir='json/rir.json', dvector=None)
+                                ratio=0.1, rir='json/rir.json', dvector=None)
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()

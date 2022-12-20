@@ -40,7 +40,7 @@ def eval(clean, predict, text=None):
         #metric3 = lsd(clean, predict)
         metric4 = batch_stoi(clean, predict)
         metrics = [metric1, metric2, metric3, metric4]
-        print(metrics)
+        #print(metrics)
     return np.stack(metrics, axis=1)
 def Spectral_Loss(x_mag, y_mag):
     """Calculate forward propagation.
