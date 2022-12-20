@@ -7,7 +7,7 @@ from dataset import NoisyCleanSet, EMSBDataset
 import json
 
 from fullsubnet import fullsubnet
-from vibvoice import vibvoice
+from new_vibvoice import vibvoice
 from conformer import TSCNet
 from SEANet import SEANet
 from voicefilter import voicefilter
@@ -107,8 +107,6 @@ if __name__ == "__main__":
         BATCH_SIZE = 64
         lr = 0.0001
         EPOCH = 20
-        ckpt_start = torch.load('pretrain/vibvoice/[ 2.62173375 16.32991833  3.52134254].pth')
-        model.load_state_dict(ckpt_start)
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)

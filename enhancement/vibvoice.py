@@ -176,7 +176,7 @@ class vibvoice(nn.Module):
     def forward(self, noisy, acc=None):
         # Preprocessing
         if acc == None:
-            acc = synthetic(torch.abs(noisy), self.transfer_function, self.length_transfer_function)
+            acc = synthetic(noisy, self.transfer_function, self.length_transfer_function)
         else:
             batch = acc.shape[0]
             acc = acc.to(noisy.device).reshape(batch*3, -1)
