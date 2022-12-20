@@ -35,10 +35,9 @@ def inference(dataset, BATCH_SIZE, model, text=False):
     test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
-        for sample in test_loader:
+        for sample in tqdm(test_loader):
             text, clean, noise, acc = parse_sample(sample, text=text_inference)
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device, text)
-            # print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
@@ -66,14 +65,14 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        # for i, sample in enumerate(tqdm(train_loader)):
-        #     text, clean, noise, acc = parse_sample(sample)
-        #     loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-        #     Loss_list.append(loss)
-        # mean_lost = np.mean(Loss_list)
-        # loss_curve.append(mean_lost)
-        # scheduler.step()
-        avg_metric = inference(test_dataset, 4, model)
+        for i, sample in enumerate(tqdm(train_loader)):
+            text, clean, noise, acc = parse_sample(sample)
+            loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
+            Loss_list.append(loss)
+        mean_lost = np.mean(Loss_list)
+        loss_curve.append(mean_lost)
+        scheduler.step()
+        avg_metric = inference(test_dataset, 8, model)
         print(avg_metric)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
@@ -114,9 +113,9 @@ if __name__ == "__main__":
         model.load_state_dict(ckpt_start)
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
-                                ratio=0.5, rir='json/rir.json', dvector=None)
+                                ratio=1, rir='json/rir.json', dvector=None)
         test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
-                                ratio=0.1, rir='json/rir.json', dvector=None)
+                                ratio=1, rir='json/rir.json', dvector=None)
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()

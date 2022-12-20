@@ -40,7 +40,6 @@ def eval(clean, predict, text=None):
         #metric3 = lsd(clean, predict)
         metric4 = batch_stoi(clean, predict)
         metrics = [metric1, metric2, metric3, metric4]
-        #print(metrics)
     return np.stack(metrics, axis=1)
 def Spectral_Loss(x_mag, y_mag):
     """Calculate forward propagation.
@@ -108,11 +107,11 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
 
-    #predict, acc = model(noisy_mag, acc)
-    #predict = predict.squeeze(1).cpu()
-    #predict = F.pad(predict, (1, 0, 1, 321 - 257))
-    #predict = istft((predict, noisy_phase), 640, 320, 640, input_type="mag_phase").numpy()
-    predict = noise.numpy()
+    predict, acc = model(noisy_mag, acc)
+    predict = predict.squeeze(1).cpu()
+    predict = F.pad(predict, (1, 0, 1, 321 - 257))
+    predict = istft((predict, noisy_phase), 640, 320, 640, input_type="mag_phase").numpy()
+    #predict = noise.numpy()
     clean = clean.numpy()
     if data:
         noise = noise.squeeze(1).numpy()
