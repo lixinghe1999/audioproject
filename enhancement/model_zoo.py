@@ -131,6 +131,7 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
 
     noisy_mag = noisy_mag.unsqueeze(1)
     cRM = model(noisy_mag).permute(0, 2, 3, 1)
+    print(cRM.shape, cIRM.shape)
     loss = F.mse_loss(cIRM, cRM)
 
     loss.backward()
