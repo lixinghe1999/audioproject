@@ -66,13 +66,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        # for i, sample in enumerate(tqdm(train_loader)):
-        #     text, clean, noise, acc = parse_sample(sample)
-        #     loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-        #     Loss_list.append(loss)
-        # mean_lost = np.mean(Loss_list)
-        # loss_curve.append(mean_lost)
-        # scheduler.step()
+        for i, sample in enumerate(tqdm(train_loader)):
+            text, clean, noise, acc = parse_sample(sample)
+            loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
+            Loss_list.append(loss)
+        mean_lost = np.mean(Loss_list)
+        loss_curve.append(mean_lost)
+        scheduler.step()
         avg_metric = inference(test_dataset, 4, model)
         print(avg_metric)
         if mean_lost < loss_best:
@@ -110,13 +110,12 @@ if __name__ == "__main__":
         BATCH_SIZE = 64
         lr = 0.0001
         EPOCH = 20
-        ckpt_start = torch.load('pretrain/[ 1.96665267 12.56403874  4.80655581  0.85345888].pth')
+        ckpt_start = torch.load('pretrain/vibvoice_rir/[ 2.52787821 14.42417432  3.50193285].pth')
         model.load_state_dict(ckpt_start)
-
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector='voicefilter/librispeech-100')
+                                ratio=1, rir='json/rir.json', dvector=None)
         test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector='voicefilter/librispeech-dev')
+                                ratio=1, rir='json/rir.json', dvector=None)
         # with open('json/EMSB.json', 'r') as f:
         #     data = json.load(f)
         #     person = data.keys()
