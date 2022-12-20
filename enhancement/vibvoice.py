@@ -167,7 +167,7 @@ class vibvoice(nn.Module):
         self.Audio_branch = Audio_branch()
         self.Residual_block = Residual_Block(384)
 
-        self.transfer_function = np.load('transfer_function_EMSB_32.npy')
+        self.transfer_function = np.load('transfer_function_EMSB_filter.npy')
         self.length_transfer_function = self.transfer_function.shape[0]
 
     def forward(self, noisy, acc=None):
