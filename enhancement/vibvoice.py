@@ -183,7 +183,7 @@ class vibvoice(nn.Module):
             print(acc.shape)
             acc = torch.abs(torch.stft(acc, 64, 32, 64, window=torch.hann_window(64, device=noisy.device), return_complex=True))
             print(acc.shape)
-            acc = torch.norm(acc.reshape(batch, 3, ...), dim=1)
+            acc = torch.norm(acc.reshape(batch, 3, 33, -1), dim=1)
             print(acc.shape)
         noisy = torch.unsqueeze(noisy[:, 1:257, 1:], 1)
         acc = torch.unsqueeze(acc[:, 1:, 1:], 1)
