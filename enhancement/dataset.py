@@ -119,7 +119,7 @@ class BaseDataset:
                 data, _ = librosa.load(file, offset=offset, duration=duration, mono=True, sr=rate_mic)
             return data, file
 class NoisyCleanSet:
-    def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(-5, 20),
+    def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20),
                  rir=None, num_noises=1, dvector=None):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)

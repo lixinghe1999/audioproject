@@ -169,16 +169,20 @@ class vibvoice(nn.Module):
 
         self.transfer_function = np.load('transfer_function_EMSB_filter.npy')
         self.length_transfer_function = self.transfer_function.shape[0]
-
+    def norm(self, x):
+        mu = torch.mean(x, dim=list(range(1, x.dim())), keepdim=True)
+        normed = x / (mu + 1e-5)
+        return normed
     def forward(self, noisy, acc=None):
         # Preprocessing
         if acc == None:
             acc = synthetic(torch.abs(noisy), self.transfer_function, self.length_transfer_function)
         else:
             acc = torch.abs(torch.stft(acc, 64, 32, 64, window=torch.hann_window(64, device=noisy.device), return_complex=True))
-        acc = acc * torch.mean(noisy) / torch.mean(acc)
         noisy = torch.unsqueeze(noisy[:, 1:257, 1:], 1)
         acc = torch.unsqueeze(acc[:, 1:, 1:], 1)
+        acc = self.norm(acc)
+        noisy = self.norm(noisy)
         acc_mid, acc_output = self.IMU_branch(acc)
         mask = self.Residual_block(acc_mid, self.Audio_branch(noisy))
         clean = mask * noisy
