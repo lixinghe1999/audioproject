@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import torch
 import numpy as np
 import soundfile as sf
-from evaluation import batch_pesq, SI_SDR, lsd, batch_stoi, eval_ASR, pesq_loss
+from evaluation import batch_pesq, SI_SDR, lsd, batch_stoi, eval_ASR
 import torch.nn.functional as F
 from scipy import signal
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
