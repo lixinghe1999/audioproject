@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import torch
 import numpy as np
 import soundfile as sf
-from evaluation import batch_pesq, SI_SDR, lsd, batch_stoi, eval_ASR
+from evaluation import batch_pesq, SI_SDR, lsd, batch_stoi, eval_ASR, pesq_loss
 import torch.nn.functional as F
 from scipy import signal
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
@@ -34,9 +34,10 @@ def eval(clean, predict, text=None):
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
         metrics = [wer_clean, wer_noisy]
     else:
-        metric1 = batch_pesq(clean, predict)
-        metric2 = SI_SDR(clean, predict)
-        metric3 = lsd(clean, predict)
+        metric1 = pesq_loss(clean, predict, 'wb')
+        metric2 = pesq_loss(clean, predict, 'nb')
+        metric3 = SI_SDR(clean, predict)
+        #metric3 = lsd(clean, predict)
         metric4 = batch_stoi(clean, predict)
         metrics = [metric1, metric2, metric3, metric4]
     return np.stack(metrics, axis=1)
