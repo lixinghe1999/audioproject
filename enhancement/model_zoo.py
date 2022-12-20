@@ -34,8 +34,8 @@ def eval(clean, predict, text=None):
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
         metrics = [wer_clean, wer_noisy]
     else:
-        metric1 = pesq_loss(clean, predict, 'wb')
-        metric2 = pesq_loss(clean, predict, 'nb')
+        metric1 = batch_pesq(clean, predict, 'wb')
+        metric2 = batch_pesq(clean, predict, 'nb')
         metric3 = SI_SDR(clean, predict)
         #metric3 = lsd(clean, predict)
         metric4 = batch_stoi(clean, predict)
