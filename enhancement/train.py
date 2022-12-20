@@ -146,14 +146,14 @@ if __name__ == "__main__":
         test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
                                           simulation=True, person=people, ratio=-0.2,)
 
-        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-                                       simulation=True, person=positions, ratio=r,)
-        test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-                                      simulation=True, person=positions, ratio=-0.2,)
-
-        train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
-        test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
+        # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
+        # train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
+        #                                simulation=True, person=positions, ratio=r,)
+        # test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
+        #                               simulation=True, person=positions, ratio=-0.2,)
+        #
+        # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
+        # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
 
         ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE,
