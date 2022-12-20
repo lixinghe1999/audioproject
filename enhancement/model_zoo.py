@@ -124,8 +124,8 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     noise = noise.to(device=device)
     clean = clean.to(device=device)
 
-    noisy_mag, noisy_phase, noisy_real, noisy_imag = stft(noise, 640, 320, 640)
-    _, _, clean_real, clean_imag = stft(clean, 640, 320, 640)
+    noisy_mag, noisy_phase, noisy_real, noisy_imag = stft(noise, 512, 256, 512)
+    _, _, clean_real, clean_imag = stft(clean, 512, 256, 512)
     cIRM = build_complex_ideal_ratio_mask(noisy_real, noisy_imag, clean_real, clean_imag)  # [B, F, T, 2]
     #cIRM = drop_band(cIRM, 2)
 
