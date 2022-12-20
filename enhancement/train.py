@@ -35,7 +35,7 @@ def inference(dataset, BATCH_SIZE, model, text=False):
     test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
     with torch.no_grad():
-        for sample in tqdm(test_loader):
+        for sample in test_loader:
             text, clean, noise, acc = parse_sample(sample, text=text_inference)
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device, text)
             Metric.append(metric)
@@ -126,14 +126,14 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        BATCH_SIZE = 8
+        BATCH_SIZE = 16
         lr = 0.0001
-        EPOCH = 5
+        EPOCH = 10
         r = 0.8
 
-        # ckpt_dir = 'pretrain/vibvoice_rir'
-        # #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/[ 2.54322106  3.2612639  16.52045365  0.93127173].pth'
+        ckpt_dir = 'pretrain/vibvoice'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        #ckpt_name = 'pretrain/[ 2.54322106  3.2612639  16.52045365  0.93127173].pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)
@@ -141,26 +141,24 @@ if __name__ == "__main__":
         # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
         # model.load_state_dict(checkpoint['model'])
 
-        # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-        #                                 simulation=True, person=people, ratio=r,)
-        # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-        #                                   simulation=True, person=people, ratio=-0.2,)
+        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+                                        simulation=True, person=people, ratio=r,)
+        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+                                          simulation=True, person=people, ratio=-0.2,)
 
-        # extra dataset for other positions
-        # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        # train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-        #                                time_domain=time_domain, simulation=True, person=positions, ratio=r,)
-        # test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
-        #                               time_domain=time_domain, simulation=True, person=positions, ratio=-0.2,)
+        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
+        train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+                                       simulation=True, person=positions, ratio=r,)
+        test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
+                                      simulation=True, person=positions, ratio=-0.2,)
 
-        # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
-        # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
+        train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
+        test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
 
-        # ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE,
-        #                                       model, discriminator=None)
-        # model.load_state_dict(ckpt)
-        # Optional Micro-benchmark
+        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE,
+                                              model, discriminator=None)
+        model.load_state_dict(ckpt)
 
         for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
