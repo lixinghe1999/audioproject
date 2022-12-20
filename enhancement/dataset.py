@@ -136,7 +136,9 @@ class NoisyCleanSet:
         self.text = text
         self.snr_list = np.arange(snr[0], snr[1], 1)
         self.num_noises = num_noises
-        if dvector is not None:
+        if dvector is None:
+            self.dvector = dvector
+        else:
             people = os.listdir(dvector)
             self.dvector = {}
             for p in people:
