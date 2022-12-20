@@ -93,12 +93,6 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     loss = Spectral_Loss(clean, clean_mag)
     #loss += 0.1 * F.mse_loss(acc, clean_mag[:, :, :32, :])
     loss.backward()
-
-    for name, param in model.named_parameters():
-        if torch.isnan(param.grad).any():
-            print("nan gradient found")
-            raise SystemExit
-
     optimizer.step()
     return loss.item()
 def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False):
