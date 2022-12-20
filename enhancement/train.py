@@ -133,18 +133,18 @@ if __name__ == "__main__":
 
         # ckpt_dir = 'pretrain/vibvoice_rir'
         # #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        # ckpt_name = 'pretrain/0.6525931150024341.pth'
-        # print("load checkpoint: {}".format(ckpt_name))
-        # ckpt_start = torch.load(ckpt_name)
-        # model.load_state_dict(ckpt_start)
+        ckpt_name = 'pretrain/[ 2.54322106  3.2612639  16.52045365  0.93127173].pth'
+        print("load checkpoint: {}".format(ckpt_name))
+        ckpt_start = torch.load(ckpt_name)
+        model.load_state_dict(ckpt_start)
 
-        checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
-        model.load_state_dict(checkpoint['model'])
+        # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
+        # model.load_state_dict(checkpoint['model'])
 
-        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                        simulation=True, person=people, ratio=r,)
-        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                          simulation=True, person=people, ratio=-0.2,)
+        # train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+        #                                 simulation=True, person=people, ratio=r,)
+        # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+        #                                   simulation=True, person=people, ratio=-0.2,)
 
         # extra dataset for other positions
         # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
@@ -157,9 +157,9 @@ if __name__ == "__main__":
         # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
 
-        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE,
-                                              model, discriminator=None)
-        model.load_state_dict(ckpt)
+        # ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE,
+        #                                       model, discriminator=None)
+        # model.load_state_dict(ckpt)
         # Optional Micro-benchmark
 
         for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
@@ -168,26 +168,23 @@ if __name__ == "__main__":
             avg_metric = inference(dataset, 4, model)
             print(p, avg_metric)
 
-        for noise in ['background.json', 'dev.json', 'music.json']:
+        for noise in ['background.json', 'librispeech-dev.json', 'music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
                                     person=people, simulation=True, ratio=-0.2)
-            Metric = inference(dataset, 4, model)
-            avg_metric = np.mean(Metric, axis=0)
+            avg_metric = inference(dataset, 4, model)
             print(noise, avg_metric)
 
         for level in [10, 5, 1]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json',  'json/train_imu.json'], person=people,
                                      simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
-            Metric = inference(dataset, 4, model)
-            avg_metric = np.mean(Metric, axis=0)
+            avg_metric = inference(dataset, 4, model)
             print(level, avg_metric)
 
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         for p in positions:
             dataset = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
                                     person=[p], simulation=True, ratio=-0.2)
-            Metric = inference(dataset, 4, model)
-            avg_metric = np.mean(Metric, axis=0)
+            avg_metric = inference(dataset, 4, model)
             print(p, avg_metric)
     elif args.mode == 2:
         # evaluation for WER
