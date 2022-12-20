@@ -178,7 +178,7 @@ class vibvoice(nn.Module):
         if acc == None:
             acc = synthetic(torch.abs(noisy), self.transfer_function, self.length_transfer_function)
         else:
-            acc = torch.abs(torch.stft(acc, 64, 32, 64, window=torch.hann_window(64, device=noisy.device), return_complex=True))
+            acc = torch.abs(torch.stft(acc.to(noisy.device), 64, 32, 64, window=torch.hann_window(64, device=noisy.device), return_complex=True))
         noisy = torch.unsqueeze(noisy[:, 1:257, 1:], 1)
         acc = torch.unsqueeze(acc[:, 1:, 1:], 1)
         acc = self.norm(acc)
