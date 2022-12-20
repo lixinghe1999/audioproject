@@ -61,9 +61,49 @@ class vibvoice(nn.Module):
             nn.Conv2d(64, 8, kernel_size=(1, 1), dilation=(1, 1)),
             nn.BatchNorm2d(8), nn.ReLU(),
         )
+        self.conv_acc = nn.Sequential(
+            # cnn1
+            nn.ZeroPad2d((0, 0, 3, 3)),
+            nn.Conv2d(1, 64, kernel_size=(7, 1), dilation=(1, 1)),
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn2
+            nn.ZeroPad2d((3, 3, 0, 0)),
+            nn.Conv2d(64, 64, kernel_size=(1, 7), dilation=(1, 1)),
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn3
+            nn.ZeroPad2d(2),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 1)),
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn4
+            nn.ZeroPad2d((4, 4, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 2)),  # (9, 5)
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn5
+            nn.ZeroPad2d((8, 8, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 4)),  # (17, 5)
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn6
+            nn.ZeroPad2d((16, 16, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 8)),  # (33, 5)
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn7
+            nn.ZeroPad2d((32, 32, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 16)),  # (65, 5)
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn8
+            nn.Conv2d(64, 8, kernel_size=(1, 1), dilation=(1, 1)),
+            nn.BatchNorm2d(8), nn.ReLU(),
+        )
 
         self.lstm = nn.LSTM(
-            8 * num_freq + emb_dim,
+            8 * num_freq + 8 * emb_dim,
             lstm_dim,
             batch_first=True,
             bidirectional=True)
@@ -85,7 +125,7 @@ class vibvoice(nn.Module):
             batch = acc.shape[0]
             acc = acc.to(x.device).reshape(batch*3, -1)
             acc = torch.abs(torch.stft(acc, 64, 32, 64, window=torch.hann_window(64, device=x.device), return_complex=True))
-            acc = torch.norm(acc.reshape(batch, 3, 33, -1), dim=1)
+            acc = torch.norm(acc.reshape(batch, 3, 33, -1), p=2, dim=1)
         acc = self.norm(acc)
         x = self.norm(x)
 
@@ -99,7 +139,17 @@ class vibvoice(nn.Module):
         x = x.view(x.size(0), x.size(1), -1)
         # x: [B, T, 8*num_freq]
 
-        x = torch.cat((x, acc.permute(0, 2, 1)), dim=2) # [B, T, 8*num_freq + emb_dim]
+        # x: [B, num_freq, T]
+        acc = acc.unsqueeze(1)
+        # x: [B, 1, num_freq, T]
+        acc = self.conv_acc(acc)
+        # x: [B, 8, num_freq, T]
+        acc = acc.permute(0, 3, 1, 2).contiguous()
+        # x: [B, T, 8, num_freq]
+        acc = acc.view(x.size(0), x.size(1), -1)
+        # x: [B, T, 8*num_freq]
+
+        x = torch.cat((x, acc), dim=2) # [B, T, 8*num_freq + emb_dim]
 
         x, _ = self.lstm(x) # [B, T, 2*lstm_dim]
         x = F.relu(x)
