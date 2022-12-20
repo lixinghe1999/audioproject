@@ -126,11 +126,12 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
 
     noisy_mag, noisy_phase, noisy_real, noisy_imag = stft(noise, 512, 256, 512)
     _, _, clean_real, clean_imag = stft(clean, 512, 256, 512)
-    cIRM = build_complex_ideal_ratio_mask(noisy_real, noisy_imag, clean_real, clean_imag)  # [B, F, T, 2]
+    cIRM = build_complex_ideal_ratio_mask(noisy_real.unsqueeze(1), noisy_imag.unsqueeze(1),
+                                          clean_real.unsqueeze(1), clean_imag.unsqueeze(1))  # [B, F, T, 2]
     #cIRM = drop_band(cIRM, 2)
 
     noisy_mag = noisy_mag.unsqueeze(1)
-    cRM = model(noisy_mag).permute(0, 2, 3, 1)
+    cRM = model(noisy_mag)
     print(cRM.shape, cIRM.shape)
     loss = F.mse_loss(cIRM, cRM)
 

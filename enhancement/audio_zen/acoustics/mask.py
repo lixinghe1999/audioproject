@@ -22,7 +22,6 @@ def build_complex_ideal_ratio_mask(noisy_real, noisy_imag, clean_real, clean_ima
 
     mask_real = (noisy_real * clean_real + noisy_imag * clean_imag) / denominator
     mask_imag = (noisy_real * clean_imag - noisy_imag * clean_real) / denominator
-    print(mask_real.shape, mask_imag.shape)
     complex_ratio_mask = torch.cat((mask_real, mask_imag), dim=1)
 
     return compress_cIRM(complex_ratio_mask, K=10, C=0.1)
