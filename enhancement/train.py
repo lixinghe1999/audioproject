@@ -126,17 +126,20 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        BATCH_SIZE = 16
+        BATCH_SIZE = 8
         lr = 0.0001
         EPOCH = 5
         r = 0.8
 
-        ckpt_dir = 'pretrain/vibvoice_rir'
-        #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/0.6525931150024341.pth'
-        print("load checkpoint: {}".format(ckpt_name))
-        ckpt_start = torch.load(ckpt_name)
-        model.load_state_dict(ckpt_start)
+        # ckpt_dir = 'pretrain/vibvoice_rir'
+        # #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        # ckpt_name = 'pretrain/0.6525931150024341.pth'
+        # print("load checkpoint: {}".format(ckpt_name))
+        # ckpt_start = torch.load(ckpt_name)
+        # model.load_state_dict(ckpt_start)
+
+        checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
+        model.load_state_dict(checkpoint['model'])
 
         train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
                                         simulation=True, person=people, ratio=r,)
@@ -158,14 +161,6 @@ if __name__ == "__main__":
                                               model, discriminator=None)
         model.load_state_dict(ckpt)
         # Optional Micro-benchmark
-
-        rirs = ['json/smallroom.json', 'json/mediumroom.json', 'json/largeroom.json']
-        for rir in rirs:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                    person=people, simulation=True, ratio=-0.2, rir=rir)
-            Metric = inference(dataset, 4, model)
-            avg_metric = np.mean(Metric, axis=0)
-            print(rir, avg_metric)
 
         for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
