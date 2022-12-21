@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 class voicefilter(nn.Module):
-    def __init__(self, num_freq=601, lstm_dim=400, emb_dim=256, fc1_dim=600):
+    def __init__(self, num_freq=201, lstm_dim=400, emb_dim=256, fc1_dim=600):
         super(voicefilter, self).__init__()
         self.conv = nn.Sequential(
             # cnn1

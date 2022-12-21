@@ -19,7 +19,7 @@ def synthetic(clean, transfer_function, N):
     return acc
 
 class vibvoice(nn.Module):
-    def __init__(self, num_freq=321, lstm_dim=400, emb_dim=33, fc1_dim=600, fc2_dim=321):
+    def __init__(self, num_freq=321, lstm_dim=400, emb_dim=33, fc1_dim=600):
         super(vibvoice, self).__init__()
         self.conv = nn.Sequential(
             # cnn1
@@ -109,7 +109,7 @@ class vibvoice(nn.Module):
             bidirectional=True)
 
         self.fc1 = nn.Linear(2*lstm_dim, fc1_dim)
-        self.fc2 = nn.Linear(fc1_dim, fc2_dim)
+        self.fc2 = nn.Linear(fc1_dim, num_freq)
 
         self.transfer_function = np.load('transfer_function_EMSB_filter.npy')
         self.length_transfer_function = self.transfer_function.shape[0]
