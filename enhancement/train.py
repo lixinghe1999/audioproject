@@ -129,7 +129,7 @@ if __name__ == "__main__":
         EPOCH = 10
         r = 0.8
 
-        ckpt_dir = 'pretrain/transfer_function_EMSB'
+        ckpt_dir = 'pretrain/vibvoice_rir'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         #ckpt_name = 'pretrain/[ 2.54322106  3.2612639  16.52045365  0.93127173].pth'
         print("load checkpoint: {}".format(ckpt_name))
