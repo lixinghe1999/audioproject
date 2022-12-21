@@ -146,9 +146,8 @@ class vibvoice(nn.Module):
         # x: [B, 8, num_freq, T]
         acc = acc.permute(0, 3, 1, 2).contiguous()
         # x: [B, T, 8, num_freq]
-        acc = acc.view(x.size(0), x.size(1), -1)
+        acc = acc.view(acc.size(0), acc.size(1), -1)
         # x: [B, T, 8*num_freq]
-
         x = torch.cat((x, acc), dim=2) # [B, T, 8*num_freq + emb_dim]
 
         x, _ = self.lstm(x) # [B, T, 2*lstm_dim]
@@ -177,10 +176,10 @@ def model_size(model):
 if __name__ == "__main__":
 
     device = 'cpu'
-    acc = torch.rand(1, 33, 151).to(device)
+    acc = torch.rand(1, 3, 4800).to(device)
     noisy = torch.rand(1, 321, 151).to(device)
     filter = vibvoice().to(device)
     clean = filter(noisy)
     print(clean.shape)
-    print(model_speed(filter, [noisy]))
     print(model_size(filter))
+    print(model_speed(filter, [noisy, acc]))
