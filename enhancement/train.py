@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 64
+        BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 20
         ckpt = torch.load('voiceSplit-trained-with-MSE-GE2E-Seungwonpark-best_checkpoint.pt')
