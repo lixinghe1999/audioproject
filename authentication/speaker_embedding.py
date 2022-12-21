@@ -80,35 +80,41 @@ if __name__ == '__main__':
         # audio-imu dataset
         directory = '../dataset/our'
         person = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        for k in range(len(person)):
-            count = 0
-            print(k)
-            p = person[k]
+        for p in person:
+            print(p)
             embeddings = []
-            for s in ['s1']:
-                path = os.path.join(directory, p, s, 'noise')
-                file_list = os.listdir(path)
-                dict = directory_decompose(file_list)
-                imu1 = dict['bmiacc1']
-                imu2 = dict['bmiacc2']
-                audio1 = dict['mic']
-                for i in range(len(imu1)):
-                    b, a = signal.butter(4, 80, 'highpass', fs=rate_imu)
-                    data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14
-                    data2 = np.loadtxt(os.path.join(path, imu2[i])) / 2 ** 14
-                    data1 = signal.filtfilt(b, a, data1, axis=0)
-                    data2 = signal.filtfilt(b, a, data2, axis=0)
-                    data1 = np.clip(data1, -0.05, 0.05)
-                    data2 = np.clip(data2, -0.05, 0.05)
+            path = os.path.join(directory, p, 'train')
+            file_list = os.listdir(path)
+            dict = directory_decompose(file_list)
+            imu1 = dict['bmiacc1']
+            imu2 = dict['bmiacc2']
+            audio1 = dict['mic']
+            for i in range(len(imu1)):
+                b, a = signal.butter(4, 80, 'highpass', fs=rate_imu)
+                data1 = np.loadtxt(os.path.join(path, imu1[i])) / 2 ** 14
+                data2 = np.loadtxt(os.path.join(path, imu2[i])) / 2 ** 14
+                data1 = signal.filtfilt(b, a, data1, axis=0)
+                data2 = signal.filtfilt(b, a, data2, axis=0)
+                data1 = np.clip(data1, -0.05, 0.05)
+                data2 = np.clip(data2, -0.05, 0.05)
 
-                    b, a = signal.butter(4, 80, 'highpass', fs=rate_mic)
-                    data3, source_sr = librosa.load(os.path.join(path, audio1[i]), sr=None)
-                    data3 = signal.filtfilt(b, a, data3, axis=0)
-                    data3 = normalize_volume(data3, -30, increase_only=True)
-                    embeddings = segment_level_feature(model, data1, data2, data3, embeddings)
+                b, a = signal.butter(4, 80, 'highpass', fs=rate_mic)
+                data3, source_sr = librosa.load(os.path.join(path, audio1[i]), sr=None)
+                data3 = signal.filtfilt(b, a, data3, axis=0)
+                data3 = normalize_volume(data3, -30, increase_only=True)
+                data3 = trim_long_silences(data3)
+                if len(data3) < 80000:
+                    continue
+                else:
+                    # Resemblyzer, VGGVOX, VoiceFilter
+                    # embedding = model.embed_utterance(audio)
+                    with torch.no_grad():
+                        embedding = model(np.expand_dims(data3, 0)).cpu().numpy()[0]
+                    embeddings.append(embedding)
+                #embeddings = segment_level_feature(model, data1, data2, data3, embeddings)
             embeddings = np.array(embeddings)
             print(embeddings.shape)
-            np.save(store_path + '/' + str(k), embeddings)
+            np.save(store_path + '/' + p, embeddings)
     elif args.mode == 1:
         directory = '../dataset/librispeech-dev'
         person = os.listdir(directory)

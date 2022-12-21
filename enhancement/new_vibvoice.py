@@ -22,47 +22,6 @@ class vibvoice(nn.Module):
     def __init__(self, num_freq=321, lstm_dim=400, emb_dim=33, fc1_dim=600):
         super(vibvoice, self).__init__()
         self.conv = nn.Sequential(
-            # cnn1
-            nn.ZeroPad2d((0, 0, 3, 3)),
-            nn.Conv2d(1, 64, kernel_size=(7, 1), dilation=(1, 1)),
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn2
-            nn.ZeroPad2d((3, 3, 0, 0)),
-            nn.Conv2d(64, 64, kernel_size=(1, 7), dilation=(1, 1)),
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn3
-            nn.ZeroPad2d(2),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 1)),
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn4
-            nn.ZeroPad2d((4, 4, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 2)), # (9, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn5
-            nn.ZeroPad2d((8, 8, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 4)), # (17, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn6
-            nn.ZeroPad2d((16, 16, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 8)), # (33, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn7
-            nn.ZeroPad2d((32, 32, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 16)), # (65, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn8
-            nn.Conv2d(64, 8, kernel_size=(1, 1), dilation=(1, 1)),
-            nn.BatchNorm2d(8), nn.ReLU(),
-        )
-        self.conv_acc = nn.Sequential(
-            # cnn1
             nn.ZeroPad2d((0, 0, 3, 3)),
             nn.Conv2d(1, 64, kernel_size=(7, 1), dilation=(1, 1)),
             nn.BatchNorm2d(64), nn.ReLU(),
@@ -98,12 +57,52 @@ class vibvoice(nn.Module):
             nn.BatchNorm2d(64), nn.ReLU(),
 
             # cnn8
-            nn.Conv2d(64, 8, kernel_size=(1, 1), dilation=(1, 1)),
-            nn.BatchNorm2d(8), nn.ReLU(),
+            nn.Conv2d(64, 4, kernel_size=(1, 1), dilation=(1, 1)),
+            nn.BatchNorm2d(4), nn.ReLU(),
+        )
+        self.conv_acc = nn.Sequential(
+            # cnn1
+            nn.ZeroPad2d((0, 0, 1, 1)),
+            nn.Conv2d(1, 64, kernel_size=(3, 1), dilation=(1, 1)),
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn2
+            nn.ZeroPad2d((3, 3, 0, 0)),
+            nn.Conv2d(64, 64, kernel_size=(1, 7), dilation=(1, 1)),
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn3
+            nn.ZeroPad2d(2),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 1)),
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn4
+            nn.ZeroPad2d((4, 4, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 2)),  # (9, 5)
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn5
+            nn.ZeroPad2d((8, 8, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 4)),  # (17, 5)
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn6
+            nn.ZeroPad2d((16, 16, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 8)),  # (33, 5)
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn7
+            nn.ZeroPad2d((32, 32, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 16)),  # (65, 5)
+            nn.BatchNorm2d(64), nn.ReLU(),
+
+            # cnn8
+            nn.Conv2d(64, 4, kernel_size=(1, 1), dilation=(1, 1)),
+            nn.BatchNorm2d(4), nn.ReLU(),
         )
 
         self.lstm = nn.LSTM(
-            8 * num_freq + 8 * emb_dim,
+            4 * num_freq + 4 * emb_dim,
             lstm_dim,
             batch_first=True,
             bidirectional=True)
@@ -126,28 +125,20 @@ class vibvoice(nn.Module):
             acc = acc.to(x.device).reshape(batch*3, -1)
             acc = torch.abs(torch.stft(acc, 64, 32, 64, window=torch.hann_window(64, device=x.device), return_complex=True))
             acc = torch.norm(acc.reshape(batch, 3, 33, -1), p=2, dim=1)
+        noisy_x = x
         acc = self.norm(acc)
         x = self.norm(x)
 
-        # x: [B, num_freq, T]
         x = x.unsqueeze(1)
-        # x: [B, 1, num_freq, T]
         x = self.conv(x)
-        # x: [B, 8, num_freq, T]
         x = x.permute(0, 3, 1, 2).contiguous()
-        # x: [B, T, 8, num_freq]
         x = x.view(x.size(0), x.size(1), -1)
-        # x: [B, T, 8*num_freq]
 
-        # x: [B, num_freq, T]
         acc = acc.unsqueeze(1)
-        # x: [B, 1, num_freq, T]
         acc = self.conv_acc(acc)
-        # x: [B, 8, num_freq, T]
         acc = acc.permute(0, 3, 1, 2).contiguous()
-        # x: [B, T, 8, num_freq]
         acc = acc.view(acc.size(0), acc.size(1), -1)
-        # x: [B, T, 8*num_freq]
+
         x = torch.cat((x, acc), dim=2) # [B, T, 8*num_freq + emb_dim]
 
         x, _ = self.lstm(x) # [B, T, 2*lstm_dim]
@@ -156,10 +147,11 @@ class vibvoice(nn.Module):
         x = F.relu(x)
         x = self.fc2(x) # x: [B, T, fc2_dim], fc2_dim == num_freq
         x = torch.sigmoid(x)
-        return x.permute(0, 2, 1)
+        x = x.permute(0, 2, 1) * noisy_x
+        return x
 def model_speed(model, input):
     t_start = time.time()
-    step = 100
+    step = 10
     with torch.no_grad():
         for i in range(step):
             model(*input)
@@ -178,8 +170,10 @@ if __name__ == "__main__":
     device = 'cpu'
     acc = torch.rand(1, 3, 4800).to(device)
     noisy = torch.rand(1, 321, 151).to(device)
-    filter = vibvoice().to(device)
-    clean = filter(noisy)
+    model = vibvoice().to(device)
+
+    print(model_size(model))
+    clean = model(noisy)
     print(clean.shape)
-    print(model_size(filter))
-    print(model_speed(filter, [noisy, acc]))
+
+    print(model_speed(model, [noisy, acc]))

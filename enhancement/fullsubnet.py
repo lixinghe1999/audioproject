@@ -166,7 +166,7 @@ def model_size(model):
     return size_all_mb
 def model_speed(model, input):
     t_start = time.time()
-    step = 100
+    step = 20
     with torch.no_grad():
         for i in range(step):
             model(input)
