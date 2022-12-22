@@ -69,10 +69,12 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 1000 == 0:
+            if i % 2000 == 0:
                 print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
+        if save_all:
+            torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
         loss_curve.append(mean_lost)
         scheduler.step()
         avg_metric = inference(test_dataset, 8, model)
@@ -81,8 +83,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
             ckpt_best = model.state_dict()
             loss_best = mean_lost
             metric_best = avg_metric
-        if save_all:
-            torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
     torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 

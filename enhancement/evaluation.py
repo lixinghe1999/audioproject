@@ -84,7 +84,7 @@ def lsd(gt, est):
     return error
 
 def batch_pesq(clean, noisy, mode):
-    pesq_score = Parallel(n_jobs=-1)(delayed(pesq)(8000, c, n, mode, on_error=1) for c, n in zip(clean, noisy))
+    pesq_score = Parallel(n_jobs=-1)(delayed(pesq)(16000, c, n, mode, on_error=1) for c, n in zip(clean, noisy))
     pesq_score = np.array(pesq_score)
     return pesq_score
 
@@ -93,7 +93,7 @@ def batch_stoi(clean, noisy):
     stoi = np.array(stoi)
     return stoi
 
-def STOI(ref, est, sr=8000):
+def STOI(ref, est, sr=16000):
     return stoi(ref, est, sr, extended=False)
 
 def batch_ASR(batch, asr_model):

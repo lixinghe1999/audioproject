@@ -27,6 +27,9 @@ def eval(clean, predict, text=None):
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
         metrics = [wer_clean, wer_noisy]
     else:
+        # Optional Upsample
+        clean = torch.nn.functional.interpolate(clean, scale_factor=2, mode='linear')
+        predict = torch.nn.functional.interpolate(predict, scale_factor=2, mode='linear')
         metric1 = batch_pesq(clean, predict, 'wb')
         metric2 = batch_pesq(clean, predict, 'nb')
         metric3 = SI_SDR(clean, predict)
@@ -47,6 +50,7 @@ def Spectral_Loss(x_mag, y_mag):
     log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
+    # sudormrf only for 8k
     noise = noise[:, ::2]
     clean = clean[:, ::2]
 
