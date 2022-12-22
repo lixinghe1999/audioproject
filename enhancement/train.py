@@ -60,7 +60,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     if discriminator is not None:
         optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=lr, betas=(0.9, 0.999))
         #scheduler_disc = torch.optim.lr_scheduler.StepLR(optimizer_disc, step_size=5, gamma=0.5)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.2)
     loss_best = 100
     loss_curve = []
     ckpt_best = model.state_dict()
@@ -69,7 +69,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 100 == 0:
+            if i % 1 == 0:
                 print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
