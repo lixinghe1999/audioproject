@@ -71,7 +71,6 @@ class voicefilter(nn.Module):
 
         # dvec: [B, emb_dim]
         dvec = dvec.unsqueeze(1)
-        print(x.shape, dvec.shape)
         dvec = dvec.repeat(1, x.size(1), 1)
         # dvec: [B, T, emb_dim]
 
