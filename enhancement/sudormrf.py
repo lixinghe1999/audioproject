@@ -332,15 +332,9 @@ def model_size(model):
     return size_all_mb
 
 if __name__ == "__main__":
-    model = sudormrf(out_channels=256,
-                     in_channels=512,
-                     num_blocks=16,
-                     upsampling_depth=5,
-                     enc_kernel_size=21,
-                     enc_num_basis=512,
-                     num_sources=2)
-    ckpt = torch.load('Improved_Sudormrf_U16_Bases512_WSJ02mix.pt')
-    model.load_state_dict(ckpt['model'])
+    model = sudormrf()
+    # ckpt = torch.load('Improved_Sudormrf_U16_Bases512_WSJ02mix.pt')
+    # model.load_state_dict(ckpt['model'])
     dummy_input = torch.rand(1, 1, 48000)
     estimated_sources = model(dummy_input)
     print(model_size(model))
