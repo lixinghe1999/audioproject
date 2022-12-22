@@ -47,8 +47,8 @@ def Spectral_Loss(x_mag, y_mag):
     log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
-    noise = torch.nn.functional.interpolate(noise, scale_factor=0.5)
-    clean = torch.nn.functional.interpolate(clean, scale_factor=0.5)
+    noise = noise[:, ::2]
+    clean = clean[:, ::2]
 
     optimizer.zero_grad()
     noise = noise.unsqueeze(1).to(device=device)
@@ -61,8 +61,8 @@ def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
     optimizer.step()
     return loss.item()
 def test_sudormrf(model, acc, noise, clean, device='cuda', text=None, data=False):
-    noise = torch.nn.functional.interpolate(noise, scale_factor=0.5)
-    clean = torch.nn.functional.interpolate(clean, scale_factor=0.5)
+    noise = noise[:, ::2]
+    clean = clean[:, ::2]
 
     noise = noise.unsqueeze(1)
     predict = model(noise.to(device=device))[:, 0, :]
