@@ -273,6 +273,7 @@ class sudormrf(nn.Module):
         self.mask_nl_class = nn.ReLU()
     # Forward pass
     def forward(self, input_wav):
+        input_wav = nn.functional.interpolate(input_wav, scale_factor=0.5)
         mean = torch.mean(input_wav, dim=(1, 2), keepdim=True)
         std = torch.std(input_wav, dim=(1, 2), keepdim=True)
         input_wav = (input_wav - mean) / (std + 1e-9)
@@ -296,6 +297,7 @@ class sudormrf(nn.Module):
         estimated_waveforms = self.decoder(x.view(x.shape[0], -1, x.shape[-1]))
         estimated_waveforms = self.remove_trailing_zeros(estimated_waveforms, input_wav)
         estimated_waveforms = (estimated_waveforms * std) + mean
+        estimated_waveforms = nn.functional.interpolate(estimated_waveforms, scale_factor=2, mode='linear')
         return estimated_waveforms
 
     def pad_to_appropriate_length(self, x):
