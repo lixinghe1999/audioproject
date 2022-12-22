@@ -127,10 +127,14 @@ if __name__ == "__main__":
         dvector = 'spk_embedding/our'
         ckpt_dir = 'pretrain/voicefilter'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        #ckpt_name = 'pretrain/[ 2.54322106  3.2612639  16.52045365  0.93127173].pth'
+        # ckpt_name = 'pretrain/[ 2.54322106  3.2612639  16.52045365  0.93127173].pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
-        model.load_state_dict(ckpt_start)
+        #model.load_state_dict(ckpt_start)
+
+        checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
+        print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
+        model.load_state_dict(checkpoint['model'])
 
         # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
         # model.load_state_dict(checkpoint['model'])
