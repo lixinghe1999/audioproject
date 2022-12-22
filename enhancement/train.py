@@ -65,13 +65,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     ckpt_best = model.state_dict()
     for e in range(EPOCH):
         Loss_list = []
-        for i, sample in enumerate(tqdm(train_loader)):
-            text, clean, noise, acc = parse_sample(sample)
-            loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            Loss_list.append(loss)
-        mean_lost = np.mean(Loss_list)
-        loss_curve.append(mean_lost)
-        scheduler.step()
+        # for i, sample in enumerate(tqdm(train_loader)):
+        #     text, clean, noise, acc = parse_sample(sample)
+        #     loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
+        #     Loss_list.append(loss)
+        # mean_lost = np.mean(Loss_list)
+        # loss_curve.append(mean_lost)
+        # scheduler.step()
         avg_metric = inference(test_dataset, 8, model)
         print(avg_metric)
         if mean_lost < loss_best:
@@ -123,11 +123,11 @@ if __name__ == "__main__":
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         BATCH_SIZE = 16
         lr = 0.0001
-        EPOCH = 15
+        EPOCH = 10
         dvector = 'spk_embedding/our'
         ckpt_dir = 'pretrain/voicefilter'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        # ckpt_name = 'pretrain/[ 2.54322106  3.2612639  16.52045365  0.93127173].pth'
+        ckpt_name = 'pretrain/fullsubnet.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)
