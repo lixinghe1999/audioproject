@@ -4,6 +4,40 @@ import torch.nn as nn
 import math
 
 
+class _LayerNorm(nn.Module):
+    """Layer Normalization base class."""
+
+    def __init__(self, channel_size):
+        super(_LayerNorm, self).__init__()
+        self.channel_size = channel_size
+        self.gamma = nn.Parameter(torch.ones(channel_size),
+                                  requires_grad=True)
+        self.beta = nn.Parameter(torch.zeros(channel_size),
+                                 requires_grad=True)
+
+    def apply_gain_and_bias(self, normed_x):
+        """ Assumes input of size `[batch, chanel, *]`. """
+        return (self.gamma * normed_x.transpose(1, -1) +
+                self.beta).transpose(1, -1)
+
+
+class GlobLN(_LayerNorm):
+    """Global Layer Normalization (globLN)."""
+
+    def forward(self, x):
+        """ Applies forward pass.
+        Works for any input size > 2D.
+        Args:
+            x (:class:`torch.Tensor`): Shape `[batch, chan, *]`
+        Returns:
+            :class:`torch.Tensor`: gLN_x `[batch, chan, *]`
+        """
+        dims = list(range(1, len(x.shape)))
+        mean = x.mean(dim=dims, keepdim=True)
+        var = torch.pow(x - mean, 2).mean(dim=dims, keepdim=True)
+        return self.apply_gain_and_bias((x - mean) / (var + 1e-8).sqrt())
+
+
 class ConvNormAct(nn.Module):
     '''
     This class defines the convolution layer with normalization and a PReLU
@@ -21,8 +55,8 @@ class ConvNormAct(nn.Module):
         padding = int((kSize - 1) / 2)
         self.conv = nn.Conv1d(nIn, nOut, kSize, stride=stride, padding=padding,
                               bias=True, groups=groups)
-        self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
-        self.act = nn.PReLU(nOut)
+        self.norm = GlobLN(nOut)
+        self.act = nn.PReLU()
 
     def forward(self, input):
         output = self.conv(input)
@@ -46,7 +80,7 @@ class ConvNorm(nn.Module):
         padding = int((kSize - 1) / 2)
         self.conv = nn.Conv1d(nIn, nOut, kSize, stride=stride, padding=padding,
                               bias=True, groups=groups)
-        self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
+        self.norm = GlobLN(nOut)
 
     def forward(self, input):
         output = self.conv(input)
@@ -62,8 +96,9 @@ class NormAct(nn.Module):
         :param nOut: number of output channels
         '''
         super().__init__()
-        self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
-        self.act = nn.PReLU(nOut)
+        # self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
+        self.norm = GlobLN(nOut)
+        self.act = nn.PReLU()
 
     def forward(self, input):
         output = self.norm(input)
@@ -107,18 +142,19 @@ class DilatedConvNorm(nn.Module):
         super().__init__()
         self.conv = nn.Conv1d(nIn, nOut, kSize, stride=stride, dilation=d,
                               padding=((kSize - 1) // 2) * d, groups=groups)
-        self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
+        # self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
+        self.norm = GlobLN(nOut)
 
     def forward(self, input):
         output = self.conv(input)
         return self.norm(output)
 
 
-class UBlock(nn.Module):
+class UConvBlock(nn.Module):
     '''
-    This class defines the Upsampling block, which is based on the following
-    principle:
-        REDUCE ---> SPLIT ---> TRANSFORM --> MERGE
+    This class defines the block which performs successive downsampling and
+    upsampling in order to be able to analyze the input features in multiple
+    resolutions.
     '''
 
     def __init__(self,
@@ -147,16 +183,15 @@ class UBlock(nn.Module):
                                                # align_corners=True,
                                                # mode='bicubic'
                                                )
-        self.conv_1x1_exp = ConvNorm(in_channels, out_channels, 1, 1, groups=1)
         self.final_norm = NormAct(in_channels)
-        self.module_act = NormAct(out_channels)
+        self.res_conv = nn.Conv1d(in_channels, out_channels, 1)
 
     def forward(self, x):
         '''
         :param x: input feature map
         :return: transformed feature map
         '''
-
+        residual = x.clone()
         # Reduce --> project high-dimensional feature maps to low-dimensional space
         output1 = self.proj_1x1(x)
         output = [self.spp_dw[0](output1)]
@@ -171,15 +206,14 @@ class UBlock(nn.Module):
             resampled_out_k = self.upsampler(output.pop(-1))
             output[-1] = output[-1] + resampled_out_k
 
-        expanded = self.conv_1x1_exp(self.final_norm(output[-1]))
-        return self.module_act(expanded + x)
+        expanded = self.final_norm(output[-1])
 
-
+        return self.res_conv(expanded) + residual
 class sudormrf(nn.Module):
     def __init__(self,
                  out_channels=128,
                  in_channels=512,
-                 num_blocks=4,
+                 num_blocks=16,
                  upsampling_depth=4,
                  enc_kernel_size=21,
                  enc_num_basis=512,
@@ -202,37 +236,29 @@ class sudormrf(nn.Module):
                        2 ** self.upsampling_depth)
 
         # Front end
-        self.encoder = nn.Sequential(*[
-            nn.Conv1d(in_channels=1, out_channels=enc_num_basis,
-                      kernel_size=enc_kernel_size,
-                      stride=enc_kernel_size // 2,
-                      padding=enc_kernel_size // 2),
-            nn.ReLU(),
-        ])
+        self.encoder = nn.Conv1d(in_channels=1, out_channels=enc_num_basis,
+                                 kernel_size=enc_kernel_size,
+                                 stride=enc_kernel_size // 2,
+                                 padding=enc_kernel_size // 2,
+                                 bias=False)
+        #torch.nn.init.xavier_uniform(self.encoder.weight)
 
         # Norm before the rest, and apply one more dense layer
-        self.ln = nn.GroupNorm(1, enc_num_basis, eps=1e-08)
-        self.l1 = nn.Conv1d(in_channels=enc_num_basis,
-                            out_channels=out_channels,
-                            kernel_size=1)
+        self.ln = GlobLN(enc_num_basis)
+        self.bottleneck = nn.Conv1d(
+            in_channels=enc_num_basis,
+            out_channels=out_channels,
+            kernel_size=1)
 
         # Separation module
         self.sm = nn.Sequential(*[
-            UBlock(out_channels=out_channels,
-                   in_channels=in_channels,
-                   upsampling_depth=upsampling_depth)
-            for r in range(num_blocks)])
+            UConvBlock(out_channels=out_channels,
+                       in_channels=in_channels,
+                       upsampling_depth=upsampling_depth)
+            for _ in range(num_blocks)])
 
-        if out_channels != enc_num_basis:
-            self.reshape_before_masks = nn.Conv1d(in_channels=out_channels,
-                                                  out_channels=enc_num_basis,
-                                                  kernel_size=1)
-
-        # Masks layer
-        self.m = nn.Conv2d(in_channels=1,
-                           out_channels=num_sources,
-                           kernel_size=(enc_num_basis + 1, 1),
-                           padding=(enc_num_basis - enc_num_basis // 2, 0))
+        mask_conv = nn.Conv1d(out_channels, num_sources * enc_num_basis, 1)
+        self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
 
         # Back end
         self.decoder = nn.ConvTranspose1d(
@@ -242,34 +268,35 @@ class sudormrf(nn.Module):
             kernel_size=enc_kernel_size,
             stride=enc_kernel_size // 2,
             padding=enc_kernel_size // 2,
-            groups=num_sources)
-        self.ln_mask_in = nn.GroupNorm(1, enc_num_basis, eps=1e-08)
+            groups=1, bias=False)
+        #torch.nn.init.xavier_uniform(self.decoder.weight)
+        self.mask_nl_class = nn.ReLU()
     # Forward pass
     def forward(self, input_wav):
+        mean = torch.mean(input_wav, dim=(1, 2), keepdim=True)
+        std = torch.std(input_wav, dim=(1, 2), keepdim=True)
+        input_wav = (input_wav - mean) / (std + 1e-9)
+
         # Front end
         x = self.pad_to_appropriate_length(input_wav)
         x = self.encoder(x)
+
         # Split paths
         s = x.clone()
-
         # Separation module
         x = self.ln(x)
-        x = self.l1(x)
+        x = self.bottleneck(x)
         x = self.sm(x)
 
-        if self.out_channels != self.enc_num_basis:
-            # x = self.ln_bef_out_reshape(x)
-            x = self.reshape_before_masks(x)
-        # Get masks and apply them
-        x = self.m(x.unsqueeze(1))
-        if self.num_sources == 1:
-            x = torch.sigmoid(x)
-        else:
-            x = nn.functional.softmax(x, dim=1)
+        x = self.mask_net(x)
+        x = x.view(x.shape[0], self.num_sources, self.enc_num_basis, -1)
+        x = self.mask_nl_class(x)
         x = x * s.unsqueeze(1)
         # Back end
         estimated_waveforms = self.decoder(x.view(x.shape[0], -1, x.shape[-1]))
-        return self.remove_trailing_zeros(estimated_waveforms, input_wav)
+        estimated_waveforms = self.remove_trailing_zeros(estimated_waveforms, input_wav)
+        estimated_waveforms = (estimated_waveforms * std) + mean
+        return estimated_waveforms
 
     def pad_to_appropriate_length(self, x):
         values_to_pad = int(x.shape[-1]) % self.lcm
@@ -280,12 +307,13 @@ class sudormrf(nn.Module):
                 [appropriate_shape[-1] + self.lcm - values_to_pad],
                 dtype=torch.float32)
             padded_x[..., :x.shape[-1]] = x
-            return padded_x
+            return padded_x.to(x.device)
         return x
 
     @staticmethod
     def remove_trailing_zeros(padded_x, initial_x):
         return padded_x[..., :initial_x.shape[-1]]
+
 def model_speed(model, input):
     t_start = time.time()
     step = 10
@@ -304,15 +332,16 @@ def model_size(model):
     return size_all_mb
 
 if __name__ == "__main__":
-    model = sudormrf(out_channels=128,
+    model = sudormrf(out_channels=256,
                      in_channels=512,
                      num_blocks=16,
-                     upsampling_depth=4,
+                     upsampling_depth=5,
                      enc_kernel_size=21,
                      enc_num_basis=512,
                      num_sources=2)
-
+    ckpt = torch.load('Improved_Sudormrf_U16_Bases512_WSJ02mix.pt')
+    model.load_state_dict(ckpt['model'])
     dummy_input = torch.rand(1, 1, 48000)
     estimated_sources = model(dummy_input)
     print(model_size(model))
-    print(model_speed(model, [dummy_input]))
+    #print(model_speed(model, [dummy_input]))
