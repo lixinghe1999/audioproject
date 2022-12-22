@@ -48,13 +48,14 @@ def Spectral_Loss(x_mag, y_mag):
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
     optimizer.zero_grad()
-    noise = noise.unsqueeze(1)
-    clean = clean.unsqueeze(1)
+    noise = noise.unsqueeze(1).to(device=device)
+    clean = clean.unsqueeze(1).to(device=device)
     residual_noise = noise - clean
 
-    predict = model(noise.to(device=device))
+    predict = model(noise)
     print(predict.shape, clean.shape, residual_noise.shape)
-    loss = sisdr_loss(predict, torch.cat([clean, residual_noise], dim=1).to(device=device))
+    loss = sisdr_loss(predict, torch.cat([clean, residual_noise], dim=1),
+                      initial_mixtures=noise)
     loss.backward()
     optimizer.step()
     return loss.item()
