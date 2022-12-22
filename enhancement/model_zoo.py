@@ -1,3 +1,4 @@
+import librosa
 import torch
 import numpy as np
 from evaluation import batch_pesq, SI_SDR, lsd, batch_stoi, eval_ASR
@@ -28,8 +29,9 @@ def eval(clean, predict, text=None):
         metrics = [wer_clean, wer_noisy]
     else:
         # Optional Upsample
-        clean = torch.nn.functional.interpolate(clean, scale_factor=2, mode='linear')
-        predict = torch.nn.functional.interpolate(predict, scale_factor=2, mode='linear')
+        clean = librosa.resample(clean, 8000, 16000)
+        predict = librosa.resample(predict, 8000, 16000)
+
         metric1 = batch_pesq(clean, predict, 'wb')
         metric2 = batch_pesq(clean, predict, 'nb')
         metric3 = SI_SDR(clean, predict)
