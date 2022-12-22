@@ -11,6 +11,7 @@ from new_vibvoice import vibvoice
 from conformer import TSCNet
 from SEANet import SEANet
 from voicefilter import voicefilter
+from sudormrf import sudormrf
 
 import numpy as np
 from tqdm import tqdm
@@ -111,9 +112,9 @@ if __name__ == "__main__":
         # model.load_state_dict(ckpt['model'])
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector='spk_embedding/librispeech-100')
+                                ratio=1, rir='json/rir.json', dvector=None)
         test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector='spk_embedding/librispeech-dev')
+                                ratio=1, rir='json/rir.json', dvector=None)
 
         ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=True)
         plt.plot(loss_curve)

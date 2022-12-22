@@ -1,14 +1,13 @@
-import matplotlib.pyplot as plt
 import torch
 import numpy as np
-import soundfile as sf
 from evaluation import batch_pesq, SI_SDR, lsd, batch_stoi, eval_ASR
 import torch.nn.functional as F
 from scipy import signal
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from audio_zen.acoustics.feature import drop_band, stft, istft
+from sisdr_loss import PermInvariantSISDR
+
 from torch.cuda.amp import autocast
-from pathlib import Path
 from speechbrain.pretrained import EncoderDecoderASR
 '''
 This script contains 4 model's training and test due to their large differences (for concise)
@@ -17,18 +16,12 @@ This script contains 4 model's training and test due to their large differences 
 3. A2Net (VibVoice), spectrogram magnitude -> spectrogram magnitude
 4. Conformer, GAN, spectrogram real+imag -> real+imag
 '''
-seg_len_mic = 512
-overlap_mic = 256
-seg_len_imu = 64
-overlap_imu = 32
-rate_mic = 16000
-rate_imu = 1600
-freq_bin_high = 8 * int(rate_imu / rate_mic * int(seg_len_mic / 2)) + 1
-
 # Uncomment for using another pre-trained model
 # asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
 #                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
 #                                            run_opts={"device": "cuda"})
+sisdr_loss = PermInvariantSISDR(batch_size=hparams['bs'], n_sources=hparams['n_sources'],
+                                 zero_mean=True, backward_loss=True, improvement=True)
 def eval(clean, predict, text=None):
     if text is not None:
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
@@ -37,7 +30,6 @@ def eval(clean, predict, text=None):
         metric1 = batch_pesq(clean, predict, 'wb')
         metric2 = batch_pesq(clean, predict, 'nb')
         metric3 = SI_SDR(clean, predict)
-        #metric3 = lsd(clean, predict)
         metric4 = batch_stoi(clean, predict)
         metrics = [metric1, metric2, metric3, metric4]
     return np.stack(metrics, axis=1)
@@ -54,6 +46,25 @@ def Spectral_Loss(x_mag, y_mag):
     spectral_convergenge_loss = torch.norm(y_mag - x_mag, p="fro") / torch.norm(y_mag, p="fro")
     log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
+def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
+    optimizer.zero_grad()
+    noise = noise.unsqueeze(1)
+    clean = clean.unsqueeze(1)
+    residual_noise = noise - clean
+
+    predict = model(noise.to(device=device))
+    loss = sisdr_loss(predict, torch.cat([clean, residual_noise], dim=1))
+    loss.backward()
+    optimizer.step()
+    return loss.item()
+def test_sudormrf(model, acc, noise, clean, device='cuda', text=None, data=False):
+    noise = noise.unsqueeze(1)
+    clean = clean.unsqueeze(1)
+    predict = model(noise.to(device=device))[:, 0, :]
+    predict = predict.cpu()
+    clean = clean.numpy()
+    return eval(clean, predict, text=text)
+
 def train_voicefilter(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag, _, _, _ = stft(noise, 400, 160, 400)
     clean_mag, _, _, _ = stft(clean, 400, 160, 400)
