@@ -90,7 +90,7 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     #clean_mag = torch.unsqueeze(clean_mag[:, 1:257, 1:], 1)
     clean = model(noisy_mag, acc)
 
-    loss = F.mse_loss(clean, clean_mag)
+    loss = Spectral_Loss(clean, clean_mag)
     #loss += 0.1 * F.mse_loss(acc, clean_mag[:, :, :32, :])
     loss.backward()
     optimizer.step()

@@ -191,14 +191,15 @@ class NoisyCleanSet:
             # already added noisy
             noise, _ = self.dataset[1][index]
         if self.augmentation:
+            data = [clean.astype(np.float32), noise.astype(np.float32)]
+            # Either provide extra information, or augmented ACC for training
             if self.dvector is not None:
                 spk = file.split('/')[-3]
                 vectors = self.dvector[spk]
                 r_idx = np.random.randint(0, vectors.shape[0])
-                acc = vectors[r_idx]
-                data = [clean.astype(np.float32), noise.astype(np.float32), acc.astype(np.float32)]
-            else:
-                data = [clean.astype(np.float32), noise.astype(np.float32)]
+                vector = vectors[r_idx]
+                # vector = np.concatenate([vector, noise[:16000]])
+                data.append(vector.astype(np.float32))
         else:
             # We have two kind of additional signal 1) Accelerometer 2) speaker embeddings (More coming soon)
             acc, _ = self.dataset[2][index]

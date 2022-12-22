@@ -17,89 +17,56 @@ def synthetic(clean, transfer_function, N):
     response = torch.from_numpy(response).to(clean.device)
     acc = clean[..., :freq_bin_high, :] * response
     return acc
+class ResConv(nn.Module):
+    def __init__(self,):
+        super(ResConv, self).__init__()
+        self.conv1 = nn.Sequential(
+            nn.ZeroPad2d((0, 0, 2, 2)),
+            nn.Conv2d(1, 64, kernel_size=(5, 1), dilation=(1, 1)),
+            nn.BatchNorm2d(64), nn.ReLU())
+        self.conv2 = nn.Sequential(  # cnn2
+            nn.ZeroPad2d((2, 2, 0, 0)),
+            nn.Conv2d(64, 64, kernel_size=(1, 5), dilation=(1, 1)),
+            nn.BatchNorm2d(64), nn.ReLU())
+        self.conv3 = nn.Sequential(  # cnn3
+            nn.ZeroPad2d(2),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 1)),
+            nn.BatchNorm2d(64), nn.ReLU())
+        self.conv4 = nn.Sequential(
+            nn.ZeroPad2d((4, 4, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 2)),  # (9, 5)
+            nn.BatchNorm2d(64), nn.ReLU())
+        self.conv5 = nn.Sequential(
+            nn.ZeroPad2d((8, 8, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 4)),  # (17, 5)
+            nn.BatchNorm2d(64), nn.ReLU())
+        self.conv6 = nn.Sequential(
+            nn.ZeroPad2d((16, 16, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 8)),  # (33, 5)
+            nn.BatchNorm2d(64), nn.ReLU())
+        self.conv7 = nn.Sequential(
+            nn.ZeroPad2d((32, 32, 2, 2)),
+            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 16)),  # (65, 5)
+            nn.BatchNorm2d(64), nn.ReLU())
+        self.conv8 = nn.Sequential(
+            nn.Conv2d(64, 4, kernel_size=(1, 1), dilation=(1, 1)),
+            nn.BatchNorm2d(4), nn.ReLU())
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x) + x
+        x = self.conv4(x) + x
+        x = self.conv5(x) + x
+        x = self.conv6(x) + x
+        x = self.conv7(x) + x
+        x = self.conv8(x)
+        return x
 
 class vibvoice(nn.Module):
     def __init__(self, num_freq=321, lstm_dim=400, emb_dim=33, fc1_dim=600):
         super(vibvoice, self).__init__()
-        self.conv = nn.Sequential(
-            nn.ZeroPad2d((0, 0, 3, 3)),
-            nn.Conv2d(1, 64, kernel_size=(7, 1), dilation=(1, 1)),
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn2
-            nn.ZeroPad2d((3, 3, 0, 0)),
-            nn.Conv2d(64, 64, kernel_size=(1, 7), dilation=(1, 1)),
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn3
-            nn.ZeroPad2d(2),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 1)),
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn4
-            nn.ZeroPad2d((4, 4, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 2)),  # (9, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn5
-            nn.ZeroPad2d((8, 8, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 4)),  # (17, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn6
-            nn.ZeroPad2d((16, 16, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 8)),  # (33, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn7
-            nn.ZeroPad2d((32, 32, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 16)),  # (65, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn8
-            nn.Conv2d(64, 4, kernel_size=(1, 1), dilation=(1, 1)),
-            nn.BatchNorm2d(4), nn.ReLU(),
-        )
-        self.conv_acc = nn.Sequential(
-            # cnn1
-            nn.ZeroPad2d((0, 0, 1, 1)),
-            nn.Conv2d(1, 64, kernel_size=(3, 1), dilation=(1, 1)),
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn2
-            nn.ZeroPad2d((3, 3, 0, 0)),
-            nn.Conv2d(64, 64, kernel_size=(1, 7), dilation=(1, 1)),
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn3
-            nn.ZeroPad2d(2),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 1)),
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn4
-            nn.ZeroPad2d((4, 4, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 2)),  # (9, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn5
-            nn.ZeroPad2d((8, 8, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 4)),  # (17, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn6
-            nn.ZeroPad2d((16, 16, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 8)),  # (33, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn7
-            nn.ZeroPad2d((32, 32, 2, 2)),
-            nn.Conv2d(64, 64, kernel_size=(5, 5), dilation=(1, 16)),  # (65, 5)
-            nn.BatchNorm2d(64), nn.ReLU(),
-
-            # cnn8
-            nn.Conv2d(64, 4, kernel_size=(1, 1), dilation=(1, 1)),
-            nn.BatchNorm2d(4), nn.ReLU(),
-        )
+        self.conv = ResConv()
+        self.conv_acc = ResConv()
 
         self.lstm = nn.LSTM(
             4 * num_freq + 4 * emb_dim,

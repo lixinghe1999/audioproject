@@ -124,9 +124,8 @@ if __name__ == "__main__":
         BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 10
-        r = 0.8
-
-        ckpt_dir = 'pretrain/vibvoice_rir'
+        dvector = 'spk_embedding/our'
+        ckpt_dir = 'pretrain/voicefilter'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         #ckpt_name = 'pretrain/[ 2.54322106  3.2612639  16.52045365  0.93127173].pth'
         print("load checkpoint: {}".format(ckpt_name))
@@ -137,9 +136,9 @@ if __name__ == "__main__":
         # model.load_state_dict(checkpoint['model'])
 
         train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                        simulation=True, person=people, ratio=r,)
+                                        simulation=True, person=people, ratio=0.8, dvector=dvector)
         test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                          simulation=True, person=people, ratio=-0.2,)
+                                          simulation=True, person=people, ratio=-0.2, dvector=dvector)
 
         # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         # train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
@@ -157,26 +156,26 @@ if __name__ == "__main__":
 
         for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                    person=[p], simulation=True, ratio=-0.2)
+                                    person=[p], simulation=True, ratio=-0.2, dvector=dvector)
             avg_metric = inference(dataset, 4, model)
             print(p, avg_metric)
 
         for noise in ['background.json', 'librispeech-dev.json', 'music.json']:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
-                                    person=people, simulation=True, ratio=-0.2)
+                                    person=people, simulation=True, ratio=-0.2, dvector=dvector)
             avg_metric = inference(dataset, 4, model)
             print(noise, avg_metric)
 
         for level in [10, 5, 1]:
             dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json',  'json/train_imu.json'], person=people,
-                                     simulation=True, snr=[level - 1, level + 1], ratio=-0.2)
+                                     simulation=True, snr=[level - 1, level + 1], ratio=-0.2, dvector=dvector)
             avg_metric = inference(dataset, 4, model)
             print(level, avg_metric)
 
         positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         for p in positions:
             dataset = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
-                                    person=[p], simulation=True, ratio=-0.2)
+                                    person=[p], simulation=True, ratio=-0.2, dvector=dvector)
             avg_metric = inference(dataset, 4, model)
             print(p, avg_metric)
     elif args.mode == 2:
