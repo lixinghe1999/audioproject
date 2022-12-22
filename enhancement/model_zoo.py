@@ -20,7 +20,7 @@ This script contains 4 model's training and test due to their large differences 
 # asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
 #                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
 #                                            run_opts={"device": "cuda"})
-sisdr_loss = PermInvariantSISDR(batch_size=8, n_sources=2,
+sisdr_loss = PermInvariantSISDR(batch_size=16, n_sources=2,
                                  zero_mean=True, backward_loss=True, improvement=True)
 def eval(clean, predict, text=None):
     if text is not None:
@@ -47,6 +47,9 @@ def Spectral_Loss(x_mag, y_mag):
     log_stft_magnitude = F.l1_loss(torch.log(y_mag), torch.log(x_mag))
     return 0.5 * spectral_convergenge_loss + 0.5 * log_stft_magnitude
 def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
+    noise = torch.nn.functional.interpolate(noise, scale_factor=0.5)
+    clean = torch.nn.functional.interpolate(clean, scale_factor=0.5)
+
     optimizer.zero_grad()
     noise = noise.unsqueeze(1).to(device=device)
     clean = clean.unsqueeze(1).to(device=device)
@@ -58,6 +61,9 @@ def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
     optimizer.step()
     return loss.item()
 def test_sudormrf(model, acc, noise, clean, device='cuda', text=None, data=False):
+    noise = torch.nn.functional.interpolate(noise, scale_factor=0.5)
+    clean = torch.nn.functional.interpolate(clean, scale_factor=0.5)
+
     noise = noise.unsqueeze(1)
     predict = model(noise.to(device=device))[:, 0, :]
     predict = predict.cpu().numpy()
