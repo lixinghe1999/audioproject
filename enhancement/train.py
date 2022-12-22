@@ -127,7 +127,7 @@ if __name__ == "__main__":
         dvector = 'spk_embedding/our'
         ckpt_dir = 'pretrain/voicefilter'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/fullsubnet.pth'
+        ckpt_name = 'pretrain/fullsubnet_our.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)
