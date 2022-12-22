@@ -115,8 +115,8 @@ class PermInvariantSISDR(nn.Module):
         s_t = (self.dot(permuted_pr_batch, t_batch) /
                (t_t_diag + eps) * t_batch)
         e_t = permuted_pr_batch - s_t
-        sisnrs = 10 * torch.log10((self.dot(s_t, s_t) /
-                                  (self.dot(e_t, e_t) + eps)).float())
+        sisnrs = 10 * torch.log10(self.dot(s_t, s_t) /
+                                  (self.dot(e_t, e_t) + eps))
         return sisnrs
 
     def compute_sisnr(self,
