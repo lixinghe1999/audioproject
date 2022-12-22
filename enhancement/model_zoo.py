@@ -20,7 +20,7 @@ This script contains 4 model's training and test due to their large differences 
 # asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
 #                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
 #                                            run_opts={"device": "cuda"})
-sisdr_loss = PermInvariantSISDR(batch_size=2, n_sources=2,
+sisdr_loss = PermInvariantSISDR(batch_size=8, n_sources=2,
                                  zero_mean=True, backward_loss=True, improvement=True)
 def eval(clean, predict, text=None):
     if text is not None:
@@ -53,7 +53,6 @@ def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
     residual_noise = noise - clean
 
     predict = model(noise)
-    print(predict.shape, clean.shape, residual_noise.shape)
     loss = sisdr_loss(predict, torch.cat([clean, residual_noise], dim=1),
                       initial_mixtures=noise)
     loss.backward()
@@ -63,7 +62,7 @@ def test_sudormrf(model, acc, noise, clean, device='cuda', text=None, data=False
     noise = noise.unsqueeze(1)
     clean = clean.unsqueeze(1)
     predict = model(noise.to(device=device))[:, 0, :]
-    predict = predict.cpu()
+    predict = predict.cpu().numpy()
     clean = clean.numpy()
     return eval(clean, predict, text=text)
 
