@@ -59,13 +59,9 @@ def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
     return loss.item()
 def test_sudormrf(model, acc, noise, clean, device='cuda', text=None, data=False):
     noise = noise.unsqueeze(1)
-    clean = clean.unsqueeze(1)
-    #predict = model(noise.to(device=device))[:, 0, :]
-    predict = clean[:, 0, :]
-    # predict = torch.nn.functional.interpolate(clean, scale_factor=0.5)
-    # predict = torch.nn.functional.interpolate(predict, scale_factor=2, mode='linear')[:, 0, :]
+    predict = model(noise.to(device=device))[:, 0, :]
     predict = predict.cpu().numpy()
-    clean = clean.numpy()[:, 0, :]
+    clean = clean.numpy()
     return eval(clean, predict, text=text)
 
 def train_voicefilter(model, acc, noise, clean, optimizer, device='cuda'):
