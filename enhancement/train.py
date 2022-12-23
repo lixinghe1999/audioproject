@@ -64,6 +64,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     loss_best = 100
     loss_curve = []
     ckpt_best = model.state_dict()
+    avg_metric = inference(test_dataset, 8, model)
+    print("performance before training:", avg_metric)
     for e in range(EPOCH):
         Loss_list = []
         for i, sample in enumerate(tqdm(train_loader)):
@@ -127,10 +129,10 @@ if __name__ == "__main__":
         BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 10
-        dvector = 'spk_embedding/our'
-        ckpt_dir = 'pretrain/voicefilter'
+        dvector = None
+        ckpt_dir = 'pretrain/sudormrf'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/fullsubnet_our.pth'
+        # ckpt_name = 'pretrain/fullsubnet_our.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)
