@@ -132,7 +132,7 @@ if __name__ == "__main__":
         dvector = None
         ckpt_dir = 'pretrain/sudormrf'
         #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf/-11.205936884826569.pth'
+        ckpt_name = 'pretrain/sudormrf_middle.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)

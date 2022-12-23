@@ -21,7 +21,7 @@ This script contains 4 model's training and test due to their large differences 
 # asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
 #                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
 #                                            run_opts={"device": "cuda"})
-sisdr_loss = PermInvariantSISDR(batch_size=32, n_sources=2,
+sisdr_loss = PermInvariantSISDR(batch_size=16, n_sources=2,
                                  zero_mean=True, backward_loss=True, improvement=True)
 def eval(clean, predict, text=None):
     if text is not None:
