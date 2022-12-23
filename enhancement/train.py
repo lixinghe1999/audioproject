@@ -64,14 +64,14 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     loss_best = 100
     loss_curve = []
     ckpt_best = model.state_dict()
-    avg_metric = inference(test_dataset, 8, model)
+    avg_metric = inference(test_dataset, 4, model)
     print("performance before training:", avg_metric)
     for e in range(EPOCH):
         Loss_list = []
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 2000 == 0:
+            if i % 1000 == 0:
                 print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
@@ -79,7 +79,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
             torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
         loss_curve.append(mean_lost)
         scheduler.step()
-        avg_metric = inference(test_dataset, 8, model)
+        avg_metric = inference(test_dataset, 4, model)
         print(avg_metric)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
@@ -112,8 +112,8 @@ if __name__ == "__main__":
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 20
-        ckpt = torch.load('pretrain/-8.659194459110253.pth')
-        model.load_state_dict(ckpt)
+        # ckpt = torch.load('pretrain/-8.659194459110253.pth')
+        # model.load_state_dict(ckpt)
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
