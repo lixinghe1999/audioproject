@@ -58,8 +58,9 @@ if __name__ == "__main__":
             json.dump(audio_files, open('json/' + dataset_name + '.json', 'w'), indent=4)
     if args.mode == 1:
         directory = "../dataset/DNS-Challenge/"
-        datasets = ['test_set/synthetic/with_reverb/noisy', 'test_set/synthetic/with_reverb/clean',
-                    'train_noise', 'train_clean']
+        #datasets = ['test_set/synthetic/with_reverb/noisy', 'test_set/synthetic/with_reverb/clean',
+        #            'dns_noise', 'dns_clean']
+        datasets = ['dns_noise', 'dns_clean']
         for dataset in datasets:
             audio_files = []
             g = os.walk(directory + dataset)
