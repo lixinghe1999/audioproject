@@ -213,7 +213,7 @@ class sudormrf(nn.Module):
     def __init__(self,
                  out_channels=128,
                  in_channels=512,
-                 num_blocks=8,
+                 num_blocks=4,
                  upsampling_depth=4,
                  enc_kernel_size=21,
                  enc_num_basis=512,
@@ -340,4 +340,4 @@ if __name__ == "__main__":
     dummy_input = torch.rand(1, 1, 48000)
     estimated_sources = model(dummy_input)
     print(model_size(model))
-    #print(model_speed(model, [dummy_input]))
+    print(model_speed(model, [dummy_input]))
