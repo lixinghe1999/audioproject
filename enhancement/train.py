@@ -131,7 +131,7 @@ if __name__ == "__main__":
         EPOCH = 10
         dvector = None
         ckpt_dir = 'pretrain/sudormrf'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
         # ckpt_name = 'pretrain/fullsubnet_our.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
