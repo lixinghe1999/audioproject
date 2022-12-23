@@ -64,7 +64,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     loss_best = 100
     loss_curve = []
     ckpt_best = model.state_dict()
-    avg_metric = inference(test_dataset, 4, model)
+    avg_metric = inference(test_dataset, 1, model)
     print("performance before training:", avg_metric)
     for e in range(EPOCH):
         Loss_list = []
