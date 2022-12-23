@@ -71,7 +71,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 1000 == 0:
+            if i % 1000 == 0 and i != 0:
                 print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
@@ -158,31 +158,32 @@ if __name__ == "__main__":
 
         ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
         model.load_state_dict(ckpt)
+        evaluation = False
+        if evaluation:
+            for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
+                dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+                                        person=[p], simulation=True, ratio=-0.2, dvector=dvector)
+                avg_metric = inference(dataset, 4, model)
+                print(p, avg_metric)
 
-        for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                    person=[p], simulation=True, ratio=-0.2, dvector=dvector)
-            avg_metric = inference(dataset, 4, model)
-            print(p, avg_metric)
+            for noise in ['background.json', 'librispeech-dev.json', 'music.json']:
+                dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
+                                        person=people, simulation=True, ratio=-0.2, dvector=dvector)
+                avg_metric = inference(dataset, 4, model)
+                print(noise, avg_metric)
 
-        for noise in ['background.json', 'librispeech-dev.json', 'music.json']:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
-                                    person=people, simulation=True, ratio=-0.2, dvector=dvector)
-            avg_metric = inference(dataset, 4, model)
-            print(noise, avg_metric)
+            for level in [10, 5, 1]:
+                dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json',  'json/train_imu.json'], person=people,
+                                         simulation=True, snr=[level - 1, level + 1], ratio=-0.2, dvector=dvector)
+                avg_metric = inference(dataset, 4, model)
+                print(level, avg_metric)
 
-        for level in [10, 5, 1]:
-            dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json',  'json/train_imu.json'], person=people,
-                                     simulation=True, snr=[level - 1, level + 1], ratio=-0.2, dvector=dvector)
-            avg_metric = inference(dataset, 4, model)
-            print(level, avg_metric)
-
-        positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        for p in positions:
-            dataset = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
-                                    person=[p], simulation=True, ratio=-0.2, dvector=dvector)
-            avg_metric = inference(dataset, 4, model)
-            print(p, avg_metric)
+            positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
+            for p in positions:
+                dataset = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
+                                        person=[p], simulation=True, ratio=-0.2, dvector=dvector)
+                avg_metric = inference(dataset, 4, model)
+                print(p, avg_metric)
     elif args.mode == 2:
         # evaluation for WER
         checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
