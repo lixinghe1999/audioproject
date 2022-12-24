@@ -68,6 +68,7 @@ def sisdr_loss(pr_batch, t_batch, initial_mixtures, eps=1e-8):
     base_sisdr = compute_permuted_sisnrs(initial_mix, t_batch, t_t_diag, eps=eps)
     print(base_sisdr.shape)
     sisnr -= base_sisdr.mean()
+    sisnr = sisnr.mena()
     return -sisnr
 
 def Spectral_Loss(x_mag, y_mag):
