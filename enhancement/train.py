@@ -126,14 +126,14 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
         people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
-        BATCH_SIZE = 16
+        BATCH_SIZE = 8
         lr = 0.0001
         EPOCH = 10
         dvector = None
         rir = 'json/rir.json'
         ckpt_dir = 'pretrain/sudormrf'
         #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf_middle.pth'
+        ckpt_name = 'pretrain/sudormrf_large.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)
