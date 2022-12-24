@@ -86,7 +86,7 @@ class NoiseDataset:
         self.num_noises = num_noises
     def __len__(self):
         return len(self.files)
-    def __getitem__(self, index):
+    def __getitem__(self):
         noise_y = np.zeros(0, dtype=np.float32)
         silence = np.zeros(int(self.sr * self.silence_length), dtype=np.float32)
         remaining_length = self.target_length
@@ -217,7 +217,7 @@ class NoisyCleanSet:
         if self.simulation:
             # use rir dataset to add noise
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
-            noise = self.dataset[1][np.random.randint(0, self.noise_length)]
+            noise = self.dataset[1].__getitem__()
             snr = np.random.choice(self.snr_list)
             noise, clean = snr_mix(noise, clean, snr, -25, 10,
             rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic, mono=False)[0]
