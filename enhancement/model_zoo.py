@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from scipy import signal
 from audio_zen.acoustics.mask import build_complex_ideal_ratio_mask, decompress_cIRM
 from audio_zen.acoustics.feature import drop_band, stft, istft
-from sisdr_loss import PermInvariantSISDR
+from sisdr_loss import PermInvariantSISDR, StabilizedPermInvSISDRMetric
 
 from torch.cuda.amp import autocast
 from speechbrain.pretrained import EncoderDecoderASR
@@ -21,7 +21,7 @@ This script contains 4 model's training and test due to their large differences 
 # asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
 #                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
 #                                            run_opts={"device": "cuda"})
-sisdr_loss = PermInvariantSISDR(batch_size=16, n_sources=2,
+sisdr_loss = StabilizedPermInvSISDRMetric(n_actual_sources=2, n_estimated_sources=2,
                                  zero_mean=True, backward_loss=True, improvement=True)
 def eval(clean, predict, text=None):
     if text is not None:
