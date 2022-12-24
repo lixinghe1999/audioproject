@@ -74,6 +74,42 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
 
         return noisy_y, clean_y
 
+class NoiseDataset:
+    def __init__(self, files=None, sample_rate=16000, silence_length=0.2, target_length=3, num_noises=1):
+        """
+        Special dataloader for Noise
+        """
+        self.files = files
+        self.sr = sample_rate
+        self.silence_length = silence_length
+        self.target_length = target_length * self.sr
+        self.num_noises = num_noises
+    def __len__(self):
+        return len(self.files)
+    def __getitem__(self, index):
+        noise_y = np.zeros(0, dtype=np.float32)
+        silence = np.zeros(int(self.sr * self.silence_length), dtype=np.float32)
+        remaining_length = self.target_length
+
+        while remaining_length > 0:
+            noise_file, info = np.random.choice(self.files)
+            noise_new_added, sr = librosa.load(noise_file, sr=self.sr)
+            noise_y = np.append(noise_y, noise_new_added)
+            remaining_length -= len(noise_new_added)
+
+            # If still need to add new noise, insert a small silence segment firstly
+            if remaining_length > 0:
+                silence_len = min(remaining_length, len(silence))
+                noise_y = np.append(noise_y, silence[:silence_len])
+                remaining_length -= silence_len
+
+        if len(noise_y) > self.target_length:
+            idx_start = np.random.randint(len(noise_y) - self.target_length)
+            noise_y = noise_y[idx_start : idx_start + self.target_length]
+
+        return noise_y
+
+
 class BaseDataset:
     def __init__(self, files=None, pad=False, sample_rate=16000):
         """
@@ -120,7 +156,7 @@ class BaseDataset:
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20),
-                 rir=None, num_noises=1, dvector=None):
+                 rir=None, dvector=None):
         '''
         :param json_paths: speech (clean), noisy/ added noise, IMU (optional)
         :param text: whether output the text, only apply to Sentences
@@ -135,7 +171,6 @@ class NoisyCleanSet:
         self.simulation = simulation
         self.text = text
         self.snr_list = np.arange(snr[0], snr[1], 1)
-        self.num_noises = num_noises
         if dvector is None:
             self.dvector = dvector
         else:
@@ -166,7 +201,10 @@ class NoisyCleanSet:
                     data = data[:int(len(data) * self.ratio)]
                 else:
                     data = data[int(len(data) * self.ratio):]
-            self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
+            if self.simulation and i == 1:
+                self.dataset.append(NoiseDataset(data, sample_rate=sr[i], target_length=length))
+            else:
+                self.dataset.append(BaseDataset(data, sample_rate=sr[i]))
         self.noise_length = len(self.dataset[1])
         self.rir = rir
         if self.rir is not None:
@@ -178,15 +216,12 @@ class NoisyCleanSet:
         clean, file = self.dataset[0][index]
         if self.simulation:
             # use rir dataset to add noise
-            clean_tmp = clean
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
-            for i in range(self.num_noises):
-                noise, _ = self.dataset[1][np.random.randint(0, self.noise_length)]
-                snr = np.random.choice(self.snr_list)
-                noise, clean = snr_mix(noise, clean_tmp, snr, -25, 10,
-                rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic, mono=False)[0]
-                if use_reverb else None, eps=1e-6)
-                clean_tmp = noise
+            noise, _ = self.dataset[1][np.random.randint(0, self.noise_length)]
+            snr = np.random.choice(self.snr_list)
+            noise, clean = snr_mix(noise, clean, snr, -25, 10,
+            rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic, mono=False)[0]
+            if use_reverb else None, eps=1e-6)
         else:
             # already added noisy
             noise, _ = self.dataset[1][index]

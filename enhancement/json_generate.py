@@ -75,12 +75,13 @@ if __name__ == "__main__":
                         f_name = os.path.join(path, file_name)
                         info = torchaudio.info(f_name)
                         if info.sample_rate != 16000:
-                            data, sr = librosa.load(f_name, sr=None)
-                            data = librosa.resample(data, orig_sr=sr, target_sr=16000)
-                            sf.write(f_name, data, 16000)
-                        info = torchaudio.info(f_name)
-                        frames = info.num_frames
-                        audio_files.append([os.path.join(path, file_name), frames])
+                            continue
+                        else:
+                            # data, sr = librosa.load(f_name, sr=None)
+                            # data = librosa.resample(data, orig_sr=sr, target_sr=16000)
+                            # sf.write(f_name, data, 16000)
+                            frames = info.num_frames
+                            audio_files.append([os.path.join(path, file_name), frames])
             json.dump(audio_files, open('json/' + dataset_name + '.json', 'w'), indent=4)
     elif args.mode == 2:
         directory = '../dataset/our'
