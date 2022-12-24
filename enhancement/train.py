@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 32
+        BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 20
         # ckpt = torch.load('pretrain/-8.659194459110253.pth')
@@ -130,6 +130,7 @@ if __name__ == "__main__":
         lr = 0.0001
         EPOCH = 10
         dvector = None
+        rir = 'json/rir.json'
         ckpt_dir = 'pretrain/sudormrf'
         #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         ckpt_name = 'pretrain/sudormrf_middle.pth'
@@ -142,9 +143,9 @@ if __name__ == "__main__":
         # model.load_state_dict(checkpoint['model'])
 
         train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/DNStrain_noise.json', 'json/train_imu.json'],
-                                        simulation=True, person=people, ratio=0.8, dvector=dvector)
+                                        simulation=True, person=people, ratio=0.8, dvector=dvector, rir=rir)
         test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/DNStrain_noise.json', 'json/train_imu.json'],
-                                          simulation=True, person=people, ratio=-0.2, dvector=dvector)
+                                          simulation=True, person=people, ratio=-0.2, dvector=dvector, rir=rir)
 
         # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
         # train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
