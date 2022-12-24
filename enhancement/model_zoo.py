@@ -53,9 +53,9 @@ def sisdr_loss(pr_batch, t_batch, initial_mixtures, eps=1e-8):
     initial_mixtures = initial_mixtures - torch.mean(initial_mixtures, dim=-1, keepdim=True)
 
     t_t_diag = dot(t_batch, t_batch)
-    sisnr = compute_permuted_sisnrs(pr_batch, t_batch, t_t_diag, eps=eps)
+    sisnr = compute_permuted_sisnrs(pr_batch, t_batch, t_t_diag, eps=eps).mean(-1)
     initial_mix = initial_mixtures.repeat(1, 2, 1)
-    base_sisdr = compute_permuted_sisnrs(initial_mix, t_batch, t_t_diag, eps=eps).mean(-1)
+    base_sisdr = compute_permuted_sisnrs(initial_mix, t_batch, t_t_diag, eps=eps)
     sisnr -= base_sisdr.mean()
     return -sisnr
 
