@@ -217,7 +217,7 @@ class NoisyCleanSet:
         if self.simulation:
             # use rir dataset to add noise
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
-            noise, _ = self.dataset[1][np.random.randint(0, self.noise_length)]
+            noise = self.dataset[1][np.random.randint(0, self.noise_length)]
             snr = np.random.choice(self.snr_list)
             noise, clean = snr_mix(noise, clean, snr, -25, 10,
             rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic, mono=False)[0]
