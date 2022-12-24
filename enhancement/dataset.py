@@ -108,8 +108,6 @@ class NoiseDataset:
             noise_y = noise_y[idx_start : idx_start + self.target_length]
 
         return noise_y
-
-
 class BaseDataset:
     def __init__(self, files=None, pad=False, sample_rate=16000):
         """

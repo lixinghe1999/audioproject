@@ -55,19 +55,15 @@ def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
     # sudormrf only for 8k
     noise = noise[:, ::2]
     clean = clean[:, ::2]
-    if torch.isnan(noise).any() or torch.isnan(clean).any():
-        print('found')
     optimizer.zero_grad()
     noise = noise.unsqueeze(1).to(device=device)
     clean = clean.unsqueeze(1).to(device=device)
     residual_noise = noise - clean
     predict = model(noise)
     loss = sisdr_loss(predict, torch.cat([clean, residual_noise], dim=1),)
-
     loss = torch.clamp(
         loss, min=-30., max=+30.)
     loss.backward()
-    print(loss.item())
     optimizer.step()
     return loss.item()
 def test_sudormrf(model, acc, noise, clean, device='cuda', text=None, data=False):
