@@ -21,8 +21,8 @@ This script contains 4 model's training and test due to their large differences 
 # asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
 #                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
 #                                            run_opts={"device": "cuda"})
-sisdr_loss = StabilizedPermInvSISDRMetric(n_actual_sources=2, n_estimated_sources=2,
-                                 zero_mean=True, backward_loss=True, improvement=True)
+# sisdr_loss = StabilizedPermInvSISDRMetric(n_actual_sources=2, n_estimated_sources=2,
+#                                   zero_mean=True, backward_loss=True, improvement=True)
 def eval(clean, predict, text=None):
     if text is not None:
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
@@ -38,6 +38,27 @@ def eval(clean, predict, text=None):
         metric4 = batch_stoi(clean, predict)
         metrics = [metric1, metric2, metric3, metric4]
     return np.stack(metrics, axis=1)
+
+def dot(x, y):
+    return torch.sum(x * y, dim=-1, keepdim=True)
+def compute_permuted_sisnrs(permuted_pr_batch, t_batch, t_t_diag, eps=10e-8):
+    s_t = (dot(permuted_pr_batch, t_batch) /
+           (t_t_diag + eps) * t_batch)
+    e_t = permuted_pr_batch - s_t
+    sisnrs = 10 * torch.log10(dot(s_t, s_t) / (dot(e_t, e_t) + eps))
+    return sisnrs
+def sisdr_loss(pr_batch, t_batch, initial_mixtures, eps=1e-8):
+    pr_batch = pr_batch - torch.mean(pr_batch, dim=-1, keepdim=True)
+    t_batch = t_batch - torch.mean(t_batch, dim=-1, keepdim=True)
+    initial_mixtures = initial_mixtures - torch.mean(initial_mixtures, dim=-1, keepdim=True)
+
+    t_t_diag = dot(t_batch, t_batch)
+    sisnr = compute_permuted_sisnrs(pr_batch, t_batch, t_t_diag, eps=eps)
+    initial_mix = initial_mixtures.repeat(1, 2, 1)
+    base_sisdr = compute_permuted_sisnrs(initial_mix, t_batch, t_t_diag, eps=eps)
+    sisnr -= base_sisdr.mean()
+    return -sisnr
+
 def Spectral_Loss(x_mag, y_mag):
     """Calculate forward propagation.
           Args:
@@ -60,7 +81,7 @@ def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
     clean = clean.unsqueeze(1).to(device=device)
     residual_noise = noise - clean
     predict = model(noise)
-    loss = sisdr_loss(predict, torch.cat([clean, residual_noise], dim=1),)
+    loss = sisdr_loss(predict, torch.cat([clean, residual_noise], dim=1), noise)
     loss = torch.clamp(
         loss, min=-30., max=+30.)
     loss.backward()
