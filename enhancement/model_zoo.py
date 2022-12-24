@@ -63,6 +63,7 @@ def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
     predict = model(noise)
     loss = sisdr_loss(predict, torch.cat([clean, residual_noise], dim=1),
                       initial_mixtures=noise)
+    print(loss.item())
     loss.backward()
     optimizer.step()
     return loss.item()
