@@ -58,8 +58,10 @@ def sisdr_loss(pr_batch, t_batch, initial_mixtures, eps=1e-8):
 
     initial_mix = initial_mixtures.repeat(1, 2, 1)
     base_sisdr = compute_permuted_sisnrs(initial_mix, t_batch, t_t_diag, eps=eps)
-    if torch.isnan(base_sisdr).any() or torch.isnan(sisnr).any():
-        print('find loss')
+    if torch.isnan(base_sisdr).any():
+        print('find base loss')
+    if torch.isnan(sisnr).any():
+        print('find snr loss')
     sisnr -= base_sisdr.mean()
     sisnr = sisnr.mean()
     return -sisnr
@@ -81,8 +83,6 @@ def train_sudormrf(model, acc, noise, clean, optimizer, device='cuda'):
     # sudormrf only for 8k
     noise = noise[:, ::2]
     clean = clean[:, ::2]
-    if torch.isnan(clean).any() or torch.isnan(noise).any():
-        print('find data')
     optimizer.zero_grad()
     noise = noise.unsqueeze(1).to(device=device)
     clean = clean.unsqueeze(1).to(device=device)
