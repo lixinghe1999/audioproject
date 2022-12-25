@@ -133,7 +133,7 @@ if __name__ == "__main__":
         rir = 'json/rir.json'
         ckpt_dir = 'pretrain/sudormrf'
         #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf_large.pth'
+        ckpt_name = 'pretrain/sudormrf_middle.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)
