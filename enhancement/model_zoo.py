@@ -42,11 +42,10 @@ def eval(clean, predict, text=None):
 def dot(x, y):
     return torch.sum(x * y, dim=-1, keepdim=True)
 def compute_permuted_sisnrs(permuted_pr_batch, t_batch, t_t_diag, eps=10e-8):
-    s_t = (dot(permuted_pr_batch, t_batch) /
-           (t_t_diag + eps) * t_batch)
-    e_t = permuted_pr_batch - s_t
-    sisnrs = 10 * torch.log10(dot(s_t, s_t) / (dot(e_t, e_t) + eps))
-    return sisnrs
+    pr_signal_powers = dot(permuted_pr_batch, permuted_pr_batch)
+    inner_prod_sq = dot(permuted_pr_batch, t_batch) ** 2
+    rho_sq = inner_prod_sq / (pr_signal_powers * t_t_diag + eps)
+    return 10 * torch.log10((rho_sq + eps) / (1. - rho_sq + eps))
 def sisdr_loss(pr_batch, t_batch, initial_mixtures, eps=1e-8):
     pr_batch = pr_batch - torch.mean(pr_batch, dim=-1, keepdim=True)
     t_batch = t_batch - torch.mean(t_batch, dim=-1, keepdim=True)
