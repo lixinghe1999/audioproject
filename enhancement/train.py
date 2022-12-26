@@ -186,45 +186,65 @@ if __name__ == "__main__":
                 avg_metric = inference(dataset, 4, model)
                 print(p, avg_metric)
     elif args.mode == 2:
+        dvector = None
+        rir = 'json/rir.json'
         # evaluation for WER
-        checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
-        print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
-        model.load_state_dict(checkpoint['model'])
+        # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
+        # print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
+        # model.load_state_dict(checkpoint['model'])
 
         # ckpt_dir = 'pretrain/vibvoice'
         # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        # print('loaded checkpoint:', ckpt_name)
-        # ckpt_start = torch.load(ckpt_name)
+        ckpt_name = 'pretrain/sudormrf_large_new.pth'
+        print('loaded checkpoint:', ckpt_name)
+        ckpt_start = torch.load(ckpt_name)
 
-        # ckpts = []
-        # for p in ['he']:
-        #     model.load_state_dict(ckpt_start)
-        #     p_except = [i for i in people if i != p]
-        #     train_dataset = NoisyCleanSet(['json/noise_train_gt.json', 'json/noise_train_wav.json', 'json/noise_train_imu.json'],
-        #                                  person=p_except, simulation=False, text=False)
-        #     ckpt, _, _ = train(train_dataset, 1, 0.0001, 16, model)
-        #
-        #     train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/dev.json', 'json/train_imu.json'],
-        #                                   person=[p], time_domain=time_domain, simulation=True,
-        #                                   rir=None, text=False, snr=(0, 20))
-        #     ckpt, _, _ = train(train_dataset, 2, 0.0001, 16, model)
-        #    ckpts.append(ckpt)
+        ckpts = []
         for p in people:
-            #model.load_state_dict(ckpt)
-            test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-                                         person=[p], simulation=False, text=True)
-            avg_metric = inference(test_dataset, 4, model, text=True)
-            print(p, avg_metric)
-        for env in ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']:
-            test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-                                         person=[env], simulation=False, text=True)
-            avg_metric = inference(test_dataset, 4, model, text=True)
-            print(env, avg_metric)
-        #
-        test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/mobile_wav.json', 'json/mobile_imu.json'],
-                                     person=['he'], simulation=False, text=True)
-        avg_metric = inference(test_dataset, 4, model, text=True)
-        print('mobile result', avg_metric)
+            model.load_state_dict(ckpt_start)
+            p_except = [i for i in people if i != p]
+            train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
+                                         person=[p], simulation=True, rir=rir)
+            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+                                          person=[p], simulation=True, rir=rir, ratio=0.8)
+            train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
+            ckpt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
+            ckpts.append(ckpt)
+        # if True, use text (WER) to evaluate, else -> use reference audio
+        no_reference = False
+        simulation = not no_reference
+        if no_reference:
+            for ckpt, p in zip(ckpts, people):
+                model.load_state_dict(ckpt)
+                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav', 'json/noise_imu.json'],
+                                             person=[p], simulation=simulation, text=no_reference)
+                avg_metric = inference(test_dataset, 4, model, text=no_reference)
+                print(p, avg_metric)
+            envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
+            for env in envs:
+                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav', 'json/noise_imu.json'],
+                                             person=[env], simulation=simulation, text=no_reference)
+                avg_metric = inference(test_dataset, 4, model, text=no_reference)
+                print(env, avg_metric)
+        else:
+            for ckpt, p in zip(ckpts, people):
+                model.load_state_dict(ckpt)
+                test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+                                             person=[p], simulation=simulation, ratio=-0.2, rir=rir)
+                avg_metric = inference(test_dataset, 4, model, text=no_reference)
+                print(p, avg_metric)
+            envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
+            for env in envs:
+                test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+                                             person=[env], simulation=simulation, ratio=-0.2, rir=rir)
+                avg_metric = inference(test_dataset, 4, model, text=no_reference)
+                print(env, avg_metric)
+
+
+        # test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/mobile_wav.json', 'json/mobile_imu.json'],
+        #                              person=['he'], simulation=simulation, text=no_reference)
+        # avg_metric = inference(test_dataset, 4, model, text=no_reference)
+        # print('mobile result', avg_metric)
     else:
         # investigate the performance of FullSubnet
         checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
