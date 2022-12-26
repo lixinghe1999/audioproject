@@ -124,7 +124,6 @@ if __name__ == "__main__":
         plt.savefig('loss.png')
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
-        people = ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]
         BATCH_SIZE = 8
         lr = 0.0001
         EPOCH = 10
@@ -160,7 +159,7 @@ if __name__ == "__main__":
         model.load_state_dict(ckpt)
         evaluation = False
         if evaluation:
-            for p in ["1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he", "hou"]:
+            for p in people:
                 dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
                                         person=[p], simulation=True, ratio=-0.2, dvector=dvector)
                 avg_metric = inference(dataset, 4, model)
@@ -194,7 +193,7 @@ if __name__ == "__main__":
 
         # ckpt_dir = 'pretrain/vibvoice'
         # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf_large_new.pth'
+        ckpt_name = 'pretrain/sudormrf_small.pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
 
