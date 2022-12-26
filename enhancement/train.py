@@ -64,8 +64,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     loss_best = 100
     loss_curve = []
     ckpt_best = model.state_dict()
-    #avg_metric = inference(test_dataset, 4, model)
-    #print("performance before training:", avg_metric)
+
     for e in range(EPOCH):
         Loss_list = []
         for i, sample in enumerate(tqdm(train_loader)):
@@ -133,7 +132,7 @@ if __name__ == "__main__":
         rir = 'json/rir.json'
         ckpt_dir = 'pretrain/sudormrf'
         #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf_middle.pth'
+        ckpt_name = 'pretrain/sudormrf_large.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)
@@ -186,9 +185,9 @@ if __name__ == "__main__":
                 avg_metric = inference(dataset, 4, model)
                 print(p, avg_metric)
     elif args.mode == 2:
+        # evaluation for personalized model
         dvector = None
         rir = 'json/rir.json'
-        # evaluation for WER
         # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
         # print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
         # model.load_state_dict(checkpoint['model'])
@@ -198,6 +197,12 @@ if __name__ == "__main__":
         ckpt_name = 'pretrain/sudormrf_large_new.pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
+
+        model.load_state_dict(ckpt_start)
+        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/DNStrain_noise.json', 'json/train_imu.json'],
+                                     simulation=True, person=people, ratio=-0.2, rir=rir)
+        avg_metric = inference(test_dataset, 4, model)
+        print("performance before training:", avg_metric)
 
         ckpts = []
         for p in people:
@@ -233,12 +238,6 @@ if __name__ == "__main__":
                                              person=[p], simulation=simulation, ratio=-0.2, rir=rir)
                 avg_metric = inference(test_dataset, 4, model, text=no_reference)
                 print(p, avg_metric)
-            envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
-            for env in envs:
-                test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
-                                             person=[env], simulation=simulation, ratio=-0.2, rir=rir)
-                avg_metric = inference(test_dataset, 4, model, text=no_reference)
-                print(env, avg_metric)
 
 
         # test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/mobile_wav.json', 'json/mobile_imu.json'],
