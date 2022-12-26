@@ -213,7 +213,7 @@ class sudormrf(nn.Module):
     def __init__(self,
                  out_channels=128,
                  in_channels=512,
-                 num_blocks=15,
+                 num_blocks=4,
                  upsampling_depth=4,
                  enc_kernel_size=21,
                  enc_num_basis=512,
