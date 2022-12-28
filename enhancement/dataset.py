@@ -90,23 +90,19 @@ class NoiseDataset:
         noise_y = np.zeros(0, dtype=np.float32)
         silence = np.zeros(int(self.sr * self.silence_length), dtype=np.float32)
         remaining_length = self.target_length
-
         while remaining_length > 0:
             noise_file, info = self.files[np.random.randint(0, self.__len__())]
             noise_new_added, sr = librosa.load(noise_file, sr=self.sr)
             noise_y = np.append(noise_y, noise_new_added)
             remaining_length -= len(noise_new_added)
-
             # If still need to add new noise, insert a small silence segment firstly
             if remaining_length > 0:
                 silence_len = min(remaining_length, len(silence))
                 noise_y = np.append(noise_y, silence[:silence_len])
                 remaining_length -= silence_len
-
         if len(noise_y) > self.target_length:
             idx_start = np.random.randint(len(noise_y) - self.target_length)
             noise_y = noise_y[idx_start : idx_start + self.target_length]
-
         return noise_y
 class BaseDataset:
     def __init__(self, files=None, pad=False, sample_rate=16000):

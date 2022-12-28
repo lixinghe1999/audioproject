@@ -213,7 +213,7 @@ class sudormrf(nn.Module):
     def __init__(self,
                  out_channels=128,
                  in_channels=512,
-                 num_blocks=4,
+                 num_blocks=15,
                  upsampling_depth=4,
                  enc_kernel_size=21,
                  enc_num_basis=512,
@@ -241,8 +241,6 @@ class sudormrf(nn.Module):
                                  stride=enc_kernel_size // 2,
                                  padding=enc_kernel_size // 2,
                                  bias=False)
-        #torch.nn.init.xavier_uniform(self.encoder.weight)
-
         # Norm before the rest, and apply one more dense layer
         self.ln = GlobLN(enc_num_basis)
         self.bottleneck = nn.Conv1d(
@@ -251,8 +249,7 @@ class sudormrf(nn.Module):
             kernel_size=1)
 
         # Separation module
-        self.sm = nn.Sequential(*[
-            UConvBlock(out_channels=out_channels,
+        self.sm = nn.ModuleList([UConvBlock(out_channels=out_channels,
                        in_channels=in_channels,
                        upsampling_depth=upsampling_depth)
             for _ in range(num_blocks)])
@@ -269,24 +266,31 @@ class sudormrf(nn.Module):
             stride=enc_kernel_size // 2,
             padding=enc_kernel_size // 2,
             groups=1, bias=False)
-        #torch.nn.init.xavier_uniform(self.decoder.weight)
+
         self.mask_nl_class = nn.ReLU()
+        self.film_generator = nn.Linear(256, 2 * self.num_blocks * self.out_channels)
     # Forward pass
-    def forward(self, input_wav):
+    def forward(self, input_wav, dvec):
         mean = torch.mean(input_wav, dim=(1, 2), keepdim=True)
         std = torch.std(input_wav, dim=(1, 2), keepdim=True)
         input_wav = (input_wav - mean) / (std + 1e-9)
-
         # Front end
         x = self.pad_to_appropriate_length(input_wav)
         x = self.encoder(x)
+
 
         # Split paths
         s = x.clone()
         # Separation module
         x = self.ln(x)
         x = self.bottleneck(x)
-        x = self.sm(x)
+        film_vector = self.film_generator(dvec).view(
+            -1, self.num_blocks, 2, self.out_channels)
+        for i, m in enumerate(self.sm):
+            beta = film_vector[:, i, 0, :]
+            gamma = film_vector[:, i, 1, :]
+            x = x + x * gamma.unsqueeze(2) + beta.unsqueeze(2)
+            x = m(x)
 
         x = self.mask_net(x)
         x = x.view(x.shape[0], self.num_sources, self.enc_num_basis, -1)
@@ -336,6 +340,7 @@ if __name__ == "__main__":
     # ckpt = torch.load('Improved_Sudormrf_U16_Bases512_WSJ02mix.pt')
     # model.load_state_dict(ckpt['model'])
     dummy_input = torch.rand(1, 1, 48000)
-    estimated_sources = model(dummy_input)
+    dvec = torch.rand(1, 256)
+    estimated_sources = model(dummy_input, dvec)
     print(model_size(model))
-    print(model_speed(model, [dummy_input]))
+    print(model_speed(model, [dummy_input, dvec]))
