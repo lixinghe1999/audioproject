@@ -96,7 +96,7 @@ def test_sudormrf(model, acc, noise, clean, device='cuda', text=None):
     clean = clean[:, ::2]
 
     noise = noise.unsqueeze(1).to(device=device)
-    predict = model(noise, acc.to(device=device))[:, 0, :]
+    predict = model(noise)[:, 0, :]
     predict = predict.cpu().numpy()
     clean = clean.numpy()
     return eval(clean, predict, text=text)

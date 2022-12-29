@@ -111,8 +111,8 @@ if __name__ == "__main__":
         BATCH_SIZE = 16
         lr = 0.001
         EPOCH = 20
-        # ckpt = torch.load('pretrain/-8.659194459110253.pth')
-        # model.load_state_dict(ckpt)
+        ckpt = torch.load('pretrain/-13.428193207908764.pth')
+        model.load_state_dict(ckpt)
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
