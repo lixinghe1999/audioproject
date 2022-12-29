@@ -115,9 +115,9 @@ if __name__ == "__main__":
         # model.load_state_dict(ckpt)
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector='spk_embedding/librispeech-100')
+                                ratio=1, rir='json/rir.json', dvector=None)
         test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector='spk_embedding/librispeech-dev')
+                                ratio=1, rir='json/rir.json', dvector=None)
 
         ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=True)
         plt.plot(loss_curve)

@@ -217,7 +217,7 @@ class sudormrf(nn.Module):
                  upsampling_depth=4,
                  enc_kernel_size=21,
                  enc_num_basis=512,
-                 num_sources=2):
+                 num_sources=1):
         super(sudormrf, self).__init__()
 
         # Number of sources to produce
@@ -249,7 +249,7 @@ class sudormrf(nn.Module):
             kernel_size=1)
 
         # Separation module
-        self.sm = nn.ModuleList([UConvBlock(out_channels=out_channels,
+        self.sm = nn.Sequential(*[UConvBlock(out_channels=out_channels,
                        in_channels=in_channels,
                        upsampling_depth=upsampling_depth)
             for _ in range(num_blocks)])
@@ -268,9 +268,9 @@ class sudormrf(nn.Module):
             groups=1, bias=False)
 
         self.mask_nl_class = nn.ReLU()
-        self.film_generator = nn.Linear(256, 2 * self.num_blocks * self.out_channels)
+        #self.film_generator = nn.Linear(256, 2 * self.num_blocks * self.out_channels)
     # Forward pass
-    def forward(self, input_wav, dvec):
+    def forward(self, input_wav):
         mean = torch.mean(input_wav, dim=(1, 2), keepdim=True)
         std = torch.std(input_wav, dim=(1, 2), keepdim=True)
         input_wav = (input_wav - mean) / (std + 1e-9)
@@ -284,13 +284,14 @@ class sudormrf(nn.Module):
         # Separation module
         x = self.ln(x)
         x = self.bottleneck(x)
-        film_vector = self.film_generator(dvec).view(
-            -1, self.num_blocks, 2, self.out_channels)
-        for i, m in enumerate(self.sm):
-            beta = film_vector[:, i, 0, :]
-            gamma = film_vector[:, i, 1, :]
-            x = x + x * gamma.unsqueeze(2) + beta.unsqueeze(2)
-            x = m(x)
+        x = self.sm(x)
+        # film_vector = self.film_generator(dvec).view(
+        #     -1, self.num_blocks, 2, self.out_channels)
+        # for i, m in enumerate(self.sm):
+        #     # beta = film_vector[:, i, 0, :]
+        #     # gamma = film_vector[:, i, 1, :]
+        #     #x = x + x * gamma.unsqueeze(2) + beta.unsqueeze(2)
+        #     x = m(x)
 
         x = self.mask_net(x)
         x = x.view(x.shape[0], self.num_sources, self.enc_num_basis, -1)
@@ -337,10 +338,12 @@ def model_size(model):
 
 if __name__ == "__main__":
     model = sudormrf()
+    torch.save(model.state_dict(), 'try.pth')
     # ckpt = torch.load('Improved_Sudormrf_U16_Bases512_WSJ02mix.pt')
     # model.load_state_dict(ckpt['model'])
     dummy_input = torch.rand(1, 1, 48000)
     dvec = torch.rand(1, 256)
-    estimated_sources = model(dummy_input, dvec)
+    estimated_sources = model(dummy_input)
+    print(estimated_sources.shape)
     print(model_size(model))
-    print(model_speed(model, [dummy_input, dvec]))
+    print(model_speed(model, [dummy_input]))
