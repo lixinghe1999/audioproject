@@ -70,7 +70,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 500 == 0 and i != 0:
+            if i % 1500 == 0 and i != 0:
                 print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         rir = 'json/rir.json'
         ckpt_dir = 'pretrain/sudormrf'
         #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf_large.pth'
+        ckpt_name = 'pretrain/sudormrf_spk.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)
@@ -193,7 +193,7 @@ if __name__ == "__main__":
 
         # ckpt_dir = 'pretrain/vibvoice'
         # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf_small.pth'
+        ckpt_name = 'pretrain/sudormrf_spk.pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
 
