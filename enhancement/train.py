@@ -193,7 +193,7 @@ if __name__ == "__main__":
 
         # ckpt_dir = 'pretrain/vibvoice'
         # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/-16.346861644993098.pth'
+        ckpt_name = 'pretrain/sudormrf_large_new.pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
 
