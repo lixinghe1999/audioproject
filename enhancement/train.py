@@ -185,7 +185,7 @@ if __name__ == "__main__":
                 print(p, avg_metric)
     elif args.mode == 2:
         # evaluation for personalized model
-        dvector = 'spk_embedding/our'
+        dvector = None
         rir = 'json/rir.json'
         # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
         # print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
@@ -193,7 +193,7 @@ if __name__ == "__main__":
 
         # ckpt_dir = 'pretrain/vibvoice'
         # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf_spk.pth'
+        ckpt_name = 'pretrain/-16.346861644993098.pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
 
