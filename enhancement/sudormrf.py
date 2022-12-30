@@ -217,7 +217,7 @@ class sudormrf(nn.Module):
                  upsampling_depth=4,
                  enc_kernel_size=21,
                  enc_num_basis=512,
-                 num_sources=1):
+                 num_sources=2):
         super(sudormrf, self).__init__()
 
         # Number of sources to produce
