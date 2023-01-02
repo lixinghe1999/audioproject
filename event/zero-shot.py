@@ -75,7 +75,7 @@ if __name__ == "__main__":
                 class_ids = list(sorted([
                     dataset.label_to_class_idx[lb] for lb in labels]))
                 y[item_idx][class_ids] = 1
-            y_pred = torch.softmax(y_pred, dim=-1)
+            y_pred = torch.softmax(y_pred, dim=-1).cpu().numpy()
             y = y.argmax(dim=-1)
             print(y_pred.shape)
             print(y.shape)
