@@ -13,13 +13,13 @@
     "workers_test": 4,
     "epochs": 50,
     "log_interval": 10,
-    "saved_models_path": "/path/to/saved/models"
+    "saved_models_path": "assets/"
   },
   "Model": {
     "class": "model.audioclip.AudioCLIP",
     "args": {
       "multilabel": false,
-      "pretrained": "/path/to/assets/trained_AudioCLIP.pt"
+      "pretrained": "assets/trained_AudioCLIP.pt"
     }
   },
   "Optimizer": {
@@ -41,7 +41,7 @@
     "class": "utils.datasets.ESC50",
     "args": {
       "dl_shuffle": true,
-      "root": "/path/to/ESC50",
+      "root": "../dataset/ESC50",
       "sample_rate": 44100,
       "fold": 1,
       "training": {"key": "train", "yes": true, "no": false}
