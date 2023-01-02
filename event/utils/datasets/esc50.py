@@ -52,8 +52,6 @@ class ESC50(td.Dataset):
 
         self.data = list()
         self.load_data(meta, os.path.join(root, 'audio'))
-        # self.indices = list(self.data.keys())
-        #
         self.class_idx_to_label = dict()
         for row in self.data:
             idx = row['target']

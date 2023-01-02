@@ -39,7 +39,7 @@ if __name__ == "__main__":
     torch.set_grad_enabled(False)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.set_device(1)
+    torch.cuda.set_device(0)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
@@ -47,25 +47,26 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     audio_transforms = ToTensor1D()
     dataset = ESC50('../dataset/ESC50', train=False, transform_audio=audio_transforms, sample_rate=SAMPLE_RATE)
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=True, collate_fn=collate_fn)
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=4, shuffle=True, collate_fn=collate_fn)
 
     with torch.no_grad():
         acc_1 = 0
         acc_3 = 0
+        # We only compute the text features once
+        ((_, _, text_features), _), _ = model(text=[
+            [dataset.class_idx_to_label[class_idx]]
+            for class_idx in sorted(dataset.class_idx_to_label.keys())
+        ], batch_indices=torch.arange(
+            len(dataset.class_idx_to_label), dtype=torch.int64, device=device
+        ))
+        text_features = text_features.unsqueeze(1).transpose(0, 1)
         for sample in loader:
             audio, text = sample
             audio = audio.to(device)
             ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
             torch.arange(audio.shape[0], dtype=torch.int64, device=device))
-
-            ((_, _, text_features), _), _ = model(text=[
-                        [dataset.class_idx_to_label[class_idx]]
-                        for class_idx in sorted(dataset.class_idx_to_label.keys())
-                    ], batch_indices=torch.arange(
-                        len(dataset.class_idx_to_label), dtype=torch.int64, device=device
-                    ))
             audio_features = audio_features.unsqueeze(1)
-            text_features = text_features.unsqueeze(1).transpose(0, 1)
+
             logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
 
             y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
