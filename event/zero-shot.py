@@ -14,7 +14,7 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label):
         print(conf_values, ids)
         # format output strings
         query = y[audio_idx]
-        results = ', '.join([f'{class_idx_to_label[i]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
+        results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
 
         print(query + results)
 
