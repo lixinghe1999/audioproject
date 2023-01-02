@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
             ((_, _, text_features), _), _ = model(text=[
                         [dataset.class_idx_to_label[class_idx]]
-                        for class_idx in sorted(eval_loader.dataset.class_idx_to_label.keys())
+                        for class_idx in sorted(dataset.class_idx_to_label.keys())
                     ], batch_indices=torch.arange(
                         len(dataset.class_idx_to_label), dtype=torch.int64, device=device
                     ))
