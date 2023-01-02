@@ -47,9 +47,11 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     audio_transforms = ToTensor1D()
     dataset = ESC50('../dataset/ESC50', train=False, transform_audio=audio_transforms, sample_rate=SAMPLE_RATE)
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=6, shuffle=True, collate_fn=collate_fn)
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=True, collate_fn=collate_fn)
 
     with torch.no_grad():
+        acc_1 = 0
+        acc_3 = 0
         for sample in loader:
             audio, text = sample
             audio = audio.to(device)
@@ -76,7 +78,9 @@ if __name__ == "__main__":
                 y[item_idx][class_ids] = 1
             y_pred = torch.softmax(y_pred, dim=-1).cpu()
             y = y.argmax(dim=-1)
-            top1, top3 = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=True)
+            top1, top3 = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
+            acc_1 += top1
+            acc_3 += top3
             print(top1, top3)
-            break
+        print(acc_1/len(loader), acc_3/len(loader))
 
