@@ -2,35 +2,36 @@ import torch
 from model import AudioCLIP
 from utils.transforms import ToTensor1D
 from utils.datasets.esc50 import ESC50
-def zero_shot_eval(logits_audio_text, ):
+def zero_shot_eval(logits_audio_text, y, class_idx_to_label):
     print('\t\tFilename, Audio\t\t\tTextual Label (Confidence)', end='\n\n')
 
     # calculate model confidence
+    num_audio = logits_audio_text.shape[0]
     confidence = logits_audio_text.softmax(dim=1)
-    for audio_idx in range(len(paths_to_audio)):
+    for audio_idx in range(num_audio):
         # acquire Top-3 most similar results
         conf_values, ids = confidence[audio_idx].topk(3)
 
         # format output strings
-        query = f'{os.path.basename(paths_to_audio[audio_idx]):>30s} ->\t\t'
-        results = ', '.join([f'{LABELS[i]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
+        query = y[audio_idx]
+        results = ', '.join([f'{class_idx_to_label[i]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
 
         print(query + results)
 
     print('\t\tTextual Label\t\tFilename, Audio (Confidence)', end='\n\n')
 
     # calculate model confidence
-    confidence = logits_audio_text.softmax(dim=0)
-    for label_idx in range(len(LABELS)):
-        # acquire Top-2 most similar results
-        conf_values, ids = confidence[:, label_idx].topk(2)
-
-        # format output strings
-        query = f'{LABELS[label_idx]:>25s} ->\t\t'
-        results = ', '.join(
-            [f'{os.path.basename(paths_to_audio[i]):>30s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
-
-        print(query + results)
+    # confidence = logits_audio_text.softmax(dim=0)
+    # for label_idx in range(len(LABELS)):
+    #     # acquire Top-2 most similar results
+    #     conf_values, ids = confidence[:, label_idx].topk(2)
+    #
+    #     # format output strings
+    #     query = f'{LABELS[label_idx]:>25s} ->\t\t'
+    #     results = ', '.join(
+    #         [f'{os.path.basename(paths_to_audio[i]):>30s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
+    #
+    #     print(query + results)
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
 
@@ -78,5 +79,6 @@ if __name__ == "__main__":
             y = y.argmax(dim=-1)
             print(y_pred.shape)
             print(y.shape)
+            zero_shot_eval(y_pred, y, dataset.class_idx_to_label)
             break
 
