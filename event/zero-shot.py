@@ -24,7 +24,7 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False)
             query = class_idx_to_label[gt]
             results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
             print(query + ', ' + results)
-    return top1_a/num_audio, top3_a/num_audio, logs
+    return top1_a/num_audio, top3_a/num_audio, log
 def collate_fn(batch):
     batch_audio, batch_text = zip(*batch)
 
