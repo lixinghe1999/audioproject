@@ -111,7 +111,7 @@ class ESC50(td.Dataset):
         if audio.ndim == 1:
             audio = audio[:, np.newaxis]
         audio = (audio.T * 32768.0).astype(np.float32)
-        target: str = self.data[index]['category']
+        target = [self.data[index]['category']]
 
         if self.transform is not None:
             audio = self.transform(audio)
