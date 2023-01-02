@@ -8,12 +8,15 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False)
     confidence = logits_audio_text.softmax(dim=0)
     top1_a = 0
     top3_a = 0
+    log = []
     for audio_idx in range(num_audio):
         # acquire Top-3 most similar results
         conf_values, ids = confidence[audio_idx].topk(3)
         gt = y[audio_idx].item()
         if gt == ids[0]:
             top1_a += 1
+        else:
+            log.append([class_idx_to_label[gt], class_idx_to_label[ids[0]]])
         if (gt == ids).any():
             top3_a += 1
         # format output strings
@@ -21,7 +24,7 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False)
             query = class_idx_to_label[gt]
             results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
             print(query + ', ' + results)
-    return top1_a/num_audio, top3_a/num_audio
+    return top1_a/num_audio, top3_a/num_audio, logs
 def collate_fn(batch):
     batch_audio, batch_text = zip(*batch)
 
@@ -52,6 +55,7 @@ if __name__ == "__main__":
     with torch.no_grad():
         acc_1 = 0
         acc_3 = 0
+        logs = []
         # We only compute the text features once
         ((_, _, text_features), _), _ = model(text=[
             [dataset.class_idx_to_label[class_idx]]
@@ -79,9 +83,11 @@ if __name__ == "__main__":
                 y[item_idx][class_ids] = 1
             y_pred = torch.softmax(y_pred, dim=-1).cpu()
             y = y.argmax(dim=-1)
-            top1, top3 = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
+            top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
             acc_1 += top1
             acc_3 += top3
-            print(top1, top3)
+            logs += log
+            #print(top1, top3)
         print(acc_1/len(loader), acc_3/len(loader))
+        print(log)
 
