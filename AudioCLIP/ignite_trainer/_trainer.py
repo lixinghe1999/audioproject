@@ -72,6 +72,7 @@ def run(experiment_name: str,
 
     with _utils.tqdm_stdout(orig_stdout) as orig_stdout:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(device)
         num_gpus = torch.cuda.device_count()
 
         if num_gpus > 1:
