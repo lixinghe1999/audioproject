@@ -101,7 +101,7 @@ class ESC50(td.Dataset):
                     })
         return items_to_load
 
-    def __getitem__(self, index: int) -> Tuple[np.ndarray, str]:
+    def __getitem__(self, index: int):
         if not (0 <= index < len(self)):
             raise IndexError
 
@@ -115,7 +115,7 @@ class ESC50(td.Dataset):
 
         if self.transform is not None:
             audio = self.transform(audio)
-        return audio, target
+        return audio, [target]
 
     def __len__(self) -> int:
         return len(self.data)
