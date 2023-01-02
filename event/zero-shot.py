@@ -11,7 +11,7 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label):
     for audio_idx in range(num_audio):
         # acquire Top-3 most similar results
         conf_values, ids = confidence[audio_idx].topk(3)
-
+        print(conf_values, ids)
         # format output strings
         query = y[audio_idx]
         results = ', '.join([f'{class_idx_to_label[i]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
