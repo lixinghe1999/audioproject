@@ -67,7 +67,6 @@ if __name__ == "__main__":
             logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
             print(logit_scale_at)
             y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
-            print(y_pred.shape)
             y = torch.zeros(
                 audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
             )
@@ -75,12 +74,8 @@ if __name__ == "__main__":
                 class_ids = list(sorted([
                     dataset.label_to_class_idx[lb] for lb in labels]))
                 y[item_idx][class_ids] = 1
-
-            if model.multilabel:
-                y_pred = torch.sigmoid(y_pred / logit_scale_at - 0.5)
-            else:
-                y_pred = torch.softmax(y_pred, dim=-1)
-                y = y.argmax(dim=-1)
+            y_pred = torch.softmax(y_pred, dim=-1)
+            y = y.argmax(dim=-1)
             print(y_pred.shape)
             print(y.shape)
             break
