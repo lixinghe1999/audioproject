@@ -7,8 +7,8 @@
   "Setup": {
     "name": "Multimodal-Audio",
     "suffix": "CV1",
-    "batch_train": 64,
-    "batch_test": 64,
+    "batch_train": 16,
+    "batch_test": 16,
     "workers_train": 4,
     "workers_test": 4,
     "epochs": 50,
