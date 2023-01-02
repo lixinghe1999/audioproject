@@ -16,7 +16,7 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False)
         if gt == ids[0]:
             top1_a += 1
         else:
-            log.append([class_idx_to_label[gt], class_idx_to_label[ids[0]]])
+            log.append([class_idx_to_label[gt], class_idx_to_label[ids[0].item()]])
         if (gt == ids).any():
             top3_a += 1
         # format output strings
