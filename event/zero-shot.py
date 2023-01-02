@@ -80,7 +80,7 @@ if __name__ == "__main__":
             else:
                 y_pred = torch.softmax(y_pred, dim=-1)
                 y = y.argmax(dim=-1)
-            print(y_pred)
-            print(y)
+            print(y_pred.shape)
+            print(y.shape)
             break
 
