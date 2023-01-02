@@ -89,5 +89,5 @@ if __name__ == "__main__":
             logs += log
             #print(top1, top3)
         print(acc_1/len(loader), acc_3/len(loader))
-        print(log)
+        print(logs)
 
