@@ -44,7 +44,7 @@ EPOCHS = 100
 LOG_INTERVAL = 50
 SAVED_MODELS_PATH = os.path.join(os.path.expanduser('~'), 'saved_models')
 
-
+torch.cuda.set_device(1)
 def run(experiment_name: str,
         visdom_host: str,
         visdom_port: int,
