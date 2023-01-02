@@ -14,6 +14,29 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label):
         results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
 
         print(query + ', ' + results)
+def collate_fn(batch):
+    batch_audio, batch_image, batch_text = zip(*batch)
+
+    keep_ids = [idx for idx, (_, _) in enumerate(zip(batch_audio, batch_image))]
+
+    if not all(audio is None for audio in batch_audio):
+        batch_audio = [batch_audio[idx] for idx in keep_ids]
+        batch_audio = torch.stack(batch_audio)
+    else:
+        batch_audio = None
+
+    if not all(image is None for image in batch_image):
+        batch_image = [batch_image[idx] for idx in keep_ids]
+        batch_image = torch.stack(batch_image)
+    else:
+        batch_image = None
+
+    if not all(text is None for text in batch_text):
+        batch_text = [batch_text[idx] for idx in keep_ids]
+    else:
+        batch_text = None
+
+    return batch_audio, batch_image, batch_text
 
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
@@ -27,7 +50,7 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     audio_transforms = ToTensor1D()
     dataset = ESC50('../dataset/ESC50', train=False, transform_audio=audio_transforms, sample_rate=SAMPLE_RATE)
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=6, shuffle=True)
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=6, shuffle=True, collate_fn=collate_fn)
 
     with torch.no_grad():
         for sample in loader:
