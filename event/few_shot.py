@@ -19,7 +19,7 @@ def training_step(model, batch, optimizer):
     a = torch.rand((1, 20))
     linear = torch.nn.Linear(20, 5)
     b = linear(a)
-    print(b.shape, b.grad_fn)
+    print(b, b.grad_fn)
     batch_indices = torch.arange(audio.shape[0], dtype=torch.int64, device=device)
     _, loss = model(audio, image, text, batch_indices)
 
