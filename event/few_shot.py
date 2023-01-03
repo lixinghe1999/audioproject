@@ -62,9 +62,9 @@ def prepare_model(model):
     param_groups = [
         {'params': [p for p in model.parameters() if p.requires_grad]}
     ]
-    for p in model.parameters():
+    for name, p in model.named_parameters():
         if p.requires_grad:
-            print(p)
+            print(name, p.shape)
 
     # # enable fbsp-parameters
     # for p in model.audio.fbsp.parameters():
