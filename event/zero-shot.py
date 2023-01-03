@@ -50,7 +50,7 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     audio_transforms = ToTensor1D()
     dataset = ESC50('../dataset/ESC50', train=False, transform_audio=audio_transforms, sample_rate=SAMPLE_RATE)
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=True, collate_fn=collate_fn)
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=4, shuffle=True, collate_fn=collate_fn)
 
     with torch.no_grad():
         acc_1 = 0
