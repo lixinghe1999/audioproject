@@ -149,6 +149,8 @@ class AudioCLIP(CLIP):
 
         audio_features = self.linear(audio)
         print(audio_features.grad_fn, audio_features.shape)
+        audio_features = audio + 1
+        print(audio_features.grad_fn, audio_features.shape)
         if audio is not None:
             audio_features = self.encode_audio(audio)
             print(audio_features.grad_fn, audio_features.shape)
