@@ -80,13 +80,12 @@ if __name__ == "__main__":
                 class_ids = list(sorted([
                     dataset.label_to_class_idx[lb] for lb in labels]))
                 y[item_idx][class_ids] = 1
-            y_pred = torch.softmax(y_pred, dim=-1).cpu()
+            y_pred = y_pred.cpu()
             y = y.argmax(dim=-1)
             top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
             acc_1 += top1
             acc_3 += top3
             logs += log
-            #print(top1, top3)
-        print(acc_1/len(loader), acc_3/len(loader))
-        print(logs)
+            print(acc_1/len(loader), acc_3/len(loader))
+        #print(logs)
 
