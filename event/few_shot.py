@@ -18,8 +18,8 @@ def training_step(model, batch, optimizer):
     if loss.ndim > 0:
         loss = loss.mean()
 
-    loss.backward(retain_graph=False)
-    optimizer.step(None)
+    loss.backward()
+    optimizer.step()
     return loss.item()
 def collate_fn(batch):
     batch_audio, batch_image, batch_text = zip(*batch)
