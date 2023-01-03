@@ -23,6 +23,25 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False)
             results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
             print(query + ', ' + results)
     return top1_a/num_audio, top3_a/num_audio, log
+def eval_step(batch, model, text_features, device):
+    audio, _, text = batch
+    audio = audio.to(device)
+    ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
+    torch.arange(audio.shape[0], dtype=torch.int64, device=device))
+    audio_features = audio_features.unsqueeze(1)
+
+    logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
+    y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
+    y = torch.zeros(
+        audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
+    )
+    for item_idx, labels in enumerate(text):
+        class_ids = list(sorted([
+            dataset.label_to_class_idx[lb] for lb in labels]))
+        y[item_idx][class_ids] = 1
+    y_pred = y_pred.softmax(dim=-1).cpu()
+    y = y.argmax(dim=-1)
+    return y_pred, y
 def collate_fn(batch):
     batch_audio, batch_image, batch_text = zip(*batch)
 
@@ -46,25 +65,7 @@ def collate_fn(batch):
         batch_text = None
 
     return batch_audio, batch_image, batch_text
-def eval_step(batch, model, device):
-    audio, _, text = batch
-    audio = audio.to(device)
-    ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
-    torch.arange(audio.shape[0], dtype=torch.int64, device=device))
-    audio_features = audio_features.unsqueeze(1)
 
-    logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
-    y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
-    y = torch.zeros(
-        audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
-    )
-    for item_idx, labels in enumerate(text):
-        class_ids = list(sorted([
-            dataset.label_to_class_idx[lb] for lb in labels]))
-        y[item_idx][class_ids] = 1
-    y_pred = y_pred.softmax(dim=-1).cpu()
-    y = y.argmax(dim=-1)
-    return y_pred, y
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
 
@@ -90,7 +91,7 @@ if __name__ == "__main__":
         ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
         text_features = text_features.unsqueeze(1).transpose(0, 1)
         for batch in loader:
-            y_pred, y = eval_step(batch, model)
+            y_pred, y = eval_step(batch, model, text_features, device)
             top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
             acc_1 += top1
             acc_3 += top3
