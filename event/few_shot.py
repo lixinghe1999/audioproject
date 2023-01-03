@@ -32,7 +32,7 @@ def collate_fn(batch):
         batch_text = [idx for idx in batch_text]
     else:
         batch_text = None
-    return batch_audio, batch_text
+    return batch_audio, _, batch_text
 
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
