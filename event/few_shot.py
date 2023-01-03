@@ -7,7 +7,6 @@ from tqdm import tqdm
 def training_step(model, batch, optimizer):
     optimizer.zero_grad()
     audio, image, text = batch
-    print(image)
     if audio is not None:
         audio = audio.to(device)
     if image is not None:
@@ -49,7 +48,7 @@ if __name__ == "__main__":
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
-    MODEL_FILENAME = 'ESC50_Multimodal-Audio_ACLIP-CV1_ACLIP-CV1_performance=0.9550.pt'
+    MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
 
@@ -60,15 +59,16 @@ if __name__ == "__main__":
                                          collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
-    optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
-
     # disable all parameters
     for p in model.parameters():
         p.requires_grad = False
     # enable only audio-related parameters
     for p in model.audio.parameters():
         p.requires_grad = True
+
+    param_groups = [{'params': [p for p in model.module.parameters() if p.requires_grad]}]
+    optimizer = torch.optim.SGD(params=param_groups, lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
 
     loss_best = 1
@@ -82,12 +82,13 @@ if __name__ == "__main__":
         mean_lost = np.mean(Loss_list)
         scheduler.step()
         acc_1 = 0; acc_3 = 0
-        for batch in test_loader:
-            y_pred, y = eval_step(batch, model)
-            top1, top3, log = zero_shot_eval(y_pred, y, test_dataset.class_idx_to_label, print_result=False)
-            acc_1 += top1
-            acc_3 += top3
-        metric = [acc_1 / len(test_loader), acc_3 / len(test_loader)]
+        with torch.no_grad():
+            for batch in test_loader:
+                y_pred, y = eval_step(batch, model)
+                top1, top3, log = zero_shot_eval(y_pred, y, test_dataset.class_idx_to_label, print_result=False)
+                acc_1 += top1
+                acc_3 += top3
+            metric = [acc_1 / len(test_loader), acc_3 / len(test_loader)]
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
