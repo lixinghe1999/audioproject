@@ -149,8 +149,9 @@ class AudioCLIP(CLIP):
 
         if audio is not None:
             audio_features = self.encode_audio(audio)
+            print(audio_features.grad_fn, audio_features.shape)
             audio_features = audio_features / audio_features.norm(dim=-1, keepdim=True)
-
+        print(audio_features.grad_fn, audio_features.shape)
         if image is not None:
             image_features = self.encode_image(image)
             image_features = image_features / image_features.norm(dim=-1, keepdim=True)
