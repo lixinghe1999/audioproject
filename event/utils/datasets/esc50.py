@@ -113,7 +113,7 @@ class ESC50(td.Dataset):
 
         if self.transform is not None:
             audio = self.transform(audio)
-        return audio, target
+        return audio, None, target
 
     def __len__(self) -> int:
         return len(self.data)

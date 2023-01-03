@@ -35,7 +35,25 @@ def collate_fn(batch):
     else:
         batch_text = None
     return batch_audio, batch_text
+def eval_step(batch, model):
+    audio, _, text = batch
+    audio = audio.to(device)
+    ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
+    torch.arange(audio.shape[0], dtype=torch.int64, device=device))
+    audio_features = audio_features.unsqueeze(1)
 
+    logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
+    y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
+    y = torch.zeros(
+        audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
+    )
+    for item_idx, labels in enumerate(text):
+        class_ids = list(sorted([
+            dataset.label_to_class_idx[lb] for lb in labels]))
+        y[item_idx][class_ids] = 1
+    y_pred = y_pred.softmax(dim=-1).cpu()
+    y = y.argmax(dim=-1)
+    return y_pred, y
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
 
@@ -60,24 +78,8 @@ if __name__ == "__main__":
             for class_idx in sorted(dataset.class_idx_to_label.keys())
         ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
         text_features = text_features.unsqueeze(1).transpose(0, 1)
-        for sample in loader:
-            audio, text = sample
-            audio = audio.to(device)
-            ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
-            torch.arange(audio.shape[0], dtype=torch.int64, device=device))
-            audio_features = audio_features.unsqueeze(1)
-
-            logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
-            y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
-            y = torch.zeros(
-                audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
-            )
-            for item_idx, labels in enumerate(text):
-                class_ids = list(sorted([
-                    dataset.label_to_class_idx[lb] for lb in labels]))
-                y[item_idx][class_ids] = 1
-            y_pred = y_pred.softmax(dim=-1).cpu()
-            y = y.argmax(dim=-1)
+        for batch in loader:
+            y_pred, y = eval_step(batch, model)
             top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
             acc_1 += top1
             acc_3 += top3
