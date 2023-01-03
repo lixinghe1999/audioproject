@@ -57,7 +57,7 @@ if __name__ == "__main__":
     for p in model.parameters():
         p.requires_grad = False
     # enable only audio-related parameters
-    for p in model.module.audio.parameters():
+    for p in model.audio.parameters():
         p.requires_grad = True
 
 
