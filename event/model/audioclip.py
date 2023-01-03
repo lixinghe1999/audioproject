@@ -237,6 +237,8 @@ class AudioCLIP(CLIP):
             )
             loss = loss + loss_at
             num_modalities += 1
+        print(logits_audio_text.grad_fn, logits_audio_text.shape)
+        print(reference.grad_fn, reference.shape)
         print(loss)
         print(loss.grad_fn)
         if logits_image_text is not None:
