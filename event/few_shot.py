@@ -109,7 +109,7 @@ if __name__ == "__main__":
     loss_best = 1
     for e in range(20):
         Loss_list = []
-        for i, batch in enumerate(train_loader):
+        for i, batch in tqdm(enumerate(train_loader)):
             loss = training_step(model, batch, optimizer)
             if i % 200 == 0 and i != 0:
                 print(loss)
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         acc_1 = 0; acc_3 = 0
         with torch.no_grad():
             for batch in test_loader:
-                y_pred, y = eval_step(batch, model)
+                y_pred, y = eval_step(batch, model, device)
                 top1, top3, log = zero_shot_eval(y_pred, y, test_dataset.class_idx_to_label, print_result=False)
                 acc_1 += top1
                 acc_3 += top3

@@ -46,7 +46,7 @@ def collate_fn(batch):
         batch_text = None
 
     return batch_audio, batch_image, batch_text
-def eval_step(batch, model):
+def eval_step(batch, model, device):
     audio, _, text = batch
     audio = audio.to(device)
     ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
