@@ -84,7 +84,7 @@ def prepare_model(model):
     return model, param_groups
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.set_device(0)
+    torch.cuda.set_device(1)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
