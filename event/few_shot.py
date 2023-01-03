@@ -129,9 +129,9 @@ if __name__ == "__main__":
                 acc_1 += top1
                 acc_3 += top3
             metric = [acc_1 / len(test_loader), acc_3 / len(test_loader)]
-            print(metric)
+            print(metric, mean_lost)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
             metric_best = metric
-            torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
+            torch.save(ckpt_best, 'assets/' + str(metric_best) + '.pth')
