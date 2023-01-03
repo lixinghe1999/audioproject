@@ -91,8 +91,8 @@ class AudioCLIP(CLIP):
         self.multilabel = multilabel
         self.pretrained = pretrained
 
-        self.logit_scale_ai = torch.nn.Parameter(torch.log(torch.ones([]) * 100), requires_grad=True)
-        self.logit_scale_at = torch.nn.Parameter(torch.log(torch.ones([]) * 100), requires_grad=True)
+        self.logit_scale_ai = torch.nn.Parameter(torch.log(torch.ones([]) * 100))
+        self.logit_scale_at = torch.nn.Parameter(torch.log(torch.ones([]) * 100))
 
         if isinstance(self.pretrained, str):
             self.load_state_dict(torch.load(self.pretrained, map_location='cpu'), strict=False)
