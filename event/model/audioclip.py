@@ -192,6 +192,7 @@ class AudioCLIP(CLIP):
         loss = self.loss_fn(logits, sample_weights)
         if audio is not None and loss is not None:
             loss = loss + self.audio.loss_ttf(self.device)
+        print(loss)
         print(loss.grad_fn)
         return (features, logits), loss
 
