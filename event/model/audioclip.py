@@ -112,7 +112,7 @@ class AudioCLIP(CLIP):
                 print('Audio weights loaded')
 
         self.embed_dim = embed_dim
-
+        self.linear = torch.nn.Linear(220500, 50)
     @property
     def device(self):
         return self.visual.conv1.weight.device
@@ -147,6 +147,8 @@ class AudioCLIP(CLIP):
         text_features = None
         sample_weights = None
 
+        audio_features = self.linear(audio)
+        print(audio_features.grad_fn, audio_features.shape)
         if audio is not None:
             audio_features = self.encode_audio(audio)
             print(audio_features.grad_fn, audio_features.shape)
@@ -168,7 +170,6 @@ class AudioCLIP(CLIP):
                     sum(self.class_weights[self.label_to_class_idx[label]] for label in entities)
                     for idx, entities in enumerate(text) if idx in batch_indices
                 ])
-        print(text_features.grad_fn, text_features.shape)
         features: ClipFeatures = (audio_features, image_features, text_features)
 
         logit_scale_ai = torch.clamp(self.logit_scale_ai.exp(), min=1.0, max=100.0)
@@ -187,7 +188,6 @@ class AudioCLIP(CLIP):
 
         if (image_features is not None) and (text_features is not None):
             logits_image_text = logit_scale_it * image_features @ text_features.T
-        print(logits_audio_text.grad_fn, logits_audio_text.shape)
         logits: ClipLogits = (logits_audio_image, logits_audio_text, logits_image_text)
 
         loss = self.loss_fn(logits, sample_weights)
@@ -214,10 +214,8 @@ class AudioCLIP(CLIP):
         )
 
         loss = torch.tensor(0.0, dtype=self.dtype, device=self.device)
-        #loss = 0
         num_modalities: int = 0
         scale = torch.tensor(1.0, dtype=self.dtype, device=self.device)
-        #scale = 1
         if logits_audio_image is not None:
             loss_ai = F.cross_entropy(
                 logits_audio_image, reference, weight=sample_weights
@@ -235,9 +233,6 @@ class AudioCLIP(CLIP):
             )
             loss = loss + loss_at
             num_modalities += 1
-        print(logits_audio_text.grad_fn, logits_audio_text.shape)
-        print(reference.grad_fn, reference.shape)
-        print(loss, loss.grad_fn)
         if logits_image_text is not None:
             loss_it = F.cross_entropy(
                 logits_image_text, reference, weight=sample_weights
