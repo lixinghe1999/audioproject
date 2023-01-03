@@ -109,6 +109,7 @@ if __name__ == "__main__":
 
 
     loss_best = 1
+    model.train()
     for e in range(20):
         Loss_list = []
         for i, batch in tqdm(enumerate(train_loader)):
