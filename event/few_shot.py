@@ -112,7 +112,7 @@ if __name__ == "__main__":
     model.train()
     for e in range(20):
         Loss_list = []
-        for i, batch in tqdm(enumerate(train_loader)):
+        for i, batch in enumerate(train_loader):
             loss = training_step(model, batch, optimizer)
             if i % 200 == 0 and i != 0:
                 print(loss)

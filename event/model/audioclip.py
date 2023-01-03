@@ -214,11 +214,11 @@ class AudioCLIP(CLIP):
             device=self.device
         )
 
-        #loss = torch.tensor(0.0, dtype=self.dtype, device=self.device)
-        loss = 0
+        loss = torch.tensor(0.0, dtype=self.dtype, device=self.device)
+        #loss = 0
         num_modalities: int = 0
-        #scale = torch.tensor(1.0, dtype=self.dtype, device=self.device)
-        scale = 1
+        scale = torch.tensor(1.0, dtype=self.dtype, device=self.device)
+        #scale = 1
         if logits_audio_image is not None:
             loss_ai = F.cross_entropy(
                 logits_audio_image, reference, weight=sample_weights
@@ -227,7 +227,8 @@ class AudioCLIP(CLIP):
             )
             loss = loss + loss_ai
             num_modalities += 1
-
+        print(loss)
+        print(loss.grad_fn)
         if logits_audio_text is not None:
             loss_at = F.cross_entropy(
                 logits_audio_text, reference, weight=sample_weights
@@ -236,7 +237,8 @@ class AudioCLIP(CLIP):
             )
             loss = loss + loss_at
             num_modalities += 1
-
+        print(loss)
+        print(loss.grad_fn)
         if logits_image_text is not None:
             loss_it = F.cross_entropy(
                 logits_image_text, reference, weight=sample_weights
