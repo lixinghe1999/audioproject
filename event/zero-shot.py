@@ -60,9 +60,7 @@ if __name__ == "__main__":
         ((_, _, text_features), _), _ = model(text=[
             [dataset.class_idx_to_label[class_idx]]
             for class_idx in sorted(dataset.class_idx_to_label.keys())
-        ], batch_indices=torch.arange(
-            len(dataset.class_idx_to_label), dtype=torch.int64, device=device
-        ))
+        ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
         text_features = text_features.unsqueeze(1).transpose(0, 1)
         for sample in loader:
             audio, text = sample
@@ -72,7 +70,7 @@ if __name__ == "__main__":
             audio_features = audio_features.unsqueeze(1)
 
             logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
-
+            print(logit_scale_at.shape)
             y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
             y = torch.zeros(
                 audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
