@@ -213,8 +213,8 @@ class AudioCLIP(CLIP):
             device=self.device
         )
 
-        loss = torch.tensor(0.0, dtype=self.dtype, device=self.device)
-
+        #loss = torch.tensor(0.0, dtype=self.dtype, device=self.device)
+        loss = 0
         num_modalities: int = 0
         #scale = torch.tensor(1.0, dtype=self.dtype, device=self.device)
         scale = 1
