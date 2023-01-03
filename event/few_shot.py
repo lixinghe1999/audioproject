@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 def training_step(model, batch, optimizer):
     model.train()
-    #optimizer.zero_grad()
+    optimizer.zero_grad()
     audio, image, text = batch
     if audio is not None:
         audio = audio.to(device)
@@ -99,13 +99,13 @@ if __name__ == "__main__":
                                          collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
-    #optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
-    model, param_groups = prepare_model(model)
+    optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
+    #model, param_groups = prepare_model(model)
     # for name, p in model.named_parameters():
     #     if p.requires_grad:
     #         print(name, p.shape)
-    optimizer = torch.optim.SGD(param_groups, **{**{
-      "lr": 5e-5, "momentum": 0.9,"nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})
+    #optimizer = torch.optim.SGD(param_groups, **{**{
+    #  "lr": 5e-5, "momentum": 0.9,"nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
 

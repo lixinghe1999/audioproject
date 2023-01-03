@@ -146,7 +146,6 @@ class AudioCLIP(CLIP):
         image_features = None
         text_features = None
         sample_weights = None
-        self.linear.requires_grad_()
         audio_features = self.linear(audio)
         print(audio_features.grad_fn, audio_features.shape)
         audio_features = audio + 1
