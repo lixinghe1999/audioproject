@@ -98,8 +98,8 @@ if __name__ == "__main__":
                                          collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
-    model, param_groups = prepare_model(model)
-    optimizer = torch.optim.SGD(params=param_groups, lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
+    #model, param_groups = prepare_model(model)
+    optimizer = torch.optim.SGD(params=model.parameters, lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
 
