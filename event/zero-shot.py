@@ -1,6 +1,5 @@
 import torch
 from model import AudioCLIP
-from utils.transforms import ToTensor1D
 from utils.datasets.esc50 import ESC50
 def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False):
     # calculate model confidence
@@ -47,8 +46,7 @@ if __name__ == "__main__":
     SAMPLE_RATE = 44100
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    audio_transforms = ToTensor1D()
-    dataset = ESC50('../dataset/ESC50', train=False, transform_audio=audio_transforms, sample_rate=SAMPLE_RATE)
+    dataset = ESC50('../dataset/ESC50', train=False, sample_rate=SAMPLE_RATE)
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=4, shuffle=True, drop_last=False,
                                          collate_fn=collate_fn)
 
@@ -70,7 +68,6 @@ if __name__ == "__main__":
             audio_features = audio_features.unsqueeze(1)
 
             logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
-            print(model.logit_scale_at.exp(), logit_scale_at, logit_scale_at.item())
             y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
             y = torch.zeros(
                 audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
@@ -86,5 +83,4 @@ if __name__ == "__main__":
             acc_3 += top3
             logs += log
         print(acc_1/len(loader), acc_3/len(loader))
-        #print(logs)
 

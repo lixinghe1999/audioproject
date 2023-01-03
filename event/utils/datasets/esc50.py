@@ -16,7 +16,7 @@ from typing import List
 from typing import Tuple
 from typing import Union
 from typing import Optional
-
+from utils.transforms import ToTensor1D
 
 class ESC50(td.Dataset):
 
@@ -25,7 +25,7 @@ class ESC50(td.Dataset):
                  sample_rate: int = 22050,
                  train: bool = True,
                  fold: Optional[int] = None,
-                 transform_audio=None,
+                 transform_audio=ToTensor1D(),
                  target_transform=None,
                  **_):
 
