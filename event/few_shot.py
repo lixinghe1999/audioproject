@@ -63,24 +63,24 @@ def prepare_model(model):
         {'params': [p for p in model.parameters() if p.requires_grad]}
     ]
 
-    # # enable fbsp-parameters
-    # for p in model.audio.fbsp.parameters():
-    #     p.requires_grad = True
-    #
-    # # enable logit scaling
-    # model.logit_scale_ai.requires_grad = True
-    # model.logit_scale_at.requires_grad = True
-    #
-    # # add fbsp- and logit scaling parameters to a separate group without weight decay
-    # param_groups.append({
-    #     'params': [
-    #                   p for p in model.audio.fbsp.parameters()
-    #               ] + [
-    #                   model.logit_scale_ai,
-    #                   model.logit_scale_at
-    #               ],
-    #     'weight_decay': 0.0
-    # })
+    # enable fbsp-parameters
+    for p in model.audio.fbsp.parameters():
+        p.requires_grad = True
+
+    # enable logit scaling
+    model.logit_scale_ai.requires_grad = True
+    model.logit_scale_at.requires_grad = True
+
+    # add fbsp- and logit scaling parameters to a separate group without weight decay
+    param_groups.append({
+        'params': [
+                      p for p in model.audio.fbsp.parameters()
+                  ] + [
+                      model.logit_scale_ai,
+                      model.logit_scale_at
+                  ],
+        'weight_decay': 0.0
+    })
     return model, param_groups
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         for class_idx in sorted(test_dataset.class_idx_to_label.keys())
     ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
     text_features = text_features.unsqueeze(1).transpose(0, 1)
-    for e in range(20):
+    for e in range(50):
         Loss_list = []
         for i, batch in tqdm(enumerate(train_loader)):
             loss = training_step(model, batch, optimizer)
