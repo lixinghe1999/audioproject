@@ -100,9 +100,9 @@ if __name__ == "__main__":
                                          drop_last=False, collate_fn=collate_fn)
     optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
     # model, param_groups = prepare_model(model)
-    # for name, p in model.named_parameters():
-    #     if p.requires_grad:
-    #         print(name, p.shape)
+    for name, p in model.named_parameters():
+        if p.requires_grad:
+            print(name, p.shape)
     # optimizer = torch.optim.SGD(param_groups, **{**{
     #   "lr": 5e-5, "momentum": 0.9,"nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
