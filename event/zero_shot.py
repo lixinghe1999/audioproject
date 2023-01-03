@@ -24,17 +24,28 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False)
             print(query + ', ' + results)
     return top1_a/num_audio, top3_a/num_audio, log
 def collate_fn(batch):
-    batch_audio, batch_text = zip(*batch)
+    batch_audio, batch_image, batch_text = zip(*batch)
+
+    keep_ids = [idx for idx, (_, _) in enumerate(zip(batch_audio, batch_image))]
 
     if not all(audio is None for audio in batch_audio):
+        batch_audio = [batch_audio[idx] for idx in keep_ids]
         batch_audio = torch.stack(batch_audio)
     else:
         batch_audio = None
+
+    if not all(image is None for image in batch_image):
+        batch_image = [batch_image[idx] for idx in keep_ids]
+        batch_image = torch.stack(batch_image)
+    else:
+        batch_image = None
+
     if not all(text is None for text in batch_text):
-        batch_text = [idx for idx in batch_text]
+        batch_text = [batch_text[idx] for idx in keep_ids]
     else:
         batch_text = None
-    return batch_audio, batch_text
+
+    return batch_audio, batch_image, batch_text
 def eval_step(batch, model):
     audio, _, text = batch
     audio = audio.to(device)
