@@ -92,7 +92,7 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     train_dataset = ESC50('../dataset/ESC50', train=True, sample_rate=SAMPLE_RATE)
     test_dataset = ESC50('../dataset/ESC50', train=False, sample_rate=SAMPLE_RATE)
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True, drop_last=False,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=32, shuffle=True, drop_last=False,
                                          collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         acc_1 = 0; acc_3 = 0
         with torch.no_grad():
             for batch in test_loader:
-                y_pred, y = eval_step(batch, model, text_features, device)
+                y_pred, y = eval_step(batch, model, text_features, test_dataset, device)
                 top1, top3, log = zero_shot_eval(y_pred, y, test_dataset.class_idx_to_label, print_result=False)
                 acc_1 += top1
                 acc_3 += top3

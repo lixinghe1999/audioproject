@@ -23,7 +23,7 @@ def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False)
             results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
             print(query + ', ' + results)
     return top1_a/num_audio, top3_a/num_audio, log
-def eval_step(batch, model, text_features, device):
+def eval_step(batch, model, text_features, dataset, device):
     audio, _, text = batch
     audio = audio.to(device)
     ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
         text_features = text_features.unsqueeze(1).transpose(0, 1)
         for batch in loader:
-            y_pred, y = eval_step(batch, model, text_features, device)
+            y_pred, y = eval_step(batch, model, text_features, dataset, device)
             top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
             acc_1 += top1
             acc_3 += top3
