@@ -62,9 +62,6 @@ def prepare_model(model):
     param_groups = [
         {'params': [p for p in model.parameters() if p.requires_grad]}
     ]
-    for name, p in model.named_parameters():
-        if p.requires_grad:
-            print(name, p.shape)
 
     # # enable fbsp-parameters
     # for p in model.audio.fbsp.parameters():
@@ -101,10 +98,13 @@ if __name__ == "__main__":
                                          collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
-    #model, param_groups = prepare_model(model)
     optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
-    # optimizer = torch.optim.SGD(param_groups, **{**{
-    #   "lr": 5e-5, "momentum": 0.9,"nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})
+    model, param_groups = prepare_model(model)
+    for name, p in model.named_parameters():
+        if p.requires_grad:
+            print(name, p.shape)
+    optimizer = torch.optim.SGD(param_groups, **{**{
+      "lr": 5e-5, "momentum": 0.9,"nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
 
