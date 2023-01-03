@@ -22,7 +22,7 @@ def training_step(model, batch, optimizer):
     optimizer.step(None)
     return loss.item()
 def collate_fn(batch):
-    batch_audio, _, batch_text = zip(*batch)
+    batch_audio, batch_image, batch_text = zip(*batch)
 
     if not all(audio is None for audio in batch_audio):
         batch_audio = torch.stack(batch_audio)
@@ -32,7 +32,7 @@ def collate_fn(batch):
         batch_text = [idx for idx in batch_text]
     else:
         batch_text = None
-    return batch_audio, _, batch_text
+    return batch_audio, batch_image, batch_text
 
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
