@@ -12,14 +12,6 @@ def training_step(model, batch, optimizer):
         audio = audio.to(device)
     if image is not None:
         image = image.to(device)
-    print(audio[..., :3])
-    linear = torch.nn.Linear(220500, 50).to(device)
-    a = linear(audio)
-    print(a.shape, a.grad_fn)
-    a = torch.rand((1, 20))
-    linear = torch.nn.Linear(20, 5)
-    b = linear(a)
-    print(b, b.grad_fn)
     batch_indices = torch.arange(audio.shape[0], dtype=torch.int64, device=device)
     _, loss = model(audio, image, text, batch_indices)
 
@@ -104,13 +96,13 @@ if __name__ == "__main__":
                                          collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
-    optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
-    #model, param_groups = prepare_model(model)
+    #optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
+    model, param_groups = prepare_model(model)
     # for name, p in model.named_parameters():
     #     if p.requires_grad:
     #         print(name, p.shape)
-    #optimizer = torch.optim.SGD(param_groups, **{**{
-    #  "lr": 5e-5, "momentum": 0.9,"nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})
+    optimizer = torch.optim.SGD(param_groups, **{**{
+     "lr": 5e-5, "momentum": 0.9,"nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
 

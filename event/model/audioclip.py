@@ -112,7 +112,6 @@ class AudioCLIP(CLIP):
                 print('Audio weights loaded')
 
         self.embed_dim = embed_dim
-        self.linear = torch.nn.Linear(220500, 50)
     @property
     def device(self):
         return self.visual.conv1.weight.device
@@ -146,15 +145,9 @@ class AudioCLIP(CLIP):
         image_features = None
         text_features = None
         sample_weights = None
-        audio_features = self.linear(audio)
-        print(audio_features.grad_fn, audio_features.shape)
-        audio_features = audio + 1
-        print(audio_features.grad_fn, audio_features.shape)
         if audio is not None:
             audio_features = self.encode_audio(audio)
-            print(audio_features.grad_fn, audio_features.shape)
             audio_features = audio_features / audio_features.norm(dim=-1, keepdim=True)
-        print(audio_features.grad_fn, audio_features.shape)
         if image is not None:
             image_features = self.encode_image(image)
             image_features = image_features / image_features.norm(dim=-1, keepdim=True)
