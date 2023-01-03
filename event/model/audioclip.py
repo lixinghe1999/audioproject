@@ -91,8 +91,8 @@ class AudioCLIP(CLIP):
         self.multilabel = multilabel
         self.pretrained = pretrained
 
-        self.logit_scale_ai = torch.nn.Parameter(torch.log(torch.ones([]) * 100))
-        self.logit_scale_at = torch.nn.Parameter(torch.log(torch.ones([]) * 100))
+        self.logit_scale_ai = torch.nn.Parameter(torch.log(torch.ones([]) * 100), requires_grad=True)
+        self.logit_scale_at = torch.nn.Parameter(torch.log(torch.ones([]) * 100), requires_grad=True)
 
         if isinstance(self.pretrained, str):
             self.load_state_dict(torch.load(self.pretrained, map_location='cpu'), strict=False)
@@ -216,8 +216,8 @@ class AudioCLIP(CLIP):
         loss = torch.tensor(0.0, dtype=self.dtype, device=self.device)
 
         num_modalities: int = 0
-        scale = torch.tensor(1.0, dtype=self.dtype, device=self.device)
-
+        #scale = torch.tensor(1.0, dtype=self.dtype, device=self.device)
+        scale = 1
         if logits_audio_image is not None:
             loss_ai = F.cross_entropy(
                 logits_audio_image, reference, weight=sample_weights
