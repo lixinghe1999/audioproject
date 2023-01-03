@@ -62,25 +62,28 @@ def prepare_model(model):
     param_groups = [
         {'params': [p for p in model.parameters() if p.requires_grad]}
     ]
+    for p in model.parameters():
+        if p.requires_grad:
+            print(p)
 
-    # enable fbsp-parameters
-    for p in model.audio.fbsp.parameters():
-        p.requires_grad = True
-
-    # enable logit scaling
-    model.logit_scale_ai.requires_grad = True
-    model.logit_scale_at.requires_grad = True
-
-    # add fbsp- and logit scaling parameters to a separate group without weight decay
-    param_groups.append({
-        'params': [
-                      p for p in model.audio.fbsp.parameters()
-                  ] + [
-                      model.logit_scale_ai,
-                      model.logit_scale_at
-                  ],
-        'weight_decay': 0.0
-    })
+    # # enable fbsp-parameters
+    # for p in model.audio.fbsp.parameters():
+    #     p.requires_grad = True
+    #
+    # # enable logit scaling
+    # model.logit_scale_ai.requires_grad = True
+    # model.logit_scale_at.requires_grad = True
+    #
+    # # add fbsp- and logit scaling parameters to a separate group without weight decay
+    # param_groups.append({
+    #     'params': [
+    #                   p for p in model.audio.fbsp.parameters()
+    #               ] + [
+    #                   model.logit_scale_ai,
+    #                   model.logit_scale_at
+    #               ],
+    #     'weight_decay': 0.0
+    # })
     return model, param_groups
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
