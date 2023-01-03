@@ -25,16 +25,25 @@ def training_step(model, batch, optimizer):
 def collate_fn(batch):
     batch_audio, batch_image, batch_text = zip(*batch)
 
+    keep_ids = [idx for idx, (_, _) in enumerate(zip(batch_audio, batch_image))]
+
     if not all(audio is None for audio in batch_audio):
+        batch_audio = [batch_audio[idx] for idx in keep_ids]
         batch_audio = torch.stack(batch_audio)
     else:
         batch_audio = None
+
+    if not all(image is None for image in batch_image):
+        batch_image = [batch_image[idx] for idx in keep_ids]
+        batch_image = torch.stack(batch_image)
+    else:
+        batch_image = None
+
     if not all(text is None for text in batch_text):
-        batch_text = [idx for idx in batch_text]
+        batch_text = [batch_text[idx] for idx in keep_ids]
     else:
         batch_text = None
     return batch_audio, batch_image, batch_text
-
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
 
