@@ -63,24 +63,24 @@ def prepare_model(model):
         {'params': [p for p in model.parameters() if p.requires_grad]}
     ]
 
-    # enable fbsp-parameters
-    for p in model.audio.fbsp.parameters():
-        p.requires_grad = True
-
-    # enable logit scaling
-    model.logit_scale_ai.requires_grad = True
-    model.logit_scale_at.requires_grad = True
-
-    # add fbsp- and logit scaling parameters to a separate group without weight decay
-    param_groups.append({
-        'params': [
-                      p for p in model.audio.fbsp.parameters()
-                  ] + [
-                      model.logit_scale_ai,
-                      model.logit_scale_at
-                  ],
-        'weight_decay': 0.0
-    })
+    # # enable fbsp-parameters
+    # for p in model.audio.fbsp.parameters():
+    #     p.requires_grad = True
+    #
+    # # enable logit scaling
+    # model.logit_scale_ai.requires_grad = True
+    # model.logit_scale_at.requires_grad = True
+    #
+    # # add fbsp- and logit scaling parameters to a separate group without weight decay
+    # param_groups.append({
+    #     'params': [
+    #                   p for p in model.audio.fbsp.parameters()
+    #               ] + [
+    #                   model.logit_scale_ai,
+    #                   model.logit_scale_at
+    #               ],
+    #     'weight_decay': 0.0
+    # })
     return model, param_groups
 if __name__ == "__main__":
     torch.set_grad_enabled(False)
@@ -98,8 +98,8 @@ if __name__ == "__main__":
                                          collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
-    #model, param_groups = prepare_model(model)
-    optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
+    model, param_groups = prepare_model(model)
+    optimizer = torch.optim.SGD(params=param_groups, lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
 
