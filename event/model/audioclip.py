@@ -150,7 +150,7 @@ class AudioCLIP(CLIP):
         if audio is not None:
             audio_features = self.encode_audio(audio)
             audio_features = audio_features / audio_features.norm(dim=-1, keepdim=True)
-
+        print(audio_features.grad_fn, audio_features.shape)
         if image is not None:
             image_features = self.encode_image(image)
             image_features = image_features / image_features.norm(dim=-1, keepdim=True)
@@ -167,7 +167,7 @@ class AudioCLIP(CLIP):
                     sum(self.class_weights[self.label_to_class_idx[label]] for label in entities)
                     for idx, entities in enumerate(text) if idx in batch_indices
                 ])
-
+        print(text_features.grad_fn, text_features.shape)
         features: ClipFeatures = (audio_features, image_features, text_features)
 
         logit_scale_ai = torch.clamp(self.logit_scale_ai.exp(), min=1.0, max=100.0)
