@@ -12,10 +12,14 @@ def training_step(model, batch, optimizer):
         audio = audio.to(device)
     if image is not None:
         image = image.to(device)
+    print(audio[..., :3])
     linear = torch.nn.Linear(220500, 50).to(device)
     a = linear(audio)
-    print(a.shape)
-    print(a.grad_fn)
+    print(a.shape, a.grad_fn)
+    a = torch.rand((1, 20))
+    linear = torch.nn.Linear(20, 5).to(device)
+    b = linear(a)
+    print(b.shape, b.grad_fn)
     batch_indices = torch.arange(audio.shape[0], dtype=torch.int64, device=device)
     _, loss = model(audio, image, text, batch_indices)
 
