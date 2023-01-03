@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 def training_step(model, batch, optimizer):
     model.train()
-    optimizer.zero_grad()
+    #optimizer.zero_grad()
     audio, image, text = batch
     if audio is not None:
         audio = audio.to(device)
