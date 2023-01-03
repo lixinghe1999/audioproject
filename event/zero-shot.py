@@ -50,7 +50,7 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     audio_transforms = ToTensor1D()
     dataset = ESC50('../dataset/ESC50', train=False, transform_audio=audio_transforms, sample_rate=SAMPLE_RATE)
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=True, collate_fn=collate_fn)
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=4, shuffle=True, collate_fn=collate_fn)
 
     with torch.no_grad():
         acc_1 = 0
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             audio_features = audio_features.unsqueeze(1)
 
             logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
-            print(logit_scale_at.shape, logit_scale_at)
+            print(logit_scale_at.shape, logit_scale_at, logit_scale_at.item())
             print(audio_features.shape, text_features.shape)
             y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
             y = torch.zeros(
