@@ -16,7 +16,7 @@ def training_step(model, batch, optimizer):
     linear = torch.nn.Linear(220500, 50).to(device)
     a = linear(audio)
     print(a.shape, a.grad_fn)
-    a = torch.rand((1, 20))
+    a = torch.rand((1, 20)).to(device)
     linear = torch.nn.Linear(20, 5).to(device)
     b = linear(a)
     print(b.shape, b.grad_fn)
