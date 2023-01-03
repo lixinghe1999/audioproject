@@ -5,13 +5,13 @@ from utils.datasets.esc50 import ESC50
 def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False):
     # calculate model confidence
     num_audio = logits_audio_text.shape[0]
-    confidence = logits_audio_text.softmax(dim=0)
+    #confidence = logits_audio_text.softmax(dim=0)
     top1_a = 0
     top3_a = 0
     log = []
     for audio_idx in range(num_audio):
         # acquire Top-3 most similar results
-        conf_values, ids = confidence[audio_idx].topk(3)
+        conf_values, ids = logits_audio_text[audio_idx].topk(3)
         gt = y[audio_idx].item()
         if gt == ids[0]:
             top1_a += 1
