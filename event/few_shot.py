@@ -92,7 +92,7 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     train_dataset = ESC50('../dataset/ESC50', train=True, sample_rate=SAMPLE_RATE)
     test_dataset = ESC50('../dataset/ESC50', train=False, sample_rate=SAMPLE_RATE)
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=64, shuffle=True, drop_last=False,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True, drop_last=False,
                                          collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
