@@ -12,7 +12,7 @@ def training_step(model, batch, optimizer):
         audio = audio.to(device)
     if image is not None:
         image = image.to(device)
-    linear = torch.nn.Linear(220500, 50)
+    linear = torch.nn.Linear(220500, 50).to(device)
     a = linear(audio)
     print(a)
     print(a.grad_fn)
