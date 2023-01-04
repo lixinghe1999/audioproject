@@ -38,7 +38,7 @@ def eval_step(batch, model, text_features, dataset, device):
         class_ids = list(sorted([
             dataset.label_to_class_idx[lb] for lb in labels]))
         y[item_idx][class_ids] = 1
-    y_pred = y_pred.softmax(dim=-1).cpu()
+    y_pred = y_pred.cpu()
     y = y.argmax(dim=-1)
     return y_pred, y
 def collate_fn(batch):
