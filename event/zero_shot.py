@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     dataset = ESC50('../dataset/ESC50', train=False, sample_rate=SAMPLE_RATE)
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False, drop_last=False,
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=4, shuffle=False, drop_last=False,
                                          collate_fn=collate_fn)
     softmax_save = []
     with torch.no_grad():
@@ -97,5 +97,5 @@ if __name__ == "__main__":
             acc_3 += top3
             logs += log
         print(acc_1/len(loader), acc_3/len(loader))
-        np.save('16batch', np.stack(softmax_save))
+        np.save('4batch', np.stack(softmax_save))
 
