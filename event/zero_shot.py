@@ -79,6 +79,7 @@ if __name__ == "__main__":
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=1, batch_size=4, shuffle=False, drop_last=False,
                                          collate_fn=collate_fn)
     softmax_save = []
+    model.eval()
     with torch.no_grad():
         acc_1 = 0
         acc_3 = 0
