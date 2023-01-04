@@ -109,11 +109,9 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 16
+        BATCH_SIZE = 64
         lr = 0.001
         EPOCH = 20
-        ckpt = torch.load('pretrain/-13.428193207908764.pth')
-        model.load_state_dict(ckpt)
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
