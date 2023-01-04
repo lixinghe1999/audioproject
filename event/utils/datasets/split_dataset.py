@@ -7,7 +7,7 @@ def split_dataset(dataset, num):
     :return: [dataset_list], [corresponding type]
     '''
     type_list = []
-    dataset_list = random_split(dataset, [len(dataset) / num] * num)
+    dataset_list = random_split(dataset, [int(len(dataset) / num)] * num)
     for d in dataset_list:
         types = []
         for sample in d.data:
