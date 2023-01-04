@@ -150,7 +150,7 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
 
     predict, _ = model(noisy_mag, acc)
     predict = predict.cpu()
-    predict = F.pad(predict, (1, 0, 1, 321 - 257))
+    predict = F.pad(predict, (1, 0, 1, 321 - 257)).squeeze(1)
     predict = istft((predict, noisy_phase), 640, 320, 640, input_type="mag_phase").numpy()
     clean = clean.numpy()
     if data:
