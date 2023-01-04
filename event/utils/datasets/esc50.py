@@ -27,7 +27,7 @@ class ESC50(td.Dataset):
                  fold: Optional[int] = None,
                  transform_audio=ToTensor1D(),
                  target_transform=None,
-                 few_shot=None
+                 few_shot=None,
                  **_):
 
         super(ESC50, self).__init__()
