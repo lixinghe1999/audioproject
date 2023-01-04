@@ -70,9 +70,9 @@ def collate_fn(batch):
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
-    # MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
+    MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # MODEL_FILENAME = 'ESC50_Multimodal-Audio_ACLIP-CV1_ACLIP-CV1_performance=0.9550.pt'
-    MODEL_FILENAME = '[0.95, 0.995].pth'
+    #MODEL_FILENAME = '[0.95, 0.995].pth'
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
 
