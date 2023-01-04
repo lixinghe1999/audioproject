@@ -119,14 +119,13 @@ if __name__ == "__main__":
         mean_lost = np.mean(Loss_list)
         scheduler.step()
         acc_1 = 0; acc_3 = 0
-        with torch.no_grad():
-            for batch in test_loader:
-                y_pred, y = eval_step(batch, model, text_features, test_dataset, device)
-                top1, top3, log = zero_shot_eval(y_pred, y, test_dataset.class_idx_to_label, print_result=False)
-                acc_1 += top1
-                acc_3 += top3
-            metric = [acc_1 / len(test_loader), acc_3 / len(test_loader)]
-            print(metric, mean_lost)
+        for batch in test_loader:
+            y_pred, y = eval_step(batch, model, text_features, test_dataset, device)
+            top1, top3, log = zero_shot_eval(y_pred, y, test_dataset.class_idx_to_label, print_result=False)
+            acc_1 += top1
+            acc_3 += top3
+        metric = [acc_1 / len(test_loader), acc_3 / len(test_loader)]
+        print(metric, mean_lost)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
             loss_best = mean_lost
