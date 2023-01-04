@@ -105,7 +105,6 @@ class ESC50(td.Dataset):
 
         sample = self.data[index]
         filename: str = sample['audio']
-        print(filename)
         audio, sample_rate = librosa.load(filename, sr=sample['sample_rate'], mono=True)
         if audio.ndim == 1:
             audio = audio[:, np.newaxis]
