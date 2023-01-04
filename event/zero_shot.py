@@ -69,14 +69,15 @@ def collate_fn(batch):
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
-    MODEL_FILENAME = 'ESC50_Multimodal-Audio_ACLIP-CV1_ACLIP-CV1_performance=0.9550.pt'
-    #MODEL_FILENAME = '[0.87, 0.965].pth'
+    MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
+    # MODEL_FILENAME = 'ESC50_Multimodal-Audio_ACLIP-CV1_ACLIP-CV1_performance=0.9550.pt'
+    # MODEL_FILENAME = '[0.87, 0.965].pth'
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    dataset = ESC50('../dataset/ESC50', fold=5, train=False, sample_rate=SAMPLE_RATE)
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=4, shuffle=True, drop_last=False,
+    dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=4, shuffle=False, drop_last=False,
                                          collate_fn=collate_fn)
 
     with torch.no_grad():
