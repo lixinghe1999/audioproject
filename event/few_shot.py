@@ -92,8 +92,8 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
     dataset_list, type_list = split_dataset(train_dataset, 10)
-    for d in dataset_list:
-        print(len(dataset_list), type_list)
+    for i in range(10):
+        print(len(dataset_list[i]), type_list[i])
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
                                                drop_last=False, collate_fn=collate_fn)
