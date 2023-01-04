@@ -35,6 +35,7 @@ def inference(dataset, BATCH_SIZE, model, text=False):
     text_inference = text
     test_loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=False)
     Metric = []
+    model.eval()
     with torch.no_grad():
         for sample in test_loader:
             text, clean, noise, acc = parse_sample(sample, text=text_inference)

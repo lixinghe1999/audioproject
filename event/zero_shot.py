@@ -72,7 +72,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     # MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # MODEL_FILENAME = 'ESC50_Multimodal-Audio_ACLIP-CV1_ACLIP-CV1_performance=0.9550.pt'
-    MODEL_FILENAME = '[0.87, 0.965].pth'
+    MODEL_FILENAME = '[0.95, 0.995].pth'
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
 
@@ -80,7 +80,6 @@ if __name__ == "__main__":
     dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False, drop_last=False,
                                          collate_fn=collate_fn)
-    softmax_save = []
     acc_1 = 0
     acc_3 = 0
     logs = []
@@ -92,12 +91,8 @@ if __name__ == "__main__":
     text_features = text_features.unsqueeze(1).transpose(0, 1)
     for batch in loader:
         y_pred, y = eval_step(batch, model, text_features, dataset, device)
-        softmax_save.append(y_pred.numpy())
         top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
         acc_1 += top1
         acc_3 += top3
         logs += log
     print(acc_1/len(loader), acc_3/len(loader))
-    softmax_save = np.concatenate(softmax_save)
-    np.save('4batch', softmax_save)
-
