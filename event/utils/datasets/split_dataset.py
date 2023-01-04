@@ -10,6 +10,7 @@ def split_dataset(dataset, num):
     dataset_list = []
     for i in range(num):
         d = Subset(dataset, np.arange(i, (i+1) * int(len(dataset) / num)))
+        print(len(d))
         dataset_list.append(d)
         types = []
         for sample in dataset.data[i: (i+1) * int(len(dataset) / num)]:
