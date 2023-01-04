@@ -7,7 +7,7 @@ from dataset import NoisyCleanSet, EMSBDataset
 import json
 
 from fullsubnet import fullsubnet
-from new_vibvoice import vibvoice
+from vibvoice import vibvoice
 from conformer import TSCNet
 from SEANet import SEANet
 from voicefilter import voicefilter
@@ -125,14 +125,14 @@ if __name__ == "__main__":
         plt.savefig('loss.png')
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
-        BATCH_SIZE = 8
+        BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 10
         dvector = None
         rir = 'json/rir.json'
-        ckpt_dir = 'pretrain/sudormrf'
-        #ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf_spk.pth'
+        ckpt_dir = 'pretrain/vibvoice'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        #ckpt_name = 'pretrain/sudormrf_spk.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
         model.load_state_dict(ckpt_start)
@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
         ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
         model.load_state_dict(ckpt)
-        evaluation = False
+        evaluation = True
         if evaluation:
             for p in people:
                 dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
