@@ -1,6 +1,7 @@
 import torch
 from model import AudioCLIP
 from utils.datasets.esc50 import ESC50
+from utils.datasets.split_dataset import split_dataset
 from zero_shot import zero_shot_eval, eval_step
 import numpy as np
 from tqdm import tqdm
@@ -89,8 +90,10 @@ if __name__ == "__main__":
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=5)
-    print(len(train_dataset))
+    train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
+    dataset_list, type_list = split_dataset(train_dataset, 10)
+    for d in dataset_list:
+        print(len(dataset_list), type_list)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
                                                drop_last=False, collate_fn=collate_fn)
@@ -108,7 +111,7 @@ if __name__ == "__main__":
         for class_idx in sorted(test_dataset.class_idx_to_label.keys())
     ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
     text_features = text_features.unsqueeze(1).transpose(0, 1)
-    for e in range(50):
+    for e in range(0):
         Loss_list = []
         for i, batch in tqdm(enumerate(train_loader)):
             loss = training_step(model, batch, optimizer)
