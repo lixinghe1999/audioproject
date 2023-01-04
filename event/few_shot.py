@@ -92,11 +92,11 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True, drop_last=False,
-                                         collate_fn=collate_fn)
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
+                                               drop_last=False, collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
-    #optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
+    # optimizer = torch.optim.SGD(params=model.parameters(), lr=5e-5, momentum=0.9, nesterov=True, weight_decay=5e-4)
     model, param_groups = prepare_model(model)
     optimizer = torch.optim.SGD(param_groups, **{**{
      "lr": 5e-5, "momentum": 0.9, "nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})

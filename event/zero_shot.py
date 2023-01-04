@@ -1,15 +1,13 @@
 import torch
 from model import AudioCLIP
 from utils.datasets.esc50 import ESC50
-def zero_shot_eval(logits_audio_text, y, class_idx_to_label, print_result=False):
+def zero_shot_eval(y_pred, y, class_idx_to_label, print_result=False):
     # calculate model confidence
-    num_audio = logits_audio_text.shape[0]
-    top1_a = 0
-    top3_a = 0
-    log = []
+    num_audio = y_pred.shape[0]
+    top1_a = 0; top3_a = 0; log = []
     for audio_idx in range(num_audio):
         # acquire Top-3 most similar results
-        conf_values, ids = logits_audio_text[audio_idx].topk(3)
+        conf_values, ids = y_pred[audio_idx].topk(3)
         gt = y[audio_idx].item()
         if gt == ids[0]:
             top1_a += 1
@@ -40,7 +38,6 @@ def eval_step(batch, model, text_features, dataset, device):
             dataset.label_to_class_idx[lb] for lb in labels]))
         y[item_idx][class_ids] = 1
     y_pred = y_pred.softmax(dim=-1).cpu()
-    print(y_pred[0, :])
     y = y.argmax(dim=-1)
     return y_pred, y
 def collate_fn(batch):
@@ -70,8 +67,8 @@ def collate_fn(batch):
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
-    MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
-    # MODEL_FILENAME = 'ESC50_Multimodal-Audio_ACLIP-CV1_ACLIP-CV1_performance=0.9550.pt'
+    # MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
+    MODEL_FILENAME = 'ESC50_Multimodal-Audio_ACLIP-CV1_ACLIP-CV1_performance=0.9550.pt'
     # MODEL_FILENAME = '[0.87, 0.965].pth'
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
