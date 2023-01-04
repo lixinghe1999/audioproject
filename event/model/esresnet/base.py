@@ -165,7 +165,7 @@ class Bottleneck(torch.nn.Module):
         return out
 
 
-class ResNetWithAttention(it.AbstractNet):
+class ResNetWithAttention(torch.nn.Module):
 
     """
     CREDITS: https://github.com/pytorch/vision
