@@ -59,45 +59,33 @@ class ESC50(td.Dataset):
             self.class_idx_to_label[idx] = label
         self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
 
-        # self.target_transform = target_transform
-
     @staticmethod
     def load_meta(path_to_csv: str) -> pd.DataFrame:
         meta = pd.read_csv(path_to_csv)
 
         return meta
 
-    @staticmethod
-    def _load_worker(idx: int, filename: str, sample_rate: Optional[int] = None) -> Tuple[int, int, np.ndarray]:
-        wav, sample_rate = librosa.load(filename, sr=sample_rate, mono=True)
-
-        if wav.ndim == 1:
-            wav = wav[:, np.newaxis]
-
-        wav = wav.T * 32768.0
-
-        return idx, sample_rate, wav.astype(np.float32)
-
-    def load_data(self, meta: pd.DataFrame, base_path: str):
-        items_to_load = dict()
-
+    def load_data(self, meta: pd.DataFrame, base_path: str, few_shot=None):
+        class_count = dict()
         for idx, row in meta.iterrows():
             if row['fold'] in self.folds_to_load:
-                items_to_load[idx] = os.path.join(base_path, row['filename']), self.sample_rate
-
-        items_to_load = [(idx, path, sample_rate) for idx, (path, sample_rate) in items_to_load.items()]
-        for item in items_to_load:
-            idx, path, sample_rate = item
-            row = meta.loc[idx]
-            self.data.append({
-                        'audio': path,
-                        'sample_rate': sample_rate,
-                        'target': row['target'],
-                        'category': row['category'].replace('_', ' '),
-                        'fold': row['fold'],
-                        'esc10': row['esc10']
-                    })
-        return items_to_load
+                if few_shot is None:
+                    pass
+                elif row['target'] in class_count:
+                    if class_count[row['target']] >= few_shot:
+                        continue
+                self.data.append({
+                    'audio': os.path.join(base_path, row['filename']),
+                    'sample_rate': self.sample_rate,
+                    'target': row['target'],
+                    'category': row['category'].replace('_', ' '),
+                    'fold': row['fold'],
+                    'esc10': row['esc10']
+                })
+                if row['target'] in class_count:
+                    class_count[row['target']] += 1
+                else:
+                    class_count[row['target']] = 1
 
     def __getitem__(self, index: int):
         if not (0 <= index < len(self)):
@@ -117,4 +105,3 @@ class ESC50(td.Dataset):
 
     def __len__(self) -> int:
         return len(self.data)
-        #return 16

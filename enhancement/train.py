@@ -71,7 +71,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 500 == 0 and i != 0:
+            if i % 1000 == 0 and i != 0:
                 print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
@@ -103,9 +103,6 @@ if __name__ == "__main__":
     model_name = args.model
     model = globals()[model_name]().to(device)
     people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
-
-    # discriminator = MultiScaleDiscriminator().to(device)
-    # model = torch.nn.DataParallel(model, device_ids=[1])
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
