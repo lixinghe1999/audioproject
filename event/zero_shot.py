@@ -99,5 +99,5 @@ if __name__ == "__main__":
             logs += log
         print(acc_1/len(loader), acc_3/len(loader))
         softmax_save = np.concatenate(softmax_save)
-        np.save('16batch', softmax_save)
+        np.save('4batch', softmax_save)
 
