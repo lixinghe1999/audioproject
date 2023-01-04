@@ -8,6 +8,7 @@ def training_step(model, batch, optimizer):
     model.train()
     optimizer.zero_grad()
     audio, image, text = batch
+    print(audio.shape)
     if audio is not None:
         audio = audio.to(device)
     if image is not None:
