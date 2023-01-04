@@ -9,8 +9,7 @@ def split_dataset(dataset, num):
     type_list = []
     dataset_list = []
     for i in range(num):
-        print(i, (i+1) * int(len(dataset) / num))
-        d = Subset(dataset, list(range(i, (i+1) * int(len(dataset) / num))))
+        d = Subset(dataset, list(range(i * int(len(dataset) / num), (i+1) * int(len(dataset) / num))))
         print(len(d))
         dataset_list.append(d)
         types = []
