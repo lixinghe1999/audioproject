@@ -27,6 +27,7 @@ class ESC50(td.Dataset):
                  fold: Optional[int] = None,
                  transform_audio=ToTensor1D(),
                  target_transform=None,
+                 few_shot=None
                  **_):
 
         super(ESC50, self).__init__()
@@ -51,7 +52,7 @@ class ESC50(td.Dataset):
             self.folds_to_load -= self.folds_to_load - {fold}
 
         self.data = list()
-        self.load_data(meta, os.path.join(root, 'audio'))
+        self.load_data(meta, os.path.join(root, 'audio'), few_shot)
         self.class_idx_to_label = dict()
         for row in self.data:
             idx = row['target']
