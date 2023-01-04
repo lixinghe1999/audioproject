@@ -76,6 +76,7 @@ if __name__ == "__main__":
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     dataset = ESC50('../dataset/ESC50', train=False, sample_rate=SAMPLE_RATE)
+    dataset = dataset[:16]
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False, drop_last=False,
                                          collate_fn=collate_fn)
     softmax_save = []
