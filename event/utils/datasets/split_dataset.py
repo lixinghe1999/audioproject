@@ -1,5 +1,5 @@
 from torch.utils.data import random_split, Subset
-
+import numpy as np
 def split_dataset(dataset, num):
     '''
     :param dataset: the torch.utils.data - dataset
@@ -9,7 +9,7 @@ def split_dataset(dataset, num):
     type_list = []
     dataset_list = []
     for i in range(num):
-        d = dataset[i: (i+1) * int(len(dataset) / num)]
+        d = Subset(dataset, np.arange(i, (i+1) * int(len(dataset) / num)))
         dataset_list.append(d)
         types = []
         for sample in dataset.data[i: (i+1) * int(len(dataset) / num)]:
