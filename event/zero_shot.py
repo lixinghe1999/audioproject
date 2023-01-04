@@ -23,23 +23,25 @@ def zero_shot_eval(y_pred, y, class_idx_to_label, print_result=False):
             print(query + ', ' + results)
     return top1_a/num_audio, top3_a/num_audio, log
 def eval_step(batch, model, text_features, dataset, device):
-    audio, _, text = batch
-    audio = audio.to(device)
-    ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
-    torch.arange(audio.shape[0], dtype=torch.int64, device=device))
-    audio_features = audio_features.unsqueeze(1)
+    model.eval()
+    with torch.no_grad():
+        audio, _, text = batch
+        audio = audio.to(device)
+        ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
+        torch.arange(audio.shape[0], dtype=torch.int64, device=device))
+        audio_features = audio_features.unsqueeze(1)
 
-    logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
-    y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
-    y = torch.zeros(
-        audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
-    )
-    for item_idx, labels in enumerate(text):
-        class_ids = list(sorted([
-            dataset.label_to_class_idx[lb] for lb in labels]))
-        y[item_idx][class_ids] = 1
-    y_pred = y_pred.cpu()
-    y = y.argmax(dim=-1)
+        logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
+        y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
+        y = torch.zeros(
+            audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
+        )
+        for item_idx, labels in enumerate(text):
+            class_ids = list(sorted([
+                dataset.label_to_class_idx[lb] for lb in labels]))
+            y[item_idx][class_ids] = 1
+        y_pred = y_pred.cpu()
+        y = y.argmax(dim=-1)
     return y_pred, y
 def collate_fn(batch):
     batch_audio, batch_image, batch_text = zip(*batch)
@@ -75,29 +77,27 @@ if __name__ == "__main__":
     SAMPLE_RATE = 44100
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    dataset = ESC50('../dataset/ESC50', train=False, sample_rate=SAMPLE_RATE)
+    dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=1, batch_size=4, shuffle=False, drop_last=False,
                                          collate_fn=collate_fn)
     softmax_save = []
-    model.eval()
-    with torch.no_grad():
-        acc_1 = 0
-        acc_3 = 0
-        logs = []
-        # We only compute the text features once
-        ((_, _, text_features), _), _ = model(text=[
-            [dataset.class_idx_to_label[class_idx]]
-            for class_idx in sorted(dataset.class_idx_to_label.keys())
-        ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
-        text_features = text_features.unsqueeze(1).transpose(0, 1)
-        for batch in loader:
-            y_pred, y = eval_step(batch, model, text_features, dataset, device)
-            softmax_save.append(y_pred.numpy())
-            top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
-            acc_1 += top1
-            acc_3 += top3
-            logs += log
-        print(acc_1/len(loader), acc_3/len(loader))
-        softmax_save = np.concatenate(softmax_save)
-        np.save('4batch', softmax_save)
+    acc_1 = 0
+    acc_3 = 0
+    logs = []
+    # We only compute the text features once
+    ((_, _, text_features), _), _ = model(text=[
+        [dataset.class_idx_to_label[class_idx]]
+        for class_idx in sorted(dataset.class_idx_to_label.keys())
+    ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
+    text_features = text_features.unsqueeze(1).transpose(0, 1)
+    for batch in loader:
+        y_pred, y = eval_step(batch, model, text_features, dataset, device)
+        softmax_save.append(y_pred.numpy())
+        top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
+        acc_1 += top1
+        acc_3 += top3
+        logs += log
+    print(acc_1/len(loader), acc_3/len(loader))
+    softmax_save = np.concatenate(softmax_save)
+    np.save('4batch', softmax_save)
 
