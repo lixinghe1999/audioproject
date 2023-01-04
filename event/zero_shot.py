@@ -97,5 +97,7 @@ if __name__ == "__main__":
             acc_3 += top3
             logs += log
         print(acc_1/len(loader), acc_3/len(loader))
-        np.save('4batch', np.stack(softmax_save))
+        softmax_save = np.array(softmax_save)
+        print(softmax_save.shape)
+        np.save('4batch', softmax_save)
 
