@@ -91,11 +91,11 @@ if __name__ == "__main__":
         text_features = text_features.unsqueeze(1).transpose(0, 1)
         for batch in loader:
             y_pred, y = eval_step(batch, model, text_features, dataset, device)
-            softmax_save.append(y_pred)
+            softmax_save.append(y_pred.numpy)
             top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
             acc_1 += top1
             acc_3 += top3
             logs += log
         print(acc_1/len(loader), acc_3/len(loader))
-        np.save('16batch', np.array(softmax_save))
+        np.save('16batch', np.stack(softmax_save))
 
