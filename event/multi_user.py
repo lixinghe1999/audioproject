@@ -42,7 +42,7 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
             ckpt_best = model.audio.state_dict()
             loss_best = mean_lost
             metric_best = metric
-    print('the final result:', metric_best)
+    print('the final result for one user:', metric_best)
     torch.save(ckpt_best, 'assets/' + str(metric_best) + '.pt')
     return metric_best
 if __name__ == "__main__":
@@ -59,8 +59,9 @@ if __name__ == "__main__":
     test_dataset_list = split_dataset_type(test_dataset, type_list)
     metric = []
     for tr, te in zip(train_dataset_list, test_dataset_list):
-        metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
-        metric.append(metric_best)
-    metric = np.stack(metric)
-    print('mean top1, top3 accuracy', np.mean(metric, axis=0))
+        print(len(tr), len(te))
+    #     metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
+    #     metric.append(metric_best)
+    # metric = np.stack(metric)
+    # print('mean top1, top3 accuracy', np.mean(metric, axis=0))
 
