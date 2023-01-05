@@ -12,7 +12,7 @@ def split_dataset(dataset, num):
     random_index = torch.randperm(len(dataset), dtype=int)
     for i in range(num):
         sel_index = random_index[i * int(len(dataset) / num): (i+1) * int(len(dataset) / num)]
-        print(sel_index)
+        print(type(sel_index[0]))
         d = Subset(dataset, sel_index)
         dataset_list.append(d)
         types = []
