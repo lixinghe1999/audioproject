@@ -33,7 +33,7 @@ if __name__ == "__main__":
         for class_idx in sorted(test_dataset.class_idx_to_label.keys())
     ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
     text_features = text_features.unsqueeze(1).transpose(0, 1)
-    for e in range(0):
+    for e in range(1):
         Loss_list = []
         for i, batch in tqdm(enumerate(train_loader)):
             loss = training_step(model, batch, optimizer, device)
