@@ -1,6 +1,7 @@
 import torch
 from model import AudioCLIP
 from utils.datasets.esc50 import ESC50
+from utils.datasets.split_dataset import split_dataset, split_dataset_type
 from utils.train import training_step, prepare_model, collate_fn, zero_shot_eval, eval_step
 import numpy as np
 from tqdm import tqdm
@@ -14,6 +15,8 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
+
+    # train_dataset_list, type_list = split_dataset(train_dataset, 10)
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
                                                drop_last=False, collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
