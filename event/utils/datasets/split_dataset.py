@@ -10,10 +10,32 @@ def split_dataset(dataset, num):
     dataset_list = []
     for i in range(num):
         d = Subset(dataset, list(range(i * int(len(dataset) / num), (i+1) * int(len(dataset) / num))))
-        print(len(d))
         dataset_list.append(d)
         types = []
         for sample in dataset.data[i: (i+1) * int(len(dataset) / num)]:
             types.append(sample['target'])
         type_list.append(set(types))
     return dataset_list, type_list
+
+def split_dataset_type(dataset, type_list):
+    '''
+    :param dataset: the torch.utils.data - dataset
+    :param type_list: the corresponding type for each dataset
+    :return: dataset_list
+    '''
+    type_dict = dict()
+    for index, sample in enumerate(dataset.data):
+        target = sample['target']
+        if target in type_dict:
+            type_dict[target].append(index)
+        else:
+            type_dict[target] = [index]
+    dataset_list = []
+    for ts in type_list:
+        subset_slice = []
+        for t in ts:
+            subset_slice += type_dict[t]
+        d = Subset(dataset, subset_slice)
+        dataset_list.append(d)
+    return dataset_list
+
