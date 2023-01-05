@@ -44,7 +44,7 @@ if __name__ == "__main__":
             acc_1 += top1
             acc_3 += top3
         metric = [acc_1 / len(test_loader), acc_3 / len(test_loader)]
-        print('epoch ' + str(e) + ' ' + metric, mean_lost)
+        print('epoch ' + str(e) + ' ', metric, mean_lost)
         if mean_lost < loss_best:
             ckpt_best = model.audio.state_dict()
             loss_best = mean_lost
