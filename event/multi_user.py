@@ -59,9 +59,9 @@ if __name__ == "__main__":
     test_dataset_list = split_dataset_type(test_dataset, type_list)
     metric = []
     for tr, te in zip(train_dataset_list, test_dataset_list):
-        print(len(tr), len(te))
-    #     metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
-    #     metric.append(metric_best)
-    # metric = np.stack(metric)
-    # print('mean top1, top3 accuracy', np.mean(metric, axis=0))
+        #print(len(tr), len(te))
+        metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
+        metric.append(metric_best)
+    metric = np.stack(metric)
+    print('mean top1, top3 accuracy', np.mean(metric, axis=0))
 
