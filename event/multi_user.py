@@ -44,6 +44,7 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
             metric_best = metric
     print('the final result:', metric_best)
     torch.save(ckpt_best, 'assets/' + str(metric_best) + '.pt')
+    return metric_best
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
@@ -56,7 +57,10 @@ if __name__ == "__main__":
     num_users = 40
     train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     test_dataset_list = split_dataset_type(test_dataset, type_list)
+    metric = []
     for tr, te in zip(train_dataset_list, test_dataset_list):
-        #print(len(tr), len(te))
-        fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
+        metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
+        metric.append(metric_best)
+    metric = np.stack(metric)
+    print('mean top1, top3 accuracy', np.mean(metric, axis=0))
 
