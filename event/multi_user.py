@@ -48,13 +48,12 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
-    # derived from ESResNeXt
     SAMPLE_RATE = 44100
 
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
 
-    num_users = 10
+    num_users = 40
     train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     test_dataset_list = split_dataset_type(test_dataset, type_list)
     for tr, te in zip(train_dataset_list, test_dataset_list):
