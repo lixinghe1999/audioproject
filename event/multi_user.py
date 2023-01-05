@@ -39,7 +39,7 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
         metric = [acc_1 / len(test_loader), acc_3 / len(test_loader)]
         if mean_lost < loss_best:
             # print(metric, mean_lost)
-            ckpt_best = model.state_dict()
+            ckpt_best = model.audio.state_dict()
             loss_best = mean_lost
             metric_best = metric
     print('the final result:', metric_best)
@@ -57,6 +57,6 @@ if __name__ == "__main__":
     train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     test_dataset_list = split_dataset_type(test_dataset, type_list)
     for tr, te in zip(train_dataset_list, test_dataset_list):
-        print(len(tr), len(te))
-        #fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
+        #print(len(tr), len(te))
+        fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
 
