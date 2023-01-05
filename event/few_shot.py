@@ -30,9 +30,9 @@ if __name__ == "__main__":
         for class_idx in sorted(test_dataset.class_idx_to_label.keys())
     ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
     text_features = text_features.unsqueeze(1).transpose(0, 1)
-    for e in range(10):
+    for e in range(20):
         Loss_list = []
-        for i, batch in tqdm(enumerate(train_loader)):
+        for i, batch in enumerate(train_loader):
             loss = training_step(model, batch, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
@@ -44,9 +44,9 @@ if __name__ == "__main__":
             acc_1 += top1
             acc_3 += top3
         metric = [acc_1 / len(test_loader), acc_3 / len(test_loader)]
-        print(metric, mean_lost)
+        print('epoch ' + str(e) + ' ' + metric, mean_lost)
         if mean_lost < loss_best:
-            ckpt_best = model.state_dict()
+            ckpt_best = model.audio.state_dict()
             loss_best = mean_lost
             metric_best = metric
         torch.save(ckpt_best, 'assets/' + str(metric_best) + '.pt')
