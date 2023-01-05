@@ -24,7 +24,7 @@ if __name__ == "__main__":
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
 
-    loss_best = 1
+    loss_best = 2
     ((_, _, text_features), _), _ = model(text=[
         [test_dataset.class_idx_to_label[class_idx]]
         for class_idx in sorted(test_dataset.class_idx_to_label.keys())
@@ -49,4 +49,4 @@ if __name__ == "__main__":
             ckpt_best = model.audio.state_dict()
             loss_best = mean_lost
             metric_best = metric
-        torch.save(ckpt_best, 'assets/' + str(metric_best) + '.pt')
+    torch.save(ckpt_best, 'assets/' + str(metric_best) + '.pt')
