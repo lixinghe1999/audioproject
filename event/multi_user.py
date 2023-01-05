@@ -57,5 +57,5 @@ if __name__ == "__main__":
     train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     test_dataset_list = split_dataset_type(test_dataset, type_list)
     for tr, te in zip(train_dataset_list, test_dataset_list):
-        print(len(tr), len(te))
+        fine_tune(tr, te, MODEL_FILENAME, device)
 
