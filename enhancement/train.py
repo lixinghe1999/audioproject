@@ -4,7 +4,6 @@ import torch
 torch.manual_seed(0)
 
 from dataset import NoisyCleanSet, EMSBDataset
-import json
 
 from fullsubnet import fullsubnet
 from new_vibvoice import vibvoice
@@ -14,7 +13,7 @@ from voicefilter import voicefilter
 from sudormrf import sudormrf
 
 import numpy as np
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import argparse
 from discriminator import Discriminator_time, Discriminator_spectrogram, MultiScaleDiscriminator, SingleScaleDiscriminator
 import model_zoo
@@ -61,7 +60,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
     if discriminator is not None:
         optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=lr, betas=(0.9, 0.999))
         #scheduler_disc = torch.optim.lr_scheduler.StepLR(optimizer_disc, step_size=5, gamma=0.5)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.2)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     loss_best = 100
     loss_curve = []
     ckpt_best = model.state_dict()
@@ -106,8 +105,8 @@ if __name__ == "__main__":
 
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 32
-        lr = 0.001
+        BATCH_SIZE = 48
+        lr = 0.0001
         EPOCH = 20
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
