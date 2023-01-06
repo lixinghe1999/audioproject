@@ -67,6 +67,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
 
     for e in range(EPOCH):
         Loss_list = []
+        model.train()
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
@@ -108,6 +109,9 @@ if __name__ == "__main__":
         BATCH_SIZE = 48
         lr = 0.0001
         EPOCH = 20
+        ckpt_name = 'pretrain/0.4765849430883166.pth'
+        ckpt_start = torch.load(ckpt_name)
+        model.load_state_dict(ckpt_start)
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
