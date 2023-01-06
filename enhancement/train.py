@@ -7,7 +7,7 @@ from dataset import NoisyCleanSet, EMSBDataset
 import json
 
 from fullsubnet import fullsubnet
-from vibvoice import vibvoice
+from new_vibvoice import vibvoice
 from conformer import TSCNet
 from SEANet import SEANet
 from voicefilter import voicefilter

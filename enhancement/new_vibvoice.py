@@ -63,7 +63,7 @@ class ResConv(nn.Module):
         return x
 
 class vibvoice(nn.Module):
-    def __init__(self, num_freq=321, lstm_dim=400, emb_dim=33, fc1_dim=600):
+    def __init__(self, num_freq=321, lstm_dim=400, emb_dim=33, fc1_dim=400):
         super(vibvoice, self).__init__()
         self.conv = ResConv()
         self.conv_acc = ResConv()
@@ -72,9 +72,9 @@ class vibvoice(nn.Module):
             4 * num_freq + 4 * emb_dim,
             lstm_dim,
             batch_first=True,
-            bidirectional=True)
+            bidirectional=False)
 
-        self.fc1 = nn.Linear(2*lstm_dim, fc1_dim)
+        self.fc1 = nn.Linear(lstm_dim, fc1_dim)
         self.fc2 = nn.Linear(fc1_dim, num_freq)
 
         self.transfer_function = np.load('transfer_function_EMSB_filter.npy')

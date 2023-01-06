@@ -134,11 +134,11 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
     clean_mag = clean_mag.to(device=device)
-    clean_mag = torch.unsqueeze(clean_mag[:, 1:257, 1:], 1)
-    clean, acc = model(noisy_mag, acc)
+    #clean_mag = torch.unsqueeze(clean_mag[:, 1:257, 1:], 1)
+    clean = model(noisy_mag, acc)
 
     loss = Spectral_Loss(clean, clean_mag)
-    loss += 0.1 * F.mse_loss(acc, clean_mag[:, :, :32, :])
+    #loss += 0.1 * F.mse_loss(acc, clean_mag[:, :, :32, :])
     loss.backward()
     optimizer.step()
     return loss.item()
@@ -148,9 +148,9 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
 
-    predict, _ = model(noisy_mag, acc)
+    predict = model(noisy_mag, acc)
     predict = predict.cpu()
-    predict = F.pad(predict, (1, 0, 1, 321 - 257)).squeeze(1)
+    #predict = F.pad(predict, (1, 0, 1, 321 - 257)).squeeze(1)
     predict = istft((predict, noisy_phase), 640, 320, 640, input_type="mag_phase").numpy()
     clean = clean.numpy()
     if data:
