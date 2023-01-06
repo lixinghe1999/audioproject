@@ -54,7 +54,7 @@ if __name__ == "__main__":
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
 
-    num_users = 40
+    num_users = 8
     train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     test_dataset_list = split_dataset_type(test_dataset, type_list)
     metric = []
