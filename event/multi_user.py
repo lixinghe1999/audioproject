@@ -47,7 +47,7 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
     return metric_best
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.set_device(1)
+    torch.cuda.set_device(0)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     SAMPLE_RATE = 44100
 
