@@ -15,7 +15,7 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
         "lr": 5e-5, "momentum": 0.9, "nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5}})
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
-    loss_best = 2
+    loss_best = 10
     ((_, _, text_features), _), _ = model(text=[
         [test_dataset.class_idx_to_label[class_idx]]
         for class_idx in sorted(test_dataset.class_idx_to_label.keys())
@@ -25,8 +25,6 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
         Loss_list = []
         for i, batch in enumerate(train_loader):
             loss = training_step(model, batch, optimizer, device)
-            if i % 200 == 0 and i != 0:
-                print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         scheduler.step()
@@ -63,7 +61,7 @@ if __name__ == "__main__":
     test_dataset_list = split_dataset_type(test_dataset, type_list)
     metric = []
     for tr, te in zip(train_dataset_list, test_dataset_list):
-        # print(len(tr), len(te))
+        print(len(tr), len(te))
         metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
         metric.append(metric_best)
     metric = np.stack(metric)
