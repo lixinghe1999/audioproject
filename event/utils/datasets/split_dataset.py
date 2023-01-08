@@ -1,6 +1,12 @@
 import torch
-from torch.utils.data import random_split, Subset
+from torch.utils.data import Subset
 import numpy as np
+def split_type(class_idx_to_label, num):
+    types = list(class_idx_to_label.keys())
+    types_list = []
+    for i in range(num):
+        types_list.append(types[i * int(len(types) / num): (i + 1) * int(len(types) / num)])
+    return  types_list
 def split_dataset(dataset, num):
     '''
     :param dataset: the torch.utils.data - dataset

@@ -1,7 +1,7 @@
 import torch
 from model import AudioCLIP
 from utils.datasets.esc50 import ESC50
-from utils.datasets.split_dataset import split_dataset, split_dataset_type
+from utils.datasets.split_dataset import split_dataset, split_dataset_type, split_type
 from utils.train import training_step, prepare_model, collate_fn, zero_shot_eval, eval_step
 import numpy as np
 def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
@@ -54,12 +54,16 @@ if __name__ == "__main__":
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
 
-    num_users = 8
-    train_dataset_list, type_list = split_dataset(train_dataset, num_users)
+    # num_users = 8
+    # train_dataset_list, type_list = split_dataset(train_dataset, num_users)
+    # test_dataset_list = split_dataset_type(test_dataset, type_list)
+    num_users = 10
+    type_list = split_type(train_dataset.class_idx_to_label, num_users)
+    train_dataset_list = split_dataset_type(train_dataset, type_list)
     test_dataset_list = split_dataset_type(test_dataset, type_list)
     metric = []
     for tr, te in zip(train_dataset_list, test_dataset_list):
-        #print(len(tr), len(te))
+        # print(len(tr), len(te))
         metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
         metric.append(metric_best)
     metric = np.stack(metric)
