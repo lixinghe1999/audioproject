@@ -15,7 +15,7 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
         "lr": 5e-5, "momentum": 0.9, "nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5}})
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
-    loss_best = 10
+    model.eval()
     ((_, _, text_features), _), _ = model(text=[
         [test_dataset.class_idx_to_label[class_idx]]
         for class_idx in sorted(test_dataset.class_idx_to_label.keys())
@@ -35,7 +35,9 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
             acc_1 += top1
             acc_3 += top3
         metric = [acc_1 / len(test_loader), acc_3 / len(test_loader)]
-        if mean_lost < loss_best:
+        if e == 0:
+            loss_best = mean_lost
+        if mean_lost <= loss_best:
             # print(metric, mean_lost)
             ckpt_best = model.audio.state_dict()
             loss_best = mean_lost
@@ -61,7 +63,6 @@ if __name__ == "__main__":
     test_dataset_list = split_dataset_type(test_dataset, type_list)
     metric = []
     for tr, te in zip(train_dataset_list, test_dataset_list):
-        print(len(tr), len(te))
         metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
         metric.append(metric_best)
     metric = np.stack(metric)
