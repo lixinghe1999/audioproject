@@ -139,9 +139,9 @@ if __name__ == "__main__":
         # print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
         # model.load_state_dict(checkpoint['model'])
 
-        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/DNStrain_noise.json', 'json/train_imu.json'],
+        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
                                         simulation=True, person=people, ratio=0.8, dvector=dvector, rir=rir)
-        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/DNStrain_noise.json', 'json/train_imu.json'],
+        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
                                           simulation=True, person=people, ratio=-0.2, dvector=dvector, rir=rir)
 
         # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
