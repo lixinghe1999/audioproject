@@ -38,7 +38,6 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
         if e == 0:
             loss_best = mean_lost
         if mean_lost <= loss_best:
-            # print(metric, mean_lost)
             ckpt_best = model.audio.state_dict()
             loss_best = mean_lost
             metric_best = metric
@@ -50,7 +49,6 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     SAMPLE_RATE = 44100
-
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
 

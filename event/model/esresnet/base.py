@@ -8,8 +8,6 @@ import torch.nn.functional as F
 
 import torchvision as tv
 
-import ignite_trainer as it
-
 from model.esresnet import attention
 from utils.transforms import scale
 

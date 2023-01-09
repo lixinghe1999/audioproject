@@ -118,3 +118,12 @@ def eval_step(batch, model, text_features, dataset, device):
         y_pred = y_pred.cpu()
         y = y.argmax(dim=-1)
     return y_pred, y
+def validate_one_model(model, dataset, text_features, device):
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False,
+                                              drop_last=False, collate_fn=collate_fn)
+    acc_1 = 0
+    for batch in loader:
+        y_pred, y = eval_step(batch, model, text_features, dataset, device)
+        top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
+        acc_1 += top1
+    return acc_1 / len(loader)
