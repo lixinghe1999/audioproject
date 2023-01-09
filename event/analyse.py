@@ -14,8 +14,6 @@ if __name__ == "__main__":
 
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
-    num_users = 10
-    type_list = split_type(train_dataset.class_idx_to_label, num_users)
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     model.eval()
@@ -24,8 +22,11 @@ if __name__ == "__main__":
         for class_idx in sorted(test_dataset.class_idx_to_label.keys())
     ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
     text_features = text_features.unsqueeze(1).transpose(0, 1).detach().cpu().numpy()
+
     cluster = np.empty(50)
-    perf = np.array([0.77, 0.54, 0.19, 0.5, 0.81, 0.77, 0.5, 0.75, 0.95, 0.71])
+    data = np.load('user_specific.npz')
+    perf = data['metric'][:, 0]
+    type_list = data['type_list']
     var = []
     for i, user_type in enumerate(type_list):
         cluster[user_type] = i
