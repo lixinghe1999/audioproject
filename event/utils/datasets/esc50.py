@@ -9,15 +9,13 @@ import numpy as np
 import pandas as pd
 
 import torch.utils.data as td
-
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Tuple
-from typing import Union
 from typing import Optional
-from utils.transforms import ToTensor1D
+import torchvision as tv
+class ToTensor1D(tv.transforms.ToTensor):
+    def __call__(self, tensor: np.ndarray):
+        tensor_2d = super(ToTensor1D, self).__call__(tensor[..., np.newaxis])
 
+        return tensor_2d.squeeze_(0)
 class ESC50(td.Dataset):
 
     def __init__(self,

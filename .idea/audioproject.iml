@@ -15,6 +15,7 @@
       <excludeFolder url="file://$MODULE_DIR$/identification" />
       <excludeFolder url="file://$MODULE_DIR$/transfer_function_EMSB" />
       <excludeFolder url="file://$MODULE_DIR$/transfer_function" />
+      <excludeFolder url="file://$MODULE_DIR$/event/BalanceFL-master/dataset" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (audioproject)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
