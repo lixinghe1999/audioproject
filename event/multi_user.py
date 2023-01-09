@@ -54,13 +54,13 @@ if __name__ == "__main__":
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
 
-    # num_users = 8
-    # train_dataset_list, type_list = split_dataset(train_dataset, num_users)
-    # test_dataset_list = split_dataset_type(test_dataset, type_list)
-    num_users = 30
-    type_list = split_type_random(train_dataset.class_idx_to_label, num_users, 5)
-    train_dataset_list = split_dataset_type(train_dataset, type_list)
+    num_users = 8
+    train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     test_dataset_list = split_dataset_type(test_dataset, type_list)
+    # num_users = 30
+    # type_list = split_type_random(train_dataset.class_idx_to_label, num_users, 5)
+    # train_dataset_list = split_dataset_type(train_dataset, type_list)
+    # test_dataset_list = split_dataset_type(test_dataset, type_list)
     metric = []
     for tr, te in zip(train_dataset_list, test_dataset_list):
         metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)

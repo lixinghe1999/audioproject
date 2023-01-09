@@ -31,7 +31,10 @@ if __name__ == "__main__":
     for i, user_type in enumerate(type_list):
         cluster[user_type] = i
         user_features = text_features[0, user_type]
-        var.append(np.mean(np.var(user_features, axis=0)))
+        user_var = np.mean(np.var(user_features, axis=0))
+        plt.plot(np.var(user_features, axis=0))
+        plt.show()
+        var.append(user_var)
     var = np.array(var)
     plt.scatter(var, perf)
     m, b = np.polyfit(var, perf, 1)
