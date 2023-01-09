@@ -1,0 +1,25 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+cff-version: 1.2.0
+title: >-
+  Finetune Wav2vec 2.0 For Speech
+  Recognition
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Le
+    family-names: Khanh
+    name-particle: Duy
+    email: khanhld218@uef.edu.vn
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.6540979
+repository-code: 'https://github.com/khanld/ASR-Wa2vec-Finetune'
+url: >-
+  https://github.com/khanld/ASR-Wa2vec-Finetune
+keywords:
+  - asr
+date-released: 2022-05-12
+doi: 10.5281/zenodo.6540979

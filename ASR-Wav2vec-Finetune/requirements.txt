@@ -1,0 +1,12 @@
+datasets==2.1.0
+huggingface_hub==0.5.1
+librosa==0.9.1
+numpy==1.22.0
+pandarallel==1.6.1
+pandas==1.4.2
+scikit_learn==1.0.2
+tensorflow==2.8.1
+toml==0.10.2
+torch==1.7.1
+tqdm==4.64.0
+transformers==4.18.0
