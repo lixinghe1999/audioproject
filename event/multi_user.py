@@ -43,7 +43,7 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
             loss_best = mean_lost
             metric_best = metric
     print('the best result for one user:', metric_best)
-    torch.save(ckpt_best, 'assets/' + str(metric_best) + '.pt')
+    # torch.save(ckpt_best, 'assets/' + str(metric_best) + '.pt')
     return metric_best
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -66,5 +66,6 @@ if __name__ == "__main__":
         metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
         metric.append(metric_best)
     metric = np.stack(metric)
+    np.savez('user_specific', type_list=np.array(type_list), metric=metric)
     print('mean top1, top3 accuracy', np.mean(metric, axis=0))
 

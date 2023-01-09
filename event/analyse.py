@@ -25,17 +25,18 @@ if __name__ == "__main__":
     ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
     text_features = text_features.unsqueeze(1).transpose(0, 1).detach().cpu().numpy()
     cluster = np.empty(50)
-    perf = np.array([0.66, 0.46, 0.19, 0.62, 0.85, 0.77, 0.72, 0.85, 0.95, 0.91])
+    perf = np.array([0.77, 0.54, 0.19, 0.5, 0.81, 0.77, 0.5, 0.75, 0.95, 0.71])
     var = []
     for i, user_type in enumerate(type_list):
         cluster[user_type] = i
         user_features = text_features[0, user_type]
         var.append(np.mean(np.var(user_features, axis=0)))
     var = np.array(var)
-    order = np.argsort(var)
-    plt.plot(var[order], perf[order])
+    plt.scatter(var, perf)
+    m, b = np.polyfit(var, perf, 1)
+    plt.plot(var, m * var + b)
     plt.show()
-    #
+
     # palette = sns.color_palette("bright", 10)
     # X_embedded = TSNE(n_components=2, learning_rate='auto', init='random').fit_transform(text_features[0])
     # sns.scatterplot(x=X_embedded[:, 0], y=X_embedded[:, 1], hue=cluster, legend='full', palette=palette)
