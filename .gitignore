@@ -7,3 +7,4 @@
 *.ckpt
 *.npz
 /.idea
+/event/FL/
