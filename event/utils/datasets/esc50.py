@@ -90,7 +90,7 @@ class ESC50(td.Dataset):
         filename: str = sample['audio']
         audio, sample_rate = librosa.load(filename, sr=sample['sample_rate'], mono=True)
         print(len(audio))
-        t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)
+        t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)[0]
         print(t_start)
         audio = audio[t_start:]
         if audio.ndim == 1:
