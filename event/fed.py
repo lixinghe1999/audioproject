@@ -273,7 +273,7 @@ class Fed_client(Process):
     """
 
     def __init__(
-            self, init_network, config, per_client_data, test_data,
+            self, init_network, config, train_data, test_data,
             state_list=None, state_dict_list=None, idx=None
     ):
 
@@ -306,9 +306,6 @@ class Fed_client(Process):
             self.fedprox = False
         self.mu = 0.05
 
-        self.client_weights = np.array([i for i in training_num_per_cls])
-        self.client_weights = self.client_weights / self.client_weights.sum()
-
         # per-client accuracy and loss
         self.acc = [0 for i in range(self.num_clients)]
         self.losses_cls = [-1 for i in range(self.num_clients)]
@@ -327,29 +324,18 @@ class Fed_client(Process):
                 self.train_loader_balanced.append(None)
                 self.local_num_per_cls.append(None)
             else:
-                backbone = copy.deepcopy(self.server_network["feat_model"])
-                classifier = copy.deepcopy(self.server_network["classifier"])
-                self.networks.append({"feat_model": backbone, "classifier": classifier})
-                self.optimizers.append(init_optimizers(self.networks[client_i], config))
-                optim_params_dict = {'params': self.networks[client_i]["classifier"].parameters(), 'lr': 0.001,
-                                     'momentum': 0.9, 'weight_decay': 0}
-                self.optimizers_stage2.append(torch.optim.SGD([optim_params_dict], ))
-
+                audio_network = copy.deepcopy(self.server_network.audio)
+                visual_network = copy.deepcopy(self.server_network.visual)
+                self.networks.append({"audio": audio_network, "visual": visual_network})
+                optimizer = torch.optim.SGD(self.networks[client_i]['audio'].parameters(), lr=5e-5,
+                                momentum=0.9, nesterov=True, weight_decay=5e-4)
+                self.optimizers.append(optimizer)
                 # dataloader
                 num_workers = 0
-                local_dataset = \
-                    local_client_dataset(per_client_data, per_client_label, config)
                 self.train_loaders.append(
                     torch.utils.data.DataLoader(
-                        local_dataset, batch_size=self.local_bs, shuffle=True,
-                        num_workers=num_workers, pin_memory=False)
-                )
-                self.train_loader_balanced.append(
-                    torch.utils.data.DataLoader(
-                        local_dataset, batch_size=self.local_bs, sampler=local_dataset.get_balanced_sampler(),
-                        num_workers=num_workers, pin_memory=False)
-                )
-                self.local_num_per_cls.append(local_dataset.class_sample_count)
+                        train_data, batch_size=self.local_bs, shuffle=True,
+                        num_workers=num_workers, pin_memory=False))
     def run(self):
         """
         client-side code

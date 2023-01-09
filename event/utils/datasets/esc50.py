@@ -1,8 +1,5 @@
 import os
-import warnings
-import multiprocessing as mp
-
-import tqdm
+import random
 import librosa
 
 import numpy as np
@@ -17,15 +14,14 @@ class ToTensor1D(tv.transforms.ToTensor):
 
         return tensor_2d.squeeze_(0)
 class ESC50(td.Dataset):
-
     def __init__(self,
                  root: str,
                  sample_rate: int = 22050,
                  train: bool = True,
                  fold: Optional[int] = None,
                  transform_audio=ToTensor1D(),
-                 target_transform=None,
                  few_shot=None,
+                 length=None,
                  **_):
 
         super(ESC50, self).__init__()
@@ -57,11 +53,11 @@ class ESC50(td.Dataset):
             label = row['category']
             self.class_idx_to_label[idx] = label
         self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
+        self.length = length
 
     @staticmethod
     def load_meta(path_to_csv: str) -> pd.DataFrame:
         meta = pd.read_csv(path_to_csv)
-
         return meta
 
     def load_data(self, meta: pd.DataFrame, base_path: str, few_shot=None):
@@ -93,6 +89,9 @@ class ESC50(td.Dataset):
         sample = self.data[index]
         filename: str = sample['audio']
         audio, sample_rate = librosa.load(filename, sr=sample['sample_rate'], mono=True)
+        t_start = random.sample(range(len(audio) - self.length * sample_rate), 1)
+        print(t_start)
+        audio = audio[t_start:]
         if audio.ndim == 1:
             audio = audio[:, np.newaxis]
         audio = (audio.T * 32768.0).astype(np.float32)

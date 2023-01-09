@@ -2,7 +2,7 @@
 
 fl_opt:
   rounds: 200
-  num_clients: 10   
+  num_clients: 4
   frac: 1       # the fraction of clients in each FL round
   local_ep: 5       # local epoch
   local_bs: 64       # local batch size
