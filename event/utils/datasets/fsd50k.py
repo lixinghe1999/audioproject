@@ -32,7 +32,6 @@ class FSD50K(td.Dataset):
             idx, label, mids = row
             self.class_idx_to_label[idx] = label
         self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
-        print(self.label_to_class_idx)
         self.length = length
 
         self.sample_rate = sample_rate
@@ -45,6 +44,7 @@ class FSD50K(td.Dataset):
             meta = pd.read_csv(os.path.join(root, 'FSD50K.ground_truth', 'eval.csv'))
             self.load_data(meta, os.path.join(root, 'FSD50K.eval_audio'), few_shot)
         self.transform = transform_audio
+
     def load_data(self, meta: pd.DataFrame, base_path: str, few_shot=None):
         class_count = dict()
         for idx, row in meta.iterrows():
@@ -71,7 +71,9 @@ class FSD50K(td.Dataset):
 
         sample = self.data[index]
         filename: str = sample['audio']
+        print(filename)
         audio, sample_rate = librosa.load(filename, sr=sample['sample_rate'], mono=True)
+
         t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)[0]
         audio = audio[t_start: t_start + self.length * sample_rate]
         if audio.ndim == 1:
