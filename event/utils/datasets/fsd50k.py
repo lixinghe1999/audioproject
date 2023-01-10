@@ -29,7 +29,7 @@ class FSD50K(td.Dataset):
 
         self.class_idx_to_label = dict()
         for idx, row in vocab.iterrows():
-            _, label, code = row
+            idx, label, mids = row
             self.class_idx_to_label[idx] = label
         self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
         self.length = length
@@ -53,16 +53,17 @@ class FSD50K(td.Dataset):
     def load_data(self, meta: pd.DataFrame, base_path: str, few_shot=None):
         class_count = dict()
         for idx, row in meta.iterrows():
-            if few_shot is None:
-                pass
-            elif row['target'] in class_count:
-                if class_count[row['target']] >= few_shot:
+            fname = row['fname']
+            label = row['labels'].split(',')[0]
+            target = self.label_to_class_idx[label]
+            if few_shot is not None and target in class_count:
+                if class_count[target] >= few_shot:
                     continue
             self.data.append({
-                'audio': os.path.join(base_path, row['fname'] + '.wav'),
+                'audio': os.path.join(base_path, fname + '.wav'),
                 'sample_rate': self.sample_rate,
-                'target': row['target'],
-                'category': row['mids'].split(','),
+                'target': target,
+                'category': label,
             })
             if row['target'] in class_count:
                 class_count[row['target']] += 1

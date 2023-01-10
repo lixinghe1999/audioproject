@@ -1,6 +1,7 @@
 import torch
 from model import AudioCLIP
 from utils.datasets.esc50 import ESC50
+from utils.datasets.fsd50k import FSD50K
 from utils.train import training_step, prepare_model, collate_fn, zero_shot_eval, eval_step
 import numpy as np
 from tqdm import tqdm
@@ -12,8 +13,11 @@ if __name__ == "__main__":
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=1)
-    test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
+    # train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=1)
+    # test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
+    train_dataset = FSD50K('../dataset/FSD50K', train=True, sample_rate=SAMPLE_RATE)
+    test_dataset = FSD50K('../dataset/FSD50K', train=False, sample_rate=SAMPLE_RATE)
+
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=8, shuffle=True,
                                                drop_last=False, collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=8, shuffle=False,
@@ -22,7 +26,6 @@ if __name__ == "__main__":
     optimizer = torch.optim.SGD(param_groups, **{**{
      "lr": 5e-5, "momentum": 0.9, "nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
-
 
     loss_best = 2
     ((_, _, text_features), _), _ = model(text=[
