@@ -4,7 +4,7 @@ from utils.datasets.esc50 import ESC50
 from utils.datasets.split_dataset import split_dataset, split_dataset_type, split_type, split_type_random
 from utils.train import training_step, prepare_model, collate_fn, zero_shot_eval, eval_step
 import numpy as np
-def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
+def fine_tune(tr, te, MODEL_FILENAME, test_dataset, text_features, device):
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     model, param_groups = prepare_model(model)
     train_loader = torch.utils.data.DataLoader(dataset=tr, num_workers=4, batch_size=16, shuffle=True,
@@ -15,12 +15,6 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, device):
         "lr": 5e-5, "momentum": 0.9, "nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5}})
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
-    model.eval()
-    ((_, _, text_features), _), _ = model(text=[
-        [test_dataset.class_idx_to_label[class_idx]]
-        for class_idx in sorted(test_dataset.class_idx_to_label.keys())
-    ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
-    text_features = text_features.unsqueeze(1).transpose(0, 1)
     for e in range(10):
         Loss_list = []
         for i, batch in enumerate(train_loader):
@@ -52,18 +46,28 @@ if __name__ == "__main__":
     train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
 
-    num_users = 8
-    train_dataset_list, type_list = split_dataset(train_dataset, num_users)
-    test_dataset_list = split_dataset_type(test_dataset, type_list)
-    # num_users = 30
-    # type_list = split_type_random(train_dataset.class_idx_to_label, num_users, 5)
-    # train_dataset_list = split_dataset_type(train_dataset, type_list)
+    model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
+    model.eval()
+    ((_, _, text_features), _), _ = model(text=[
+        [test_dataset.class_idx_to_label[class_idx]]
+        for class_idx in sorted(test_dataset.class_idx_to_label.keys())
+    ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
+    text_features = text_features.unsqueeze(1).transpose(0, 1)
+    # num_users = 8
+    # train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     # test_dataset_list = split_dataset_type(test_dataset, type_list)
+    num_users = 20
     metric = []
-    for tr, te in zip(train_dataset_list, test_dataset_list):
-        metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, device)
-        metric.append(metric_best)
+    whole_type = []
+    for group in [5, 10, 15]:
+        type_list = split_type_random(train_dataset.class_idx_to_label, num_users, group)
+        whole_type += type_list
+        train_dataset_list = split_dataset_type(train_dataset, type_list)
+        test_dataset_list = split_dataset_type(test_dataset, type_list)
+        for tr, te in zip(train_dataset_list, test_dataset_list):
+            metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, text_features, device)
+            metric.append(metric_best)
     metric = np.stack(metric)
-    np.savez('user_specific', type_list=np.array(type_list), metric=metric)
+    np.savez('user_specific', type_list=np.array(whole_type), metric=metric)
     print('mean top1, top3 accuracy', np.mean(metric, axis=0))
 
