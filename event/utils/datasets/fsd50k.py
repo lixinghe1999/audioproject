@@ -60,7 +60,7 @@ class FSD50K(td.Dataset):
                 if class_count[target] >= few_shot:
                     continue
             self.data.append({
-                'audio': os.path.join(base_path, fname + '.wav'),
+                'audio': os.path.join(base_path, str(fname) + '.wav'),
                 'sample_rate': self.sample_rate,
                 'target': target,
                 'category': label,
