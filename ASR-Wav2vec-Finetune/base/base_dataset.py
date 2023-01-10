@@ -3,13 +3,11 @@ import sys
 import re
 import librosa
 import numpy as np
-from pandarallel import pandarallel
 from typing import Dict, List
-
+import torch
 # For testing 
 sys.path.append('..')
 
-from sklearn.model_selection import train_test_split
 from utils.feature import load_wav
 from tqdm import tqdm
 from torch.utils.data import Dataset
@@ -17,7 +15,8 @@ from dataloader.dataset import Dataset as InstanceDataset
 
 
 class BaseDataset(Dataset):
-    def __init__(self, rank, dist, path, sr, delimiter, special_tokens, min_duration = -np.inf, max_duration = np.inf, preload_data = False, transform = None, nb_workers = 4):
+    def __init__(self, rank, dist, path, sr, delimiter, special_tokens,
+            min_duration = -np.inf, max_duration = np.inf, preload_data = False, transform = None, nb_workers = 4):
         self.rank = rank
         self.dist = dist
         self.sr = sr
@@ -29,8 +28,6 @@ class BaseDataset(Dataset):
         self.max_duration = max_duration
         self.df = self.load_data(path, delimiter)
         self.special_tokens = special_tokens
-        pandarallel.initialize(progress_bar=True, nb_workers = nb_workers)
-
         if min_duration != -np.inf or max_duration != np.inf:
             if self.rank == 0 and 'duration' not in self.df.columns:
                 print("\n*****Generate duration column*****")
@@ -42,7 +39,7 @@ class BaseDataset(Dataset):
                 print("\n*****Filter out invalid audio*****")
             mask = (self.df['duration'] <= self.max_duration) & (self.df['duration'] >= self.min_duration)
             self.df = self.df[mask]
-        self.df['transcript'] = self.df['transcript'].parallel_apply(self.remove_special_characters)
+        self.df['transcript'] = self.df['transcript'].apply(self.remove_special_characters)
     
         if self.preload_data:
             if self.rank == 0:
@@ -89,12 +86,13 @@ class BaseDataset(Dataset):
 
 if __name__ == '__main__':
     ds = BaseDataset(
-        path = '/content/drive/MyDrive/ASR Finetune/dataset/vivos/test.csv', 
-        sr = 16000, 
-        preload_data = False, 
-        val_size = None, 
+        rank=0,
+        dist=torch.distributed,
+        path = '../librispeech-100.txt',
+        sr=16000,
+        delimiter='|',
+        special_tokens={},
+        preload_data = False,
         transform = None)
     
     vocab_dict = ds.get_vocab_dict()
-    for k, v in vocab_dict.items():
-        print(f'{k} - {v}')

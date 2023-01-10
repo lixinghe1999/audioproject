@@ -1,9 +1,9 @@
 [meta]
 name = "ASR" 
-pretrained_path = "facebook/wav2vec2-base"
+pretrained_path = "wav2vec_small.pt"
 seed = 42
 epochs = 20
-save_dir = "saved/" 
+save_dir = "saved"
 gradient_accumulation_steps = 2
 use_amp = false # Whether to use Automatic Mixed Precision for speeding up - https://pytorch.org/docs/stable/amp.html
 device_ids = "0" # set the gpu devices on which you want to train your model
@@ -38,7 +38,7 @@ blocking = false # whether to wait until the model is uploaded (this will be ver
 [train_dataset]
 path = "base.base_dataset.BaseDataset"
     [train_dataset.args]
-    path = "/pass/your/train_dataset/path/here"
+    path = "librispeech-100.txt"
     preload_data = false
     delimiter = "|"
     # Only train audio files that have duration in range [min_duration, max_duration]
@@ -60,7 +60,7 @@ path = "base.base_dataset.BaseDataset"
 [val_dataset]
 path = "base.base_dataset.BaseDataset"
     [val_dataset.args]
-    path = "/pass/your/val_dataset/path/here"
+    path = "librispeech-dev.txt"
     preload_data = false
     delimiter = "|"
     nb_workers = 16

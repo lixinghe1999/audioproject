@@ -1,5 +1,5 @@
 from array import array
-from tensorflow.keras.utils import Progbar
+# from tensorflow.keras.utils import Progbar
 from typing import Dict
 
 class PBar:

@@ -32,8 +32,8 @@ if __name__ == "__main__":
         cluster[user_type] = i
         user_features = text_features[0, user_type]
         user_var = np.mean(np.var(user_features, axis=0))
-        plt.plot(np.var(user_features, axis=0))
-        plt.show()
+        # plt.plot(np.var(user_features, axis=0))
+        # plt.show()
         var.append(user_var)
     var = np.array(var)
     plt.scatter(var, perf)

@@ -6,7 +6,7 @@ import torch
 from base.base_trainer import BaseTrainer
 from tqdm import tqdm
 from torch.cuda.amp import autocast
-from logger.pbar import PBar
+# from logger.pbar import PBar
 from typing import Dict, Union
 
 class Trainer(BaseTrainer):
@@ -84,7 +84,7 @@ class Trainer(BaseTrainer):
         self.train_sampler.set_epoch(epoch)
         if self.rank == 0:
             print("Epoch {}: ".format(epoch+1))
-            pbar = PBar(self.steps_per_epoch, 10, stateful_metrics = self.stateful_metrics)
+            # pbar = PBar(self.steps_per_epoch, 10, stateful_metrics = self.stateful_metrics)
 
         if self.resume_step >= 0 and self.rank == 0:
             print("*****Load previous time steps******")

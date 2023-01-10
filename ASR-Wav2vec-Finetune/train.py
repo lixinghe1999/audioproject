@@ -37,7 +37,7 @@ def main(rank, world_size, config, resume, preload):
     gradient_accumulation_steps = config["meta"]["gradient_accumulation_steps"]
     use_amp = config["meta"]["use_amp"]
     max_clip_grad_norm = config["meta"]["max_clip_grad_norm"]
-    save_dir =  os.path.join(config["meta"]["save_dir"], config["meta"]['name'] + '/checkpoints')
+    save_dir = os.path.join(config["meta"]["save_dir"], config["meta"]['name'] + '/checkpoints')
     log_dir = os.path.join(config["meta"]["save_dir"], config["meta"]['name'] + '/log_dir')
     
     if rank == 0:
@@ -48,8 +48,9 @@ def main(rank, world_size, config, resume, preload):
             os.makedirs(log_dir)
             
         # Store config file
-        config_name = strftime("%Y-%m-%d %H:%M:%S", gmtime()).replace(' ', '_') + '.toml'
-        with open(os.path.join(config["meta"]["save_dir"], config["meta"]['name'] + '/' + config_name), 'w+') as f:
+        config_name = strftime("%Y-%m-%d %H-%M-%S", gmtime()).replace(' ', '_') + '.toml'
+        path = os.path.join(config["meta"]["save_dir"], config["meta"]['name'], config_name)
+        with open(path, 'w') as f:
             toml.dump(config, f)
             f.close()
 
@@ -172,8 +173,6 @@ def main(rank, world_size, config, resume, preload):
         max_clip_grad_norm = max_clip_grad_norm
     )
     trainer.train()
-
-
     cleanup()
 
 if __name__ == '__main__':
