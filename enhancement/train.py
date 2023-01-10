@@ -108,9 +108,9 @@ if __name__ == "__main__":
         EPOCH = 20
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector=None)
+                                ratio=1, rir=None, dvector=None)
         test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector=None)
+                                ratio=1, rir=None, dvector=None)
 
         ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, save_all=True)
         plt.plot(loss_curve)

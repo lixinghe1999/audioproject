@@ -26,33 +26,25 @@ class FSD50K(td.Dataset):
 
         super(FSD50K, self).__init__()
 
-        self.sample_rate = sample_rate
-        self.train = train
-        if self.train:
-            meta = self.load_meta(os.path.join(root, 'FSD.ground_truth', 'dev.csv'))
-        else:
-            meta = self.load_meta(os.path.join(root, 'FSD.ground_truth', 'eval.csv'))
-        if fold is None:
-            fold = 5
+        vocab = self.load_meta(os.path.join(root, 'FSD50K.ground_truth', 'vocabulary.csv'))
 
-        self.folds_to_load = set(meta['fold'])
-
-        if fold not in self.folds_to_load:
-            raise ValueError(f'fold {fold} does not exist')
-
-        self.transform = transform_audio
-
-
-
-        self.data = list()
-        self.load_data(meta, os.path.join(root, 'audio'), few_shot)
         self.class_idx_to_label = dict()
-        for row in self.data:
-            idx = row['target']
-            label = row['category']
+        for idx, row in vocab.iterrows():
+            _, label, code = row
             self.class_idx_to_label[idx] = label
         self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
         self.length = length
+
+        self.sample_rate = sample_rate
+        self.train = train
+        self.data = list()
+        if self.train:
+            meta = self.load_meta(os.path.join(root, 'FSD50K.ground_truth', 'dev.csv'))
+            self.load_data(meta, os.path.join(root, 'FSD50K.dev_audio'), few_shot)
+        else:
+            meta = self.load_meta(os.path.join(root, 'FSD50K.ground_truth', 'eval.csv'))
+            self.load_data(meta, os.path.join(root, 'FSD50K.eval_audio'), few_shot)
+        self.transform = transform_audio
 
     @staticmethod
     def load_meta(path_to_csv: str) -> pd.DataFrame:
@@ -62,24 +54,21 @@ class FSD50K(td.Dataset):
     def load_data(self, meta: pd.DataFrame, base_path: str, few_shot=None):
         class_count = dict()
         for idx, row in meta.iterrows():
-            if row['fold'] in self.folds_to_load:
-                if few_shot is None:
-                    pass
-                elif row['target'] in class_count:
-                    if class_count[row['target']] >= few_shot:
-                        continue
-                self.data.append({
-                    'audio': os.path.join(base_path, row['filename']),
-                    'sample_rate': self.sample_rate,
-                    'target': row['target'],
-                    'category': row['category'].replace('_', ' '),
-                    'fold': row['fold'],
-                    'esc10': row['esc10']
-                })
-                if row['target'] in class_count:
-                    class_count[row['target']] += 1
-                else:
-                    class_count[row['target']] = 1
+            if few_shot is None:
+                pass
+            elif row['target'] in class_count:
+                if class_count[row['target']] >= few_shot:
+                    continue
+            self.data.append({
+                'audio': os.path.join(base_path, row['fname'] + '.wav'),
+                'sample_rate': self.sample_rate,
+                'target': row['target'],
+                'category': row['mids'].split(','),
+            })
+            if row['target'] in class_count:
+                class_count[row['target']] += 1
+            else:
+                class_count[row['target']] = 1
 
     def __getitem__(self, index: int):
         if not (0 <= index < len(self)):
