@@ -48,7 +48,7 @@ class FSD50K(td.Dataset):
 
     @staticmethod
     def load_meta(path_to_csv: str) -> pd.DataFrame:
-        meta = pd.read_csv(path_to_csv)
+        meta = pd.read_csv(path_to_csv, header=None)
         return meta
 
     def load_data(self, meta: pd.DataFrame, base_path: str, few_shot=None):
