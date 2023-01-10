@@ -17,8 +17,8 @@ if __name__ == "__main__":
     # train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=1)
     # test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
 
-    train_dataset = UrbanSound8K('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, length=4)
-    test_dataset = UrbanSound8K('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE, length=4)
+    train_dataset = UrbanSound8K('../dataset/UrbanSound8K', fold=1, train=True, sample_rate=SAMPLE_RATE, length=4)
+    test_dataset = UrbanSound8K('../dataset/UrbanSound8K', fold=1, train=False, sample_rate=SAMPLE_RATE, length=4)
 
     # train_dataset = FSD50K('../dataset/FSD50K', train=True, sample_rate=SAMPLE_RATE)
     # test_dataset = FSD50K('../dataset/FSD50K', train=False, sample_rate=SAMPLE_RATE)
