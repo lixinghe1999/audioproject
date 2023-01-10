@@ -33,7 +33,7 @@ class UrbanSound8K(td.Dataset):
                  train: bool = True,
                  fold: Optional[int] = None,
                  mono: bool = False,
-                 transform_audio=ToTensor1D,
+                 transform_audio=ToTensor1D(),
                  length=5,
                  **_):
 
