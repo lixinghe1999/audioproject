@@ -65,10 +65,10 @@ class FSD50K(td.Dataset):
                 'target': target,
                 'category': label,
             })
-            if row['target'] in class_count:
-                class_count[row['target']] += 1
+            if target in class_count:
+                class_count[target] += 1
             else:
-                class_count[row['target']] = 1
+                class_count[target] = 1
 
     def __getitem__(self, index: int):
         if not (0 <= index < len(self)):
