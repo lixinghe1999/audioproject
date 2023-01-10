@@ -34,7 +34,7 @@ if __name__ == "__main__":
     text_features = text_features.unsqueeze(1).transpose(0, 1)
     for e in range(20):
         Loss_list = []
-        for i, batch in tqdm(enumerate(train_loader)):
+        for i, batch in enumerate(tqdm(train_loader)):
             loss = training_step(model, batch, optimizer, device)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
