@@ -56,10 +56,10 @@ if __name__ == "__main__":
     # num_users = 8
     # train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     # test_dataset_list = split_dataset_type(test_dataset, type_list)
-    num_users = 20
+    num_users = 1
     metric = []
     whole_type = []
-    for group in [3, 6, 9, 12]:
+    for group in [3]:
         type_list = split_type_random(train_dataset.class_idx_to_label, num_users, group)
         whole_type += type_list
         train_dataset_list = split_dataset_type(train_dataset, type_list)
@@ -68,6 +68,6 @@ if __name__ == "__main__":
             metric_best = fine_tune(tr, te, MODEL_FILENAME, test_dataset, text_features, device)
             metric.append(metric_best)
     metric = np.stack(metric)
-    np.savez('user_specific', type_list=np.array(whole_type), metric=metric)
+    np.savez('user_specific', type_list=whole_type, metric=metric, allow_pickle=True)
     print('mean top1, top3 accuracy', np.mean(metric, axis=0))
 
