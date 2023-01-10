@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.set_device(1)
+    torch.cuda.set_device(0)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # derived from ESResNeXt
     SAMPLE_RATE = 44100
@@ -18,9 +18,9 @@ if __name__ == "__main__":
     train_dataset = FSD50K('../dataset/FSD50K', train=True, sample_rate=SAMPLE_RATE)
     test_dataset = FSD50K('../dataset/FSD50K', train=False, sample_rate=SAMPLE_RATE)
 
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=2, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
                                                drop_last=False, collate_fn=collate_fn)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=2, shuffle=False,
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
                                          drop_last=False, collate_fn=collate_fn)
     model, param_groups = prepare_model(model)
     optimizer = torch.optim.SGD(param_groups, **{**{
