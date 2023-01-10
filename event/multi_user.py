@@ -43,7 +43,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     SAMPLE_RATE = 44100
-    train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=None)
+    train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=10)
     test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     num_users = 20
     metric = []
     whole_type = []
-    for group in [5, 10, 15]:
+    for group in [3, 6, 9, 12]:
         type_list = split_type_random(train_dataset.class_idx_to_label, num_users, group)
         whole_type += type_list
         train_dataset_list = split_dataset_type(train_dataset, type_list)
