@@ -21,7 +21,7 @@ class ESC50(td.Dataset):
                  fold: Optional[int] = None,
                  transform_audio=ToTensor1D(),
                  few_shot=None,
-                 length=None,
+                 length=5,
                  **_):
 
         super(ESC50, self).__init__()
@@ -89,8 +89,12 @@ class ESC50(td.Dataset):
         sample = self.data[index]
         filename: str = sample['audio']
         audio, sample_rate = librosa.load(filename, sr=sample['sample_rate'], mono=True)
-        t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)[0]
-        audio = audio[t_start: t_start + self.length * sample_rate]
+
+        if len(audio) >= self.length * sample_rate:
+            t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)[0]
+            audio = audio[t_start: t_start + self.length * sample_rate]
+        else:
+            audio = np.pad(audio, (0, self.length * sample_rate - len(audio)))
         if audio.ndim == 1:
             audio = audio[:, np.newaxis]
         audio = (audio.T * 32768.0).astype(np.float32)

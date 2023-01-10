@@ -71,7 +71,6 @@ class FSD50K(td.Dataset):
 
         sample = self.data[index]
         filename: str = sample['audio']
-        print(filename)
         audio, sample_rate = librosa.load(filename, sr=sample['sample_rate'], mono=True)
 
         if len(audio) >= self.length * sample_rate:
