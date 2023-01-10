@@ -123,7 +123,7 @@ if __name__ == "__main__":
         plt.savefig('loss.png')
     elif args.mode == 1:
         # This script is for model fine-tune on self-collected dataset, by default-with all noises
-        BATCH_SIZE = 16
+        BATCH_SIZE = 8
         lr = 0.0001
         EPOCH = 10
         dvector = None
