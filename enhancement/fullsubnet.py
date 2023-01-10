@@ -42,7 +42,7 @@ def drop_band(input, num_groups=2):
 
 class fullsubnet(BaseModel):
     def __init__(self,
-                 num_freqs=257,
+                 num_freqs=256,
                  look_ahead=2,
                  sequence_model="LSTM",
                  fb_num_neighbors=0,
