@@ -133,6 +133,13 @@ if __name__ == "__main__":
         #ckpt_name = 'pretrain/fullsubnet_our.pth'
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
+
+        from collections import OrderedDict
+        new_state_dict = OrderedDict()
+        for k, v in ckpt_start.items():
+            name = k[7:]  # remove 'module.' of dataparallel
+            new_state_dict[name] = v
+        ckpt_start = new_state_dict
         model.load_state_dict(ckpt_start)
 
         # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
