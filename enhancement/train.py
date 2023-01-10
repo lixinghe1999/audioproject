@@ -68,7 +68,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 20 == 0 and i != 0:
+            if i % 100 == 0 and i != 0:
                 print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
         BATCH_SIZE = 16
-        lr = 0.0001
+        lr = 0.00001
         EPOCH = 20
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
