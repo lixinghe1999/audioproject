@@ -32,6 +32,7 @@ class FSD50K(td.Dataset):
             idx, label, mids = row
             self.class_idx_to_label[idx] = label
         self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
+        print(self.label_to_class_idx)
         self.length = length
 
         self.sample_rate = sample_rate
