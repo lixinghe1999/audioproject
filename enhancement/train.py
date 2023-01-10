@@ -43,7 +43,7 @@ def inference(dataset, BATCH_SIZE, model, text=False):
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
 
-def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=False):
+def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     if isinstance(dataset, list):
         # with pre-defined train/ test
         train_dataset, test_dataset = dataset
@@ -57,9 +57,6 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=Fa
                                    pin_memory=True)
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
-    if discriminator is not None:
-        optimizer_disc = torch.optim.AdamW(params=discriminator.parameters(), lr=lr, betas=(0.9, 0.999))
-        #scheduler_disc = torch.optim.lr_scheduler.StepLR(optimizer_disc, step_size=5, gamma=0.5)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     loss_best = 100
     loss_curve = []
@@ -115,7 +112,7 @@ if __name__ == "__main__":
         test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
 
-        ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None, save_all=True)
+        ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
     elif args.mode == 1:
@@ -152,7 +149,7 @@ if __name__ == "__main__":
         # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
 
 
-        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, discriminator=None)
+        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
         model.load_state_dict(ckpt)
         evaluation = True
         if evaluation:
