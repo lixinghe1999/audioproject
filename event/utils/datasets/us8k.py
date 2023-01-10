@@ -1,19 +1,13 @@
 import os
-import warnings
-import multiprocessing as mp
 
-import tqdm
 import librosa
-import soundfile as sf
 
 import numpy as np
 import pandas as pd
 
 import torch.utils.data as td
-
+import random
 import sklearn.model_selection as skms
-
-import utils.transforms as transforms
 
 from typing import Any
 from typing import Dict
@@ -21,6 +15,11 @@ from typing import List
 from typing import Tuple
 from typing import Optional
 
+def scale(old_value, old_min, old_max, new_min, new_max):
+    old_range = (old_max - old_min)
+    new_range = (new_max - new_min)
+    new_value = (((old_value - old_min) * new_range) / old_range) + new_min
+    return new_value
 
 class UrbanSound8K(td.Dataset):
 
@@ -31,7 +30,7 @@ class UrbanSound8K(td.Dataset):
                  fold: Optional[int] = None,
                  mono: bool = False,
                  transform_audio=None,
-                 target_transform=None,
+                 length=5,
                  **_):
 
         super(UrbanSound8K, self).__init__()
@@ -63,7 +62,6 @@ class UrbanSound8K(td.Dataset):
         self.mono = mono
 
         self.transform = transform_audio
-        self.target_transform = target_transform
 
         self.data: Dict[str, Dict[str, Any]] = dict()
         self.indices = dict()
@@ -75,25 +73,7 @@ class UrbanSound8K(td.Dataset):
             label = row['category']
             self.class_idx_to_label[idx] = label
         self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
-
-    @staticmethod
-    def _load_worker(fn: str, path_to_file: str, sample_rate: int, mono: bool = False) -> Tuple[str, int, np.ndarray]:
-        wav, sample_rate_ = sf.read(
-            path_to_file,
-            dtype='float32',
-            always_2d=True
-        )
-
-        wav = librosa.resample(wav.T, sample_rate_, sample_rate)
-
-        if wav.shape[0] == 1 and not mono:
-            wav = np.concatenate((wav, wav), axis=0)
-
-        wav = wav[:, :sample_rate * 4]
-        wav = transforms.scale(wav, wav.min(), wav.max(), -32768.0, 32767.0)
-
-        return fn, sample_rate, wav.astype(np.float32)
-
+        self.length = length
     def load_data(self):
         # read metadata
         meta = pd.read_csv(
@@ -101,7 +81,6 @@ class UrbanSound8K(td.Dataset):
             sep=',',
             index_col='slice_file_name'
         )
-
         for row_idx, (fn, row) in enumerate(meta.iterrows()):
             path = os.path.join(self.root, 'audio', 'fold{}'.format(row['fold']), fn)
             self.data[fn] = path, self.sample_rate, self.mono
@@ -132,18 +111,10 @@ class UrbanSound8K(td.Dataset):
         self.data = {fn: vals for fn, vals in self.data.items() if fn in files_to_load}
         self.indices = {idx: fn for idx, fn in enumerate(self.data)}
 
-        num_processes = os.cpu_count()
-        warnings.filterwarnings('ignore')
-        with mp.Pool(processes=num_processes) as pool:
-            tqdm.tqdm.write(f'Loading {self.__class__.__name__} (train={self.train})')
-            for fn, sample_rate, wav in pool.starmap(
-                func=self._load_worker,
-                iterable=[(fn, path, sr, mono) for fn, (path, sr, mono) in self.data.items()],
-                chunksize=int(np.ceil(len(meta) / num_processes)) or 1
-            ):
+        for fn, (path, sr, mono) in self.data.items():
                 self.data[fn] = {
-                    'audio': wav,
-                    'sample_rate': sample_rate,
+                    'audio': path,
+                    'sample_rate': sr,
                     'target': meta.loc[fn, 'classID'],
                     'category': meta.loc[fn, 'class'].replace('_', ' ').strip(' '),
                     'background': bool(meta.loc[fn, 'salience'] - 1)
@@ -152,15 +123,21 @@ class UrbanSound8K(td.Dataset):
     def __getitem__(self, index: int) -> Tuple[np.ndarray, Optional[np.ndarray], List[str]]:
         if not (0 <= index < len(self)):
             raise IndexError
-
-        audio: np.ndarray = self.data[self.indices[index]]['audio']
-        target: str = self.data[self.indices[index]]['category']
+        data = self.data[self.indices[index]]
+        audio = data['audio']
+        audio, sample_rate = librosa.load(audio, sr=data['sample_rate'], mono=True)
+        if len(audio) >= self.length * sample_rate:
+            t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)[0]
+            audio = audio[t_start: t_start + self.length * sample_rate]
+        else:
+            audio = np.pad(audio, (0, self.length * sample_rate - len(audio)))
+        if audio.ndim == 1:
+            audio = audio[:, np.newaxis]
+        audio = (audio.T * 32768.0).astype(np.float32)
+        target: str = data['category']
 
         if self.transform is not None:
             audio = self.transform(audio)
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-
         return audio, None, [target]
 
     def __len__(self) -> int:

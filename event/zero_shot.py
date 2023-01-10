@@ -1,6 +1,7 @@
 import torch
 from model import AudioCLIP
 from utils.datasets.esc50 import ESC50
+from utils.datasets.us8k import UrbanSound8K
 from utils.train import collate_fn, zero_shot_eval, eval_step
 
 
@@ -9,11 +10,11 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # MODEL_FILENAME = 'full[0.95, 0.995].pth'
-    # derived from ESResNeXt
     SAMPLE_RATE = 44100
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE, length=2)
+    # dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE, length=2)
+    dataset = UrbanSound8K('../dataset/UrbanSound8k', fold=1, train=False, sample_rate=SAMPLE_RATE, length=4)
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False, drop_last=False,
                                          collate_fn=collate_fn)
     acc_1 = 0

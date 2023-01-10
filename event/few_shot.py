@@ -2,6 +2,7 @@ import torch
 from model import AudioCLIP
 from utils.datasets.esc50 import ESC50
 from utils.datasets.fsd50k import FSD50K
+from utils.datasets.us8k import UrbanSound8K
 from utils.train import training_step, prepare_model, collate_fn, zero_shot_eval, eval_step
 import numpy as np
 from tqdm import tqdm
@@ -16,14 +17,16 @@ if __name__ == "__main__":
     # train_dataset = ESC50('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=1)
     # test_dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
 
+    # train_dataset = UrbanSound8K('../dataset/ESC50', fold=1, train=True, sample_rate=SAMPLE_RATE, few_shot=1)
+    # test_dataset = UrbanSound8K('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE)
+
     train_dataset = FSD50K('../dataset/FSD50K', train=True, sample_rate=SAMPLE_RATE)
     test_dataset = FSD50K('../dataset/FSD50K', train=False, sample_rate=SAMPLE_RATE)
 
-    print(len(train_dataset))
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=32, shuffle=True,
                                                drop_last=True, collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False,
-                                         drop_last=False, collate_fn=collate_fn)
+                                              drop_last=False, collate_fn=collate_fn)
     model, param_groups = prepare_model(model)
     optimizer = torch.optim.SGD(param_groups, **{**{
      "lr": 5e-5, "momentum": 0.9, "nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5 }})
