@@ -20,7 +20,7 @@ class FSD50K(td.Dataset):
                  train: bool = True,
                  transform_audio=ToTensor1D(),
                  few_shot=None,
-                 length=None,
+                 length=3,
                  **_):
 
         super(FSD50K, self).__init__()
@@ -74,8 +74,11 @@ class FSD50K(td.Dataset):
         print(filename)
         audio, sample_rate = librosa.load(filename, sr=sample['sample_rate'], mono=True)
 
-        t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)[0]
-        audio = audio[t_start: t_start + self.length * sample_rate]
+        if len(audio) >= self.length * sample_rate:
+            t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)[0]
+            audio = audio[t_start: t_start + self.length * sample_rate]
+        else:
+            audio = np.pad(audio, (0, self.length * sample_rate - len(audio)))
         if audio.ndim == 1:
             audio = audio[:, np.newaxis]
         audio = (audio.T * 32768.0).astype(np.float32)
