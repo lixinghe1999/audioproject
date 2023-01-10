@@ -25,7 +25,7 @@ class FSD50K(td.Dataset):
 
         super(FSD50K, self).__init__()
 
-        vocab = self.load_meta(os.path.join(root, 'FSD50K.ground_truth', 'vocabulary.csv'))
+        vocab = pd.read_csv(os.path.join(root, 'FSD50K.ground_truth', 'vocabulary.csv'), header=None)
 
         self.class_idx_to_label = dict()
         for idx, row in vocab.iterrows():
@@ -39,18 +39,12 @@ class FSD50K(td.Dataset):
         self.train = train
         self.data = list()
         if self.train:
-            meta = self.load_meta(os.path.join(root, 'FSD50K.ground_truth', 'dev.csv'))
+            meta = pd.read_csv(os.path.join(root, 'FSD50K.ground_truth', 'dev.csv'))
             self.load_data(meta, os.path.join(root, 'FSD50K.dev_audio'), few_shot)
         else:
-            meta = self.load_meta(os.path.join(root, 'FSD50K.ground_truth', 'eval.csv'))
+            meta = pd.read_csv(os.path.join(root, 'FSD50K.ground_truth', 'eval.csv'))
             self.load_data(meta, os.path.join(root, 'FSD50K.eval_audio'), few_shot)
         self.transform = transform_audio
-
-    @staticmethod
-    def load_meta(path_to_csv: str) -> pd.DataFrame:
-        meta = pd.read_csv(path_to_csv, header=None)
-        return meta
-
     def load_data(self, meta: pd.DataFrame, base_path: str, few_shot=None):
         class_count = dict()
         for idx, row in meta.iterrows():
