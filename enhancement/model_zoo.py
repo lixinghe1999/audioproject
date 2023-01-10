@@ -172,7 +172,7 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag = noisy_mag.unsqueeze(1)
     cRM = model(noisy_mag)
     #print(cRM.shape, cIRM.shape)
-    loss = F.mse_loss(torch.cat([clean_real, clean_imag], dim=1), cRM)
+    loss = F.mse_loss(torch.cat([clean_real.unsqueeze(1), clean_imag.unsqueeze(1)], dim=1), cRM)
 
     loss.backward()
     optimizer.step()
