@@ -68,7 +68,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         for i, sample in enumerate(tqdm(train_loader)):
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 100 == 0 and i != 0:
+            if i % 1000 == 0 and i != 0:
                 print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
@@ -103,14 +103,14 @@ if __name__ == "__main__":
     model = torch.nn.DataParallel(model, device_ids=[0, 1])
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 16
-        lr = 0.00001
+        BATCH_SIZE = 24
+        lr = 0.0001
         EPOCH = 20
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
-                                ratio=1, rir=None, dvector=None)
+                                ratio=1, rir='json/rir.json', dvector=None)
         test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
-                                ratio=1, rir=None, dvector=None)
+                                ratio=1, rir='json/rir.json', dvector=None)
 
         ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, save_all=True)
         plt.plot(loss_curve)
