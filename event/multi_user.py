@@ -56,10 +56,10 @@ if __name__ == "__main__":
     # num_users = 8
     # train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     # test_dataset_list = split_dataset_type(test_dataset, type_list)
-    num_users = 1
+    num_users = 10
     metric = []
     whole_type = []
-    for group in [3]:
+    for group in [3, 6, 9, 12]:
         type_list = split_type_random(train_dataset.class_idx_to_label, num_users, group)
         whole_type += type_list
         train_dataset_list = split_dataset_type(train_dataset, type_list)
