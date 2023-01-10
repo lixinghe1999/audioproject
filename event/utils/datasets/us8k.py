@@ -7,7 +7,7 @@ import pandas as pd
 
 import torch.utils.data as td
 import random
-import sklearn.model_selection as skms
+import torchvision as tv
 
 from typing import Any
 from typing import Dict
@@ -20,6 +20,10 @@ def scale(old_value, old_min, old_max, new_min, new_max):
     new_range = (new_max - new_min)
     new_value = (((old_value - old_min) * new_range) / old_range) + new_min
     return new_value
+class ToTensor1D(tv.transforms.ToTensor):
+    def __call__(self, tensor: np.ndarray):
+        tensor_2d = super(ToTensor1D, self).__call__(tensor[..., np.newaxis])
+        return tensor_2d.squeeze_(0)
 
 class UrbanSound8K(td.Dataset):
 
@@ -29,7 +33,7 @@ class UrbanSound8K(td.Dataset):
                  train: bool = True,
                  fold: Optional[int] = None,
                  mono: bool = False,
-                 transform_audio=None,
+                 transform_audio=ToTensor1D,
                  length=5,
                  **_):
 
@@ -38,8 +42,6 @@ class UrbanSound8K(td.Dataset):
         self.root = root
         self.sample_rate = sample_rate
         self.train = train
-        self.random_split_seed = None
-
         if fold is None:
             fold = 1
 
@@ -88,25 +90,10 @@ class UrbanSound8K(td.Dataset):
         # by default, the official split from the metadata is used
         files_to_load = list()
         # if the random seed is not None, the random split is used
-        if self.random_split_seed is not None:
-            # given an integer random seed
-            skf = skms.StratifiedKFold(n_splits=10, shuffle=True, random_state=self.random_split_seed)
-
-            # split the US8K samples into 10 folds
-            for fold_idx, (train_ids, test_ids) in enumerate(skf.split(
-                    np.zeros(len(meta)), meta['classID'].values.astype(int)
-            ), 1):
-                # if this is the fold we want to load, add the corresponding files to the list
-                if fold_idx == self.fold:
-                    ids = train_ids if self.train else test_ids
-                    filenames = meta.iloc[ids].index
-                    files_to_load.extend(filenames)
-                    break
-        else:
-            # if the random seed is None, use the official split
-            for fn, row in meta.iterrows():
-                if int(row['fold']) in self.folds_to_load:
-                    files_to_load.append(fn)
+        # if the random seed is None, use the official split
+        for fn, row in meta.iterrows():
+            if int(row['fold']) in self.folds_to_load:
+                files_to_load.append(fn)
 
         self.data = {fn: vals for fn, vals in self.data.items() if fn in files_to_load}
         self.indices = {idx: fn for idx, fn in enumerate(self.data)}
