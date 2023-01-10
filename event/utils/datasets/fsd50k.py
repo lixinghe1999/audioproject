@@ -18,7 +18,6 @@ class FSD50K(td.Dataset):
                  root: str,
                  sample_rate: int = 22050,
                  train: bool = True,
-                 fold: Optional[int] = None,
                  transform_audio=ToTensor1D(),
                  few_shot=None,
                  length=None,
