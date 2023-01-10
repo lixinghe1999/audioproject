@@ -170,9 +170,9 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     cIRM = drop_band(cIRM, 2)
 
     noisy_mag = noisy_mag.unsqueeze(1)
-    cRM = model(noisy_mag)
+    cRM = model(noisy_mag[:, 1:, ...])
     #print(cRM.shape, cIRM.shape)
-    loss = F.mse_loss(cIRM, cRM)
+    loss = F.mse_loss(cIRM[:, 1:, ...], cRM)
 
     loss.backward()
     optimizer.step()
