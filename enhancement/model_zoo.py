@@ -176,9 +176,9 @@ def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
 
     loss.backward()
     optimizer.step()
-    torch.nn.utils.clip_grad_norm_(
-        model.parameters(), 10
-    )
+    # torch.nn.utils.clip_grad_norm_(
+    #     model.parameters(), 10
+    # )
     return loss.item()
 
 def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=False):
