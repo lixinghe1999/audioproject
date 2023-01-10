@@ -103,15 +103,12 @@ if __name__ == "__main__":
     model_name = args.model
     model = globals()[model_name]().to(device)
     people = ["hou", "1", "2", "3", "4", "5", "6", "7", "8", "yan", "wu", "liang", "shuai", "shi", "he"]
-
+    model = torch.nn.DataParallel(model, device_ids=[0, 1])
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 48
+        BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 20
-        ckpt_name = 'pretrain/0.4765849430883166.pth'
-        ckpt_start = torch.load(ckpt_name)
-        model.load_state_dict(ckpt_start)
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
@@ -134,12 +131,6 @@ if __name__ == "__main__":
         print("load checkpoint: {}".format(ckpt_name))
         ckpt_start = torch.load(ckpt_name)
 
-        from collections import OrderedDict
-        new_state_dict = OrderedDict()
-        for k, v in ckpt_start.items():
-            name = k[7:]  # remove 'module.' of dataparallel
-            new_state_dict[name] = v
-        ckpt_start = new_state_dict
         model.load_state_dict(ckpt_start)
 
         # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")

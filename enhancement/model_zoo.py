@@ -154,9 +154,7 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     predict = istft((predict, noisy_phase), 640, 320, 640, input_type="mag_phase").numpy()
     clean = clean.numpy()
     if data:
-        noise = noise.squeeze(1).numpy()
-        noise = np.pad(noise, ((0, 0), (1, 321-257), (1, 0)))
-        noise = signal.istft(noise, 16000, nperseg=640, noverlap=320)[-1]
+        noise = noise.numpy()
         return eval(clean, predict, text=text), predict, noise
     else:
         return eval(clean, predict, text=text)
@@ -194,9 +192,7 @@ def test_fullsubnet(model, acc, noise, clean, device='cuda', text=None, data=Fal
     # clean = clean / np.max(clean) * 0.8
     # predict = predict / np.max(predict) * 0.8
     if data:
-        noise = noise.squeeze(1).numpy()
-        noise = np.pad(noise, ((0, 0), (1, int(seg_len_mic / 2) + 1 - freq_bin_high), (1, 0)))
-        noise = signal.istft(noise, rate_mic, nperseg=seg_len_mic, noverlap=overlap_mic)[-1]
+        noise = noise.numpy()
         return eval(clean, predict, text=text), predict, noise
     else:
         return eval(clean, predict, text=text)
