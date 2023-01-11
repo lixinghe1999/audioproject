@@ -6,6 +6,23 @@ from sklearn.manifold import TSNE
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
+def data_preprocess(text_features):
+    data = np.load('user_specific.npz', allow_pickle=True)
+    perf = data['metric'][:, 0]
+    type_list = data['type_list']
+    var = []
+    for i, user_type in enumerate(type_list):
+        user_features = text_features[0, user_type[3:]]
+        user_var = np.mean(np.var(user_features, axis=0))
+        var.append(user_var)
+    var = np.array(var)
+    return perf, var
+def vis(perf, var):
+    plt.scatter(var, perf)
+    m, b = np.polyfit(var, perf, 1)
+    plt.plot(var, m * var + b)
+    plt.show()
+
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
@@ -23,25 +40,8 @@ if __name__ == "__main__":
             for class_idx in sorted(test_dataset.class_idx_to_label.keys())
         ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
         text_features = text_features.unsqueeze(1).transpose(0, 1).detach().cpu().numpy()
-
-    colors = ['r', 'g', 'y', 'b']
-    data = np.load('user_specific.npz', allow_pickle=True)
-    perf = data['metric'][:, 0]
-    type_list = data['type_list']
-    var = []
-    color = []
-    for i, user_type in enumerate(type_list):
-        color.append(colors[i//10])
-        user_features = text_features[0, user_type]
-        user_var = np.mean(np.var(user_features, axis=0))
-        # plt.plot(np.var(user_features, axis=0))
-        # plt.show()
-        var.append(user_var)
-    var = np.array(var)
-    plt.scatter(var, perf, c=color)
-    m, b = np.polyfit(var, perf, 1)
-    plt.plot(var, m * var + b)
-    plt.show()
+    perf, var = data_preprocess(text_features)
+    vis(perf, var)
 
     # palette = sns.color_palette("bright", 10)
     # X_embedded = TSNE(n_components=2, learning_rate='auto', init='random').fit_transform(text_features[0])
