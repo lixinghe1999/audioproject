@@ -57,8 +57,8 @@ if __name__ == "__main__":
     # train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     # test_dataset_list = split_dataset_type(test_dataset, type_list)
     num_users = 50
-    num_base = 5
-    num_repeat = 50
+    num_base = 10
+    num_repeat = 30
     metric = []
     type_list = split_type(train_dataset.class_idx_to_label, num_users)
     type_list = find_base_class_random(train_dataset.class_idx_to_label, type_list, num_repeat, num_base)
