@@ -8,7 +8,7 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, text_features, device):
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     model, param_groups = prepare_model(model)
     train_loader = torch.utils.data.DataLoader(dataset=tr, num_workers=4, batch_size=4, shuffle=True,
-                                               drop_last=False, collate_fn=collate_fn)
+                                               drop_last=True, collate_fn=collate_fn)
     test_loader = torch.utils.data.DataLoader(dataset=te, num_workers=4, batch_size=4, shuffle=False,
                                               drop_last=False, collate_fn=collate_fn)
     optimizer = torch.optim.SGD(param_groups, **{**{
