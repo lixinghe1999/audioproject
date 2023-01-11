@@ -2,6 +2,15 @@ import torch
 from torch.utils.data import Subset
 import numpy as np
 import random
+def find_base_class_random(class_idx_to_label, type_list, num, group):
+    types = list(class_idx_to_label.keys())
+    tmp = []
+    for ts in type_list:
+        for i in range(num):
+            random_type = random.sample(ts.remove(types), group) + ts
+            tmp.append(random_type)
+    return tmp
+
 def split_type(class_idx_to_label, num):
     types = list(class_idx_to_label.keys())
     types_list = []
