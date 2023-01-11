@@ -17,26 +17,28 @@ if __name__ == "__main__":
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     model.eval()
-    ((_, _, text_features), _), _ = model(text=[
-        [test_dataset.class_idx_to_label[class_idx]]
-        for class_idx in sorted(test_dataset.class_idx_to_label.keys())
-    ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
-    text_features = text_features.unsqueeze(1).transpose(0, 1).detach().cpu().numpy()
+    with torch.no_grad():
+        ((_, _, text_features), _), _ = model(text=[
+            [test_dataset.class_idx_to_label[class_idx]]
+            for class_idx in sorted(test_dataset.class_idx_to_label.keys())
+        ], batch_indices=torch.arange(len(test_dataset.class_idx_to_label), dtype=torch.int64, device=device))
+        text_features = text_features.unsqueeze(1).transpose(0, 1).detach().cpu().numpy()
 
-    cluster = np.empty(50)
-    data = np.load('user_specific.npz')
+    colors = ['r', 'g', 'y', 'b']
+    data = np.load('user_specific.npz', allow_pickle=True)
     perf = data['metric'][:, 0]
     type_list = data['type_list']
     var = []
+    color = []
     for i, user_type in enumerate(type_list):
-        cluster[user_type] = i
+        color.append(colors[i//10])
         user_features = text_features[0, user_type]
         user_var = np.mean(np.var(user_features, axis=0))
         # plt.plot(np.var(user_features, axis=0))
         # plt.show()
         var.append(user_var)
     var = np.array(var)
-    plt.scatter(var, perf)
+    plt.scatter(var, perf, c=color)
     m, b = np.polyfit(var, perf, 1)
     plt.plot(var, m * var + b)
     plt.show()

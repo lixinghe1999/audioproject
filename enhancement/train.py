@@ -124,7 +124,7 @@ if __name__ == "__main__":
         EPOCH = 10
         dvector = None
         rir = 'json/rir.json'
-        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_dir = 'pretrain/fullsubnet_rir'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         #ckpt_name = 'pretrain/fullsubnet_our.pth'
         print("load checkpoint: {}".format(ckpt_name))
