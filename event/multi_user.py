@@ -15,7 +15,7 @@ def fine_tune(tr, te, MODEL_FILENAME, test_dataset, text_features, device):
         "lr": 5e-5, "momentum": 0.9, "nesterov": True, "weight_decay": 5e-4}, **{'lr': 5e-5}})
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
-    for e in range(10):
+    for e in range(5):
         Loss_list = []
         for i, batch in enumerate(train_loader):
             loss = training_step(model, batch, optimizer, device)
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     # test_dataset_list = split_dataset_type(test_dataset, type_list)
     num_users = 50
     num_base = 5
-    num_repeat = 10
+    num_repeat = 50
     metric = []
     type_list = split_type(train_dataset.class_idx_to_label, num_users)
     type_list = find_base_class_random(train_dataset.class_idx_to_label, type_list, num_repeat, num_base)
