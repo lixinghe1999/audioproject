@@ -7,7 +7,8 @@ def find_base_class_random(class_idx_to_label, type_list, num, group):
     tmp = []
     for ts in type_list:
         for i in range(num):
-            random_type = random.sample(ts.remove(types), group) + ts
+            remove_types = [x for x in types if x not in ts]
+            random_type = random.sample(remove_types, group) + ts
             tmp.append(random_type)
     return tmp
 
