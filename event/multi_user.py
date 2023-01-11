@@ -56,11 +56,11 @@ if __name__ == "__main__":
     # num_users = 8
     # train_dataset_list, type_list = split_dataset(train_dataset, num_users)
     # test_dataset_list = split_dataset_type(test_dataset, type_list)
-    num_users = 10
-    num_base = 3
+    num_users = 50
+    num_base = 5
     num_repeat = 10
     metric = []
-    type_list = split_type_random(train_dataset.class_idx_to_label, num_users, 3)
+    type_list = split_type(train_dataset.class_idx_to_label, num_users)
     type_list = find_base_class_random(train_dataset.class_idx_to_label, type_list, num_repeat, num_base)
     train_dataset_list = split_dataset_type(train_dataset, type_list)
     test_dataset_list = split_dataset_type(test_dataset, type_list)
@@ -69,5 +69,5 @@ if __name__ == "__main__":
         metric.append(metric_best)
     metric = np.stack(metric)
     np.savez('user_specific', type_list=type_list, metric=metric, allow_pickle=True)
-    print('mean top1, top3 accuracy', np.mean(metric, axis=0))
+    # print('mean top1, top3 accuracy', np.mean(metric, axis=0))
 
