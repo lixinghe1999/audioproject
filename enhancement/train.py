@@ -106,12 +106,12 @@ if __name__ == "__main__":
         BATCH_SIZE = 12
         lr = 0.0001
         EPOCH = 20
-        ckpt_start = torch.load('pretrain/0.0792353513582573.pth')
-        model.load_state_dict(ckpt_start)
+        # ckpt_start = torch.load('pretrain/0.0792353513582573.pth')
+        # model.load_state_dict(ckpt_start)
 
-        dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/tr.json'], simulation=True,
+        dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/librispeech-dev.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
-        test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/cv.json'], simulation=True,
+        test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/librispeech-dev.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
 
         ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, save_all=True)
