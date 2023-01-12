@@ -15,6 +15,7 @@ def cal_feature(text_features, type='var'):
         feature = np.mean(np.var(text_features[:-1], axis=0))
     elif type == 'sim':
         feature = text_features[-1, :] @ text_features[:-1].transpose(-1, -2)
+        feature = np.sort(feature)
         # feature = [np.mean(feature), np.var(feature)]
     return feature
 def data_preprocess(text_features):
@@ -40,14 +41,15 @@ def vis(perf, features):
 def fit(perf, features):
     print(features.shape)
     perf = perf.reshape(-1, 10)
-    success_index = np.argmax(perf, axis=1)
-    success_index += np.arange(0, 500, 10)
-    perf = perf.reshape(-1)
+    sort_index = np.argsort(perf, axis=1) + np.arange(0, 500, 10).reshape(-1, 1)
+    high_index = sort_index[:, :3].reshape(-1)
+    middle_index = sort_index[:, 3:6].reshape(-1)
     cls = np.ones(len(perf), dtype=int)
-    cls[success_index] = 2
+    cls[middle_index] = 2
+    cls[high_index] = 3
 
-    # clf = SVC(kernel='rbf', class_weight='balanced', degree=5).fit(features, cls)
-    clf = MLPClassifier(hidden_layer_sizes=(32, 32, 16), max_iter=300).fit(features, cls)
+    clf = SVC(kernel='rbf', class_weight='balanced').fit(features, cls)
+    #clf = MLPClassifier(hidden_layer_sizes=(32, 32, 16), max_iter=300).fit(features, cls)
     predict_perf = clf.predict(features)
 
     # poly_reg = PolynomialFeatures(degree=1)
