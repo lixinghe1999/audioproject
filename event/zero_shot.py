@@ -35,4 +35,5 @@ if __name__ == "__main__":
         acc_1 += top1
         acc_3 += top3
         logs += log
+    np.savez('save_embedding', audio=np.concatenate(save), text=text_features.cpu().numpy())
     print(acc_1/len(loader), acc_3/len(loader))

@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 def training_step(model, batch, optimizer, device):
     model.train()
@@ -97,7 +98,7 @@ def zero_shot_eval(y_pred, y, class_idx_to_label, print_result=False):
             results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
             print(query + ', ' + results)
     return top1_a/num_audio, top3_a/num_audio, log
-def eval_step(batch, model, text_features, dataset, device, save=False):
+def eval_step(batch, model, text_features, dataset, device, save=None):
     model.eval()
     with torch.no_grad():
         audio, _, text = batch
@@ -116,6 +117,8 @@ def eval_step(batch, model, text_features, dataset, device, save=False):
             class_ids = list(sorted([
                 dataset.label_to_class_idx[lb] for lb in labels]))
             y[item_idx][class_ids] = 1
+        if save is not None:
+            save.append(np.concatenate([audio_features.cpu().numpy(), y.numpy()]))
         y_pred = y_pred.cpu()
         y = y.argmax(dim=-1)
     return y_pred, y
