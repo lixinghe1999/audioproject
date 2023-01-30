@@ -104,7 +104,7 @@ if __name__ == "__main__":
     dl_list = remove(dl_list)
     stat(dl_list)
     for l in dl_list:
-        down_load(**l)
+        down_load(*l)
 
     # num_processes = os.cpu_count()  # 16
     # with mp.Pool(processes=1) as pool:
