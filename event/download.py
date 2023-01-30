@@ -19,17 +19,17 @@ def video_download(url, ts_start, video_filepath):
                      '-r', '1',  # Specify the framerate
                      '-vcodec', 'h264',  # Specify the output encoding
                      video_filepath]
-    try:
-        proc = sp.Popen(video_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
-        print("Downloaded video to " + video_filepath)
-    except:
-        print('Error')
-    # proc = sp.Popen(video_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
-    # stdout, stderr = proc.communicate()
-    # if proc.returncode != 0:
-    #     print(stderr)
-    # else:
+    # try:
+    #     proc = sp.Popen(video_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
     #     print("Downloaded video to " + video_filepath)
+    # except:
+    #     print('Error')
+    proc = sp.Popen(video_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
+    stdout, stderr = proc.communicate()
+    if proc.returncode != 0:
+        print(stderr)
+    else:
+        print("Downloaded video to " + video_filepath)
 def audio_download(url, ts_start, audio_filepath):
     # Download the audio
     audio_dl_args = ['ffmpeg', '-y',
@@ -42,17 +42,17 @@ def audio_download(url, ts_start, audio_filepath):
                      '-acodec', audio_codec,  # Specify the output encoding
                      '-ar', '44100',  # Specify the audio sample rate
                      audio_filepath]
-    try:
-        proc = sp.Popen(audio_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
-        print("Downloaded video to " + audio_filepath)
-    except:
-        print('Error')
-    # proc = sp.Popen(audio_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
-    # stdout, stderr = proc.communicate()
-    # if proc.returncode != 0:
-    #     print(stderr)
-    # else:
-    #     print("Downloaded audio to " + audio_filepath)
+    # try:
+    #     proc = sp.Popen(audio_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
+    #     print("Downloaded video to " + audio_filepath)
+    # except:
+    #     print('Error')
+    proc = sp.Popen(audio_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
+    stdout, stderr = proc.communicate()
+    if proc.returncode != 0:
+        print(stderr)
+    else:
+        print("Downloaded audio to " + audio_filepath)
 def down_load(ytid, ts_start, label):
     # print("YouTube ID: " + ytid, "Start Time: ({})".format(ts_start))
     # Get the URL to the video page
@@ -110,9 +110,13 @@ if __name__ == "__main__":
     dl_list = [line.strip().split(',')[:3] for line in lines]
 
     dl_list = remove(dl_list)
-    stat(dl_list)
+    #stat(dl_list)
     for l in dl_list:
-        down_load(*l)
+        ytid, ts_start, label = l
+        try:
+            down_load(ytid, ts_start, label)
+        except:
+            print('find error')
 
     # num_processes = os.cpu_count()  # 16
     # with mp.Pool(processes=1) as pool:
