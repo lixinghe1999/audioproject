@@ -118,8 +118,8 @@ def eval_step(batch, model, text_features, dataset, device, save=None):
                 dataset.label_to_class_idx[lb] for lb in labels]))
             y[item_idx][class_ids] = 1
         if save is not None:
-            print(audio_features.squeeze(1).shape)
-            save.append(np.concatenate([audio_features.squeeze(1).cpu().numpy(), y.cpu().numpy()], axis=1))
+            audio_features = audio_features.squeeze(1)
+            save.append(np.concatenate([audio_features.cpu().numpy(), y.cpu().numpy()], axis=1))
         y_pred = y_pred.cpu()
         y = y.argmax(dim=-1)
     return y_pred, y
