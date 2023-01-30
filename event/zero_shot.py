@@ -22,11 +22,12 @@ if __name__ == "__main__":
     acc_3 = 0
     logs = []
     # We only compute the text features once
-    ((_, _, text_features), _), _ = model(text=[
-        [dataset.class_idx_to_label[class_idx]]
-        for class_idx in sorted(dataset.class_idx_to_label.keys())
-    ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
-    text_features = text_features.unsqueeze(1).transpose(0, 1)
+    with torch.no_grad():
+        ((_, _, text_features), _), _ = model(text=[
+            [dataset.class_idx_to_label[class_idx]]
+            for class_idx in sorted(dataset.class_idx_to_label.keys())
+        ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
+        text_features = text_features.unsqueeze(1).transpose(0, 1)
     save = []
     for batch in loader:
         y_pred, y = eval_step(batch, model, text_features, dataset, device, save)
