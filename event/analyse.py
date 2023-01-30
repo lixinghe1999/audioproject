@@ -39,17 +39,20 @@ def vis(perf, features):
     plt.scatter(features[success_index, 0], features[success_index, 1], c='r')
     plt.show()
 def fit(perf, features):
-    print(features.shape)
-    perf = perf.reshape(-1, 10)
-    sort_index = np.argsort(perf, axis=1) + np.arange(0, 500, 10).reshape(-1, 1)
-    high_index = sort_index[:, :3].reshape(-1)
-    middle_index = sort_index[:, 3:6].reshape(-1)
-    cls = np.ones(len(perf), dtype=int)
-    cls[middle_index] = 2
-    cls[high_index] = 3
 
-    clf = SVC(kernel='rbf', class_weight='balanced').fit(features, cls)
-    #clf = MLPClassifier(hidden_layer_sizes=(32, 32, 16), max_iter=300).fit(features, cls)
+    perf = perf.reshape(-1, 10)
+    # sort_index = np.argsort(perf, axis=1) + np.arange(0, 500, 10).reshape(-1, 1)
+    # high_index = sort_index[:, :3].reshape(-1)
+    # middle_index = sort_index[:, 3:6].reshape(-1)
+
+    # cls = np.ones(len(perf), dtype=int)
+    # cls[middle_index] = 2
+    # cls[high_index] = 3
+    cls = np.argsort(perf, axis=1).reshape(-1)
+    perf = perf.reshape(-1)
+
+    #clf = SVR(kernel='rbf', class_weight='balanced').fit(features, cls)
+    clf = MLPRegressor(hidden_layer_sizes=(32, 32, 16), max_iter=300).fit(features, cls)
     predict_perf = clf.predict(features)
 
     # poly_reg = PolynomialFeatures(degree=1)
@@ -57,8 +60,8 @@ def fit(perf, features):
     # lin_reg = linear_model.LinearRegression()
     # lin_reg.fit(x_poly, perf)
     # predict_perf = lin_reg.predict(x_poly)
-
-    error = balanced_accuracy_score(predict_perf, cls)
+    error = np.mean(np.abs(perf - predict_perf))
+    # error = balanced_accuracy_score(predict_perf, cls)
     print(error)
     plt.plot(predict_perf)
     plt.plot(cls)

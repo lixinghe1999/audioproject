@@ -97,7 +97,7 @@ def zero_shot_eval(y_pred, y, class_idx_to_label, print_result=False):
             results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
             print(query + ', ' + results)
     return top1_a/num_audio, top3_a/num_audio, log
-def eval_step(batch, model, text_features, dataset, device):
+def eval_step(batch, model, text_features, dataset, device, save=False):
     model.eval()
     with torch.no_grad():
         audio, _, text = batch
@@ -105,7 +105,8 @@ def eval_step(batch, model, text_features, dataset, device):
         ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
         torch.arange(audio.shape[0], dtype=torch.int64, device=device))
         audio_features = audio_features.unsqueeze(1)
-
+        if save is not None:
+            save.append(audio_features)
         logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
         y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
         y = torch.zeros(
