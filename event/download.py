@@ -104,7 +104,7 @@ if __name__ == "__main__":
     dl_list = remove(dl_list)
     stat(dl_list)
     num_processes = os.cpu_count() # 16
-    with mp.Pool(processes=num_processes) as pool:
+    with mp.Pool(processes=1) as pool:
         for _ in pool.starmap(
                 func=down_load,
                 iterable=dl_list,
