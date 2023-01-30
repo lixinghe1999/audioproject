@@ -46,7 +46,7 @@ def audio_download(url, ts_start, audio_filepath):
         print(stderr)
     else:
         print("Downloaded audio to " + audio_filepath)
-def down_load(ytid, ts_start):
+def down_load(ytid, ts_start, label):
     # print("YouTube ID: " + ytid, "Start Time: ({})".format(ts_start))
     # Get the URL to the video page
     video_page_url = 'https://www.youtube.com/watch?v={}'.format(ytid)
@@ -59,8 +59,8 @@ def down_load(ytid, ts_start):
     best_audio_url = best_audio.url
 
     basename_fmt = '{}_{}'.format(ytid, int(ts_start))
-    video_filepath = os.path.join('.', basename_fmt + '.' + video_container)
-    audio_filepath = os.path.join('.', basename_fmt + '.' + audio_codec)
+    video_filepath = os.path.join('VggSound', basename_fmt + '.' + video_container)
+    audio_filepath = os.path.join('VggSound', basename_fmt + '.' + audio_codec)
 
     video_download(best_video_url, ts_start, video_filepath)
     audio_download(best_audio_url, ts_start, audio_filepath)
@@ -79,6 +79,19 @@ def stat(dl_list):
     plt.bar(range(len(keys)), values)
     plt.show()
 
+def remove(dl_list, limit=40):
+    num_class = dict()
+    dl_list_new = []
+    for s in dl_list:
+        label = s[2]
+        if label in num_class:
+            if num_class[label] <= limit:
+                dl_list_new.append(s)
+            num_class[label] += 1
+        else:
+            num_class[label] = 1
+    return dl_list_new
+
 if __name__ == "__main__":
     # Set output settings
 
@@ -86,13 +99,15 @@ if __name__ == "__main__":
     with open('vggsound.csv') as f:
         lines = f.readlines()
 
-    dl_list = [line.strip().split(',')[:2] for line in lines]
-    # num_processes = os.cpu_count() - 8 # 16
-    num_processes = 1
+    dl_list = [line.strip().split(',')[:3] for line in lines]
+
+    dl_list = remove(dl_list)
+    stat(dl_list)
+    num_processes = os.cpu_count() # 16
     with mp.Pool(processes=num_processes) as pool:
         for _ in pool.starmap(
                 func=down_load,
-                iterable=dl_list[:2],
+                iterable=dl_list,
         ):
             pass
 
