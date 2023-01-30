@@ -119,7 +119,7 @@ def eval_step(batch, model, text_features, dataset, device, save=None):
             y[item_idx][class_ids] = 1
         if save is not None:
             print(audio_features.shape)
-            save.append(np.concatenate([audio_features.cpu().numpy().squeeze(1), y.cpu().numpy()], axis=1))
+            save.append(np.concatenate([audio_features.squeeze(1).cpu().numpy(), y.cpu().numpy()], axis=1))
         y_pred = y_pred.cpu()
         y = y.argmax(dim=-1)
     return y_pred, y
