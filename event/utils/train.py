@@ -106,8 +106,6 @@ def eval_step(batch, model, text_features, dataset, device, save=None):
         ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
         torch.arange(audio.shape[0], dtype=torch.int64, device=device))
         audio_features = audio_features.unsqueeze(1)
-        if save is not None:
-            save.append(audio_features.cpu().numpy())
         logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
         y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
         y = torch.zeros(
