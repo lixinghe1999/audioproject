@@ -30,10 +30,10 @@ if __name__ == "__main__":
     save = []
     for batch in loader:
         y_pred, y = eval_step(batch, model, text_features, dataset, device, save)
-        print(np.concatenate(save).shape)
         top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
         acc_1 += top1
         acc_3 += top3
         logs += log
-    np.savez('save_embedding', audio=np.concatenate(save), text=text_features.cpu().numpy())
+    save = np.concatenate(save)
+    np.savez('save_embedding', audio=save[:, :1024], text=text_features.cpu().numpy(), y=save[:, 1024:])
     print(acc_1/len(loader), acc_3/len(loader))
