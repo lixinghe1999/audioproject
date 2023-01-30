@@ -60,9 +60,10 @@ def down_load(ytid, ts_start, label):
     basename_fmt = '{}_{}'.format(ytid, int(ts_start))
     video_filepath = os.path.join('VggSound', basename_fmt + '.' + video_container)
     audio_filepath = os.path.join('VggSound', basename_fmt + '.' + audio_codec)
-
-    video_download(best_video_url, ts_start, video_filepath)
-    audio_download(best_audio_url, ts_start, audio_filepath)
+    if not os.path.isfile(video_filepath):
+        video_download(best_video_url, ts_start, video_filepath)
+    if not os.path.isfile(audio_filepath):
+        audio_download(best_audio_url, ts_start, audio_filepath)
 def stat(dl_list):
     num_class = dict()
     for s in dl_list:

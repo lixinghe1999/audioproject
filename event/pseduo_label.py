@@ -34,7 +34,7 @@ if __name__ == "__main__":
     sort_cosine = np.sort(cosine, axis=-1)
     top_ratio = sort_cosine[:, -1] / sort_cosine[:, -2]
     gap = np.mean(sort_cosine[:, -3:], axis=-1)
-    above_threshold = top_ratio > 1.2
+    above_threshold = top_ratio > 1.1
     dot_plot(cosine[above_threshold], y[above_threshold], correct_cosine[above_threshold])
 
     # features = np.stack([top_ratio], axis=1)
