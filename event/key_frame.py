@@ -17,7 +17,7 @@ if __name__ == "__main__":
     acc_a = []
     acc_i = []
     logs = []
-    save = None
+    save = []
     for batch in loader:
         y_pred_a, y_pred_i, y = eval_step(batch, model, dataset, device, save=save)
         top1, top3, log = zero_shot_eval(y_pred_a, y, dataset.class_idx_to_label, print_result=False)
@@ -29,5 +29,5 @@ if __name__ == "__main__":
         logs += log
     print(np.mean(acc_a, axis=0))
     print(np.mean(acc_i, axis=0))
-    # save = np.concatenate(save)
-    # np.savez('save_embedding', audio=save[:, :1024], text=text_features.cpu().numpy(), y=save[:, 1024:])
+    save = np.concatenate(save)
+    np.savez('save_embedding', audio=save[:, :1024], image=save[:, 1024:2048], text=save[:, 2048:3072], y=save[:, 3072:])

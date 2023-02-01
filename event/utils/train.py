@@ -131,11 +131,13 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             y_pred_i = (image_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
         else:
             y_pred_i = None
+        y = y.argmax(dim=-1)
         if save is not None:
             audio_features = audio_features.squeeze(1)
-            embed = np.concatenate([audio_features.cpu().numpy(), y.cpu().numpy()], axis=1)
+            image_features = image_features.squeeze(1)
+            embed = np.concatenate([audio_features.cpu().numpy(), image_features.cpu().numpy(), text_features.cpu().numpy(),
+                                    y.cpu().numpy()], axis=1)
             save.append(embed)
-        y = y.argmax(dim=-1)
     return y_pred_a, y_pred_i, y
 def validate_one_model(model, dataset, text_features, device):
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False,
