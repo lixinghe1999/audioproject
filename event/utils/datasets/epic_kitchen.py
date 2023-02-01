@@ -37,13 +37,12 @@ class EPIC_Kitchen(td.Dataset):
                  sample_rate: int = 44100,
                  transform_audio=ToTensor1D(),
                  transform_image=transform_image,
-                 length=2,
+                 length=5,
                  **_):
         super(EPIC_Kitchen, self).__init__()
         with open('EPIC_train_action_labels.pkl', 'rb') as f:
             self.data = pickle.load(f)
-        #print(self.data.head())
-        self.data = self.data[self.data['participant_id'].isin(['P01'])]
+        self.data = self.data[self.data['participant_id'].isin(['P02'])]
         self.root = root
         self.sample_rate = sample_rate
         self.length = length
