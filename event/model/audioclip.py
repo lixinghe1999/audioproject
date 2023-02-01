@@ -128,11 +128,12 @@ class AudioCLIP(CLIP):
             text = [text[idx] for idx in batch_indices]
 
         text_joined = [', '.join(entities) for entities in text]
+        print(text_joined)
         text_tokens = torch.cat([
             tokenize(base_str.format(entities)) for entities in text_joined
         ])
         text_tokens = text_tokens.to(self.device)
-        print(text_tokens)
+        # print(text_tokens)
 
         return super(AudioCLIP, self).encode_text(text_tokens)
 
