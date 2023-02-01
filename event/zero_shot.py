@@ -29,8 +29,8 @@ if __name__ == "__main__":
         text_features = text_features.unsqueeze(1).transpose(0, 1)
     save = []
     for batch in loader:
-        y_pred, y = eval_step(batch, model, dataset, device, text_features=text_features, save=save)
-        top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label)
+        y_pred_a, y_pred_i, y = eval_step(batch, model, dataset, device, text_features=text_features, save=save)
+        top1, top3, log = zero_shot_eval(y_pred_a, y, dataset.class_idx_to_label)
         acc_1 += top1
         acc_3 += top3
         logs += log

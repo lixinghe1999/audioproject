@@ -103,9 +103,7 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
     with torch.no_grad():
         audio, image, text = batch
         audio = audio.to(device)
-        if image is None:
-            pass
-        else:
+        if image is not None:
             image = image.to(device)
 
         if text_features is not None:
@@ -127,12 +125,12 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
         y = y.argmax(dim=-1)
 
         audio_features = audio_features.unsqueeze(1)
-        image_features = image_features.unsqueeze(1)
         y_pred_a = (audio_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
-        y_pred_i = (image_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
-        # print(text)
-        # print(y_pred_a, y_pred_i, y)
-
+        if image is not None:
+            image_features = image_features.unsqueeze(1)
+            y_pred_i = (image_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
+        else:
+            y_pred_i = None
         if save is not None:
             audio_features = audio_features.squeeze(1)
             embed = np.concatenate([audio_features.cpu().numpy(), y.cpu().numpy()], axis=1)
