@@ -64,7 +64,7 @@ class EPIC_Kitchen(td.Dataset):
         fname_video = self.root + row['participant_id'] + '/' + row['video_id'] + '.MP4'
         fname_audio = self.root + row['participant_id'] + '/' + row['video_id'] + '.wav'
         # target = [row['narration']]
-        target = [row['verb'] + ' ' + row['noun'].replace(':', ' ')]
+        target = [row['noun'].replace(':', ' ')]
         start = (datetime.strptime(row['start_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
         stop = (datetime.strptime(row['stop_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
         center = (start + stop) / 2
