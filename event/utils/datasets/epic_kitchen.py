@@ -68,7 +68,7 @@ class EPIC_Kitchen(td.Dataset):
         start = (datetime.strptime(row['start_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
         stop = (datetime.strptime(row['stop_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
         center = (start + stop) / 2
-        image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec', output_format="TCHW")
+        image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
         image = image[0] / 255
         audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
 
