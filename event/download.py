@@ -19,11 +19,6 @@ def video_download(url, ts_start, video_filepath):
                      '-r', '1',  # Specify the framerate
                      '-vcodec', 'h264',  # Specify the output encoding
                      video_filepath]
-    # try:
-    #     proc = sp.Popen(video_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
-    #     print("Downloaded video to " + video_filepath)
-    # except:
-    #     print('Error')
     proc = sp.Popen(video_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
@@ -42,11 +37,6 @@ def audio_download(url, ts_start, audio_filepath):
                      '-acodec', audio_codec,  # Specify the output encoding
                      '-ar', '44100',  # Specify the audio sample rate
                      audio_filepath]
-    # try:
-    #     proc = sp.Popen(audio_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
-    #     print("Downloaded video to " + audio_filepath)
-    # except:
-    #     print('Error')
     proc = sp.Popen(audio_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
@@ -57,20 +47,23 @@ def down_load(ytid, ts_start, label):
     # print("YouTube ID: " + ytid, "Start Time: ({})".format(ts_start))
     # Get the URL to the video page
     video_page_url = 'https://www.youtube.com/watch?v={}'.format(ytid)
-    # Get the direct URLs to the videos with best audio and with best video (with audio)
-    video = pafy.new(video_page_url)
-
-    best_video = video.getbestvideo()
-    best_video_url = best_video.url
-    best_audio = video.getbestaudio()
-    best_audio_url = best_audio.url
 
     basename_fmt = '{}_{}'.format(ytid, int(ts_start))
     video_filepath = os.path.join('VggSound', basename_fmt + '.' + video_container)
     audio_filepath = os.path.join('VggSound', basename_fmt + '.' + audio_codec)
-    if not os.path.isfile(video_filepath):
+
+    if os.path.isfile(video_filepath) or os.path.isfile(audio_filepath):
+        pass
+    else:
+        # Get the direct URLs to the videos with best audio and with best video (with audio)
+        video = pafy.new(video_page_url)
+
+        best_video = video.getbestvideo()
+        best_video_url = best_video.url
+        best_audio = video.getbestaudio()
+        best_audio_url = best_audio.url
+
         video_download(best_video_url, ts_start, video_filepath)
-    if not os.path.isfile(audio_filepath):
         audio_download(best_audio_url, ts_start, audio_filepath)
 def stat(dl_list):
     num_class = dict()
@@ -87,19 +80,6 @@ def stat(dl_list):
     plt.bar(range(len(keys)), values)
     plt.show()
 
-def remove(dl_list, limit=40):
-    num_class = dict()
-    dl_list_new = []
-    for s in dl_list:
-        label = s[2]
-        if label in num_class:
-            if num_class[label] <= limit:
-                dl_list_new.append(s)
-            num_class[label] += 1
-        else:
-            num_class[label] = 1
-    return dl_list_new
-
 if __name__ == "__main__":
     # Set output settings
 
@@ -108,15 +88,24 @@ if __name__ == "__main__":
         lines = f.readlines()
 
     dl_list = [line.strip().split(',')[:3] for line in lines]
-
-    dl_list = remove(dl_list)
-    #stat(dl_list)
+    # stat(dl_list)
+    num_class = dict()
+    limit = 40
+    dl_list_new = []
     for l in dl_list:
         ytid, ts_start, label = l
+        if label in num_class:
+            if num_class[label] >= limit:
+                continue
+            num_class[label] += 1
+        else:
+            num_class[label] = 1
         try:
             down_load(ytid, ts_start, label)
         except:
             print('find error')
+            num_class[label] -= 1
+
 
     # num_processes = os.cpu_count()  # 16
     # with mp.Pool(processes=1) as pool:

@@ -101,9 +101,10 @@ def zero_shot_eval(y_pred, y, class_idx_to_label, print_result=False):
 def eval_step(batch, model, text_features, dataset, device, save=None):
     model.eval()
     with torch.no_grad():
-        audio, _, text = batch
+        audio, image, text = batch
         audio = audio.to(device)
-        ((audio_features, _, _), _), _ = model(audio=audio, batch_indices=
+        image = image.to(device)
+        ((audio_features, _, _), _), _ = model(audio=audio, image=image, batch_indices=
         torch.arange(audio.shape[0], dtype=torch.int64, device=device))
         audio_features = audio_features.unsqueeze(1)
         logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
