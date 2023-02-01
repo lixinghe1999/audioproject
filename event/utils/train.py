@@ -98,31 +98,43 @@ def zero_shot_eval(y_pred, y, class_idx_to_label, print_result=False):
             results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
             print(query + ', ' + results)
     return top1_a/num_audio, top3_a/num_audio, log
-def eval_step(batch, model, text_features, dataset, device, save=None):
+def eval_step(batch, model, dataset, device, text_features=None, save=None):
     model.eval()
     with torch.no_grad():
         audio, image, text = batch
         audio = audio.to(device)
         image = image.to(device)
-        ((audio_features, _, _), _), _ = model(audio=audio, image=image, batch_indices=
-        torch.arange(audio.shape[0], dtype=torch.int64, device=device))
+
+        if text_features is not None:
+            ((audio_features, image_features, _), _), _ = model(audio=audio, image=image,
+             batch_indices= torch.arange(audio.shape[0], dtype=torch.int64, device=device))
+            class_idx_to_label = dataset.class_idx_to_label
+            label_to_class_idx = dataset.label_to_class_idx
+            y = torch.zeros(audio.shape[0], len(class_idx_to_label), dtype=torch.int8, device=device)
+            for item_idx, labels in enumerate(text):
+                class_ids = list(sorted([
+                    label_to_class_idx[lb] for lb in labels]))
+                y[item_idx][class_ids] = 1
+            y = y.argmax(dim=-1)
+        else:
+            ((audio_features, image_features, text_features), _), _ = model(audio=audio, image=image, text=text, batch_indices=
+            torch.arange(audio.shape[0], dtype=torch.int64, device=device))
+            text_features = text_features.unsqueeze(1).transpose(0, 1)
+            y = torch.eye(audio.shape[0])
+
         audio_features = audio_features.unsqueeze(1)
-        logit_scale_at = torch.clamp(model.logit_scale_at.exp(), min=1.0, max=100.0)
-        y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
-        y = torch.zeros(
-            audio.shape[0], len(dataset.class_idx_to_label), dtype=torch.int8, device=device
-        )
-        for item_idx, labels in enumerate(text):
-            class_ids = list(sorted([
-                dataset.label_to_class_idx[lb] for lb in labels]))
-            y[item_idx][class_ids] = 1
+        image_features = image_features.unsqueeze(1)
+        y_pred_a = (audio_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
+        y_pred_i = (image_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
+        # print(text)
+        # print(y_pred_a, y_pred_i, y)
+
         if save is not None:
             audio_features = audio_features.squeeze(1)
             embed = np.concatenate([audio_features.cpu().numpy(), y.cpu().numpy()], axis=1)
             save.append(embed)
-        y_pred = y_pred.cpu()
-        y = y.argmax(dim=-1)
-    return y_pred, y
+
+    return y_pred_a, y_pred_i, y
 def validate_one_model(model, dataset, text_features, device):
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False,
                                               drop_last=False, collate_fn=collate_fn)

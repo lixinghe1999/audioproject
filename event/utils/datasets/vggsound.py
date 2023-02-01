@@ -21,7 +21,7 @@ class VGGSound(td.Dataset):
                  train: bool = True,
                  fold: Optional[int] = None,
                  transform_audio=ToTensor1D(),
-                 transform_vision=None,
+                 transform_image=None,
                  few_shot=None,
                  length=5,
                  **_):
@@ -41,7 +41,7 @@ class VGGSound(td.Dataset):
             raise ValueError(f'fold {fold} does not exist')
         self.train = train
         self.transform_audio = transform_audio
-        self.transform_vision = transform_vision
+        self.transform_image = transform_image
 
         if self.train:
             self.folds_to_load -= {fold}
@@ -94,7 +94,7 @@ class VGGSound(td.Dataset):
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
         audio, sample_rate = librosa.load(filename_audio, sr=sample['sample_rate'], mono=True)
-        vision = tv.io.read_video(filename_vision)
+        image = tv.io.read_video(filename_vision)
 
         if len(audio) >= self.length * sample_rate:
             t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)[0]
@@ -108,9 +108,9 @@ class VGGSound(td.Dataset):
 
         if self.transform_audio is not None:
             audio = self.transform_audio(audio)
-        if self.transform_vision is not None:
-            vision = self.transform_vision(vision)
-        return audio, vision, target
+        if self.transform_image is not None:
+            image = self.transform_image(image)
+        return audio, image, target
 
     def __len__(self) -> int:
         return len(self.data)
