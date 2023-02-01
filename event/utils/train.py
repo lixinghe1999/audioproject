@@ -122,7 +122,7 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             torch.arange(audio.shape[0], dtype=torch.int64, device=device))
             text_features = text_features.unsqueeze(1).transpose(0, 1)
             y = torch.eye(audio.shape[0])
-        y = y.argmax(dim=-1)
+
 
         audio_features = audio_features.unsqueeze(1)
         y_pred_a = (audio_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
@@ -133,10 +133,9 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             y_pred_i = None
         if save is not None:
             audio_features = audio_features.squeeze(1)
-            print(audio_features.shape)
             embed = np.concatenate([audio_features.cpu().numpy(), y.cpu().numpy()], axis=1)
             save.append(embed)
-
+        y = y.argmax(dim=-1)
     return y_pred_a, y_pred_i, y
 def validate_one_model(model, dataset, text_features, device):
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False,

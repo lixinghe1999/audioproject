@@ -27,7 +27,7 @@ if __name__ == "__main__":
             for class_idx in sorted(dataset.class_idx_to_label.keys())
         ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
         text_features = text_features.unsqueeze(1).transpose(0, 1)
-    save = []
+    save = None
     for batch in loader:
         y_pred_a, y_pred_i, y = eval_step(batch, model, dataset, device, text_features=text_features, save=save)
         top1, top3, log = zero_shot_eval(y_pred_a, y, dataset.class_idx_to_label)
