@@ -14,7 +14,7 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     dataset = EPIC_Kitchen()
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False,
-                                         drop_last=False, collate_fn=collate_fn)
+                                         drop_last=True, collate_fn=collate_fn)
     acc_a = []
     acc_i = []
     logs = []
