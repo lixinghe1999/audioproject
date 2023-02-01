@@ -115,12 +115,13 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
                 class_ids = list(sorted([
                     label_to_class_idx[lb] for lb in labels]))
                 y[item_idx][class_ids] = 1
-            y = y.argmax(dim=-1)
+
         else:
             ((audio_features, image_features, text_features), _), _ = model(audio=audio, image=image, text=text, batch_indices=
             torch.arange(audio.shape[0], dtype=torch.int64, device=device))
             text_features = text_features.unsqueeze(1).transpose(0, 1)
             y = torch.eye(audio.shape[0])
+        y = y.argmax(dim=-1)
 
         audio_features = audio_features.unsqueeze(1)
         image_features = image_features.unsqueeze(1)
