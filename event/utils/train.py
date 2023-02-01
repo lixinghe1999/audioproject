@@ -103,7 +103,10 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
     with torch.no_grad():
         audio, image, text = batch
         audio = audio.to(device)
-        image = image.to(device)
+        if image is None:
+            pass
+        else:
+            image = image.to(device)
 
         if text_features is not None:
             ((audio_features, image_features, _), _), _ = model(audio=audio, image=image,
