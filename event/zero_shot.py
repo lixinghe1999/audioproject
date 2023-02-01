@@ -11,10 +11,9 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # MODEL_FILENAME = 'full[0.95, 0.995].pth'
-    SAMPLE_RATE = 44100
 
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=SAMPLE_RATE, length=5)
+    dataset = ESC50('../dataset/ESC50', fold=1, train=False, sample_rate=44100, length=5)
     #dataset = UrbanSound8K('../dataset/UrbanSound8K', fold=1, train=False, sample_rate=SAMPLE_RATE, length=4)
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False, drop_last=False,
                                          collate_fn=collate_fn)
@@ -30,8 +29,8 @@ if __name__ == "__main__":
         text_features = text_features.unsqueeze(1).transpose(0, 1)
     save = []
     for batch in loader:
-        y_pred, y = eval_step(batch, model, text_features, dataset, device, save)
-        top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
+        y_pred, y = eval_step(batch, model, dataset, device, text_features=text_features, save=save)
+        top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label)
         acc_1 += top1
         acc_3 += top3
         logs += log
