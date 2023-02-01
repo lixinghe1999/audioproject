@@ -135,7 +135,7 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
         if save is not None:
             audio_features = audio_features.squeeze(1)
             image_features = image_features.squeeze(1)
-            text_features = text_features.squeeze(1)
+            text_features = text_features.squeeze(0)
             print(audio_features.shape, image_features.shape, text_features.shape)
             embed = np.concatenate([audio_features.cpu().numpy(), image_features.cpu().numpy(),
                                     text_features.cpu().numpy(), y.cpu().numpy()], axis=1)
