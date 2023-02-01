@@ -29,8 +29,10 @@ if __name__ == "__main__":
     for batch in loader:
         y_pred_a, y_pred_i, y = eval_step(batch, model, dataset, device, save=save)
         top1, top3, log = zero_shot_eval(y_pred_a, y, dataset.class_idx_to_label, print_result=False)
+        print(top1, top3)
         acc_a.append([top1, top3])
         top1, top3, log = zero_shot_eval(y_pred_i, y, dataset.class_idx_to_label, print_result=False)
+        print(top1, top3)
         acc_i.append([top1, top3])
         logs += log
     print(np.mean(acc_a, axis=0))
