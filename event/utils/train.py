@@ -135,8 +135,9 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
         if save is not None:
             audio_features = audio_features.squeeze(1)
             image_features = image_features.squeeze(1)
-            embed = np.concatenate([audio_features.cpu().numpy(), image_features.cpu().numpy(), text_features.cpu().numpy(),
-                                    y.cpu().numpy()], axis=1)
+            text_features = text_features.squeeze(1)
+            embed = np.concatenate([audio_features.cpu().numpy(), image_features.cpu().numpy(),
+                                    text_features.cpu().numpy(), y.cpu().numpy()], axis=1)
             save.append(embed)
     return y_pred_a, y_pred_i, y
 def validate_one_model(model, dataset, text_features, device):
