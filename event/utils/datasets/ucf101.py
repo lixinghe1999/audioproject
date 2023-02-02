@@ -77,7 +77,7 @@ class UCF101(td.Dataset):
         if os.path.isfile(fname_audio):
             audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
             audio = np.pad(audio, (0, self.length * self.sample_rate - len(audio)))
-            audio = (audio * 32768.0).astype(np.float32).unsqueeze(0)
+            audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
         else:
             audio = np.zeros((1, self.sample_rate * self.length))
         if self.transform_audio is not None and audio is not None:
