@@ -81,23 +81,17 @@ def prepare_model(model):
 def zero_shot_eval(y_pred, y, class_idx_to_label, print_result=False):
     # calculate model confidence
     num_audio = y_pred.shape[0]
-    top1_a = 0; top3_a = 0; log = []
+    top1_a = 0; top3_a = 0;
     for audio_idx in range(num_audio):
         # acquire Top-3 most similar results
         conf_values, ids = y_pred[audio_idx].topk(3)
         gt = y[audio_idx].item()
         if gt == ids[0]:
             top1_a += 1
-        else:
-            log.append([class_idx_to_label[gt], class_idx_to_label[ids[0].item()]])
         if (gt == ids).any():
             top3_a += 1
         # format output strings
-        if print_result:
-            query = class_idx_to_label[gt]
-            results = ', '.join([f'{class_idx_to_label[i.item()]:>15s} ({v:06.2%})' for v, i in zip(conf_values, ids)])
-            print(query + ', ' + results)
-    return top1_a/num_audio, top3_a/num_audio, log
+    return top1_a/num_audio, top3_a/num_audio,
 def eval_step(batch, model, dataset, device, text_features=None, save=None):
     model.eval()
     with torch.no_grad():
@@ -127,22 +121,23 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             audio_features = audio_features.unsqueeze(1)
             y_pred_a = (audio_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
         else:
-            audio_features = torch.zeros((len(text), 1024))
+            audio_features = torch.zeros((len(text), 1,  1024))
             y_pred_a = None
         if image is not None:
             image_features = image_features.unsqueeze(1)
             y_pred_i = (image_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
         else:
-            image_features = torch.zeros((len(text), 1024))
+            image_features = torch.zeros((len(text), 1,  1024))
             y_pred_i = None
-
+        print(y_pred_i.shape, y_pred_a.shape)
+        y = y.argmax(dim=-1)
         if save is not None:
             print(text_features.shape, audio_features.shape, image_features.shape)
             save['text'].append(text_features.squeeze(0).cpu().numpy())
-            save['audio'].append(audio_features.squeeze(0).cpu().numpy())
-            save['image'].append(audio_features.squeeze(0).cpu().numpy())
+            save['audio'].append(audio_features.squeeze(1).cpu().numpy())
+            save['image'].append(audio_features.squeeze(1).cpu().numpy())
             save['y'].append(y.cpu().numpy())
-        y = y.argmax(dim=-1)
+
     return y_pred_a, y_pred_i, y
 def validate_one_model(model, dataset, text_features, device):
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False,
