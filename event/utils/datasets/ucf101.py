@@ -68,6 +68,7 @@ class UCF101(td.Dataset):
         fname_audio = self.root + row
         target = [row.split('/')[0]]
         print(fname_video)
+        print(os.path.isfile(fname_video))
         vid = ffmpeg.probe(fname_video)
         print(vid['streams'])
         # reader.seek(center)
