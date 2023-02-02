@@ -86,10 +86,8 @@ class UCF101(td.Dataset):
             audio = None
         if self.transform_audio is not None and audio is not None:
             audio = self.transform_audio(audio)
-            print(audio.shape)
         if self.transform_image is not None and image is not None:
             image = self.transform_image(image)
-            print(image.shape)
         return audio, image, target
     def __len__(self) -> int:
         return len(self.data)
