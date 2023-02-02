@@ -47,17 +47,14 @@ class UCF101(td.Dataset):
             data = ['testlist01.txt', 'testlist02.txt', 'testlist03.txt']
         self.data = []
         for d in data:
-            with open(root+d, "r") as fid:
-                data = fid.readlines()
-                data = [x.strip().split(" ") for x in data]
-                print(data)
-            #self.data += a
+            with open(root+d, "r") as f:
+                self.data += f.readlines()
         self.class_idx_to_label = dict()
         self.label_to_class_idx = dict()
         with open(root + 'classInd.txt', 'r') as f:
-            for line in f.readlines():
-                self.class_idx_to_label[line[0]] = line[1]
-                self.label_to_class_idx[line[1]] = line[0]
+            for idx, line in enumerate(f.readlines()):
+                self.class_idx_to_label[idx] = line
+                self.label_to_class_idx[line] = idx
         self.root = root
         self.sample_rate = sample_rate
         self.length = length
@@ -69,9 +66,9 @@ class UCF101(td.Dataset):
         row = self.data[index]
         print(self.class_idx_to_label)
         print(row)
-        fname_video = self.root + row[0] + '.avi'
-        fname_audio = self.root + row[1] + '.wav'
-        target = [self.class_idx_to_label[row[1]]]
+        fname_video = self.root + row + '.avi'
+        fname_audio = self.root + row + '.wav'
+        target = [row.split('/')[0]]
         reader = tv.io.VideoReader(fname_video, "video")
         metadata = reader.get_metadata()
         print(metadata)
