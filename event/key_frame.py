@@ -12,8 +12,8 @@ warnings.filterwarnings("ignore")
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
-    # MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
-    MODEL_FILENAME = 'AudioCLIP-Partial-Training.pt'
+    MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
+    # MODEL_FILENAME = 'AudioCLIP-Partial-Training.pt'
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     # model = AudioCLIP().to(device)
     # dataset = EPIC_Kitchen()
