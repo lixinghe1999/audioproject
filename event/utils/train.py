@@ -144,7 +144,7 @@ def validate_one_model(model, dataset, text_features, device):
                                               drop_last=False, collate_fn=collate_fn)
     acc_1 = 0
     for batch in loader:
-        y_pred, y = eval_step(batch, model, text_features, dataset, device)
-        top1, top3, log = zero_shot_eval(y_pred, y, dataset.class_idx_to_label, print_result=False)
+        y_pred_a, y_pred_i, y = eval_step(batch, model, dataset, device, text_features=text_features)
+        top1, top3, log = zero_shot_eval(y_pred_a, y)
         acc_1 += top1
     return acc_1 / len(loader)
