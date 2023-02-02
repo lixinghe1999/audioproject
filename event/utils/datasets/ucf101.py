@@ -103,8 +103,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if not os.path.exists(args.output_dir):
-        os.mkdir(args.output_dir)
+    # if not os.path.exists(args.output_dir):
+    #     os.mkdir(args.output_dir)
 
     for root, dirs, files in os.walk(args.videos_dir):
         for f in files:
