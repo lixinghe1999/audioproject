@@ -65,17 +65,13 @@ class UCF101(td.Dataset):
         row = self.data[index].rstrip()
         # print(row)
         fname_video = self.root + row
-        fname_audio = self.root + row
         target = [row.split('/')[0]]
         vid = ffmpeg.probe(fname_video)
         for stream in (vid['streams']):
             if stream['codec_type'] == 'video':
-                print(stream)
+                center = stream['duration']/2
             elif stream['codec_type'] == 'audio':
-                print(stream)
-        start = (datetime.strptime(row['start_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
-        stop = (datetime.strptime(row['stop_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
-        center = (start + stop) / 2
+                pass
         image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
         image = (image[0] / 255).permute(2, 0, 1)
         audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
@@ -102,7 +98,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('videos_dir', help='Directory of UCF videos with audio')
-    parser.add_argument('output_dir', help='Directory of UCF videos with audio')
+   #parser.add_argument('output_dir', help='Directory of UCF videos with audio')
     parser.add_argument('--sample_rate', default='44100', help='Rate to resample audio')
 
     args = parser.parse_args()
@@ -114,6 +110,6 @@ if __name__ == '__main__':
         for f in files:
             if f.endswith('.avi'):
                 ffmpeg_extraction(os.path.join(root, f),
-                                  os.path.join(args.output_dir,
+                                  os.path.join(root,
                                                os.path.splitext(f)[0] + '.wav'),
                                   args.sample_rate)
