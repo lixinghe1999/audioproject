@@ -68,10 +68,10 @@ class UCF101(td.Dataset):
         fname_audio = self.root + row[:-3] + 'wav'
         target = [row.split('/')[0]]
         vid = ffmpeg.probe(fname_video)
-
-        center = vid['streams'][0]['duration'] / 2
+        center = float(vid['streams'][0]['duration']) / 2
         image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
         image = (image[0] / 255).permute(2, 0, 1)
+
         if os.path.isfile(fname_audio):
             audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
             if len(audio) >= self.length * self.sample_rate:
