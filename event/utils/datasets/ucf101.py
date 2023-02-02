@@ -71,6 +71,7 @@ class UCF101(td.Dataset):
         # center = float(vid['streams'][0]['duration']) / 2
         # image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
         # image = (image[0] / 255).permute(2, 0, 1)
+        center = 3
         image = torch.zeros(3, 256, 256)
         if os.path.isfile(fname_audio):
             audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
