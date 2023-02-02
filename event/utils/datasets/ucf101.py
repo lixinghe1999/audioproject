@@ -47,9 +47,11 @@ class UCF101(td.Dataset):
             data = ['testlist01.txt', 'testlist02.txt', 'testlist03.txt']
         self.data = []
         for d in data:
-            a = pd.read_csv(root + d)
-            print(a)
-            self.data += a
+            with open(root+d, "r") as fid:
+                data = fid.readlines()
+                data = [x.strip().split(" ") for x in data]
+                print(data)
+            #self.data += a
         self.class_idx_to_label = dict()
         self.label_to_class_idx = dict()
         with open(root + 'classInd.txt', 'r') as f:
