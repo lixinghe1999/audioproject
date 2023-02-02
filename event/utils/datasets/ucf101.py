@@ -63,13 +63,13 @@ class UCF101(td.Dataset):
 
     def __getitem__(self, index: int):
         row = self.data[index]
-        #print(row)
+        # print(row)
         fname_video = self.root + row
         fname_audio = self.root + row
         target = [row.split('/')[0]]
         print(fname_video)
         # print(os.path.isfile(self.root))
-        vid = ffmpeg.probe(fname_video)
+        vid = ffmpeg.probe('../dataset/UCF101/ApplyEyeMakeup/v_ApplyEyeMakeup_g01_c02.avi')
         print(vid['streams'])
         # reader.seek(center)
         start = (datetime.strptime(row['start_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
