@@ -67,24 +67,19 @@ class UCF101(td.Dataset):
         fname_video = self.root + row
         fname_audio = self.root + row[:-3] + 'wav'
         target = [row.split('/')[0]]
-        vid = ffmpeg.probe(fname_video)
-        center = float(vid['streams'][0]['duration']) / 2
-        image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
-        image = (image[0] / 255).permute(2, 0, 1)
-        # image = torch.zeros(3, 256, 256)
-        audio = np.zeros((1, self.sample_rate * self.length))
-        # if os.path.isfile(fname_audio):
-        #     audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
-        #     if len(audio) >= self.length * self.sample_rate:
-        #         t_start = random.sample(range(len(audio) - self.length * self.sample_rate + 1), 1)[0]
-        #         audio = audio[t_start: t_start + self.length * self.sample_rate]
-        #     else:
-        #         audio = np.pad(audio, (0, self.length * self.sample_rate - len(audio)))
-        #     if audio.ndim == 1:
-        #         audio = audio[:, np.newaxis]
-        #     audio = (audio.T * 32768.0).astype(np.float32)
-        # else:
-        #     audio = np.zeros((1, self.sample_rate * self.length))
+        # vid = ffmpeg.probe(fname_video)
+        # center = float(vid['streams'][0]['duration']) / 2
+        # image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
+        # image = (image[0] / 255).permute(2, 0, 1)
+        image = torch.zeros(3, 256, 256)
+        # audio = np.zeros((1, self.sample_rate * self.length))
+        center = 3
+        if os.path.isfile(fname_audio):
+            audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
+            audio = np.pad(audio, (0, self.length * self.sample_rate - len(audio)))
+            audio = (audio.T * 32768.0).astype(np.float32)
+        else:
+            audio = np.zeros((1, self.sample_rate * self.length))
         if self.transform_audio is not None and audio is not None:
             audio = self.transform_audio(audio)
         if self.transform_image is not None and image is not None:
