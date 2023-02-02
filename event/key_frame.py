@@ -14,8 +14,8 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     # MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     MODEL_FILENAME = 'AudioCLIP-Partial-Training.pt'
-    # model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    model = AudioCLIP().to(device)
+    model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
+    # model = AudioCLIP().to(device)
     # dataset = EPIC_Kitchen()
     dataset = UCF101()
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=8, batch_size=64, shuffle=True,
