@@ -9,6 +9,8 @@ import librosa
 import numpy as np
 from datetime import datetime
 import argparse
+
+import pandas as pd
 import torch.utils.data as td
 import torchvision as tv
 import subprocess
@@ -45,8 +47,9 @@ class UCF101(td.Dataset):
             data = ['testlist01.txt', 'testlist02.txt', 'testlist03.txt']
         self.data = []
         for d in data:
-            with open(root + d, 'r') as f:
-                self.data += [line.rstrip() for line in f]
+            a = pd.read_csv(root + d)
+            print(a)
+            self.data += a
         self.class_idx_to_label = dict()
         self.label_to_class_idx = dict()
         with open(root + 'classInd.txt', 'r') as f:
