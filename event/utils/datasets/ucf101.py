@@ -83,7 +83,7 @@ class UCF101(td.Dataset):
                 audio = audio[:, np.newaxis]
             audio = (audio.T * 32768.0).astype(np.float32)
         else:
-            audio = None
+            audio = np.zeros((1, self.sample_rate * self.length))
         if self.transform_audio is not None and audio is not None:
             audio = self.transform_audio(audio)
         if self.transform_image is not None and image is not None:
