@@ -52,9 +52,10 @@ class UCF101(td.Dataset):
         self.class_idx_to_label = dict()
         self.label_to_class_idx = dict()
         with open(root + 'classInd.txt', 'r') as f:
-            for idx, line in enumerate(f.readlines()):
-                self.class_idx_to_label[idx] = line
-                self.label_to_class_idx[line] = idx
+            for line in f.readlines():
+                idx, label = line.rstrip().split()
+                self.class_idx_to_label[idx] = label
+                self.label_to_class_idx[label] = idx
         self.root = root
         self.sample_rate = sample_rate
         self.length = length
