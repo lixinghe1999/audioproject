@@ -63,10 +63,9 @@ class UCF101(td.Dataset):
 
     def __getitem__(self, index: int):
         row = self.data[index]
-        print(self.class_idx_to_label)
         print(row)
-        fname_video = self.root + row + '.avi'
-        fname_audio = self.root + row + '.wav'
+        fname_video = self.root + row
+        fname_audio = self.root + row
         target = [row.split('/')[0]]
 
         vid = ffmpeg.probe(fname_video)
