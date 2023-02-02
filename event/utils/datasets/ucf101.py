@@ -52,8 +52,8 @@ class UCF101(td.Dataset):
         with open(root + 'classInd.txt', 'r') as f:
             for line in f.readlines():
                 idx, label = line.rstrip().split()
-                self.class_idx_to_label[int(idx)] = label
-                self.label_to_class_idx[label] = int(idx)
+                self.class_idx_to_label[int(idx)-1] = label
+                self.label_to_class_idx[label] = int(idx)-1
         self.root = root
         self.sample_rate = sample_rate
         self.length = length
