@@ -17,7 +17,7 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     # dataset = EPIC_Kitchen()
     dataset = UCF101()
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=8, batch_size=32, shuffle=True,
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=8, batch_size=64, shuffle=True,
                                          drop_last=True, collate_fn=collate_fn, pin_memory=True)
     acc_a = []
     acc_i = []
@@ -40,4 +40,4 @@ if __name__ == "__main__":
     print(np.mean(acc_a, axis=0))
     print(np.mean(acc_i, axis=0))
     np.savez('save_embedding', audio=np.concatenate(save['audio']), image=np.concatenate(save['image']),
-            text=text_features.squeeze(0).cpu().numpy(), y=save['y'])
+            text=np.concatenate(save['text']), y=save['y'])

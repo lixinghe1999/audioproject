@@ -133,7 +133,7 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             y_pred_i = None
         y = y.argmax(dim=-1)
         if save is not None:
-            # save['text'].append(text_features.squeeze(0).cpu().numpy())
+            save['text'].append(text_features.squeeze(0).cpu().numpy())
             save['audio'].append(audio_features.squeeze(1).cpu().numpy())
             save['image'].append(image_features.squeeze(1).cpu().numpy())
             save['y'].append(y.cpu().numpy())
