@@ -69,6 +69,8 @@ class UCF101(td.Dataset):
         target = [row.split('/')[0]]
         print(fname_video)
         # print(os.path.isfile(self.root))
+        print(fname_video == '../dataset/UCF101/ApplyEyeMakeup/v_ApplyEyeMakeup_g01_c01.avi')
+        print(fname_video == '../dataset/UCF101/ApplyEyeMakeup/v_ApplyEyeMakeup_g01_c02.avi')
         vid = ffmpeg.probe('../dataset/UCF101/ApplyEyeMakeup/v_ApplyEyeMakeup_g01_c02.avi')
         print(vid['streams'])
         # reader.seek(center)
