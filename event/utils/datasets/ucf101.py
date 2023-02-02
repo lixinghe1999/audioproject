@@ -62,6 +62,7 @@ class UCF101(td.Dataset):
 
     def __getitem__(self, index: int):
         row = self.data[index]
+        print(row)
         fname_video = self.root + row[0] + '.avi'
         fname_audio = self.root + row[1] + '.wav'
         target = [self.class_idx_to_label[row[1]]]
