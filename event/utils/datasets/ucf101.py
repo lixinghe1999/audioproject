@@ -63,11 +63,11 @@ class UCF101(td.Dataset):
 
     def __getitem__(self, index: int):
         row = self.data[index]
-        print(row)
+        #print(row)
         fname_video = self.root + row
         fname_audio = self.root + row
         target = [row.split('/')[0]]
-
+        print(fname_video)
         vid = ffmpeg.probe(fname_video)
         print(vid['streams'])
         # reader.seek(center)
