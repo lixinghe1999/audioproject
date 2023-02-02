@@ -80,6 +80,8 @@ def prepare_model(model):
     return model, param_groups
 def zero_shot_eval(y_pred, y):
     # calculate model confidence
+    if y_pred is None:
+        return 0, 0
     num_audio = y_pred.shape[0]
     top1_a = 0; top3_a = 0;
     for audio_idx in range(num_audio):
@@ -91,7 +93,7 @@ def zero_shot_eval(y_pred, y):
         if (gt == ids).any():
             top3_a += 1
         # format output strings
-    return top1_a/num_audio, top3_a/num_audio,
+    return top1_a/num_audio, top3_a/num_audio
 def eval_step(batch, model, dataset, device, text_features=None, save=None):
     model.eval()
     with torch.no_grad():
@@ -121,18 +123,16 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             audio_features = audio_features.unsqueeze(1)
             y_pred_a = (audio_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
         else:
-            audio_features = torch.zeros((len(text), 1,  1024))
+            audio_features = torch.zeros((len(text), 1, 1024))
             y_pred_a = None
         if image is not None:
             image_features = image_features.unsqueeze(1)
             y_pred_i = (image_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
         else:
-            image_features = torch.zeros((len(text), 1,  1024))
+            image_features = torch.zeros((len(text), 1, 1024))
             y_pred_i = None
-        print(y_pred_i.shape, y_pred_a.shape)
         y = y.argmax(dim=-1)
         if save is not None:
-            print(text_features.shape, audio_features.shape, image_features.shape)
             save['text'].append(text_features.squeeze(0).cpu().numpy())
             save['audio'].append(audio_features.squeeze(1).cpu().numpy())
             save['image'].append(audio_features.squeeze(1).cpu().numpy())

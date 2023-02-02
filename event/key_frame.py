@@ -4,7 +4,8 @@ import numpy as np
 import torch
 from model import AudioCLIP
 from utils.train import collate_fn, zero_shot_eval, eval_step
-
+import warnings
+warnings.filterwarnings("ignore")
 
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
