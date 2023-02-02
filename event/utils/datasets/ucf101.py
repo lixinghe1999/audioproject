@@ -46,8 +46,7 @@ class UCF101(td.Dataset):
         self.data = []
         for d in data:
             with open(root + d, 'r') as f:
-                print(f.readlines())
-                self.data += f.readlines()
+                self.data += [line.rstrip() for line in f]
         self.class_idx_to_label = dict()
         self.label_to_class_idx = dict()
         with open(root + 'classInd.txt', 'r') as f:
