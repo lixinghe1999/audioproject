@@ -62,7 +62,7 @@ class UCF101(td.Dataset):
         self.length = length
 
     def __getitem__(self, index: int):
-        row = self.data[index]
+        row = self.data[index].rstrip()
         # print(row)
         fname_video = self.root + row
         fname_audio = self.root + row
