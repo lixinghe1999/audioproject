@@ -21,10 +21,10 @@ if __name__ == "__main__":
     save = {'audio':[], 'image':[], 'text':[], 'y':[]}
     for batch in loader:
         y_pred_a, y_pred_i, y = eval_step(batch, model, dataset, device, save=save)
-        top1, top3 = zero_shot_eval(y_pred_a, y, dataset.class_idx_to_label, print_result=False)
+        top1, top3 = zero_shot_eval(y_pred_a, y)
         print(top1, top3)
         acc_a.append([top1, top3])
-        top1, top3 = zero_shot_eval(y_pred_i + y_pred_a, y, dataset.class_idx_to_label, print_result=False)
+        top1, top3 = zero_shot_eval(y_pred_i, y)
         print(top1, top3)
         acc_i.append([top1, top3])
     print(np.mean(acc_a, axis=0))

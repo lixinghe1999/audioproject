@@ -78,7 +78,7 @@ def prepare_model(model):
         'weight_decay': 0.0
     })
     return model, param_groups
-def zero_shot_eval(y_pred, y, class_idx_to_label, print_result=False):
+def zero_shot_eval(y_pred, y):
     # calculate model confidence
     num_audio = y_pred.shape[0]
     top1_a = 0; top3_a = 0;
