@@ -12,8 +12,8 @@ warnings.filterwarnings("ignore")
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
-    MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
-    # MODEL_FILENAME = 'AudioCLIP-Partial-Training.pt'
+    # MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
+    MODEL_FILENAME = 'AudioCLIP-Partial-Training.pt'
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     # dataset = EPIC_Kitchen()
     dataset = UCF101()
@@ -28,6 +28,7 @@ if __name__ == "__main__":
             for class_idx in sorted(dataset.class_idx_to_label.keys())
         ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
         text_features = text_features.unsqueeze(1).transpose(0, 1)
+    print(text_features.shape)
     print('finish text embedding extraction')
     for batch in tqdm(loader):
         y_pred_a, y_pred_i, y = eval_step(batch, model, dataset, device, save=save, text_features=text_features)
