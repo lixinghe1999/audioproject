@@ -45,11 +45,11 @@ class UCF101(td.Dataset):
             data = ['testlist01.txt', 'testlist02.txt', 'testlist03.txt']
         self.data = []
         for d in data:
-            with open(root + d, 'rb') as f:
+            with open(root + d, 'r') as f:
                 self.data += f.readlines()
         self.class_idx_to_label = dict()
         self.label_to_class_idx = dict()
-        with open(root + 'classInd.txt', 'rb') as f:
+        with open(root + 'classInd.txt', 'r') as f:
             for line in f.readlines():
                 self.class_idx_to_label[line[0]] = line[1]
                 self.label_to_class_idx[line[1]] = line[0]
