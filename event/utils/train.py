@@ -102,43 +102,46 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
     model.eval()
     with torch.no_grad():
         audio, image, text = batch
-        audio = audio.to(device)
+        if audio is not None:
+            audio = audio.to(device)
         if image is not None:
             image = image.to(device)
 
         if text_features is not None:
             ((audio_features, image_features, _), _), _ = model(audio=audio, image=image,
-             batch_indices= torch.arange(audio.shape[0], dtype=torch.int64, device=device))
+             batch_indices= torch.arange(len(text), dtype=torch.int64, device=device))
             class_idx_to_label = dataset.class_idx_to_label
             label_to_class_idx = dataset.label_to_class_idx
-            y = torch.zeros(audio.shape[0], len(class_idx_to_label), dtype=torch.int8, device=device)
+            y = torch.zeros(len(text), len(class_idx_to_label), dtype=torch.int8, device=device)
             for item_idx, labels in enumerate(text):
                 class_ids = list(sorted([
                     label_to_class_idx[lb] for lb in labels]))
                 y[item_idx][class_ids] = 1
-
         else:
             ((audio_features, image_features, text_features), _), _ = model(audio=audio, image=image, text=text, batch_indices=
-            torch.arange(audio.shape[0], dtype=torch.int64, device=device))
+            torch.arange(len(text), dtype=torch.int64, device=device))
             text_features = text_features.unsqueeze(1).transpose(0, 1)
-            y = torch.eye(audio.shape[0])
+            y = torch.eye(len(text))
 
-
-        audio_features = audio_features.unsqueeze(1)
-        y_pred_a = (audio_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
+        if audio is not None:
+            audio_features = audio_features.unsqueeze(1)
+            y_pred_a = (audio_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
+        else:
+            audio_features = torch.zeros((len(text), 1024))
+            y_pred_a = None
         if image is not None:
             image_features = image_features.unsqueeze(1)
             y_pred_i = (image_features @ text_features.transpose(-1, -2)).squeeze(1).cpu()
         else:
+            image_features = torch.zeros((len(text), 1024))
             y_pred_i = None
+
         if save is not None:
-            audio_features = audio_features.squeeze(1)
-            image_features = image_features.squeeze(1)
-            text_features = text_features.squeeze(0)
-            print(audio_features.shape, image_features.shape, text_features.shape)
-            embed = np.concatenate([audio_features.cpu().numpy(), image_features.cpu().numpy(),
-                                    text_features.cpu().numpy(), y.cpu().numpy()], axis=1)
-            save.append(embed)
+            print(text_features.shape, audio_features.shape, image_features.shape)
+            save['text'].append(text_features.squeeze(0).cpu().numpy())
+            save['audio'].append(audio_features.squeeze(0).cpu().numpy())
+            save['image'].append(audio_features.squeeze(0).cpu().numpy())
+            save['y'].append(y.cpu().numpy())
         y = y.argmax(dim=-1)
     return y_pred_a, y_pred_i, y
 def validate_one_model(model, dataset, text_features, device):

@@ -91,7 +91,6 @@ class UCF101(td.Dataset):
             image = self.transform_image(image)
             print(image.shape)
         return audio, image, target
-
     def __len__(self) -> int:
         return len(self.data)
 

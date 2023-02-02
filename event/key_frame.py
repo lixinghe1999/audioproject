@@ -19,7 +19,7 @@ if __name__ == "__main__":
     acc_a = []
     acc_i = []
     logs = []
-    save = []
+    save = {'audio':[], 'image':[], 'text':[], 'y':[]}
     for batch in loader:
         y_pred_a, y_pred_i, y = eval_step(batch, model, dataset, device, save=save)
         top1, top3, log = zero_shot_eval(y_pred_a, y, dataset.class_idx_to_label, print_result=False)
