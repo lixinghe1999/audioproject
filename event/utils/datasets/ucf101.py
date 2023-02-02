@@ -69,7 +69,7 @@ class UCF101(td.Dataset):
         target = [row.split('/')[0]]
         vid = ffmpeg.probe(fname_video)
 
-        center = vid['streams']['duration'] / 2
+        center = vid['streams'][0]['duration'] / 2
         image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
         image = (image[0] / 255).permute(2, 0, 1)
         if os.path.isfile(fname_audio):
