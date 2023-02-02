@@ -29,7 +29,7 @@ if __name__ == "__main__":
         ], batch_indices=torch.arange(len(dataset.class_idx_to_label), dtype=torch.int64, device=device))
         text_features = text_features.unsqueeze(1).transpose(0, 1)
 
-    for batch in loader:
+    for batch in loader[:5]:
         y_pred_a, y_pred_i, y = eval_step(batch, model, dataset, device, save=save, text_features=text_features)
         top1, top3 = zero_shot_eval(y_pred_a, y)
         print(top1, top3)
@@ -41,4 +41,4 @@ if __name__ == "__main__":
     print(np.mean(acc_i, axis=0))
     save = np.concatenate(save)
     np.savez('save_embedding', audio=np.concatenate(save['audio']), image=np.concatenate(save['image']),
-             text=np.concatenate(save['text']), y=save['y'])
+            text=text_features.squeeze(0).cpu().numpy(), y=save['y'])
