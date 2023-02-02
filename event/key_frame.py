@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # dataset = EPIC_Kitchen()
     dataset = UCF101()
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=8, batch_size=32, shuffle=True,
-                                         drop_last=True, collate_fn=collate_fn)
+                                         drop_last=True, collate_fn=collate_fn, pin_memory=True)
     acc_a = []
     acc_i = []
     save = {'audio':[], 'image':[], 'text':[], 'y':[]}
