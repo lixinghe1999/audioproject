@@ -2,15 +2,13 @@
 1. split video into vision + audio
 3. Dataset Class for Epic_kitchen
 '''
-import pickle
 import os
 import random
 import librosa
 import numpy as np
 from datetime import datetime
 import argparse
-
-import pandas as pd
+import ffmpeg
 import torch.utils.data as td
 import torchvision as tv
 import subprocess
@@ -70,9 +68,9 @@ class UCF101(td.Dataset):
         fname_video = self.root + row + '.avi'
         fname_audio = self.root + row + '.wav'
         target = [row.split('/')[0]]
-        reader = tv.io.VideoReader(fname_video, "video")
-        metadata = reader.get_metadata()
-        print(metadata)
+
+        vid = ffmpeg.probe(fname_video)
+        print(vid['streams'])
         # reader.seek(center)
         start = (datetime.strptime(row['start_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
         stop = (datetime.strptime(row['stop_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
