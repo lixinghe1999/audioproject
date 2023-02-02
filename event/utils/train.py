@@ -108,7 +108,7 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
              batch_indices= torch.arange(len(text), dtype=torch.int64, device=device))
             class_idx_to_label = dataset.class_idx_to_label
             label_to_class_idx = dataset.label_to_class_idx
-            y = torch.zeros(len(text), len(class_idx_to_label), dtype=torch.int8, device=device)
+            y = torch.zeros(len(text), len(class_idx_to_label), dtype=torch.int8)
             for item_idx, labels in enumerate(text):
                 class_ids = list(sorted([
                     label_to_class_idx[lb] for lb in labels]))
