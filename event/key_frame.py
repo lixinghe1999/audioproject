@@ -15,7 +15,7 @@ if __name__ == "__main__":
     model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
     # dataset = EPIC_Kitchen()
     dataset = UCF101()
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=True,
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=8, batch_size=32, shuffle=True,
                                          drop_last=True, collate_fn=collate_fn)
     acc_a = []
     acc_i = []
