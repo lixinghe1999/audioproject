@@ -67,13 +67,12 @@ class UCF101(td.Dataset):
         fname_video = self.root + row
         fname_audio = self.root + row
         target = [row.split('/')[0]]
-        print(fname_video)
-        # print(os.path.isfile(self.root))
-        print(fname_video == '../dataset/UCF101/ApplyEyeMakeup/v_ApplyEyeMakeup_g01_c01.avi')
-        print(fname_video == '../dataset/UCF101/ApplyEyeMakeup/v_ApplyEyeMakeup_g01_c02.avi')
-        vid = ffmpeg.probe('../dataset/UCF101/ApplyEyeMakeup/v_ApplyEyeMakeup_g01_c02.avi')
-        print(vid['streams'])
-        # reader.seek(center)
+        vid = ffmpeg.probe(fname_video)
+        for stream in (vid['streams']):
+            if stream['codec_type'] == 'video':
+                print(stream)
+            elif stream['codec_type'] == 'audio':
+                print(stream)
         start = (datetime.strptime(row['start_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
         stop = (datetime.strptime(row['stop_timestamp'], '%H:%M:%S.%f') - datetime(1900, 1, 1)).total_seconds()
         center = (start + stop) / 2
