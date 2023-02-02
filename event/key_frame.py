@@ -39,6 +39,6 @@ if __name__ == "__main__":
         acc_i.append([top1, top3])
     print(np.mean(acc_a, axis=0))
     print(np.mean(acc_i, axis=0))
-    save = np.concatenate(save)
+    #save = np.concatenate(save)
     np.savez('save_embedding', audio=np.concatenate(save['audio']), image=np.concatenate(save['image']),
-            text=text_features.squeeze(0).cpu().numpy(), y=save['y'])
+            text=np.concatenate(save['text']).squeeze(0).cpu().numpy(), y=save['y'])
