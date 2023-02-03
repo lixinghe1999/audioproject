@@ -61,6 +61,7 @@ def train(train_loader, test_loader, optimizer, scheduler):
         data, pseudo_label, label = batch
         data = data.to(device)
         predict = model(data)
+        print(predict, pseudo_label)
         loss = torch.nn.CrossEntropyLoss(predict, pseudo_label)
         loss.backward()
         optimizer.step()
