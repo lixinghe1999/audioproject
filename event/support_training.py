@@ -60,10 +60,10 @@ def train(train_loader, test_loader, optimizer, scheduler):
         optimizer.zero_grad()
         data, pseudo_label, label = batch
         data = data.to(device)
-        predict = torch.argmax(model(data), dim=-1)
+        predict = model(data)
 
-        print(predict, pseudo_label)
-        loss = torch.nn.CrossEntropyLoss(predict, pseudo_label)
+        print(predict.shape, pseudo_label)
+        loss = torch.nn.CrossEntropyLoss(predict, pseudo_label.to(device))
         loss.backward()
         optimizer.step()
     scheduler.step()
