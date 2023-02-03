@@ -114,8 +114,8 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
                     label_to_class_idx[lb] for lb in labels]))
                 y[item_idx][class_ids] = 1
         else:
-            ((audio_features, image_features, text_features), _), _ = model(audio=audio, image=image, text=text, batch_indices=
-            torch.arange(len(text), dtype=torch.int64, device=device))
+            ((audio_features, image_features, text_features), _), _ = model(audio=audio, image=image, text=text,
+                  batch_indices=torch.arange(len(text), dtype=torch.int64, device=device))
             text_features = text_features.unsqueeze(1).transpose(0, 1)
             y = torch.eye(len(text))
 
@@ -137,7 +137,7 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             save['audio'].append(audio_features.squeeze(1).cpu().numpy())
             save['image'].append(image_features.squeeze(1).cpu().numpy())
             save['y'].append(y.cpu().numpy())
-
+        print(np.concatenate(save['y']).shape)
     return y_pred_a, y_pred_i, y
 def validate_one_model(model, dataset, text_features, device):
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False,

@@ -16,10 +16,11 @@ def dot_plot(cosine, y, correct_cosine):
 if __name__ == "__main__":
     embed = np.load('save_embedding.npz')
     audio = embed['audio']
+    image = embed['image']
     text = embed['text']
     y = embed['y']
     total = y.shape[0]
-
+    print(audio.shape, image.shape, text.shape, y.shape)
     cosine = audio @ text[0].transpose()
     correct_cosine = np.sum(cosine * y, axis=-1)
 

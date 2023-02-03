@@ -41,4 +41,4 @@ if __name__ == "__main__":
     print(np.mean(acc_a, axis=0))
     print(np.mean(acc_i, axis=0))
     np.savez('save_embedding', audio=np.concatenate(save['audio']), image=np.concatenate(save['image']),
-            text=text_features.squeeze(0).cpu().numpy(), y=save['y'])
+            text=text_features.squeeze(0).cpu().numpy(), y=np.concatenate(save['y']))
