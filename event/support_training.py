@@ -54,6 +54,26 @@ class pseudo_dataset(td.Dataset):
             return image, self.pseudo_label[index], self.label[index]
     def __len__(self) -> int:
         return len(self.data)
+def train(train_loader, test_loader, optimizer, scheduler):
+    model.train()
+    for batch in train_loader:
+        optimizer.zero_grad()
+        data, pseudo_label, label = batch
+        data = data.to(device)
+        predict = model(data)
+        loss = torch.nn.CrossEntropyLoss(predict, pseudo_label)
+        loss.backward()
+        optimizer.step()
+    scheduler.step()
+    model.eval()
+    with torch.no_grad():
+        for batch in test_loader:
+            data, pseudo_label, label = batch
+            data = data.to(device)
+            predict = model(data)
+            acc = (predict == label).sum()
+            print(acc)
+
 
 if __name__ == "__main__":
     embed = np.load('save_embedding.npz')
@@ -69,7 +89,7 @@ if __name__ == "__main__":
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
-    model = resnet18()
+    model = resnet18().to(device)
     model.load_state_dict(torch.load('resnet18.pth'))
     model.fc = torch.nn.Linear(512, 101)
     transform_image = tv.transforms.Compose([
@@ -87,21 +107,4 @@ if __name__ == "__main__":
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
-    model.train()
-    for batch in train_loader:
-        optimizer.zero_grad()
-        data, pseudo_label, label = batch
-        data = data.to(device)
-        predict = model(data)
-        loss = torch.nn.CrossEntropyLoss(predict, pseudo_label)
-        loss.backward()
-        optimizer.step()
-    model.eval()
-    with torch.no_grad():
-        for batch in test_loader:
-            data, pseudo_label, label = batch
-            data = data.to(device)
-            predict = model(data)
-            acc = (predict == label).sum()
-            print(acc)
-
+    train(train_loader, test_loader, optimizer, scheduler)
