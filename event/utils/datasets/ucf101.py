@@ -3,13 +3,9 @@
 3. Dataset Class for Epic_kitchen
 '''
 import os
-import random
-import librosa
 import numpy as np
-from datetime import datetime
 import argparse
 import ffmpeg
-import torch
 import torch.utils.data as td
 import torchvision as tv
 import subprocess
@@ -71,6 +67,7 @@ class UCF101(td.Dataset):
         center = float(vid['streams'][0]['duration']) / 2
         image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
         image = (image[0] / 255).permute(2, 0, 1)
+        # UCF-101 has unstable audio
         audio = None
         # if os.path.isfile(fname_audio):
         #     audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
