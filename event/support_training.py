@@ -60,7 +60,7 @@ def train(train_loader, test_loader, optimizer, scheduler):
         optimizer.zero_grad()
         data, pseudo_label, label = batch
         data = data.to(device)
-        predict = torch.softmax(model(data), dim=-1)
+        predict = torch.argmax(model(data), dim=-1)
 
         print(predict, pseudo_label)
         loss = torch.nn.CrossEntropyLoss(predict, pseudo_label)
