@@ -74,7 +74,7 @@ def train(train_loader, test_loader, optimizer, scheduler):
             data, pseudo_label, label = batch
             data = data.to(device)
             predict = model(data)
-            acc = (torch.argmax(predict, dim=-1) == label).sum()
+            acc = (torch.argmax(predict, dim=-1).cpu() == label).sum()
             print(acc)
 
 
