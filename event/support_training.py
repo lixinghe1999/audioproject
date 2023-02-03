@@ -7,6 +7,7 @@ import ffmpeg
 import os
 import librosa
 import torch
+from tqdm import tqdm
 loss = torch.nn.CrossEntropyLoss()
 class pseudo_dataset(td.Dataset):
     def __init__(self,
@@ -35,7 +36,7 @@ class pseudo_dataset(td.Dataset):
         if self.transform_audio:
             fname_audio = self.root + fname[:-3] + 'wav'
             if os.path.isfile(fname_audio):
-                audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
+                audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate)
                 audio = np.pad(audio, (0, self.length * self.sample_rate - len(audio)))
                 audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
             else:
@@ -57,7 +58,7 @@ class pseudo_dataset(td.Dataset):
         return len(self.data)
 def train(train_loader, test_loader, optimizer, scheduler):
     model.train()
-    for batch in train_loader:
+    for batch in tqdm(train_loader):
         optimizer.zero_grad()
         data, pseudo_label, label = batch
         data = data.to(device)
