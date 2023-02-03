@@ -7,6 +7,7 @@ import ffmpeg
 import os
 import librosa
 import torch
+loss = torch.nn.CrossEntropyLoss()
 class pseudo_dataset(td.Dataset):
     def __init__(self,
                  root,
@@ -63,8 +64,8 @@ def train(train_loader, test_loader, optimizer, scheduler):
         predict = model(data)
 
         print(predict.shape, pseudo_label)
-        loss = torch.nn.CrossEntropyLoss(predict, pseudo_label.to(device))
-        loss.backward()
+        l = loss(predict, pseudo_label.to(device))
+        l.backward()
         optimizer.step()
     scheduler.step()
     model.eval()
