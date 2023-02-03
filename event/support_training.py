@@ -1,4 +1,4 @@
-from torchvision.models import resnet18, ResNet18_Weights
+from torchvision.models import resnet18
 import numpy as np
 from pseudo import pseduo_label
 import torch.utils.data as td
