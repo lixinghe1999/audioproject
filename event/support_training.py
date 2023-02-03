@@ -63,8 +63,8 @@ def train(train_loader, test_loader, optimizer, scheduler):
         data = data.to(device)
         predict = model(data)
 
-        print(predict.shape, pseudo_label)
         l = loss(predict, pseudo_label.to(device))
+        print(l.item())
         l.backward()
         optimizer.step()
     scheduler.step()
