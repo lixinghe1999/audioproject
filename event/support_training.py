@@ -57,17 +57,15 @@ class pseudo_dataset(td.Dataset):
         return len(self.data)
 def train(train_loader, test_loader, optimizer, scheduler):
     model.train()
-    # for batch in train_loader:
-    #     optimizer.zero_grad()
-    #     data, pseudo_label, label = batch
-    #     data = data.to(device)
-    #     predict = model(data)
-    #
-    #     l = loss(predict, pseudo_label.to(device))
-    #     print(l.item())
-    #     l.backward()
-    #     optimizer.step()
-    # scheduler.step()
+    for batch in train_loader:
+        optimizer.zero_grad()
+        data, pseudo_label, label = batch
+        data = data.to(device)
+        predict = model(data)
+        l = loss(predict, pseudo_label.to(device))
+        l.backward()
+        optimizer.step()
+    scheduler.step()
     model.eval()
     acc = []
     with torch.no_grad():
@@ -106,9 +104,10 @@ if __name__ == "__main__":
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
 
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=64, shuffle=True,
                                          drop_last=True, pin_memory=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
-    train(train_loader, test_loader, optimizer, scheduler)
+    for e in range(10):
+        train(train_loader, test_loader, optimizer, scheduler)
