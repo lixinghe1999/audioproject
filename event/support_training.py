@@ -105,7 +105,7 @@ if __name__ == "__main__":
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
 
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=64, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=16, shuffle=True,
                                          drop_last=True, pin_memory=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
