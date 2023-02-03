@@ -84,14 +84,14 @@ if __name__ == "__main__":
     name = embed['name']
     select, label = pseduo_label(image, text, y, method='skewness')
     name_select = name[select]; label_pseudo = label[select]; label_gt=y[select]
-    print(name_select[:5], label_pseudo[:5], label_gt[:5])
-
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
-    model = resnet18().to(device)
+    model = resnet18()
     model.load_state_dict(torch.load('resnet18.pth'))
     model.fc = torch.nn.Linear(512, 101)
+    model = model.to(device)
+
     transform_image = tv.transforms.Compose([
         tv.transforms.Resize(224, interpolation=tv.transforms.InterpolationMode.BICUBIC),
         tv.transforms.CenterCrop(224),
