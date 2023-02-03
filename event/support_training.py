@@ -57,17 +57,17 @@ class pseudo_dataset(td.Dataset):
         return len(self.data)
 def train(train_loader, test_loader, optimizer, scheduler):
     model.train()
-    for batch in train_loader:
-        optimizer.zero_grad()
-        data, pseudo_label, label = batch
-        data = data.to(device)
-        predict = model(data)
-
-        l = loss(predict, pseudo_label.to(device))
-        print(l.item())
-        l.backward()
-        optimizer.step()
-    scheduler.step()
+    # for batch in train_loader:
+    #     optimizer.zero_grad()
+    #     data, pseudo_label, label = batch
+    #     data = data.to(device)
+    #     predict = model(data)
+    #
+    #     l = loss(predict, pseudo_label.to(device))
+    #     print(l.item())
+    #     l.backward()
+    #     optimizer.step()
+    # scheduler.step()
     model.eval()
     with torch.no_grad():
         for batch in test_loader:
