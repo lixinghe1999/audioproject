@@ -18,7 +18,7 @@ def training_step(model, batch, optimizer, device):
     optimizer.step(None)
     return loss.item()
 def collate_fn(batch):
-    batch_audio, batch_image, batch_text = zip(*batch)
+    batch_audio, batch_image, batch_text, batch_name = zip(*batch)
 
     keep_ids = [idx for idx, (_, _) in enumerate(zip(batch_audio, batch_image))]
 
@@ -38,7 +38,12 @@ def collate_fn(batch):
         batch_text = [batch_text[idx] for idx in keep_ids]
     else:
         batch_text = None
-    return batch_audio, batch_image, batch_text
+
+    if not all(name is None for name in batch_text):
+        batch_name = [batch_name[idx] for idx in keep_ids]
+    else:
+        batch_name = None
+    return batch_audio, batch_image, batch_text, batch_name
 def prepare_model(model):
     # disable all parameters
     for p in model.parameters():
