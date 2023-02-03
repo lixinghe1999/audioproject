@@ -102,14 +102,14 @@ class AudioCLIP(CLIP):
                 map_location='cpu'
             ), strict=False)
             print('Image & Text weights loaded')
-            try:
-                self.audio.load_state_dict(torch.load(
-                    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'ESRNXFBSP.pt'),
-                    map_location='cpu'
-                ), strict=False)
-            except RuntimeError as ex:
-                print(ex)
-                print('Audio weights loaded')
+            # try:
+            #     self.audio.load_state_dict(torch.load(
+            #         os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'ESRNXFBSP.pt'),
+            #         map_location='cpu'
+            #     ), strict=False)
+            # except RuntimeError as ex:
+            #     print(ex)
+            #     print('Audio weights loaded')
 
         self.embed_dim = embed_dim
     @property

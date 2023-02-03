@@ -14,15 +14,15 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # MODEL_FILENAME = 'AudioCLIP-Partial-Training.pt'
-    model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    # model = AudioCLIP().to(device)
+    # model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
+    model = AudioCLIP().to(device)
     # dataset = EPIC_Kitchen()
     dataset = UCF101()
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=8, batch_size=64, shuffle=True,
                                          drop_last=True, collate_fn=collate_fn, pin_memory=True)
     acc_a = []
     acc_i = []
-    save = {'audio':[], 'image':[], 'text':[], 'y':[]}
+    save = {'audio': [], 'image': [], 'text': [], 'y': []}
     with torch.no_grad():
         ((_, _, text_features), _), _ = model(text=[
             [dataset.class_idx_to_label[class_idx]]
