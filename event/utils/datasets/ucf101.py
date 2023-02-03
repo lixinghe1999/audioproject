@@ -71,17 +71,18 @@ class UCF101(td.Dataset):
         center = float(vid['streams'][0]['duration']) / 2
         image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
         image = (image[0] / 255).permute(2, 0, 1)
-        if os.path.isfile(fname_audio):
-            audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
-            audio = np.pad(audio, (0, self.length * self.sample_rate - len(audio)))
-            audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
-        else:
-            audio = np.zeros((1, self.sample_rate * self.length))
+        audio = None
+        # if os.path.isfile(fname_audio):
+        #     audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate, offset=center - self.length/2, duration=self.length)
+        #     audio = np.pad(audio, (0, self.length * self.sample_rate - len(audio)))
+        #     audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
+        # else:
+        #     audio = np.zeros((1, self.sample_rate * self.length))
         if self.transform_audio is not None and audio is not None:
             audio = self.transform_audio(audio)
         if self.transform_image is not None and image is not None:
             image = self.transform_image(image)
-        return audio, image, target
+        return audio, image, target, row
     def __len__(self) -> int:
         return len(self.data)
 

@@ -97,7 +97,7 @@ def zero_shot_eval(y_pred, y):
 def eval_step(batch, model, dataset, device, text_features=None, save=None):
     model.eval()
     with torch.no_grad():
-        audio, image, text = batch
+        audio, image, text, files = batch
         if audio is not None:
             audio = audio.to(device)
         if image is not None:
@@ -137,7 +137,8 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             save['audio'].append(audio_features.squeeze(1).cpu().numpy())
             save['image'].append(image_features.squeeze(1).cpu().numpy())
             save['y'].append(y.cpu().numpy())
-        print(np.concatenate(save['y']).shape)
+            save['name'].append(files)
+        print(np.concatenate(save['name']).shape)
     return y_pred_a, y_pred_i, y
 def validate_one_model(model, dataset, text_features, device):
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False,

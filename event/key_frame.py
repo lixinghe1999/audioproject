@@ -22,7 +22,7 @@ if __name__ == "__main__":
                                          drop_last=True, collate_fn=collate_fn, pin_memory=True)
     acc_a = []
     acc_i = []
-    save = {'audio': [], 'image': [], 'text': [], 'y': []}
+    save = {'audio': [], 'image': [], 'text': [], 'y': [], 'name': []}
     with torch.no_grad():
         ((_, _, text_features), _), _ = model(text=[
             [dataset.class_idx_to_label[class_idx]]
@@ -41,4 +41,4 @@ if __name__ == "__main__":
     print(np.mean(acc_a, axis=0))
     print(np.mean(acc_i, axis=0))
     np.savez('save_embedding', audio=np.concatenate(save['audio']), image=np.concatenate(save['image']),
-            text=text_features.squeeze(0).cpu().numpy(), y=np.concatenate(save['y']))
+            text=text_features.squeeze(0).cpu().numpy(), y=np.concatenate(save['y']), name=np.concatenate(save['name']))
