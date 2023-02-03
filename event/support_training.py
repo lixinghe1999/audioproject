@@ -69,13 +69,14 @@ def train(train_loader, test_loader, optimizer, scheduler):
     #     optimizer.step()
     # scheduler.step()
     model.eval()
+    acc = []
     with torch.no_grad():
         for batch in test_loader:
             data, pseudo_label, label = batch
             data = data.to(device)
             predict = model(data)
-            acc = (torch.argmax(predict, dim=-1).cpu() == label)
-            print(acc)
+            acc.append((torch.argmax(predict, dim=-1).cpu() == label).sum() / len(label))
+    print(np.mean(acc))
 
 
 if __name__ == "__main__":
