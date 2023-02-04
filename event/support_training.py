@@ -94,7 +94,7 @@ if __name__ == "__main__":
     group_y = list(d.values())
     class_y = list(d.keys())
 
-    number_cls = 20
+    number_cls = 10
     class_y, group_y = zip(*random.sample(list(zip(class_y, group_y)), number_cls))
     group_y = sum(group_y, [])
     print(class_y)
