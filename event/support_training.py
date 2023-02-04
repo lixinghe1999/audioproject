@@ -97,7 +97,7 @@ if __name__ == "__main__":
     image = image[select_y]; y = y[select_y]; name = name[select_y]
     select, label = pseduo_label(image, text, y, method='skewness')
     name_select = name[select]; label_pseudo = label[select]; label_gt=y[select]
-    print(len(name_select))
+    print(len(select_y), len(name_select))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
