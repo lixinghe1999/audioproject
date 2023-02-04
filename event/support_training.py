@@ -117,17 +117,17 @@ if __name__ == "__main__":
         d[x].append(i)
     grp = list(d.values())
     cls = list(d.keys())
-    for i in range(10):
+    for i in range(5):
         number_cls = 10
         class_y, group_y = zip(*random.sample(list(zip(cls, grp)), number_cls))
         group_y = sum(group_y, [])
         print(class_y)
         def class_map(cls):
             return class_y.index(cls)
-        image = image[group_y]; name = name[group_y]
-        y = np.array(list(map(class_map, y[group_y]))); text = text[list(class_y)]
-        select, label = pseduo_label(image, text, y, method='skewness')
-        name_select = name[select]; label_pseudo = label[select]; label_gt=y[select]
+        image_select = image[group_y]; name_select = name[group_y]
+        y_select = np.array(list(map(class_map, y[group_y]))); text_select = text[list(class_y)]
+        select, label = pseduo_label(image_select, text_select, y_select, method='skewness')
+        name_select = name_select[select]; label_pseudo = label[select]; label_gt=y_select[select]
         print(len(group_y), len(name_select))
 
         train(name_select, label_pseudo, label_gt)
