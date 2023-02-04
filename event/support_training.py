@@ -58,54 +58,7 @@ class pseudo_dataset(td.Dataset):
             return image, self.pseudo_label[index], self.label[index]
     def __len__(self) -> int:
         return len(self.data)
-def train(train_loader, test_loader, optimizer, scheduler):
-    model.train()
-    for batch in tqdm(train_loader):
-        optimizer.zero_grad()
-        data, pseudo_label, label = batch
-        data = data.to(device)
-        predict = model(data)
-        l = loss(predict, pseudo_label.to(device))
-        l.backward()
-        optimizer.step()
-    scheduler.step()
-    model.eval()
-    acc = []
-    with torch.no_grad():
-        for batch in test_loader:
-            data, pseudo_label, label = batch
-            data = data.to(device)
-            predict = model(data)
-            acc.append((torch.argmax(predict, dim=-1).cpu() == label).sum() / len(label))
-    print(np.mean(acc))
-
-
-if __name__ == "__main__":
-    embed = np.load('save_embedding.npz')
-    audio = embed['audio']
-    image = embed['image']
-    text = embed['text']
-    y = embed['y']
-    name = embed['name']
-
-    d = defaultdict(list)
-    for i, x in enumerate(y.tolist()):
-        d[x].append(i)
-    group_y = list(d.values())
-    class_y = list(d.keys())
-
-    number_cls = 10
-    class_y, group_y = zip(*random.sample(list(zip(class_y, group_y)), number_cls))
-    group_y = sum(group_y, [])
-    print(class_y)
-    def class_map(cls):
-        return class_y.index(cls)
-    image = image[group_y]; name = name[group_y]
-    y = np.array(list(map(class_map, y[group_y]))); text = text[list(class_y)]
-    select, label = pseduo_label(image, text, y, method='skewness')
-    name_select = name[select]; label_pseudo = label[select]; label_gt=y[select]
-    print(len(group_y), len(name_select))
-
+def train(name_select, label_pseudo, label_gt):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
     model = resnet18()
@@ -121,12 +74,61 @@ if __name__ == "__main__":
     dataset = pseudo_dataset('../dataset/UCF101/', name_select, label_pseudo, label_gt, transform_image=transform_image)
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
-    train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
+    train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test],
+                                                  generator=torch.Generator().manual_seed(42))
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
-                                         drop_last=True, pin_memory=True)
+                                               drop_last=True, pin_memory=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
     for e in range(5):
-        train(train_loader, test_loader, optimizer, scheduler)
+        model.train()
+        for batch in tqdm(train_loader):
+            optimizer.zero_grad()
+            data, pseudo_label, label = batch
+            data = data.to(device)
+            predict = model(data)
+            l = loss(predict, pseudo_label.to(device))
+            l.backward()
+            optimizer.step()
+        scheduler.step()
+        model.eval()
+        acc = []
+        with torch.no_grad():
+            for batch in test_loader:
+                data, pseudo_label, label = batch
+                data = data.to(device)
+                predict = model(data)
+                acc.append((torch.argmax(predict, dim=-1).cpu() == label).sum() / len(label))
+        print(np.mean(acc))
+
+
+if __name__ == "__main__":
+    embed = np.load('save_embedding.npz')
+    audio = embed['audio']
+    image = embed['image']
+    text = embed['text']
+    y = embed['y']
+    name = embed['name']
+
+    d = defaultdict(list)
+    for i, x in enumerate(y.tolist()):
+        d[x].append(i)
+    group_y = list(d.values())
+    class_y = list(d.keys())
+    for i in range(10):
+        number_cls = 10
+        class_y, group_y = zip(*random.sample(list(zip(class_y, group_y)), number_cls))
+        group_y = sum(group_y, [])
+        print(class_y)
+        def class_map(cls):
+            return class_y.index(cls)
+        image = image[group_y]; name = name[group_y]
+        y = np.array(list(map(class_map, y[group_y]))); text = text[list(class_y)]
+        select, label = pseduo_label(image, text, y, method='skewness')
+        name_select = name[select]; label_pseudo = label[select]; label_gt=y[select]
+        print(len(group_y), len(name_select))
+
+        train(name_select, label_pseudo, label_gt)
+
