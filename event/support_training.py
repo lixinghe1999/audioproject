@@ -8,6 +8,8 @@ import os
 import librosa
 import torch
 from tqdm import tqdm
+import random
+from collections import defaultdict
 loss = torch.nn.CrossEntropyLoss()
 class pseudo_dataset(td.Dataset):
     def __init__(self,
@@ -85,14 +87,23 @@ if __name__ == "__main__":
     text = embed['text']
     y = embed['y']
     name = embed['name']
+    d = defaultdict(list)
+    for i, x in enumerate(y.tolist()):
+        d[x].append(i)
+    group_y = list(d.values())
+    number_cls = 5
+    select_y = sum(random.sample(group_y, number_cls), [])
+
+    image = image[select_y]; text = text[select_y]; y = y[select_y]; name = name[select_y]
     select, label = pseduo_label(image, text, y, method='skewness')
     name_select = name[select]; label_pseudo = label[select]; label_gt=y[select]
+    print(len(name_select))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
     model = resnet18()
     model.load_state_dict(torch.load('resnet18.pth'))
-    model.fc = torch.nn.Linear(512, 101)
+    model.fc = torch.nn.Linear(512, number_cls)
     model = model.to(device)
 
     transform_image = tv.transforms.Compose([
@@ -105,10 +116,10 @@ if __name__ == "__main__":
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
 
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=16, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
                                          drop_last=True, pin_memory=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
-    for e in range(10):
+    for e in range(5):
         train(train_loader, test_loader, optimizer, scheduler)
