@@ -94,7 +94,7 @@ if __name__ == "__main__":
     number_cls = 5
     select_y = sum(random.sample(group_y, number_cls), [])
 
-    image = image[select_y]; text = text[select_y]; y = y[select_y]; name = name[select_y]
+    image = image[select_y]; y = y[select_y]; name = name[select_y]
     select, label = pseduo_label(image, text, y, method='skewness')
     name_select = name[select]; label_pseudo = label[select]; label_gt=y[select]
     print(len(name_select))
