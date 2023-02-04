@@ -101,7 +101,7 @@ def train(name_select, label_pseudo, label_gt):
                 data = data.to(device)
                 predict = model(data)
                 acc.append((torch.argmax(predict, dim=-1).cpu() == label).sum() / len(label))
-        print(np.mean(acc))
+    print(np.mean(acc))
 
 
 if __name__ == "__main__":
