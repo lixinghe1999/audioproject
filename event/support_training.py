@@ -115,11 +115,11 @@ if __name__ == "__main__":
     d = defaultdict(list)
     for i, x in enumerate(y.tolist()):
         d[x].append(i)
-    group_y = list(d.values())
-    class_y = list(d.keys())
+    grp = list(d.values())
+    cls = list(d.keys())
     for i in range(10):
         number_cls = 10
-        class_y, group_y = zip(*random.sample(list(zip(class_y, group_y)), number_cls))
+        class_y, group_y = zip(*random.sample(list(zip(cls, grp)), number_cls))
         group_y = sum(group_y, [])
         print(class_y)
         def class_map(cls):
