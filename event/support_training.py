@@ -118,7 +118,7 @@ if __name__ == "__main__":
     grp = list(d.values())
     cls = list(d.keys())
     for i in range(5):
-        number_cls = 10
+        number_cls = 50
         class_y, group_y = zip(*random.sample(list(zip(cls, grp)), number_cls))
         group_y = sum(group_y, [])
         def class_map(cls):
