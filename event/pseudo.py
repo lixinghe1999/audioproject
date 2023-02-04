@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import balanced_accuracy_score
 def pseduo_label(embeddings, text, y, method='skewness'):
-    total = y.shape[0]
+    total = len(y)
     cosine = embeddings @ text.transpose()
     correct_cosine = cosine[np.arange(total), y]
 

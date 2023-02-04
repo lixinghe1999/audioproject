@@ -87,17 +87,24 @@ if __name__ == "__main__":
     text = embed['text']
     y = embed['y']
     name = embed['name']
+
     d = defaultdict(list)
     for i, x in enumerate(y.tolist()):
         d[x].append(i)
     group_y = list(d.values())
-    number_cls = 5
-    select_y = sum(random.sample(group_y, number_cls), [])
+    class_y = list(d.keys())
 
-    image = image[select_y]; y = y[select_y]; name = name[select_y]
+    number_cls = 20
+    class_y, group_y = zip(*random.sample(list(zip(class_y, group_y)), number_cls))
+    group_y = sum(group_y, [])
+    print(class_y)
+    def class_map(cls):
+        return class_y.index(cls)
+    image = image[group_y]; name = name[group_y]
+    y = np.array(list(map(class_map, y[group_y]))); text = text[list(class_y)]
     select, label = pseduo_label(image, text, y, method='skewness')
     name_select = name[select]; label_pseudo = label[select]; label_gt=y[select]
-    print(len(select_y), len(name_select))
+    print(len(group_y), len(name_select))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
