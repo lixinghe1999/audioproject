@@ -121,7 +121,6 @@ if __name__ == "__main__":
         number_cls = 10
         class_y, group_y = zip(*random.sample(list(zip(cls, grp)), number_cls))
         group_y = sum(group_y, [])
-        print(class_y)
         def class_map(cls):
             return class_y.index(cls)
         image_select = image[group_y]; name_select = name[group_y]
