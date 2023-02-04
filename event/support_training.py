@@ -72,7 +72,7 @@ def train(name_select, label_pseudo, label_gt):
         tv.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
     ])
     dataset = pseudo_dataset('../dataset/UCF101/', name_select, label_pseudo, label_gt, transform_image=transform_image)
-    len_train = int(len(dataset) * 0.8)
+    len_train = int(len(dataset) * 0.4)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test],
                                                   generator=torch.Generator().manual_seed(42))
