@@ -90,6 +90,7 @@ def train(train_data, test_data):
             data, pseudo_label, label = batch
             data = data.to(device)
             predict = model(data)
+            print(pseudo_label.shape)
             l = loss(predict, pseudo_label.to(device))
             l.backward()
             optimizer.step()
