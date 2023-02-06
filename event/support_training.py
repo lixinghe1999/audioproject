@@ -127,7 +127,7 @@ if __name__ == "__main__":
         image_select = image[group_y]; name_select = name[group_y]
         y_select = np.array(list(map(class_map, y[group_y]))); text_select = text[list(class_y)]
         select, label = pseduo_label(image_select, text_select, y_select, method='skewness')
-        order = np.random.rand(len(group_y))
+        order = np.arange(len(group_y))
         np.random.shuffle(order)
         name_select = name_select[order]; label = label[order]; y_select = y_select[order];
         train_data = [name_select[:int(0.8 * group_y)], label[:int(0.8 * group_y)], y_select[:int(0.8 * group_y)]]
