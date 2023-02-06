@@ -31,8 +31,9 @@ def pseduo_label(embeddings, text, y, method='skewness'):
     else:
         above_threshold = gap > 0.1
         dot_plot(cosine[above_threshold], y[above_threshold], correct_cosine[above_threshold], total)
+    print(cosine)
     # label = np.argmax(cosine, axis=-1)
-    label = softmax(cosine, axis=-1)
+    label = softmax(cosine, axis=1)
     return above_threshold, label
 
 def dot_plot(cosine, y, correct_cosine, total):
