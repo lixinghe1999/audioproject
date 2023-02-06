@@ -7,6 +7,8 @@ from sklearn.svm import SVR, SVC
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import balanced_accuracy_score
+from scipy.special import softmax
+
 def pseduo_label(embeddings, text, y, method='skewness'):
     total = len(y)
     cosine = embeddings @ text.transpose()
@@ -29,7 +31,8 @@ def pseduo_label(embeddings, text, y, method='skewness'):
     else:
         above_threshold = gap > 0.1
         dot_plot(cosine[above_threshold], y[above_threshold], correct_cosine[above_threshold], total)
-    label = np.argmax(cosine, axis=-1)
+    # label = np.argmax(cosine, axis=-1)
+    label = softmax(cosine, axis=-1)
     return above_threshold, label
         # features = np.stack([top_cos, top_ratio, gap, mean, var], axis=1)
         # cls = np.argmax(cosine, axis=-1) == y
