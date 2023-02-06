@@ -11,7 +11,8 @@ def pseduo_label(embeddings, text, y, method='skewness'):
     total = len(y)
     cosine = embeddings @ text.transpose()
     correct_cosine = cosine[np.arange(total), y]
-
+    zero_shot = np.argmax(cosine, axis=-1) == y
+    print('zero-shot performance:', sum(zero_shot)/total)
     sort_cosine = np.sort(cosine, axis=-1)
     top_cos = sort_cosine[:, -1]
     top_ratio = sort_cosine[:, -1] / sort_cosine[:, -2]
@@ -41,7 +42,7 @@ def pseduo_label(embeddings, text, y, method='skewness'):
 
 def dot_plot(cosine, y, correct_cosine, total):
     check = np.argmax(cosine, axis=-1) == y
-    print(np.sum(check)/total, np.sum(check) / np.shape(check)[0])
+    print('utilized percentage:', np.sum(check)/total, 'accuracy:', np.sum(check) / np.shape(check)[0])
     # plt.scatter(np.arange(0, y.shape[0])[check], correct_cosine[check], c='r')
     # plt.scatter(np.arange(0, y.shape[0])[~check], correct_cosine[~check], c='b')
     # plt.show()
