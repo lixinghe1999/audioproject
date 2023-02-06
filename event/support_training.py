@@ -130,8 +130,8 @@ if __name__ == "__main__":
         order = np.arange(len(group_y))
         np.random.shuffle(order)
         name_select = name_select[order]; label = label[order]; y_select = y_select[order];
-        train_data = [name_select[:int(0.8 * group_y)], label[:int(0.8 * group_y)], y_select[:int(0.8 * group_y)]]
-        test_data = [name_select[int(0.8 * group_y):], label[int(0.8 * group_y):], y_select[int(0.8 * group_y):]]
+        train_data = [name_select[:int(0.8 * len(group_y))], label[:int(0.8 * len(group_y))], y_select[:int(0.8 * len(group_y))]]
+        test_data = [name_select[int(0.8 * len(group_y)):], label[int(0.8 * len(group_y)):], y_select[int(0.8 * len(group_y)):]]
 
         # train_data = [name_select[select], label[select], y_select[select]]
         # test_data = [name_select[~select], label[~select], y_select[~select]]
