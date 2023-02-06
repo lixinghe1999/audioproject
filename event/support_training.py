@@ -73,7 +73,7 @@ def train(train_data, test_data):
     ])
     train_dataset = pseudo_dataset('../dataset/UCF101/', *train_data, transform_image=transform_image)
     test_dataset = pseudo_dataset('../dataset/UCF101/', *test_data, transform_image=transform_image)
-    # len_train = int(len(dataset) * 0.1)
+    # len_train = int(len(dataset) * 0.8)
     # len_test = len(dataset) - len_train
     # train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test],
     #                                               generator=torch.Generator().manual_seed(42))
@@ -127,8 +127,15 @@ if __name__ == "__main__":
         image_select = image[group_y]; name_select = name[group_y]
         y_select = np.array(list(map(class_map, y[group_y]))); text_select = text[list(class_y)]
         select, label = pseduo_label(image_select, text_select, y_select, method='skewness')
-        train_data = [name_select[select], label[select], y_select[select]]
-        test_data = [name_select[~select], label[~select], y_select[~select]]
+        order = np.random.rand(len(group_y))
+        np.random.shuffle(order)
+        name_select = name_select[order]; label = label[order]; y_select = y_select[order];
+        train_data = [name_select[:int(0.8 * group_y)], label[:int(0.8 * group_y)], y_select[:int(0.8 * group_y)]]
+        test_data = [name_select[int(0.8 * group_y):], label[int(0.8 * group_y):], y_select[int(0.8 * group_y):]]
+
+        # train_data = [name_select[select], label[select], y_select[select]]
+        # test_data = [name_select[~select], label[~select], y_select[~select]]
+
         print(len(group_y), sum(select), sum(~select))
 
         train(train_data, test_data)
