@@ -102,7 +102,7 @@ def train(train_data, test_data):
                 data = data.to(device)
                 predict = model(data)
                 acc.append((torch.argmax(predict, dim=-1).cpu() == label).sum() / len(label))
-    print(np.mean(acc))
+        print('epoch', e, np.mean(acc))
 
 
 if __name__ == "__main__":
