@@ -71,11 +71,12 @@ def train(name_select, label_pseudo, label_gt):
         tv.transforms.CenterCrop(224),
         tv.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
     ])
-    dataset = pseudo_dataset('../dataset/UCF101/', name_select, label_pseudo, label_gt, transform_image=transform_image)
-    len_train = int(len(dataset) * 0.1)
-    len_test = len(dataset) - len_train
-    train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test],
-                                                  generator=torch.Generator().manual_seed(42))
+    train_dataset = pseudo_dataset('../dataset/UCF101/', *train_data, transform_image=transform_image)
+    test_dataset = pseudo_dataset('../dataset/UCF101/', *test_data, transform_image=transform_image)
+    # len_train = int(len(dataset) * 0.1)
+    # len_test = len(dataset) - len_train
+    # train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test],
+    #                                               generator=torch.Generator().manual_seed(42))
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
                                                drop_last=True, pin_memory=True)
@@ -118,7 +119,7 @@ if __name__ == "__main__":
     grp = list(d.values())
     cls = list(d.keys())
     for i in range(5):
-        number_cls = 50
+        number_cls = 10
         class_y, group_y = zip(*random.sample(list(zip(cls, grp)), number_cls))
         group_y = sum(group_y, [])
         def class_map(cls):
@@ -126,8 +127,9 @@ if __name__ == "__main__":
         image_select = image[group_y]; name_select = name[group_y]
         y_select = np.array(list(map(class_map, y[group_y]))); text_select = text[list(class_y)]
         select, label = pseduo_label(image_select, text_select, y_select, method='skewness')
-        name_select = name_select[select]; label_pseudo = label[select]; label_gt=y_select[select]
+        train_data = [name_select[select], label[select], y_select[select]]
+        test_data = [name_select[~select], label[~select], y_select[~select]]
         print(len(group_y), len(name_select))
 
-        train(name_select, label_pseudo, label_gt)
+        train(train_data, test_data)
 
