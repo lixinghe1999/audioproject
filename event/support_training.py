@@ -58,7 +58,7 @@ class pseudo_dataset(td.Dataset):
             return image, self.pseudo_label[index], self.label[index]
     def __len__(self) -> int:
         return len(self.data)
-def train(name_select, label_pseudo, label_gt):
+def train(train_data, test_data):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
     model = resnet18()
