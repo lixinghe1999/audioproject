@@ -33,7 +33,7 @@ def pseduo_label(embeddings, text, y, method='skewness'):
         dot_plot(cosine[above_threshold], y[above_threshold], correct_cosine[above_threshold], total)
     print(cosine)
     # label = np.argmax(cosine, axis=-1)
-    label = cosine/np.sum(cosine, axis=1)
+    label = cosine/np.sum(cosine, axis=1, keepdims=True)
     print(label)
     return above_threshold, label
 
