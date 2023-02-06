@@ -33,16 +33,7 @@ def pseduo_label(embeddings, text, y, method='skewness'):
         dot_plot(cosine[above_threshold], y[above_threshold], correct_cosine[above_threshold], total)
     # label = np.argmax(cosine, axis=-1)
     label = softmax(cosine, axis=-1)
-    print(np.sum(label, axis=-1))
     return above_threshold, label
-        # features = np.stack([top_cos, top_ratio, gap, mean, var], axis=1)
-        # cls = np.argmax(cosine, axis=-1) == y
-        # X_train, X_test, y_train, y_test = train_test_split(features, cls, test_size=0.2, random_state=42)
-        #
-        # clf = LogisticRegression(class_weight='balanced').fit(X_train, y_train)
-        # above_threshold = clf.predict(X_test)
-        # print(balanced_accuracy_score(above_threshold, y_test))
-        # dot_plot(cosine[above_threshold], y[above_threshold], correct_cosine[above_threshold])
 
 def dot_plot(cosine, y, correct_cosine, total):
     check = np.argmax(cosine, axis=-1) == y

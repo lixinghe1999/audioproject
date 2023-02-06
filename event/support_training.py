@@ -87,10 +87,9 @@ def train(train_data, test_data):
         model.train()
         for batch in tqdm(train_loader):
             optimizer.zero_grad()
-            data, pseudo_label, label = batch
+            data, pseudo_label, _ = batch
             data = data.to(device)
             predict = model(data)
-            print(pseudo_label.shape)
             l = loss(predict, pseudo_label.to(device))
             l.backward()
             optimizer.step()
@@ -99,7 +98,7 @@ def train(train_data, test_data):
         acc = []
         with torch.no_grad():
             for batch in tqdm(test_loader):
-                data, pseudo_label, label = batch
+                data, _, label = batch
                 data = data.to(device)
                 predict = model(data)
                 acc.append((torch.argmax(predict, dim=-1).cpu() == label).sum() / len(label))
