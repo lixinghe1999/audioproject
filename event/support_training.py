@@ -97,7 +97,7 @@ def train(train_data, test_data):
         model.eval()
         acc = []
         with torch.no_grad():
-            for batch in test_loader:
+            for batch in tqdm(test_loader):
                 data, pseudo_label, label = batch
                 data = data.to(device)
                 predict = model(data)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         select, label = pseduo_label(image_select, text_select, y_select, method='skewness')
         train_data = [name_select[select], label[select], y_select[select]]
         test_data = [name_select[~select], label[~select], y_select[~select]]
-        print(len(group_y), len(name_select))
+        print(len(group_y), sum(select), sum(~select))
 
         train(train_data, test_data)
 
