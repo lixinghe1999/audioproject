@@ -73,7 +73,6 @@ class VGGSound(td.Dataset):
             audio = self.transform_audio(audio)
         if self.transform_image is not None:
             image = self.transform_image(image)
-        print(audio.shape, image.shape)
         return audio, image, target
 
     def __len__(self) -> int:
