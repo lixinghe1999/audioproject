@@ -46,10 +46,7 @@ class VGGSound(td.Dataset):
                 'audio': os.path.join(base_path, row['filename'] + '.mp4'),
                 'vision': os.path.join(base_path, row['filename'] + '.flac'),
                 'sample_rate': 44100,
-                'target': row['target'],
-                'category': row['category'].replace('_', ' '),
-                'fold': row['fold'],
-                'esc10': row['esc10']
+                'category': row['category'],
             })
 
     def __getitem__(self, index: int):
