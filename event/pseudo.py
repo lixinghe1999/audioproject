@@ -9,10 +9,10 @@ def pseduo_label(audio, vision, text, y, method='skewness'):
     cosine_vision = vision @ text.transpose()
     zero_shot_audio = np.argmax(cosine_audio, axis=-1) == y
     zero_shot_vision = np.argmax(cosine_vision, axis=-1) == y
-    print(sum(zero_shot_audio)/total, sum(zero_shot_vision)/total)
+    print()
     cosine = (cosine_audio + cosine_vision) / 2
     zero_shot = np.argmax(cosine, axis=-1) == y
-    print('zero-shot performance:', sum(zero_shot)/total)
+    print('audio:', sum(zero_shot_audio)/total, 'vision:', sum(zero_shot_vision)/total, 'average:', sum(zero_shot)/total)
 
     sort_cosine = np.sort(cosine, axis=-1)
     top_cos = sort_cosine[:, -1]
