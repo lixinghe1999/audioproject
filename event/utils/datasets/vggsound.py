@@ -69,8 +69,8 @@ class VGGSound(td.Dataset):
 
         # vid = ffmpeg.probe(filename_vision)
         # center = float(vid['streams'][0]['duration']) / 2
-        # image, _, _ = tv.io.read_video(filename_vision, start_pts=center, end_pts=center, pts_unit='sec')
-        # image = (image[0] / 255).permute(2, 0, 1)
+        image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
+        image = (image[0] / 255).permute(2, 0, 1)
         image = torch.zeros(3, 224, 224)
 
         target = self.data[index]['category']
