@@ -120,32 +120,30 @@ def csv_filter(limit=40):
     num_class = dict()
     dl_list_new = []
     for idx, row in meta.iterrows():
-        print(row[0], row[1], row[2])
-        break
-        # label = s[2]
-        # if label in num_class:
-        #     if num_class[label] <= limit:
-        #         dl_list_new.append(s)
-        #     num_class[label] += 1
-        # else:
-        #     num_class[label] = 1
+        s = [row[0], row[1], row[2].replace(',', ' ')]
+        label = s[2]
+        if label in num_class:
+            if num_class[label] <= limit:
+                dl_list_new.append(s)
+            num_class[label] += 1
+        else:
+            num_class[label] = 1
     return dl_list_new, list(num_class.keys())
 if __name__ == "__main__":
     # generate new csv to part of the dataset
     # format: filename, fold, target (number), category(string)
     data_dir = '../dataset/VggSound'
     data_list, label_list = csv_filter()
-    # data_frame = {'filename': [], 'target': [], 'category': []}
-    # for data in data_list:
-    #     fname = data[0] + '_' + str(data[1])
-    #     # if download success
-    #     if os.path.isfile(data_dir + '/' + fname + '.mp4') and os.path.isfile(data_dir + '/' + fname + '.flac'):
-    #         category = data[2]
-    #         target = label_list.index(category)
-    #         data_frame['filename'] += [fname]
-    #         data_frame['target'] += [target]
-    #         data_frame['category'] += [category]
-    # df = pd.DataFrame(data=data_frame)
-    #
-    # df.to_csv('vggsound_small.csv')
+    data_frame = {'filename': [], 'target': [], 'category': []}
+    for data in data_list:
+        fname = data[0] + '_' + str(data[1])
+        # if download success
+        if os.path.isfile(data_dir + '/' + fname + '.mp4') and os.path.isfile(data_dir + '/' + fname + '.flac'):
+            category = data[2]
+            target = label_list.index(category)
+            data_frame['filename'] += [fname]
+            data_frame['target'] += [target]
+            data_frame['category'] += [category]
+    df = pd.DataFrame(data=data_frame)
+    df.to_csv('vggsound_small.csv')
 
