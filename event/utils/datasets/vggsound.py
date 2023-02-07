@@ -31,13 +31,14 @@ class VGGSound(td.Dataset):
         meta = pd.read_csv('vggsound_small.csv')
         self.load_data(meta, root)
         self.class_idx_to_label = dict()
+        self.label_to_class_idx = dict()
         idx = 0
         for row in self.data:
             label = row['category']
-            if idx not in self.class_idx_to_label:
+            if label not in self.label_to_class_idx:
                 self.class_idx_to_label[idx] = label
+                self.label_to_class_idx[label] = idx
                 idx += 1
-        self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
         self.length = length
 
     def load_data(self, meta: pd.DataFrame, base_path: str):
