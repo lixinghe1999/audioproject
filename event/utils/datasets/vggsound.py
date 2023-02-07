@@ -118,7 +118,7 @@ class VGGSound(td.Dataset):
 def csv_filter(limit=40):
     with open('vggsound.csv') as f:
         lines = f.readlines()
-    dl_list = [line.strip().split(',')[:3] for line in lines]
+    dl_list = [print(line) for line in lines]
     num_class = dict()
     dl_list_new = []
     for s in dl_list:
@@ -135,19 +135,17 @@ if __name__ == "__main__":
     # format: filename, fold, target (number), category(string)
     data_dir = '../dataset/VggSound'
     data_list, label_list = csv_filter()
-    data_frame = {'filename': [], 'target': [], 'category': []}
-    for data in data_list:
-
-        fname = data[0] + '_' + str(data[1])
-        # if download success
-        if os.path.isfile(data_dir + '/' + fname + '.mp4') and os.path.isfile(data_dir + '/' + fname + '.flac'):
-            print(fname)
-            category = data[2]
-            target = label_list.index(category)
-            data_frame['filename'] += [fname]
-            data_frame['target'] += [target]
-            data_frame['category'] += [category]
-    df = pd.DataFrame(data=data_frame)
-
-    df.to_csv('vggsound_small.csv')
+    # data_frame = {'filename': [], 'target': [], 'category': []}
+    # for data in data_list:
+    #     fname = data[0] + '_' + str(data[1])
+    #     # if download success
+    #     if os.path.isfile(data_dir + '/' + fname + '.mp4') and os.path.isfile(data_dir + '/' + fname + '.flac'):
+    #         category = data[2]
+    #         target = label_list.index(category)
+    #         data_frame['filename'] += [fname]
+    #         data_frame['target'] += [target]
+    #         data_frame['category'] += [category]
+    # df = pd.DataFrame(data=data_frame)
+    #
+    # df.to_csv('vggsound_small.csv')
 
