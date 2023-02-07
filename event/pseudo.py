@@ -24,25 +24,15 @@ def pseduo_label(embeddings, text, y, method='skewness'):
 
     if method == 'threshold':
         above_threshold = top_cos > 0.2
-        dot_plot(cosine[above_threshold], y[above_threshold], correct_cosine[above_threshold], total)
     elif method == 'skewness':
         above_threshold = top_ratio > 1.1
-        dot_plot(cosine[above_threshold], y[above_threshold], correct_cosine[above_threshold], total)
     else:
         above_threshold = gap > 0.1
-        dot_plot(cosine[above_threshold], y[above_threshold], correct_cosine[above_threshold], total)
-    print(cosine)
-    # label = np.argmax(cosine, axis=-1)
-    label = cosine/np.sum(cosine, axis=1, keepdims=True)
-    print(label)
+    check = np.argmax(cosine[above_threshold], axis=-1) == y[above_threshold]
+    print('utilized percentage:', np.sum(check) / total, 'accuracy:', np.sum(check) / np.shape(check)[0])
+    label = np.argmax(cosine, axis=-1)
+    # label = cosine/np.sum(cosine, axis=1, keepdims=True)
     return above_threshold, label
-
-def dot_plot(cosine, y, correct_cosine, total):
-    check = np.argmax(cosine, axis=-1) == y
-    print('utilized percentage:', np.sum(check)/total, 'accuracy:', np.sum(check) / np.shape(check)[0])
-    # plt.scatter(np.arange(0, y.shape[0])[check], correct_cosine[check], c='r')
-    # plt.scatter(np.arange(0, y.shape[0])[~check], correct_cosine[~check], c='b')
-    # plt.show()
 
 
 
