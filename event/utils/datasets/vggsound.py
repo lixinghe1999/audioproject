@@ -40,7 +40,6 @@ class VGGSound(td.Dataset):
         self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
         self.length = length
 
-    @staticmethod
     def load_data(self, meta: pd.DataFrame, base_path: str):
         for idx, row in meta.iterrows():
             self.data.append({
