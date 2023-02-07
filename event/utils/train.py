@@ -116,9 +116,8 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             class_idx_to_label = dataset.class_idx_to_label
             label_to_class_idx = dataset.label_to_class_idx
             y = torch.zeros(len(text), len(class_idx_to_label), dtype=torch.int8)
-            for item_idx, labels in enumerate(text):
-                class_ids = list(sorted([
-                    label_to_class_idx[lb] for lb in labels]))
+            for item_idx, label in enumerate(text):
+                class_ids = label_to_class_idx[label]
                 y[item_idx][class_ids] = 1
         else:
             ((audio_features, image_features, text_features), _), _ = model(audio=audio, image=image, text=text,
