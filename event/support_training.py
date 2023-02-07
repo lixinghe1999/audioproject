@@ -48,7 +48,6 @@ class pseudo_dataset(td.Dataset):
             return audio, self.pseudo_label[index], self.label[index]
         else:
             fname_video = self.root + fname + '.mp4'
-            print(fname_video)
             vid = ffmpeg.probe(fname_video)
             center = float(vid['streams'][0]['duration']) / 2
             image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
