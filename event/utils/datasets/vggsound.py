@@ -24,8 +24,6 @@ class VGGSound(td.Dataset):
                  **_):
 
         super(VGGSound, self).__init__()
-
-
         self.transform_audio = transform_audio
         self.transform_image = transform_image
 
