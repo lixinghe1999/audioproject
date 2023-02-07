@@ -139,9 +139,10 @@ if __name__ == "__main__":
     for data in data_list:
 
         fname = data[0] + '_' + str(data[1])
-        print(fname)
+
         # if download success
         if os.path.isfile(data_dir + '/' + fname + '.mp4') and os.path.isfile(data_dir + '/' + fname + '.flac'):
+            print(fname)
             category = data[2]
             target = label_list.index(category)
             data_frame['filename'] += [fname]
