@@ -10,14 +10,16 @@ class ToTensor1D(tv.transforms.ToTensor):
     def __call__(self, tensor: np.ndarray):
         tensor_2d = super(ToTensor1D, self).__call__(tensor[..., np.newaxis])
         return tensor_2d.squeeze_(0)
-
-
+transform_image = tv.transforms.Compose([
+            tv.transforms.Resize(224, interpolation=tv.transforms.InterpolationMode.BICUBIC),
+            tv.transforms.CenterCrop(224),
+            tv.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
+        ])
 class VGGSound(td.Dataset):
     def __init__(self,
                  root: str = '../dataset/VggSound',
                  transform_audio=ToTensor1D(),
-                 transform_image=None,
-                 few_shot=None,
+                 transform_image=transform_image,
                  length=5,
                  **_):
 
@@ -56,27 +58,22 @@ class VGGSound(td.Dataset):
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
         audio, sample_rate = librosa.load(filename_audio, sr=sample['sample_rate'], mono=True)
-
         vid = ffmpeg.probe(filename_vision)
         center = float(vid['streams'][0]['duration']) / 2
         image, _, _ = tv.io.read_video(filename_vision, start_pts=center, end_pts=center, pts_unit='sec')
         image = (image[0] / 255).permute(2, 0, 1)
-
-        print(audio.shape, image.shape)
         if len(audio) >= self.length * sample_rate:
             t_start = random.sample(range(len(audio) - self.length * sample_rate + 1), 1)[0]
             audio = audio[t_start: t_start + self.length * sample_rate]
         else:
             audio = np.pad(audio, (0, self.length * sample_rate - len(audio)))
-        if audio.ndim == 1:
-            audio = audio[:, np.newaxis]
-        audio = (audio.T * 32768.0).astype(np.float32)
+        audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
         target = [self.data[index]['category']]
-
         if self.transform_audio is not None:
             audio = self.transform_audio(audio)
         if self.transform_image is not None:
             image = self.transform_image(image)
+        print(audio.shape, image.shape)
         return audio, image, target
 
     def __len__(self) -> int:
