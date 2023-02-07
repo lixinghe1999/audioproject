@@ -143,7 +143,6 @@ def eval_step(batch, model, dataset, device, text_features=None, save=None):
             save['image'].append(image_features.squeeze(1).cpu().numpy())
             save['y'].append(y.cpu().numpy())
             save['name'].append(files)
-        print(np.concatenate(save['name']).shape)
     return y_pred_a, y_pred_i, y
 def validate_one_model(model, dataset, text_features, device):
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=16, shuffle=False,
