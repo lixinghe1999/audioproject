@@ -139,7 +139,6 @@ if __name__ == "__main__":
     for data in data_list:
 
         fname = data[0] + '_' + str(data[1])
-        print(fname)
         # if download success
         if os.path.isfile(data_dir + '/' + fname + '.mp4') and os.path.isfile(data_dir + '/' + fname + '.flac'):
             print(fname)
@@ -147,7 +146,7 @@ if __name__ == "__main__":
             target = label_list.index(category)
             data_frame['filename'] += [fname]
             data_frame['target'] += [target]
-            data_frame['category'] += category
+            data_frame['category'] += [category]
     df = pd.DataFrame(data=data_frame)
 
     df.to_csv('vggsound_small.csv')
