@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # model = AudioCLIP().to(device)
     # dataset = UCF101()
     dataset = VGGSound()
-    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=8, batch_size=64, shuffle=True,
+    loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=8, batch_size=16, shuffle=True,
                                          drop_last=True, collate_fn=collate_fn, pin_memory=True)
     acc_a = []
     acc_i = []
