@@ -33,10 +33,12 @@ class VGGSound(td.Dataset):
         meta = pd.read_csv('vggsound_small.csv')
         self.load_data(meta, root)
         self.class_idx_to_label = dict()
+        idx = 0
         for row in self.data:
-            idx = row['target']
             label = row['category']
-            self.class_idx_to_label[idx] = label
+            if idx not in self.class_idx_to_label:
+                self.class_idx_to_label[idx] = label
+                idx += 1
         self.label_to_class_idx = {lb: idx for idx, lb in self.class_idx_to_label.items()}
         self.length = length
 
