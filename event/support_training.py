@@ -36,7 +36,7 @@ class pseudo_dataset(td.Dataset):
     def __getitem__(self, index: int):
         fname = self.data[index]
         if self.transform_audio:
-            fname_audio = self.root + fname[:-3] + 'wav'
+            fname_audio = self.root + fname + '.flac'
             if os.path.isfile(fname_audio):
                 audio, sample_rate = librosa.load(fname_audio, sr=self.sample_rate)
                 audio = np.pad(audio, (0, self.length * self.sample_rate - len(audio)))
@@ -47,7 +47,7 @@ class pseudo_dataset(td.Dataset):
                 audio = self.transform_audio(audio)
             return audio, self.pseudo_label[index], self.label[index]
         else:
-            fname_video = self.root + fname
+            fname_video = self.root + fname + '.mp4'
             vid = ffmpeg.probe(fname_video)
             center = float(vid['streams'][0]['duration']) / 2
             image, _, _ = tv.io.read_video(fname_video, start_pts=center, end_pts=center, pts_unit='sec')
