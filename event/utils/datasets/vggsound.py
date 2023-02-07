@@ -32,21 +32,8 @@ class VGGSound(td.Dataset):
 
         meta = self.load_meta('vggsound_small.csv')
 
-        if fold is None:
-            fold = 5
-
-        self.folds_to_load = set(meta['fold'])
-
-        if fold not in self.folds_to_load:
-            raise ValueError(f'fold {fold} does not exist')
-        self.train = train
         self.transform_audio = transform_audio
         self.transform_image = transform_image
-
-        if self.train:
-            self.folds_to_load -= {fold}
-        else:
-            self.folds_to_load -= self.folds_to_load - {fold}
 
         self.data = list()
         self.load_data(meta, os.path.join(root, 'audio'), few_shot)
@@ -64,27 +51,16 @@ class VGGSound(td.Dataset):
         return meta
 
     def load_data(self, meta: pd.DataFrame, base_path: str, few_shot=None):
-        class_count = dict()
         for idx, row in meta.iterrows():
-            if row['fold'] in self.folds_to_load:
-                if few_shot is None:
-                    pass
-                elif row['target'] in class_count:
-                    if class_count[row['target']] >= few_shot:
-                        continue
-                self.data.append({
-                    'audio': os.path.join(base_path, row['filename'] + '.mp4'),
-                    'vision': os.path.join(base_path, row['filename'] + '.flac'),
-                    'sample_rate': self.sample_rate,
-                    'target': row['target'],
-                    'category': row['category'].replace('_', ' '),
-                    'fold': row['fold'],
-                    'esc10': row['esc10']
-                })
-                if row['target'] in class_count:
-                    class_count[row['target']] += 1
-                else:
-                    class_count[row['target']] = 1
+            self.data.append({
+                'audio': os.path.join(base_path, row['filename'] + '.mp4'),
+                'vision': os.path.join(base_path, row['filename'] + '.flac'),
+                'sample_rate': self.sample_rate,
+                'target': row['target'],
+                'category': row['category'].replace('_', ' '),
+                'fold': row['fold'],
+                'esc10': row['esc10']
+            })
 
     def __getitem__(self, index: int):
         if not (0 <= index < len(self)):
