@@ -46,6 +46,7 @@ class VGGSound(td.Dataset):
             self.data.append({
                 'audio': os.path.join(base_path, row['filename'] + '.flac'),
                 'vision': os.path.join(base_path, row['filename'] + '.mp4'),
+                'name': row['filename'],
                 'sample_rate': 44100,
                 'category': row['category'],
             })
@@ -73,7 +74,7 @@ class VGGSound(td.Dataset):
             audio = self.transform_audio(audio)
         if self.transform_image is not None:
             image = self.transform_image(image)
-        return audio, image, target
+        return audio, image, target, sample['name']
 
     def __len__(self) -> int:
         return len(self.data)
