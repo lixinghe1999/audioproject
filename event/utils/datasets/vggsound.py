@@ -44,8 +44,8 @@ class VGGSound(td.Dataset):
     def load_data(self, meta: pd.DataFrame, base_path: str):
         for idx, row in meta.iterrows():
             self.data.append({
-                'audio': os.path.join(base_path, row['filename'] + '.mp4'),
-                'vision': os.path.join(base_path, row['filename'] + '.flac'),
+                'audio': os.path.join(base_path, row['filename'] + '.flac'),
+                'vision': os.path.join(base_path, row['filename'] + '.mp4'),
                 'sample_rate': 44100,
                 'category': row['category'],
             })

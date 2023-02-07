@@ -23,7 +23,6 @@ if __name__ == "__main__":
     acc_a = []
     acc_i = []
     save = {'audio': [], 'image': [], 'text': [], 'y': [], 'name': []}
-    print(dataset.class_idx_to_label.keys())
     with torch.no_grad():
         ((_, _, text_features), _), _ = model(text=[
             [dataset.class_idx_to_label[class_idx]]
