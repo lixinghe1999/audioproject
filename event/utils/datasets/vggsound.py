@@ -120,7 +120,8 @@ def csv_filter(limit=40):
     num_class = dict()
     dl_list_new = []
     for idx, row in meta.iterrows():
-        print(row)
+        print(row[0], row[1], row[2])
+        break
         # label = s[2]
         # if label in num_class:
         #     if num_class[label] <= limit:
