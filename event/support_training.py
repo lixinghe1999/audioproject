@@ -118,7 +118,7 @@ if __name__ == "__main__":
         d[x].append(i)
     grp = list(d.values())
     cls = list(d.keys())
-    for i in range(10):
+    for i in range(20):
         number_cls = 10
         class_y, group_y = zip(*random.sample(list(zip(cls, grp)), number_cls))
         group_y = sum(group_y, [])
