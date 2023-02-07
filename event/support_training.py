@@ -97,7 +97,7 @@ def train(train_data, test_data):
         model.eval()
         acc = []
         with torch.no_grad():
-            for batch in tqdm(test_loader):
+            for batch in test_loader:
                 data, _, label = batch
                 data = data.to(device)
                 predict = model(data)
@@ -124,9 +124,9 @@ if __name__ == "__main__":
         group_y = sum(group_y, [])
         def class_map(cls):
             return class_y.index(cls)
-        image_select = image[group_y]; name_select = name[group_y]
+        image_select = image[group_y]; audio_select = audio[group_y]; name_select = name[group_y]
         y_select = np.array(list(map(class_map, y[group_y]))); text_select = text[list(class_y)]
-        select, label = pseduo_label(image_select, text_select, y_select, method='skewness')
+        select, label = pseduo_label(image_select, audio_select, text_select, y_select, method='skewness')
         order = np.arange(len(group_y))
         np.random.shuffle(order)
         name_select = name_select[order]; label = label[order]; y_select = y_select[order];
