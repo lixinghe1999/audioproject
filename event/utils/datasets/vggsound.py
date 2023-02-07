@@ -24,13 +24,14 @@ class VGGSound(td.Dataset):
                  **_):
 
         super(VGGSound, self).__init__()
-        meta = self.load_meta('vggsound_small.csv')
+
 
         self.transform_audio = transform_audio
         self.transform_image = transform_image
 
         self.data = list()
-        self.load_data(meta, os.path.join(root, 'audio'), few_shot)
+        meta = pd.read_csv('vggsound_small.csv')
+        self.load_data(meta, root)
         self.class_idx_to_label = dict()
         for row in self.data:
             idx = row['target']
@@ -40,10 +41,6 @@ class VGGSound(td.Dataset):
         self.length = length
 
     @staticmethod
-    def load_meta(path_to_csv: str) -> pd.DataFrame:
-        meta = pd.read_csv(path_to_csv)
-        return meta
-
     def load_data(self, meta: pd.DataFrame, base_path: str):
         for idx, row in meta.iterrows():
             self.data.append({
