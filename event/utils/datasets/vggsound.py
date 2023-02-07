@@ -116,19 +116,18 @@ class VGGSound(td.Dataset):
         return len(self.data)
 
 def csv_filter(limit=40):
-    with open('vggsound.csv') as f:
-        lines = f.readlines()
-    dl_list = [print(line) for line in lines]
+    meta = pd.read_csv('vggsound.csv')
     num_class = dict()
     dl_list_new = []
-    for s in dl_list:
-        label = s[2]
-        if label in num_class:
-            if num_class[label] <= limit:
-                dl_list_new.append(s)
-            num_class[label] += 1
-        else:
-            num_class[label] = 1
+    for idx, row in meta.iterrows():
+        print(row)
+        # label = s[2]
+        # if label in num_class:
+        #     if num_class[label] <= limit:
+        #         dl_list_new.append(s)
+        #     num_class[label] += 1
+        # else:
+        #     num_class[label] = 1
     return dl_list_new, list(num_class.keys())
 if __name__ == "__main__":
     # generate new csv to part of the dataset
