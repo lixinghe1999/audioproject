@@ -73,7 +73,7 @@ class VGGSound(td.Dataset):
         # image = (image[0] / 255).permute(2, 0, 1)
         image = torch.zeros(3, 224, 224)
 
-        target = [self.data[index]['category']]
+        target = self.data[index]['category']
         if self.transform_audio is not None:
             audio = self.transform_audio(audio)
         if self.transform_image is not None:
