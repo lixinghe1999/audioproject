@@ -72,8 +72,8 @@ def train(train_data, test_data):
         tv.transforms.CenterCrop(224),
         tv.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
     ])
-    train_dataset = pseudo_dataset('../dataset/UCF101/', *train_data, transform_image=transform_image)
-    test_dataset = pseudo_dataset('../dataset/UCF101/', *test_data, transform_image=transform_image)
+    train_dataset = pseudo_dataset('../dataset/VggSound/', *train_data, transform_image=transform_image)
+    test_dataset = pseudo_dataset('../dataset/VggSound/', *test_data, transform_image=transform_image)
     # len_train = int(len(dataset) * 0.8)
     # len_test = len(dataset) - len_train
     # train_dataset, test_dataset = td.random_split(dataset, [len_train, len_test],
