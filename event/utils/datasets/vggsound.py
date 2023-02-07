@@ -16,10 +16,7 @@ class ToTensor1D(tv.transforms.ToTensor):
 
 class VGGSound(td.Dataset):
     def __init__(self,
-                 root: str,
-                 sample_rate: int = 22050,
-                 train: bool = True,
-                 fold: Optional[int] = None,
+                 root: str = '../dataset/VggSound',
                  transform_audio=ToTensor1D(),
                  transform_image=None,
                  few_shot=None,
@@ -27,9 +24,6 @@ class VGGSound(td.Dataset):
                  **_):
 
         super(VGGSound, self).__init__()
-
-        self.sample_rate = sample_rate
-
         meta = self.load_meta('vggsound_small.csv')
 
         self.transform_audio = transform_audio
@@ -50,12 +44,12 @@ class VGGSound(td.Dataset):
         meta = pd.read_csv(path_to_csv)
         return meta
 
-    def load_data(self, meta: pd.DataFrame, base_path: str, few_shot=None):
+    def load_data(self, meta: pd.DataFrame, base_path: str):
         for idx, row in meta.iterrows():
             self.data.append({
                 'audio': os.path.join(base_path, row['filename'] + '.mp4'),
                 'vision': os.path.join(base_path, row['filename'] + '.flac'),
-                'sample_rate': self.sample_rate,
+                'sample_rate': 44100,
                 'target': row['target'],
                 'category': row['category'].replace('_', ' '),
                 'fold': row['fold'],
