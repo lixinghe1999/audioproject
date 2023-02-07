@@ -1,9 +1,0 @@
-.ipynb_checkpoints/
-dataset/
-wav2vec2-pretrained-demo/
-saved/
-huggingface-hub/
-models/
-*.gz
-*.tar
-*.out

@@ -1,5 +1,5 @@
-from utils.datasets.epic_kitchen import EPIC_Kitchen
 from utils.datasets.ucf101 import UCF101
+from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
 from model import AudioCLIP
@@ -14,10 +14,10 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     MODEL_FILENAME = 'AudioCLIP-Full-Training.pt'
     # MODEL_FILENAME = 'AudioCLIP-Partial-Training.pt'
-    # model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
-    model = AudioCLIP().to(device)
-    # dataset = EPIC_Kitchen()
-    dataset = UCF101()
+    model = AudioCLIP(pretrained=f'assets/{MODEL_FILENAME}').to(device)
+    # model = AudioCLIP().to(device)
+    # dataset = UCF101()
+    dataset = VGGSound()
     loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=8, batch_size=64, shuffle=True,
                                          drop_last=True, collate_fn=collate_fn, pin_memory=True)
     acc_a = []
