@@ -137,5 +137,5 @@ if __name__ == "__main__":
         # test_data = [name_select[~select], label[~select], y_select[~select]]
         print('total:', len(group_y), 'selected:', sum(select), 'not selected:', sum(~select))
 
-        train(train_data, test_data)
+        # train(train_data, test_data)
 
