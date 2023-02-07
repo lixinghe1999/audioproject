@@ -133,7 +133,7 @@ def csv_filter(limit=40):
 if __name__ == "__main__":
     # generate new csv to part of the dataset
     # format: filename, fold, target (number), category(string)
-    data_dir = '../dataset/VGGSound'
+    data_dir = '../dataset/VggSound'
     data_list, label_list = csv_filter()
     data_frame = {'filename': [], 'target': [], 'category': []}
     for data in data_list:
