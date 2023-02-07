@@ -118,7 +118,7 @@ if __name__ == "__main__":
         d[x].append(i)
     grp = list(d.values())
     cls = list(d.keys())
-    for i in range(5):
+    for i in range(10):
         number_cls = 10
         class_y, group_y = zip(*random.sample(list(zip(cls, grp)), number_cls))
         group_y = sum(group_y, [])
@@ -135,7 +135,5 @@ if __name__ == "__main__":
 
         # train_data = [name_select[select], label[select], y_select[select]]
         # test_data = [name_select[~select], label[~select], y_select[~select]]
-        print('total:', len(group_y), 'selected:', sum(select), 'not selected:', sum(~select))
-
         # train(train_data, test_data)
 
