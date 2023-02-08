@@ -24,6 +24,7 @@ def train(train_dataset, test_dataset):
             for item_idx, label in enumerate(text):
                 class_ids = dataset.label_to_class_idx[label]
                 y[item_idx][class_ids] = 1
+            y = torch.argmax(y, dim=-1)
             l = loss(predict, y.to(device))
             l.backward()
             optimizer.step()
