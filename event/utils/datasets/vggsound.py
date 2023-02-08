@@ -56,14 +56,14 @@ class VGGSound(td.Dataset):
         # vid = ffmpeg.probe(filename_vision)
         # center = float(vid['streams'][0]['duration']) / 2
 
-        # audio, sample_rate = librosa.load(filename_audio, sr=None, duration=10)
-        # if len(audio) > self.length * sample_rate:
-        #     rand_start = np.random.randint(0, len(audio) - self.length * sample_rate)
-        #     audio = audio[rand_start: rand_start + self.length * sample_rate]
-        # else:
-        #     audio = np.pad(audio, (0, self.length * sample_rate - len(audio)))
-        # audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
-        audio = torch.zeros(1, 220500)
+        audio, sample_rate = librosa.load(filename_audio, sr=None, duration=10)
+        if len(audio) > self.length * sample_rate:
+            rand_start = np.random.randint(0, len(audio) - self.length * sample_rate)
+            audio = audio[rand_start: rand_start + self.length * sample_rate]
+        else:
+            audio = np.pad(audio, (0, self.length * sample_rate - len(audio)))
+        audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
+        # audio = torch.zeros(1, 220500)
         # image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
         # image = (image[0] / 255).permute(2, 0, 1)
         image = torch.zeros(3, 224, 224)
