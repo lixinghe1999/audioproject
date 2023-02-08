@@ -43,14 +43,14 @@ def audio_download(url, ts_start, audio_filepath):
         print('fail')
     else:
         print("Downloaded audio to " + audio_filepath)
-def down_load(ytid, ts_start):
+def down_load(ytid, ts_start, label):
     # print("YouTube ID: " + ytid, "Start Time: ({})".format(ts_start))
     # Get the URL to the video page
     video_page_url = 'https://www.youtube.com/watch?v={}'.format(ytid)
 
     basename_fmt = '{}_{}'.format(ytid, int(ts_start))
-    video_filepath = os.path.join('VggSound', basename_fmt + '.' + video_container)
-    audio_filepath = os.path.join('VggSound', basename_fmt + '.' + audio_codec)
+    video_filepath = os.path.join('../dataset/VggSound', basename_fmt + '.' + video_container)
+    audio_filepath = os.path.join('../dataset/VggSound', basename_fmt + '.' + audio_codec)
 
     if os.path.isfile(video_filepath) or os.path.isfile(audio_filepath):
         pass
