@@ -15,7 +15,9 @@ class AVnet(nn.Module):
         self.window = 'blackmanharris'
         self.normalized = True
         self.onesided = True
-        self.conv1_channel = 16
+        self.conv1_channel = 3
+        self.spec_height = 224,
+        self.spec_width = 224,
 
         self.image = resnet18()
         self.image.load_state_dict(torch.load('resnet18.pth'))
@@ -33,27 +35,16 @@ class AVnet(nn.Module):
         spec = spec.reshape(spec.shape[0], -1, spec.shape[-3] // self.conv1_channel , *spec.shape[-2:])
         print(spec.shape)
 
-        spec_height = spec.shape[-3] if self.spec_height < 1 else self.spec_height
-        spec_width = spec.shape[-2] if self.spec_width < 1 else self.spec_width
-        pow_spec = spec[..., 0] ** 2 + spec[..., 1] ** 2
-        print(pow_spec.shape)
-        if spec_height != pow_spec.shape[-2] or spec_width != pow_spec.shape[-1]:
-            pow_spec = torch.nn.functional.interpolate(
-                pow_spec,
-                size=(spec_height, spec_width),
-                mode='bilinear',
-                align_corners=True
+        spec = spec[..., 0] ** 2 + spec[..., 1] ** 2
+        print(spec.shape)
+        if self.spec_height != spec.shape[-2] or self.spec_width != spec.shape[-1]:
+            spec = torch.nn.functional.interpolate(
+                spec, size=(self.spec_height, self.spec_width),
+                mode='bilinear', align_corners=True
             )
-        # pow_spec_split_ch = torch.where(
-        #     cast(torch.Tensor, pow_spec_split_ch > 0.0),
-        #     pow_spec_split_ch,
-        #     torch.full_like(pow_spec_split_ch, self.log10_eps)
-        # )
-        # pow_spec_split_ch = pow_spec_split_ch.reshape(
-        #     x.shape[0], -1, self.conv1.in_channels, *pow_spec_split_ch.shape[-2:]
-        # )
-        # x_db = torch.log10(pow_spec_split_ch).mul(10.0)
-
+        spec = torch.clamp(spec, 1e-18)
+        spec = torch.log10(spec).mul(10.0)
+        print(spec.shape)
         return spec
     def forward(self, audio, image):
         audio = self.preprocessing_audio(audio)
