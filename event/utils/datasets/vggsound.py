@@ -19,13 +19,11 @@ transform_image = tv.transforms.Compose([
 class VGGSound(td.Dataset):
     def __init__(self,
                  root: str = '../dataset/VggSound',
-                 transform_audio=ToTensor1D(),
                  transform_image=transform_image,
                  length=5,
                  **_):
 
         super(VGGSound, self).__init__()
-        self.transform_audio = transform_audio
         self.transform_image = transform_image
         meta = pd.read_csv('vggsound_small.csv')
         self.data = list()
@@ -70,8 +68,8 @@ class VGGSound(td.Dataset):
         # image = (image[0] / 255).permute(2, 0, 1)
         image = torch.zeros(3, 224, 224)
         target = self.data[index]['category']
-        if self.transform_audio is not None:
-            audio = self.transform_audio(audio)
+        # if self.transform_audio is not None:
+        #     audio = self.transform_audio(audio)
         if self.transform_image is not None:
             image = self.transform_image(image)
         return audio, image, target, sample['name']
