@@ -19,6 +19,7 @@ def train(train_dataset, test_dataset):
         for batch in tqdm(train_loader):
             optimizer.zero_grad()
             audio, image, text, files = batch
+            print(audio.shape, image.shape)
             predict = model(audio.to(device), image.to(device))
             y = torch.zeros(len(text), len(dataset.class_idx_to_label), dtype=torch.int8)
             for item_idx, label in enumerate(text):
