@@ -182,7 +182,7 @@ class ResNet(nn.Module):
         x = self.fc(x)
         return x
 class AVnet(nn.Module):
-    def __init__(self, num_cls=10):
+    def __init__(self, num_cls=309):
         super(AVnet, self).__init__()
         self.audio = ResNet(img_channels=3, num_layers=34, block=BasicBlock, num_classes=1000)
         self.audio.load_state_dict(torch.load('resnet34.pth'))
