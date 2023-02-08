@@ -55,14 +55,15 @@ def down_load(ytid, ts_start, label):
     if os.path.isfile(video_filepath) or os.path.isfile(audio_filepath):
         pass
     else:
-        # Get the direct URLs to the videos with best audio and with best video (with audio)
-        video = pafy.new(video_page_url)
-
-        best_video = video.getbestvideo()
-        best_video_url = best_video.url
-        best_audio = video.getbestaudio()
-        best_audio_url = best_audio.url
         try:
+            # Get the direct URLs to the videos with best audio and with best video (with audio)
+            video = pafy.new(video_page_url)
+
+            best_video = video.getbestvideo()
+            best_video_url = best_video.url
+            best_audio = video.getbestaudio()
+            best_audio_url = best_audio.url
+
             video_download(best_video_url, ts_start, video_filepath)
             audio_download(best_audio_url, ts_start, audio_filepath)
         except:
@@ -103,8 +104,6 @@ if __name__ == "__main__":
         else:
             num_class[label] = 1
         dl_list_new.append(l)
-
-
 
     num_processes = os.cpu_count()  # 16
     with mp.Pool(processes=8) as pool:

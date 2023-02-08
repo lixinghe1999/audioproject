@@ -190,16 +190,15 @@ class AVnet(nn.Module):
         self.image = ResNet(img_channels=3, num_layers=34, block=BasicBlock, num_classes=1000)
         self.image.load_state_dict(torch.load('resnet34.pth'))
         self.image.fc = torch.nn.Linear(512, num_cls)
-        self.mmtm1 = MMTM(64, 64, 4)
+        # self.mmtm1 = MMTM(64, 64, 4)
         self.mmtm2 = MMTM(128, 128, 4)
         self.mmtm3 = MMTM(256, 256, 4)
         self.mmtm4 = MMTM(512, 512, 4)
         self.fc = nn.Linear(512 * 2, num_cls)
 
         self.n_fft = 2048
-        self.hop_length = 561
-        self.win_length = 1654
-        self.window = 'blackmanharris'
+        self.hop_length = 600
+        self.win_length = 600
         self.normalized = True
         self.onesided = True
         self.conv1_channel = 3
@@ -237,7 +236,7 @@ class AVnet(nn.Module):
 
         audio = self.audio.layer1(audio)
         image = self.image.layer1(image)
-        audio, image = self.mmtm1(audio, image)
+        # audio, image = self.mmtm1(audio, image)
         audio = self.audio.layer2(audio)
         image = self.image.layer2(image)
         audio, image = self.mmtm2(audio, image)
