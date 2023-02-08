@@ -29,7 +29,7 @@ class AVnet(nn.Module):
                            pad_mode='reflect', normalized=self.normalized, onesided=True)
         print(spec.shape)
         spec_height_per_band = spec.shape[1] // self.conv1_channel
-        spec_height_single_band = self.conv1_channel  * spec_height_per_band
+        spec_height_single_band = self.conv1_channel * spec_height_per_band
         spec = spec[:, :spec_height_single_band]
 
         spec = spec.reshape(spec.shape[0], -1, spec.shape[-3] // self.conv1_channel , *spec.shape[-2:])
@@ -39,7 +39,7 @@ class AVnet(nn.Module):
         print(spec.shape)
         if self.spec_height != spec.shape[-2] or self.spec_width != spec.shape[-1]:
             spec = torch.nn.functional.interpolate(
-                spec, size=(self.spec_height, self.spec_width),
+                input=spec, size=(self.spec_height, self.spec_width),
                 mode='bilinear', align_corners=True
             )
         spec = torch.clamp(spec, 1e-18)
