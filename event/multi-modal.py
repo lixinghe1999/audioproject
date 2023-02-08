@@ -19,7 +19,6 @@ def train(train_dataset, test_dataset):
         for batch in tqdm(train_loader):
             optimizer.zero_grad()
             audio, image, text, files = batch
-            print(audio.shape, image.shape)
             predict = model(audio.to(device), image.to(device))
             y = torch.zeros(len(text), len(dataset.class_idx_to_label), dtype=torch.int8)
             for item_idx, label in enumerate(text):
@@ -35,7 +34,12 @@ def train(train_dataset, test_dataset):
             for batch in test_loader:
                 audio, image, text, files = batch
                 predict = model(audio.to(device), image.to(device))
-                acc.append((torch.argmax(predict, dim=-1).cpu() == label).sum() / len(label))
+                y = torch.zeros(len(text), len(dataset.class_idx_to_label), dtype=torch.int8)
+                for item_idx, label in enumerate(text):
+                    class_ids = dataset.label_to_class_idx[label]
+                    y[item_idx][class_ids] = 1
+                y = torch.argmax(y, dim=-1)
+                acc.append((torch.argmax(predict, dim=-1).cpu() == y).sum() / len(y))
         print('epoch', e, np.mean(acc))
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
