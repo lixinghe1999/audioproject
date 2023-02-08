@@ -27,10 +27,16 @@ class VGGSound(td.Dataset):
         super(VGGSound, self).__init__()
         self.transform_audio = transform_audio
         self.transform_image = transform_image
-
-        self.data = list()
         meta = pd.read_csv('vggsound_small.csv')
-        self.load_data(meta, root)
+        self.data = list()
+        for idx, row in meta.iterrows():
+            self.data.append({
+                'audio': os.path.join(root, row['filename'] + '.flac'),
+                'vision': os.path.join(root, row['filename'] + '.mp4'),
+                'name': row['filename'],
+                'sample_rate': 44100,
+                'category': row['category'],
+            })
         self.class_idx_to_label = dict()
         self.label_to_class_idx = dict()
         idx = 0
@@ -41,16 +47,6 @@ class VGGSound(td.Dataset):
                 self.label_to_class_idx[label] = idx
                 idx += 1
         self.length = length
-
-    def load_data(self, meta: pd.DataFrame, base_path: str):
-        for idx, row in meta.iterrows():
-            self.data.append({
-                'audio': os.path.join(base_path, row['filename'] + '.flac'),
-                'vision': os.path.join(base_path, row['filename'] + '.mp4'),
-                'name': row['filename'],
-                'sample_rate': 44100,
-                'category': row['category'],
-            })
 
     def __getitem__(self, index: int):
         if not (0 <= index < len(self)):
