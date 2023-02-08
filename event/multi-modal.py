@@ -33,9 +33,8 @@ def train(train_dataset, test_dataset):
         acc = []
         with torch.no_grad():
             for batch in test_loader:
-                data, _, label = batch
-                data = data.to(device)
-                predict = model(data)
+                audio, image, text, files = batch
+                predict = model(audio.to(device), image.to(device))
                 acc.append((torch.argmax(predict, dim=-1).cpu() == label).sum() / len(label))
         print('epoch', e, np.mean(acc))
 if __name__ == "__main__":
