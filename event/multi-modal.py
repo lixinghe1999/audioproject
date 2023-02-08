@@ -39,7 +39,7 @@ def train(train_dataset, test_dataset):
         print('epoch', e, np.mean(acc))
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.set_device(0)
+    torch.cuda.set_device(1)
     model = AVnet().to(device)
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
