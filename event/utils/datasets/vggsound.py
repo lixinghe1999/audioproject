@@ -67,8 +67,9 @@ class VGGSound(td.Dataset):
             audio = np.pad(audio, (0, self.length * sample_rate - len(audio)))
         audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
 
-        image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
-        image = (image[0] / 255).permute(2, 0, 1)
+        # image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
+        # image = (image[0] / 255).permute(2, 0, 1)
+        image = torch.zeros(3, 224, 224)
         target = self.data[index]['category']
         if self.transform_audio is not None:
             audio = self.transform_audio(audio)
