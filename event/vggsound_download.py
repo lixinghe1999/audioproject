@@ -22,7 +22,7 @@ def video_download(url, ts_start, video_filepath):
     proc = sp.Popen(video_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
-        print(stderr)
+        print('fail')
     else:
         print("Downloaded video to " + video_filepath)
 def audio_download(url, ts_start, audio_filepath):
@@ -40,10 +40,10 @@ def audio_download(url, ts_start, audio_filepath):
     proc = sp.Popen(audio_dl_args, stdout=sp.PIPE, stderr=sp.PIPE)
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
-        print(stderr)
+        print('fail')
     else:
         print("Downloaded audio to " + audio_filepath)
-def down_load(ytid, ts_start, label):
+def down_load(ytid, ts_start):
     # print("YouTube ID: " + ytid, "Start Time: ({})".format(ts_start))
     # Get the URL to the video page
     video_page_url = 'https://www.youtube.com/watch?v={}'.format(ytid)
@@ -62,9 +62,12 @@ def down_load(ytid, ts_start, label):
         best_video_url = best_video.url
         best_audio = video.getbestaudio()
         best_audio_url = best_audio.url
+        try:
+            video_download(best_video_url, ts_start, video_filepath)
+            audio_download(best_audio_url, ts_start, audio_filepath)
+        except:
+            print('fail')
 
-        video_download(best_video_url, ts_start, video_filepath)
-        audio_download(best_audio_url, ts_start, audio_filepath)
 def stat(dl_list):
     num_class = dict()
     for s in dl_list:
@@ -88,9 +91,8 @@ if __name__ == "__main__":
         lines = f.readlines()
 
     dl_list = [line.strip().split(',')[:3] for line in lines]
-    # stat(dl_list)
     num_class = dict()
-    limit = 40
+    limit = 100
     dl_list_new = []
     for l in dl_list:
         ytid, ts_start, label = l
@@ -100,19 +102,16 @@ if __name__ == "__main__":
             num_class[label] += 1
         else:
             num_class[label] = 1
-        try:
-            down_load(ytid, ts_start, label)
-        except:
-            print('find error')
-            num_class[label] -= 1
+        dl_list_new.append(l)
 
 
-    # num_processes = os.cpu_count()  # 16
-    # with mp.Pool(processes=1) as pool:
-    #     for _ in pool.starmap(
-    #             func=down_load,
-    #             iterable=dl_list,
-    #     ):
-    #         pass
+
+    num_processes = os.cpu_count()  # 16
+    with mp.Pool(processes=8) as pool:
+        for _ in pool.starmap(
+                func=down_load,
+                iterable=dl_list,
+        ):
+            pass
 
 
