@@ -9,26 +9,28 @@ class AVnet(nn.Module):
         self.audio = resnet18()
         self.audio.load_state_dict(torch.load('resnet18.pth'))
         self.audio.fc = torch.nn.Linear(512, num_cls)
-
-        self.image = resnet18()
-        self.image.load_state_dict(torch.load('resnet18.pth'))
-        self.image.fc = torch.nn.Linear(512, num_cls)
         self.n_fft = 2048
         self.hop_length = 561
         self.win_length = 1654
         self.window = 'blackmanharris'
         self.normalized = True
         self.onesided = True
+        self.conv1_channel = 16
+
+        self.image = resnet18()
+        self.image.load_state_dict(torch.load('resnet18.pth'))
+        self.image.fc = torch.nn.Linear(512, num_cls)
+
     def preprocessing_audio(self, audio):
         spec = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
                            win_length=self.win_length, window=torch.hann_window(self.win_length, device=audio.device),
                            pad_mode='reflect', normalized=self.normalized, onesided=True)
         print(spec.shape)
-        spec_height_per_band = spec.shape[1] // 16
-        spec_height_single_band = 16 * spec_height_per_band
+        spec_height_per_band = spec.shape[1] // self.conv1_channel
+        spec_height_single_band = self.conv1_channel  * spec_height_per_band
         spec = spec[:, :spec_height_single_band]
 
-        spec = spec.reshape(spec.shape[0], -1, spec.shape[-3] // self.conv1.in_channels, *spec.shape[-2:])
+        spec = spec.reshape(spec.shape[0], -1, spec.shape[-3] // self.conv1_channel , *spec.shape[-2:])
         print(spec.shape)
 
         spec_height = spec.shape[-3] if self.spec_height < 1 else self.spec_height
