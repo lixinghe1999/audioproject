@@ -52,7 +52,7 @@ class AVnet(nn.Module):
         # )
         # x_db = torch.log10(pow_spec_split_ch).mul(10.0)
 
-        return x_db
+        return spec
     def forward(self, audio, image):
         audio = self.preprocessing_audio(audio)
         print(audio.shape, image.shape)
