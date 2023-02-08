@@ -21,7 +21,7 @@ class AVnet(nn.Module):
         self.onesided = True
 
     def forward(self, audio, image):
-        audio = torch.stft(audio, n_fft=self.n_fft, hop_length=self.hop_length,
+        audio = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
             win_length=self.win_length, window=torch.hann_window(self.win_length, device=audio.device),
                            pad_mode='reflect',normalized=self.normalized, onesided=True)
         print(audio.shape, image.shape)
