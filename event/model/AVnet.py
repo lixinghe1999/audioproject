@@ -16,8 +16,8 @@ class AVnet(nn.Module):
         self.normalized = True
         self.onesided = True
         self.conv1_channel = 3
-        self.spec_height = 224,
-        self.spec_width = 224,
+        self.spec_height = 224
+        self.spec_width = 224
 
         self.image = resnet18()
         self.image.load_state_dict(torch.load('resnet18.pth'))
