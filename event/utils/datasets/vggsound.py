@@ -63,8 +63,6 @@ class VGGSound(td.Dataset):
         image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
         image = (image[0] / 255).permute(2, 0, 1)
         target = self.data[index]['category']
-        # if self.transform_audio is not None:
-        #     audio = self.transform_audio(audio)
         if self.transform_image is not None:
             image = self.transform_image(image)
         return audio, image, target, sample['name']
