@@ -86,7 +86,7 @@ def csv_filter(limit=40):
 if __name__ == "__main__":
     def crop(input_file, output_file):
         subprocess.call(
-            ['ffmpeg', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
+            ['ffmpeg', '-y', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
 
     # generate new csv to part of the dataset
     # format: filename, fold, category(string)
