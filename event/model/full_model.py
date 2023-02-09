@@ -191,10 +191,9 @@ class AVnet(nn.Module):
         self.image.load_state_dict(torch.load('resnet34.pth'))
         # self.image.fc = torch.nn.Linear(512, num_cls)
 
-        self.mmtm1 = MMTM(64, 64, 4)
-        self.mmtm2 = MMTM(128, 128, 4)
-        self.mmtm3 = MMTM(256, 256, 4)
-        self.mmtm4 = MMTM(512, 512, 4)
+        self.mmtm1 = MMTM(128, 128, 4)
+        self.mmtm2 = MMTM(256, 256, 4)
+        self.mmtm3 = MMTM(512, 512, 4)
         self.fc = nn.Linear(512 * 2, num_cls)
 
         self.n_fft = 512
@@ -209,7 +208,6 @@ class AVnet(nn.Module):
             {'params': self.mmtm1.parameters()},
             {'params': self.mmtm2.parameters()},
             {'params': self.mmtm3.parameters()},
-            {'params': self.mmtm4.parameters()}
         ]
         return parameters
     def get_image_params(self):
@@ -218,7 +216,6 @@ class AVnet(nn.Module):
             {'params': self.mmtm1.parameters()},
             {'params': self.mmtm2.parameters()},
             {'params': self.mmtm3.parameters()},
-            {'params': self.mmtm4.parameters()}
         ]
         return parameters
     def preprocessing_audio(self, audio):
@@ -245,7 +242,7 @@ class AVnet(nn.Module):
 
         audio = self.audio.layer1(audio)
         image = self.image.layer1(image)
-        # audio, image = self.mmtm1(audio, image)
+
         audio = self.audio.layer2(audio)
         image = self.image.layer2(image)
         # audio, image = self.mmtm2(audio, image)
