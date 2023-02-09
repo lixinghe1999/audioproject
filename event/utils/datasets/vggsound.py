@@ -1,11 +1,9 @@
 import os
-import random
 import librosa
 import numpy as np
 import pandas as pd
-import torch
 import torch.utils.data as td
-import ffmpeg
+
 import torchvision as tv
 class ToTensor1D(tv.transforms.ToTensor):
     def __call__(self, tensor: np.ndarray):
@@ -72,7 +70,6 @@ class VGGSound(td.Dataset):
 
     def __len__(self) -> int:
         return len(self.data)
-
 def csv_filter(limit=40):
     meta = pd.read_csv('vggsound.csv')
     num_class = dict()
@@ -94,14 +91,19 @@ if __name__ == "__main__":
     data_list, label_list = csv_filter()
     data_frame = {'filename': [], 'target': [], 'category': []}
     for data in data_list:
-        fname = data[0] + '_' + str(data[1])
+        fname = data_dir + '/' + data[0] + '_' + str(data[1])
         # if download success
-        if os.path.isfile(data_dir + '/' + fname + '.mp4') and os.path.isfile(data_dir + '/' + fname + '.flac'):
-            category = data[2]
-            target = label_list.index(category)
-            data_frame['filename'] += [fname]
-            data_frame['target'] += [target]
-            data_frame['category'] += [category]
+        if os.path.isfile(fname + '.mp4') and os.path.isfile(fname + '.flac'):
+            y, sr = librosa.load(fname + '.flac')
+            duration = librosa.get_duration(y=y, sr=sr)
+            if duration < 10 or np.max(y) < 0.1:
+                print('invalid data')
+            else:
+                category = data[2]
+                target = label_list.index(category)
+                data_frame['filename'] += [fname]
+                data_frame['target'] += [target]
+                data_frame['category'] += [category]
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
 

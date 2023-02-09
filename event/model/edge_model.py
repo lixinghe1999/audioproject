@@ -201,8 +201,6 @@ class AVnet(nn.Module):
         self.win_length = 512
         self.normalized = True
         self.onesided = True
-        self.spec_height = 224
-        self.spec_width = 224
     def preprocessing_audio(self, audio):
         spec = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
                           win_length=self.win_length, window=torch.hann_window(self.win_length, device=audio.device),
@@ -214,9 +212,7 @@ class AVnet(nn.Module):
         spec = (spec - mean) / (std + 1e-9)
         return spec.unsqueeze(1)
     def forward(self, audio, image):
-        print(audio.shape)
         audio = self.preprocessing_audio(audio)
-        print(audio.shape)
         audio = self.audio.conv1(audio)
         audio = self.audio.bn1(audio)
         audio = self.audio.relu(audio)
