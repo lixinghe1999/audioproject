@@ -38,7 +38,7 @@ def train(train_dataset, test_dataset):
             update_lr(optimizers[0], multiplier=.1)
             update_lr(optimizers[1], multiplier=.1)
         for batch in tqdm(train_loader):
-            audio, image, text, files = batch
+            audio, image, text, _ = batch
             y = torch.zeros(len(text), len(dataset.class_idx_to_label), dtype=torch.int8)
             for item_idx, label in enumerate(text):
                 class_ids = dataset.label_to_class_idx[label]
@@ -48,8 +48,8 @@ def train(train_dataset, test_dataset):
         model.eval()
         acc = []
         with torch.no_grad():
-            for batch in test_loader:
-                audio, image, text, files = batch
+            for batch in tqdm(test_loader):
+                audio, image, text, _ = batch
                 predict = model(audio.to(device), image.to(device))
                 y = torch.zeros(len(text), len(dataset.class_idx_to_label), dtype=torch.int8)
                 for item_idx, label in enumerate(text):
