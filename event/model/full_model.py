@@ -244,7 +244,7 @@ class AVnet(nn.Module):
 
         audio = self.audio.layer1(audio)
         image = self.image.layer1(image)
-        # audio, image = self.mmtm1(audio, image)
+        audio, image = self.mmtm1(audio, image)
         audio = self.audio.layer2(audio)
         image = self.image.layer2(image)
         audio, image = self.mmtm2(audio, image)
