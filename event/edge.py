@@ -42,8 +42,7 @@ def train(train_dataset, test_dataset):
                 class_ids = dataset.label_to_class_idx[label]
                 y[item_idx][class_ids] = 1
             y = torch.argmax(y, dim=-1)
-            l = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=y)
-
+            l = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=y.to(device))
         model.eval()
         acc = []
         with torch.no_grad():
