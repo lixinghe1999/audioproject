@@ -3,7 +3,7 @@ import librosa
 import numpy as np
 import pandas as pd
 import torch.utils.data as td
-
+from tqdm import tqdm
 import torchvision as tv
 class ToTensor1D(tv.transforms.ToTensor):
     def __call__(self, tensor: np.ndarray):
@@ -27,8 +27,8 @@ class VGGSound(td.Dataset):
         self.data = list()
         for idx, row in meta.iterrows():
             self.data.append({
-                'audio': os.path.join(root, row['filename'] + '.flac'),
-                'vision': os.path.join(root, row['filename'] + '.mp4'),
+                'audio': row['filename'] + '.flac',
+                'vision': row['filename'] + '.mp4',
                 'name': row['filename'],
                 'category': row['category'],
             })
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     data_dir = '../dataset/VggSound'
     data_list, label_list = csv_filter()
     data_frame = {'filename': [], 'target': [], 'category': []}
-    for data in data_list:
+    for data in tqdm(data_list):
         fname = data_dir + '/' + data[0] + '_' + str(data[1])
         # if download success
         if os.path.isfile(fname + '.mp4') and os.path.isfile(fname + '.flac'):
