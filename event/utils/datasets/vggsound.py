@@ -5,6 +5,7 @@ import pandas as pd
 import torch.utils.data as td
 from tqdm import tqdm
 import torchvision as tv
+import subprocess
 class ToTensor1D(tv.transforms.ToTensor):
     def __call__(self, tensor: np.ndarray):
         tensor_2d = super(ToTensor1D, self).__call__(tensor[..., np.newaxis])
@@ -16,7 +17,6 @@ transform_image = tv.transforms.Compose([
         ])
 class VGGSound(td.Dataset):
     def __init__(self,
-                 root: str = '../dataset/VggSound',
                  transform_image=transform_image,
                  length=10,
                  **_):
@@ -84,8 +84,12 @@ def csv_filter(limit=40):
             num_class[label] = 1
     return dl_list_new, list(num_class.keys())
 if __name__ == "__main__":
+    def crop(input_file, output_file):
+        subprocess.call(
+            ['ffmpeg', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
+
     # generate new csv to part of the dataset
-    # format: filename, fold, target (number), category(string)
+    # format: filename, fold, category(string)
     data_dir = '../dataset/VggSound'
     data_list, label_list = csv_filter()
     data_frame = {'filename': [], 'target': [], 'category': []}
@@ -100,6 +104,7 @@ if __name__ == "__main__":
                     print('invalid data')
                 else:
                     category = data[2]
+                    crop(fname + '.mp4', fname + '.mp4')
                     target = label_list.index(category)
                     data_frame['filename'] += [fname]
                     data_frame['target'] += [target]
