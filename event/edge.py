@@ -16,6 +16,7 @@ def step(model, input_data, optimizers, criteria, label):
         optimizer.zero_grad()
         loss = criteria(output, label)
         loss.backward()
+        print(loss.item())
         optimizer.step()
     return loss
 def update_lr(optimizer, multiplier = .1):
@@ -42,8 +43,7 @@ def train(train_dataset, test_dataset):
                 class_ids = dataset.label_to_class_idx[label]
                 y[item_idx][class_ids] = 1
             y = torch.argmax(y, dim=-1)
-            l = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=y.to(device))
-            print(l.item())
+            step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=y.to(device))
         model.eval()
         acc = []
         with torch.no_grad():
