@@ -184,43 +184,34 @@ class ResNet(nn.Module):
 class AVnet(nn.Module):
     def __init__(self, num_cls=309):
         super(AVnet, self).__init__()
-        self.audio = ResNet(img_channels=3, num_layers=34, block=BasicBlock, num_classes=1000)
-        self.audio.load_state_dict(torch.load('resnet34.pth'))
-        self.audio.fc = torch.nn.Linear(512, num_cls)
-        self.image = ResNet(img_channels=3, num_layers=34, block=BasicBlock, num_classes=1000)
-        self.image.load_state_dict(torch.load('resnet34.pth'))
-        self.image.fc = torch.nn.Linear(512, num_cls)
+        self.audio = ResNet(img_channels=1, num_layers=34, block=BasicBlock, num_classes=num_cls)
+        # self.audio.load_state_dict(torch.load('resnet34.pth'))
+        # self.audio.fc = torch.nn.Linear(512, num_cls)
+        self.image = ResNet(img_channels=1, num_layers=34, block=BasicBlock, num_classes=num_cls)
+        # self.image.load_state_dict(torch.load('resnet34.pth'))
+        # self.image.fc = torch.nn.Linear(512, num_cls)
         # self.mmtm1 = MMTM(64, 64, 4)
         self.mmtm2 = MMTM(128, 128, 4)
         self.mmtm3 = MMTM(256, 256, 4)
         self.mmtm4 = MMTM(512, 512, 4)
         self.fc = nn.Linear(512 * 2, num_cls)
 
-        self.n_fft = 2048
-        self.hop_length = 600
-        self.win_length = 600
+        self.n_fft = 512
+        self.hop_length = 159
+        self.win_length = 512
         self.normalized = True
         self.onesided = True
-        self.conv1_channel = 3
         self.spec_height = 224
         self.spec_width = 224
     def preprocessing_audio(self, audio):
         spec = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
                           win_length=self.win_length, window=torch.hann_window(self.win_length, device=audio.device),
-                          pad_mode='reflect', normalized=self.normalized, onesided=True, return_complex=False)
-        spec_height_per_band = spec.shape[1] // self.conv1_channel
-        spec_height_single_band = self.conv1_channel * spec_height_per_band
-        spec = spec[:, :spec_height_single_band]
-
-        spec = spec.reshape(spec.shape[0], -1, spec.shape[-3] // self.conv1_channel, *spec.shape[-2:])
-        spec = spec[..., 0] ** 2 + spec[..., 1] ** 2
-        if self.spec_height != spec.shape[-2] or self.spec_width != spec.shape[-1]:
-            spec = torch.nn.functional.interpolate(
-                input=spec, size=(self.spec_height, self.spec_width),
-                mode='bilinear', align_corners=True
-            )
-        spec = torch.clamp(spec, 1e-18)
-        spec = torch.log10(spec).mul(10.0)
+                          pad_mode='reflect', normalized=self.normalized, onesided=True, return_complex=True)
+        spec = torch.abs(spec)
+        spec = torch.log(spec + 1e-7)
+        mean = torch.mean(spec)
+        std = torch.std(spec)
+        spec = (spec - mean)/ (std + 1e-9)
         return spec
     def forward(self, audio, image):
         audio = self.preprocessing_audio(audio)

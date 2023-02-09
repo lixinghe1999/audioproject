@@ -53,7 +53,7 @@ class VGGSound(td.Dataset):
         # vid = ffmpeg.probe(filename_vision)
         # center = float(vid['streams'][0]['duration']) / 2
 
-        audio, sample_rate = librosa.load(filename_audio, sr=None, duration=self.length)
+        audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
         if len(audio) > self.length * sample_rate:
             rand_start = np.random.randint(0, len(audio) - self.length * sample_rate)
             audio = audio[rand_start: rand_start + self.length * sample_rate]
