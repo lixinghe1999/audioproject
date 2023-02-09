@@ -187,7 +187,7 @@ class AVnet(nn.Module):
         self.audio = ResNet(img_channels=1, num_layers=34, block=BasicBlock, num_classes=num_cls)
         # self.audio.load_state_dict(torch.load('resnet34.pth'))
         # self.audio.fc = torch.nn.Linear(512, num_cls)
-        self.image = ResNet(img_channels=1, num_layers=34, block=BasicBlock, num_classes=num_cls)
+        self.image = ResNet(img_channels=3, num_layers=34, block=BasicBlock, num_classes=num_cls)
         # self.image.load_state_dict(torch.load('resnet34.pth'))
         # self.image.fc = torch.nn.Linear(512, num_cls)
         # self.mmtm1 = MMTM(64, 64, 4)
@@ -211,10 +211,12 @@ class AVnet(nn.Module):
         spec = torch.log(spec + 1e-7)
         mean = torch.mean(spec)
         std = torch.std(spec)
-        spec = (spec - mean)/ (std + 1e-9)
+        spec = (spec - mean) / (std + 1e-9)
         return spec
     def forward(self, audio, image):
+        print(audio.shape)
         audio = self.preprocessing_audio(audio)
+        print(audio.shape)
         audio = self.audio.conv1(audio)
         audio = self.audio.bn1(audio)
         audio = self.audio.relu(audio)

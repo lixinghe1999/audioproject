@@ -20,7 +20,7 @@ class VGGSound(td.Dataset):
     def __init__(self,
                  root: str = '../dataset/VggSound',
                  transform_image=transform_image,
-                 length=5,
+                 length=10,
                  **_):
 
         super(VGGSound, self).__init__()
