@@ -94,16 +94,19 @@ if __name__ == "__main__":
         fname = data_dir + '/' + data[0] + '_' + str(data[1])
         # if download success
         if os.path.isfile(fname + '.mp4') and os.path.isfile(fname + '.flac'):
-            y, sr = librosa.load(fname + '.flac')
-            duration = librosa.get_duration(y=y, sr=sr)
-            if duration < 10 or np.max(y) < 0.1:
+            try:
+                y, sr = librosa.load(fname + '.flac')
+                duration = librosa.get_duration(y=y, sr=sr)
+                if duration < 10 or np.max(y) < 0.1:
+                    print('invalid data')
+                else:
+                    category = data[2]
+                    target = label_list.index(category)
+                    data_frame['filename'] += [fname]
+                    data_frame['target'] += [target]
+                    data_frame['category'] += [category]
+            except:
                 print('invalid data')
-            else:
-                category = data[2]
-                target = label_list.index(category)
-                data_frame['filename'] += [fname]
-                data_frame['target'] += [target]
-                data_frame['category'] += [category]
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
 
