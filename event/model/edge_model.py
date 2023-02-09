@@ -212,7 +212,7 @@ class AVnet(nn.Module):
         mean = torch.mean(spec)
         std = torch.std(spec)
         spec = (spec - mean) / (std + 1e-9)
-        return spec
+        return spec.squeeze(1)
     def forward(self, audio, image):
         print(audio.shape)
         audio = self.preprocessing_audio(audio)
