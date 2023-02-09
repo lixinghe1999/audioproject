@@ -197,7 +197,7 @@ class AVnet(nn.Module):
         self.fc = nn.Linear(512 * 2, num_cls)
 
         self.n_fft = 512
-        self.hop_length = 159
+        self.hop_length = 512
         self.win_length = 512
         self.normalized = True
         self.onesided = True
@@ -212,7 +212,7 @@ class AVnet(nn.Module):
         mean = torch.mean(spec)
         std = torch.std(spec)
         spec = (spec - mean) / (std + 1e-9)
-        return spec.squeeze(1)
+        return spec.unsqueeze(1)
     def forward(self, audio, image):
         print(audio.shape)
         audio = self.preprocessing_audio(audio)
