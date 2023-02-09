@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     dl_list = [line.strip().split(',')[:3] for line in lines]
     num_class = dict()
-    limit = 100
+    limit = 200
     dl_list_new = []
     for l in dl_list:
         ytid, ts_start, label = l
@@ -106,7 +106,7 @@ if __name__ == "__main__":
         dl_list_new.append(l)
 
     num_processes = os.cpu_count()  # 16
-    with mp.Pool(processes=8) as pool:
+    with mp.Pool(processes=16) as pool:
         for _ in pool.starmap(
                 func=down_load,
                 iterable=dl_list_new,
