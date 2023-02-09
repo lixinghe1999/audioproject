@@ -6,6 +6,7 @@ import torch.utils.data as td
 from tqdm import tqdm
 import torchvision as tv
 import subprocess
+import multiprocessing as mp
 class ToTensor1D(tv.transforms.ToTensor):
     def __call__(self, tensor: np.ndarray):
         tensor_2d = super(ToTensor1D, self).__call__(tensor[..., np.newaxis])
@@ -87,13 +88,7 @@ if __name__ == "__main__":
     def crop(input_file, output_file):
         subprocess.call(
             ['ffmpeg', '-y', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
-
-    # generate new csv to part of the dataset
-    # format: filename, fold, category(string)
-    data_dir = '../dataset/VggSound'
-    data_list, label_list = csv_filter()
-    data_frame = {'filename': [], 'target': [], 'category': []}
-    for data in tqdm(data_list):
+    def check(data):
         fname = data_dir + '/' + data[0] + '_' + str(data[1])
         # if download success
         if os.path.isfile(fname + '.mp4') and os.path.isfile(fname + '.flac'):
@@ -111,6 +106,19 @@ if __name__ == "__main__":
                     data_frame['category'] += [category]
             except:
                 print('invalid data')
+    # generate new csv to part of the dataset
+    # format: filename, fold, category(string)
+    data_dir = '../dataset/VggSound'
+    data_list, label_list = csv_filter()
+    data_frame = {'filename': [], 'target': [], 'category': []}
+
+    num_processes = os.cpu_count()
+    with mp.Pool(processes=8) as pool:
+        for _ in pool.starmap(
+                func=check,
+                iterable=tqdm(data_list),
+        ):
+            pass
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
 
