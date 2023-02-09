@@ -88,8 +88,8 @@ if __name__ == "__main__":
     def crop(input_file, output_file):
         subprocess.call(
             ['ffmpeg', '-y', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
-    def check(data):
-        fname = data_dir + '/' + data[0] + '_' + str(data[1])
+    def check(name, time, category):
+        fname = data_dir + '/' + name + '_' + str(time)
         # if download success
         if os.path.isfile(fname + '.mp4') and os.path.isfile(fname + '.flac'):
             try:
@@ -98,7 +98,6 @@ if __name__ == "__main__":
                 if duration < 10 or np.max(y) < 0.1:
                     print('invalid data')
                 else:
-                    category = data[2]
                     crop(fname + '.mp4', fname + '.mp4')
                     target = label_list.index(category)
                     data_frame['filename'] += [fname]

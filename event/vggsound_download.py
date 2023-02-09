@@ -109,7 +109,7 @@ if __name__ == "__main__":
     with mp.Pool(processes=8) as pool:
         for _ in pool.starmap(
                 func=down_load,
-                iterable=dl_list,
+                iterable=dl_list_new,
         ):
             pass
 
