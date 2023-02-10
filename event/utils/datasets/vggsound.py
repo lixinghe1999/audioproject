@@ -70,7 +70,7 @@ class VGGSound(td.Dataset):
 
     def __len__(self) -> int:
         return len(self.data)
-def csv_filter(limit=40):
+def csv_filter(limit=100):
     meta = pd.read_csv('vggsound.csv')
     num_class = dict()
     dl_list_new = []
@@ -78,7 +78,7 @@ def csv_filter(limit=40):
         s = [row[0], row[1], row[2].replace(',', '')]
         label = s[2]
         if label in num_class:
-            if num_class[label] <= limit:
+            if num_class[label] <= limit and num_class[label] > 40:
                 dl_list_new.append(s)
             num_class[label] += 1
         else:

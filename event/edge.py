@@ -1,7 +1,7 @@
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.full_model import AVnet
+from model.slim_model import AVnet
 import warnings
 from tqdm import tqdm
 warnings.filterwarnings("ignore")

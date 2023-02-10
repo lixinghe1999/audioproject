@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch
 from torch import Tensor
 from typing import Type
-from full_model import MMTM, BasicBlock, ResNet
+from slim_model import MMTM, BasicBlock, ResNet
 
 class AVnet_edge(nn.Module):
     def __init__(self, num_cls=309):
