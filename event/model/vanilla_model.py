@@ -178,7 +178,7 @@ class ResNet(nn.Module):
         x = self.fc(x)
         return x
 class AVnet(nn.Module):
-    def __init__(self, edge=True, train=False, layers=(3, 4, 6, 3), num_cls=309):
+    def __init__(self, edge=True, layers=(3, 4, 6, 3), num_cls=309):
         '''
         :param edge: True - with preprocess, False - only ResBlock
         :param train: True - get early exit for each block, False - don't get
@@ -187,7 +187,6 @@ class AVnet(nn.Module):
         '''
         super(AVnet, self).__init__()
         self.edge = edge
-        self.train = train
         self.audio = ResNet(img_channels=1, layers=layers, block=BasicBlock, num_classes=num_cls)
         self.n_fft = 512
         self.hop_length = 512
@@ -204,9 +203,6 @@ class AVnet(nn.Module):
         self.mmtm2 = MMTM(256, 256, 4)
         self.mmtm3 = MMTM(512, 512, 4)
         self.fc = nn.Linear(512 * 2, num_cls)
-        self.early_exit1 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64 * 2, num_cls)])
-        self.early_exit2 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128 * 2, num_cls)])
-        self.early_exit3 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256 * 2, num_cls)])
     def get_audio_params(self):
         parameters = [
             {'params': self.audio.parameters()},
@@ -248,17 +244,15 @@ class AVnet(nn.Module):
 
         audio = self.audio.layer1(audio)
         image = self.image.layer1(image)
-        early_output1 = self.early_exit1(torch.cat([audio, image], dim=1))
 
         audio = self.audio.layer2(audio)
         image = self.image.layer2(image)
         # audio, image = self.mmtm2(audio, image)
-        early_output2 = self.early_exit2(torch.cat([audio, image], dim=1))
 
         audio = self.audio.layer3(audio)
         image = self.image.layer3(image)
         # audio, image = self.mmtm3(audio, image)
-        early_output3 = self.early_exit3(torch.cat([audio, image], dim=1))
+
 
         audio = self.audio.layer4(audio)
         image = self.image.layer4(image)
@@ -270,7 +264,7 @@ class AVnet(nn.Module):
         audio = torch.flatten(audio, 1)
         image = torch.flatten(image, 1)
         output = (self.audio.fc(audio) + self.image.fc(image)) / 2
-        return [early_output1, early_output2, early_output3, output]
+        return output
 if __name__ == "__main__":
     num_cls = 100
     model = AVnet(train=False, num_cls=100)
