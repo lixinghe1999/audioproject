@@ -84,23 +84,16 @@ class BasicBlock(nn.Module):
             identity = self.downsample(x)
         out += identity
         out = self.relu(out)
-        return  out
+        return out
 class ResNet(nn.Module):
     def __init__(
             self,
             img_channels: int,
-            num_layers: int,
+            layers: tuple,
             block: Type[BasicBlock],
             num_classes: int = 1000
     ) -> None:
         super(ResNet, self).__init__()
-        if num_layers == 18:
-            # The following `layers` list defines the number of `BasicBlock`
-            # to use to build the network and how many basic blocks to stack
-            # together.
-            layers = [2, 2, 2, 2]
-        elif num_layers == 34:
-            layers = [3, 4, 6, 3]
         self.expansion = 1
 
         self.in_channels = 64
@@ -182,12 +175,18 @@ class ResNet(nn.Module):
         x = self.fc(x)
         return x
 class AVnet(nn.Module):
-    def __init__(self, num_cls=309):
+    def __init__(self, edge=True, layers=(3, 4, 6, 3), num_cls=309):
+        '''
+        :param edge: True - with preprocess, False - only ResBlock
+        :param layers: resnet18: [2, 2, 2, 2] resnet34: [3, 4, 6, 3]
+        :param num_cls: number of class
+        '''
         super(AVnet, self).__init__()
-        self.audio = ResNet(img_channels=1, num_layers=34, block=BasicBlock, num_classes=num_cls)
+        self.edge = edge
+        self.audio = ResNet(img_channels=1, layers=layers, block=BasicBlock, num_classes=num_cls)
         # self.audio.load_state_dict(torch.load('resnet34.pth'))
 
-        self.image = ResNet(img_channels=3, num_layers=34, block=BasicBlock, num_classes=1000)
+        self.image = ResNet(img_channels=3, layers=layers, block=BasicBlock, num_classes=1000)
         self.image.load_state_dict(torch.load('resnet34.pth'))
         self.image.fc = torch.nn.Linear(512, num_cls)
 
@@ -229,16 +228,17 @@ class AVnet(nn.Module):
         spec = (spec - mean) / (std + 1e-9)
         return spec.unsqueeze(1)
     def forward(self, audio, image):
-        audio = self.preprocessing_audio(audio)
-        audio = self.audio.conv1(audio)
-        audio = self.audio.bn1(audio)
-        audio = self.audio.relu(audio)
-        audio = self.audio.maxpool(audio)
+        if self.edge:
+            audio = self.preprocessing_audio(audio)
+            audio = self.audio.conv1(audio)
+            audio = self.audio.bn1(audio)
+            audio = self.audio.relu(audio)
+            audio = self.audio.maxpool(audio)
 
-        image = self.image.conv1(image)
-        image = self.image.bn1(image)
-        image = self.image.relu(image)
-        image = self.image.maxpool(image)
+            image = self.image.conv1(image)
+            image = self.image.bn1(image)
+            image = self.image.relu(image)
+            image = self.image.maxpool(image)
 
         audio = self.audio.layer1(audio)
         image = self.image.layer1(image)
@@ -258,7 +258,7 @@ class AVnet(nn.Module):
         audio = torch.flatten(audio, 1)
         image = torch.flatten(image, 1)
         output = (self.audio.fc(audio) + self.image.fc(image)) / 2
-        return output
+        return output, torch.cat([audio, image], dim=1)
 if __name__ == "__main__":
     num_cls = 100
     model = AVnet(num_cls=100)
