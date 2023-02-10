@@ -88,7 +88,8 @@ if __name__ == "__main__":
     def crop(input_file, output_file):
         subprocess.call(
             ['ffmpeg', '-y', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
-    def check(name, time, category):
+    def check(data):
+        name, time, category = data
         fname = data_dir + '/' + name + '_' + str(time)
         # if download success
         if os.path.isfile(fname + '.mp4') and os.path.isfile(fname + '.flac'):
