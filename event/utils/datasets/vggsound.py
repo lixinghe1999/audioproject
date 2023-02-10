@@ -78,7 +78,7 @@ def csv_filter(limit=100):
         s = [row[0], row[1], row[2].replace(',', '')]
         label = s[2]
         if label in num_class:
-            if num_class[label] <= limit and num_class[label] > 40:
+            if num_class[label] <= limit:
                 dl_list_new.append(s)
             num_class[label] += 1
         else:
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 if duration < 10 or np.max(y) < 0.1:
                     print('invalid data')
                 else:
-                    crop(fname + '.mp4', fname + '.mp4')
+                    # crop(fname + '.mp4', fname + '.mp4')
                     target = label_list.index(category)
                     data_frame['filename'] += [fname]
                     data_frame['target'] += [target]
