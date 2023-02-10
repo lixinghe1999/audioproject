@@ -112,12 +112,14 @@ if __name__ == "__main__":
     data_frame = {'filename': [], 'target': [], 'category': []}
 
     num_processes = os.cpu_count()
-    with mp.Pool(processes=8) as pool:
-        for _ in pool.starmap(
-                func=check,
-                iterable=tqdm(data_list),
-        ):
-            pass
+    # with mp.Pool(processes=8) as pool:
+    #     for _ in pool.starmap(
+    #             func=check,
+    #             iterable=tqdm(data_list),
+    #     ):
+    #         pass
+    with mp.Pool(processes=8) as p:
+        print(list((tqdm(p.imap(check, data_list), total=len(data_list)))))
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
 
