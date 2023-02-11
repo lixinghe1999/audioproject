@@ -39,7 +39,7 @@ def train(train_dataset, test_dataset):
         if e % 5 == 0 and e > 0:
             update_lr(optimizers[0], multiplier=.2)
             # update_lr(optimizers[1], multiplier=.1)
-        for idx, batch in tqdm(enumerate(train_loader)):
+        for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             loss = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
             if idx % 100 == 0 and idx > 0:
