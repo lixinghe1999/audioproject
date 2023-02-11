@@ -125,5 +125,5 @@ if __name__ == "__main__":
     stat(meta)
     num_processes = os.cpu_count()
     with mp.Pool(processes=16) as p:
-        vals = list(tqdm(p.imap(crop, meta.iterrows()), total=len(meta.iterrows())))
+        vals = list(tqdm(p.imap(crop, meta.iterrows())))
 
