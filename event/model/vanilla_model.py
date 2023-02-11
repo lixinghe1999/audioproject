@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch
 from torch import Tensor
 from typing import Type
-from resnet import ModifiedResNet
+from model.resnet import ModifiedResNet
 def set_exist_attr(m, attr, value):
     if hasattr(m, attr):
         setattr(m, attr, value)
