@@ -87,10 +87,9 @@ def stat(meta):
 if __name__ == "__main__":
     def crop(data):
         idx, row = data
-        print(data)
         name = row[0]
-        input_file = name
-        output_file = name
+        input_file = name + '.mp4'
+        output_file = name + '.mp4'
         subprocess.call(
             ['ffmpeg', '-y', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
     def check(data):
