@@ -25,7 +25,7 @@ def update_lr(optimizer, multiplier = .1):
         param_group['lr'] = param_group['lr'] * multiplier
     optimizer.load_state_dict(state_dict)
 def train(train_dataset, test_dataset):
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=128, shuffle=True,
                                                drop_last=True, pin_memory=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False)
     # optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
@@ -35,15 +35,10 @@ def train(train_dataset, test_dataset):
     for e in range(20):
         model.train()
         if e % 5 == 0 and e > 0:
-            update_lr(optimizers[0], multiplier=.1)
+            update_lr(optimizers[0], multiplier=.2)
             # update_lr(optimizers[1], multiplier=.1)
         for batch in tqdm(train_loader):
             audio, image, text, _ = batch
-            # y = torch.zeros(len(text), len(dataset.class_idx_to_label), dtype=torch.int8)
-            # for item_idx, label in enumerate(text):
-            #     class_ids = dataset.label_to_class_idx[label]
-            #     y[item_idx][class_ids] = 1
-            # y = torch.argmax(y, dim=-1)
             step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
         model.eval()
         acc = []
@@ -51,12 +46,7 @@ def train(train_dataset, test_dataset):
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 predict = model(audio.to(device), image.to(device))
-                y = torch.zeros(len(text), len(dataset.class_idx_to_label), dtype=torch.int8)
-                for item_idx, label in enumerate(text):
-                    class_ids = dataset.label_to_class_idx[label]
-                    y[item_idx][class_ids] = 1
-                y = torch.argmax(y, dim=-1)
-                acc.append((torch.argmax(predict, dim=-1).cpu() == y).sum() / len(y))
+                acc.append((torch.argmax(predict, dim=-1).cpu() == text).sum() / len(text))
         print('epoch', e, np.mean(acc))
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
