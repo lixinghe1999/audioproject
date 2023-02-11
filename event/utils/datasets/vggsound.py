@@ -70,26 +70,21 @@ class VGGSound(td.Dataset):
 
     def __len__(self) -> int:
         return len(self.data)
-def csv_filter(limit=2):
+def csv_filter():
     meta = pd.read_csv('vggsound.csv')
-    num_class = dict()
     dl_list_new = []
     for idx, row in meta.iterrows():
         s = [row[0], row[1], row[2].replace(',', '')]
-        label = s[2]
-        if label in num_class:
-            if num_class[label] <= limit:
-                dl_list_new.append(s)
-            num_class[label] += 1
-        else:
-            num_class[label] = 1
-    return dl_list_new, list(num_class.keys())
+        dl_list_new.append(s)
+    return dl_list_new
 if __name__ == "__main__":
-    def crop(input_file, output_file):
+    def crop(data):
+        name, category = data
+        input_file = name
+        output_file = name
         subprocess.call(
             ['ffmpeg', '-y', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
     def check(data):
-        global data_frame
         name, time, category = data
         fname = data_dir + '/' + name + '_' + str(time)
         # if download success
@@ -100,30 +95,21 @@ if __name__ == "__main__":
                 if duration < 10 or np.max(y) < 0.1:
                     print('invalid data')
                 else:
-                    # crop(fname + '.mp4', fname + '.mp4')
-                    # target = label_list.index(category)
-                    # data_frame['filename'] += [fname]
-                    # data_frame['target'] += [target]
-                    # data_frame['category'] += [category]
                     return fname, category
             except:
                 print('invalid data')
     # generate new csv to part of the dataset
     # format: filename, fold, category(string)
     data_dir = '../dataset/VggSound'
-    data_list, label_list = csv_filter()
-    data_frame = {'filename': [], 'target': [], 'category': []}
+    data_list = csv_filter()
+    data_frame = {'filename': [], 'category': []}
 
     num_processes = os.cpu_count()
-    # with mp.Pool(processes=8) as pool:
-    #     for _ in pool.starmap(
-    #             func=check,
-    #             iterable=tqdm(data_list),
-    #     ):
-    #         pass
-    with mp.Pool(processes=8) as p:
+    with mp.Pool(processes=num_processes) as p:
         vals = list(tqdm(p.imap(check, data_list), total=len(data_list)))
-        print(vals)
+    for val in vals:
+        data_frame['filename'] += [val[0]]
+        data_frame['category'] += [val[1]]
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
 
