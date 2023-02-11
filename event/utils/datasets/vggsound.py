@@ -33,7 +33,7 @@ class VGGSound(td.Dataset):
         for idx, row in meta.iterrows():
             self.data.append({
                 'audio': row['filename'] + '.flac',
-                'vision': row['filename'] + '.mp4',
+                'vision': row['filename'].replace('VggSound', 'VggSound_scaled') + '.mp4',
                 'name': row['filename'],
                 'category': row['category'],
             })
@@ -94,8 +94,11 @@ if __name__ == "__main__":
         #     ['ffmpeg', '-i', input_file, '-ac', '1', '-ar', '16000', '-c:a', 'libmp3lame', '-q:a', '9', output_file])
         input_file = name + '.mp4'
         output_file = name.replace('VggSound', 'VggSound_scaled') + '.mp4'
-        subprocess.call(
-            ['ffmpeg', '-i', input_file, '-filter:v', 'scale=480:-2', output_file])
+        if os.path.exists(output_file):
+            pass
+        else:
+            subprocess.call(
+                ['ffmpeg', '-i', input_file, '-filter:v', 'scale=480:-2', output_file])
     def check(data):
         data_dir = '../dataset/VggSound'
         name, time, category = data
