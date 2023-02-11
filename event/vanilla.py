@@ -1,7 +1,10 @@
+import torchvision.models
+
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
 from model.vanilla_model import AVnet
+torchvision.models.resnet50()
 import warnings
 from tqdm import tqdm
 warnings.filterwarnings("ignore")

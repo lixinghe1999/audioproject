@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch
 from torch import Tensor
 from typing import Type
+from resnet import ModifiedResNet
 def set_exist_attr(m, attr, value):
     if hasattr(m, attr):
         setattr(m, attr, value)
@@ -195,13 +196,13 @@ class AVnet(nn.Module):
         self.normalized = True
         self.onesided = True
 
-        self.image = ResNet(img_channels=3, layers=layers, block=BasicBlock)
-        self.image.load_state_dict(torch.load('resnet34.pth'))
-        self.image.fc = torch.nn.Linear(512, num_cls)
+        self.image = ModifiedResNet()
+        self.image.load_state_dict(torch.load('resnet50.pth'))
+        self.image.fc = torch.nn.Linear(1024, num_cls)
 
-        self.mmtm1 = MMTM(128, 128, 4)
-        self.mmtm2 = MMTM(256, 256, 4)
-        self.mmtm3 = MMTM(512, 512, 4)
+        # self.mmtm1 = MMTM(128, 128, 4)
+        # self.mmtm2 = MMTM(256, 256, 4)
+        # self.mmtm3 = MMTM(512, 512, 4)
     def get_audio_params(self):
         parameters = [
             {'params': self.audio.parameters()},
@@ -236,10 +237,11 @@ class AVnet(nn.Module):
         audio = self.audio.relu(audio)
         audio = self.audio.maxpool(audio)
 
-        image = self.image.conv1(image)
-        image = self.image.bn1(image)
-        image = self.image.relu(image)
-        image = self.image.maxpool(image)
+        # image = self.image.conv1(image)
+        # image = self.image.bn1(image)
+        # image = self.image.relu(image)
+        # image = self.image.maxpool(image)
+        image = self.image.stem(image)
 
         audio = self.audio.layer1(audio)
         image = self.image.layer1(image)
@@ -252,16 +254,17 @@ class AVnet(nn.Module):
         image = self.image.layer3(image)
         # audio, image = self.mmtm3(audio, image)
 
-
         audio = self.audio.layer4(audio)
         image = self.image.layer4(image)
         # audio, image = self.mmtm4(audio, image)
 
         audio = self.audio.avgpool(audio)
-        image = self.audio.avgpool(image)
-
         audio = torch.flatten(audio, 1)
-        image = torch.flatten(image, 1)
+
+        # image = self.audio.avgpool(image)
+        # image = torch.flatten(image, 1)
+        image = self.image.attnpool(image)
+
         output = (self.audio.fc(audio) + self.image.fc(image)) / 2
         return output
 if __name__ == "__main__":
@@ -270,5 +273,4 @@ if __name__ == "__main__":
     audio = torch.zeros(16, 1, 220500)
     image = torch.zeros(16, 3, 224, 224)
     outputs = model(audio, image)
-    for output in outputs:
-        print(output.shape)
+    print(outputs.shape)
