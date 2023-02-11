@@ -47,7 +47,7 @@ class VGGSound(td.Dataset):
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
 
-        audio, sample_rate = librosa.load(filename_audio, sr=16000)
+        audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
         assert len(audio) == 160000
         # if len(audio) > self.length * sample_rate:
         #     rand_start = np.random.randint(0, len(audio) - self.length * sample_rate)
@@ -61,6 +61,7 @@ class VGGSound(td.Dataset):
         target = self.data[index]['category']
         if self.transform_image is not None:
             image = self.transform_image(image)
+        print(audio.shape, image.shape)
         return audio, image, target, sample['name']
 
     def __len__(self) -> int:
