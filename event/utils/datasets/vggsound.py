@@ -124,9 +124,9 @@ if __name__ == "__main__":
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
 
-    meta = pd.read_csv('vggsound_small.csv')
-    stat(meta)
-    num_processes = os.cpu_count()
-    with mp.Pool(processes=num_processes) as p:
-        vals = list(tqdm(p.imap(crop, meta.iterrows()), total=len(data_list)))
+    # meta = pd.read_csv('vggsound_small.csv')
+    # stat(meta)
+    # num_processes = os.cpu_count()
+    # with mp.Pool(processes=num_processes) as p:
+    #     vals = list(tqdm(p.imap(crop, meta.iterrows()), total=len(data_list)))
 
