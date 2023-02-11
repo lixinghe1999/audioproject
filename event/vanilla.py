@@ -25,7 +25,7 @@ def update_lr(optimizer, multiplier = .1):
     optimizer.load_state_dict(state_dict)
 def train(train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=8, shuffle=True,
-                                               drop_last=True, pin_memory=True)
+                                               drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False)
     # optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
     #               torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
