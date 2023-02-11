@@ -89,7 +89,7 @@ if __name__ == "__main__":
         subprocess.call(
             ['ffmpeg', '-y', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
     def check(data):
-        nonlocal data_frame
+        global data_frame
         name, time, category = data
         fname = data_dir + '/' + name + '_' + str(time)
         # if download success
