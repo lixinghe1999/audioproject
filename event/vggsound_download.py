@@ -1,7 +1,7 @@
 import pafy
 import os
 import subprocess as sp
-import matplotlib.pyplot as plt
+from tqdm import tqdm
 import multiprocessing as mp
 
 audio_codec = 'flac'
@@ -43,7 +43,8 @@ def audio_download(url, ts_start, audio_filepath):
         print('fail')
     else:
         print("Downloaded audio to " + audio_filepath)
-def down_load(ytid, ts_start, label):
+def down_load(data):
+    ytid, ts_start, label = data
     # print("YouTube ID: " + ytid, "Start Time: ({})".format(ts_start))
     # Get the URL to the video page
     video_page_url = 'https://www.youtube.com/watch?v={}'.format(ytid)
@@ -69,20 +70,7 @@ def down_load(ytid, ts_start, label):
         except:
             print('fail')
 
-def stat(dl_list):
-    num_class = dict()
-    for s in dl_list:
-        label = s[2]
-        if label in num_class:
-            num_class[label] += 1
-        else:
-            num_class[label] = 1
-    keys = num_class.keys()
-    values = sorted(num_class.values())
-    print('Whole number of clips:', sum(values))
-    print('Number of types:', len(keys))
-    plt.bar(range(len(keys)), values)
-    plt.show()
+
 
 if __name__ == "__main__":
     # Set output settings
@@ -106,11 +94,13 @@ if __name__ == "__main__":
         dl_list_new.append(l)
 
     num_processes = os.cpu_count()  # 16
-    with mp.Pool(processes=16) as pool:
-        for _ in pool.starmap(
-                func=down_load,
-                iterable=dl_list_new,
-        ):
-            pass
+    with mp.Pool(processes=num_processes) as p:
+        list(tqdm(p.imap(down_load, dl_list_new), total=len(dl_list_new)))
+    # with mp.Pool(processes=16) as pool:
+    #     for _ in pool.starmap(
+    #             func=down_load,
+    #             iterable=dl_list_new,
+    #     ):
+    #         pass
 
 

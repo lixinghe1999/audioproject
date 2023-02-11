@@ -74,9 +74,23 @@ def csv_filter():
         s = [row[0], row[1], row[2].replace(',', '')]
         dl_list_new.append(s)
     return dl_list_new
+def stat(meta):
+    num_class = dict()
+    for idx, row in meta.iterrows():
+        label = row[1]
+        if label in num_class:
+            num_class[label] += 1
+        else:
+            num_class[label] = 1
+    keys = num_class.keys()
+    values = sorted(num_class.values())
+    print('Whole number of clips:', sum(values))
+    print('Number of types:', len(keys))
+    # plt.bar(range(len(keys)), values)
+    # plt.show()
 if __name__ == "__main__":
     def crop(data):
-        name, category = data
+        idx, (name, category) = data
         input_file = name
         output_file = name
         subprocess.call(
@@ -109,4 +123,10 @@ if __name__ == "__main__":
         data_frame['category'] += [val[1]]
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
+
+    meta = pd.read_csv('vggsound_small.csv')
+    stat(meta)
+    num_processes = os.cpu_count()
+    with mp.Pool(processes=num_processes) as p:
+        vals = list(tqdm(p.imap(crop, meta.iterrows()), total=len(data_list)))
 
