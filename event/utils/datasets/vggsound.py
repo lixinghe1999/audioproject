@@ -88,7 +88,7 @@ if __name__ == "__main__":
     def crop(data):
         idx, row = data
         print(data)
-        name, category = row
+        name = row[0]
         input_file = name
         output_file = name
         subprocess.call(
