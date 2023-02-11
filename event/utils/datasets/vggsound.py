@@ -70,7 +70,7 @@ class VGGSound(td.Dataset):
 
     def __len__(self) -> int:
         return len(self.data)
-def csv_filter(limit=100):
+def csv_filter(limit=10):
     meta = pd.read_csv('vggsound.csv')
     num_class = dict()
     dl_list_new = []
@@ -89,6 +89,7 @@ if __name__ == "__main__":
         subprocess.call(
             ['ffmpeg', '-y', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
     def check(data):
+        nonlocal data_frame
         name, time, category = data
         fname = data_dir + '/' + name + '_' + str(time)
         # if download success
@@ -100,9 +101,9 @@ if __name__ == "__main__":
                     print('invalid data')
                 else:
                     # crop(fname + '.mp4', fname + '.mp4')
-                    target = label_list.index(category)
+                    # target = label_list.index(category)
                     data_frame['filename'] += [fname]
-                    data_frame['target'] += [target]
+                    # data_frame['target'] += [target]
                     data_frame['category'] += [category]
             except:
                 print('invalid data')
@@ -120,7 +121,7 @@ if __name__ == "__main__":
     #     ):
     #         pass
     with mp.Pool(processes=8) as p:
-        print(list((tqdm(p.imap(check, data_list), total=len(data_list)))))
+        list(tqdm(p.imap(check, data_list), total=len(data_list)))
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
 

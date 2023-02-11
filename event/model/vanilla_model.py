@@ -195,14 +195,13 @@ class AVnet(nn.Module):
         self.normalized = True
         self.onesided = True
 
-        self.image = ResNet(img_channels=3, layers=layers, block=BasicBlock, num_classes=1000)
+        self.image = ResNet(img_channels=3, layers=layers, block=BasicBlock)
         self.image.load_state_dict(torch.load('resnet34.pth'))
         self.image.fc = torch.nn.Linear(512, num_cls)
 
         self.mmtm1 = MMTM(128, 128, 4)
         self.mmtm2 = MMTM(256, 256, 4)
         self.mmtm3 = MMTM(512, 512, 4)
-        self.fc = nn.Linear(512 * 2, num_cls)
     def get_audio_params(self):
         parameters = [
             {'params': self.audio.parameters()},
