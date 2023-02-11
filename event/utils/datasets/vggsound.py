@@ -70,7 +70,7 @@ class VGGSound(td.Dataset):
 
     def __len__(self) -> int:
         return len(self.data)
-def csv_filter(limit=10):
+def csv_filter(limit=2):
     meta = pd.read_csv('vggsound.csv')
     num_class = dict()
     dl_list_new = []
