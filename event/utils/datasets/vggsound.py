@@ -123,7 +123,7 @@ if __name__ == "__main__":
     # df = pd.DataFrame(data=data_frame)
     # df.to_csv('vggsound_small.csv')
 
-    meta = pd.read_csv('vggsound_small.csv')
+    meta = pd.read_csv('vggsound_small.csv', index_col=0)
     stat(meta)
     num_processes = os.cpu_count()
     for d in meta.iterrows():
