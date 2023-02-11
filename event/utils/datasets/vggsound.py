@@ -87,6 +87,7 @@ def stat(meta):
 if __name__ == "__main__":
     def crop(data):
         idx, row = data
+        print(data)
         name, category = row
         input_file = name
         output_file = name
