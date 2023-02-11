@@ -26,6 +26,9 @@ class VGGSound(td.Dataset):
         self.transform_image = transform_image
         meta = pd.read_csv('vggsound_small.csv')
         self.data = list()
+        self.class_idx_to_label = dict()
+        self.label_to_class_idx = dict()
+        count = 0
         for idx, row in meta.iterrows():
             self.data.append({
                 'audio': row['filename'] + '.flac',
@@ -33,15 +36,10 @@ class VGGSound(td.Dataset):
                 'name': row['filename'],
                 'category': row['category'],
             })
-        self.class_idx_to_label = dict()
-        self.label_to_class_idx = dict()
-        idx = 0
-        for row in self.data:
-            label = row['category']
-            if label not in self.label_to_class_idx:
-                self.class_idx_to_label[idx] = label
-                self.label_to_class_idx[label] = idx
-                idx += 1
+            if row['category'] not in self.label_to_class_idx:
+                self.class_idx_to_label[count] = row['category']
+                self.label_to_class_idx[row['category']] = count
+                count += 1
         self.length = length
 
     def __getitem__(self, index: int):
@@ -49,7 +47,7 @@ class VGGSound(td.Dataset):
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
 
-        audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
+        audio, sample_rate = librosa.load(filename_audio, sr=16000)
         assert len(audio) == 160000
         # if len(audio) > self.length * sample_rate:
         #     rand_start = np.random.randint(0, len(audio) - self.length * sample_rate)
