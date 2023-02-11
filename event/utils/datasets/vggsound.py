@@ -52,8 +52,9 @@ class VGGSound(td.Dataset):
         assert len(audio) == 160000
         audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
 
-        image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
-        image = (image[0] / 255).permute(2, 0, 1)
+        # image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
+        # image = (image[0] / 255).permute(2, 0, 1)
+        image = torch.zeros(3, 224, 224)
         # print(audio.shape, image.shape)
         target = self.data[index]['category']
         target = self.label_to_class_idx[target]
