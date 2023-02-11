@@ -266,7 +266,7 @@ class AVnet(nn.Module):
         return output
 if __name__ == "__main__":
     num_cls = 100
-    model = AVnet(train=False, num_cls=100)
+    model = AVnet(num_cls=100)
     audio = torch.zeros(16, 1, 220500)
     image = torch.zeros(16, 3, 224, 224)
     outputs = model(audio, image)
