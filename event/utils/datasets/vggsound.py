@@ -88,11 +88,10 @@ if __name__ == "__main__":
     def crop(data):
         idx, row = data
         name = row[0]
-
-        input_file = name + '.flac'
-        output_file = name.replace('VggSound', 'VggSound_scaled') + '.flac'
-        subprocess.call(
-            ['ffmpeg', '-i', input_file, '-ac', '1', '-ar', '16000', '-c:a', 'libmp3lame', '-q:a', '9', output_file])
+        # input_file = name + '.flac'
+        # output_file = name.replace('VggSound', 'VggSound_scaled') + '.flac'
+        # subprocess.call(
+        #     ['ffmpeg', '-i', input_file, '-ac', '1', '-ar', '16000', '-c:a', 'libmp3lame', '-q:a', '9', output_file])
         input_file = name + '.mp4'
         output_file = name.replace('VggSound', 'VggSound_scaled') + '.mp4'
         subprocess.call(
@@ -130,9 +129,9 @@ if __name__ == "__main__":
     meta = pd.read_csv('vggsound_small.csv', index_col=0)
     stat(meta)
     num_processes = os.cpu_count()
-    for d in meta.iterrows():
-        crop(d)
-        break
-    # with mp.Pool(processes=16) as p:
-    #     vals = list(tqdm(p.imap(crop, meta.iterrows())))
+    # for d in meta.iterrows():
+    #     crop(d)
+    #     break
+    with mp.Pool(processes=16) as p:
+        vals = list(tqdm(p.imap(crop, meta.iterrows())))
 
