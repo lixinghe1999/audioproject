@@ -88,7 +88,7 @@ if __name__ == "__main__":
         name, time, category = data
         fname = data_dir + '/' + name + '_' + str(time)
         # if download success
-        if os.path.isfile(fname + '.mp4') and os.path.isfile(fname + '.flac'):
+        if os.path.exists(fname + '.mp4') and os.path.exists(fname + '.flac'):
             try:
                 y, sr = librosa.load(fname + '.flac')
                 duration = librosa.get_duration(y=y, sr=sr)
