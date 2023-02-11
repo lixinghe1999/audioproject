@@ -92,6 +92,7 @@ if __name__ == "__main__":
         subprocess.call(
             ['ffmpeg', '-y', '-i', input_file, '-filter:v', 'scale=640:-2', output_file])
     def check(data):
+        data_dir = '../dataset/VggSound'
         name, time, category = data
         fname = data_dir + '/' + name + '_' + str(time)
         # if download success
@@ -105,25 +106,24 @@ if __name__ == "__main__":
                     return fname, category
             except:
                 print('invalid data')
-    # generate new csv to part of the dataset
-    # format: filename, fold, category(string)
-    data_dir = '../dataset/VggSound'
-    data_list = csv_filter()
-    data_frame = {'filename': [], 'category': []}
 
-    num_processes = os.cpu_count()
-    with mp.Pool(processes=num_processes) as p:
-        vals = list(tqdm(p.imap(check, data_list), total=len(data_list)))
-    for val in vals:
-        if val:
-            data_frame['filename'] += [val[0]]
-            data_frame['category'] += [val[1]]
-    df = pd.DataFrame(data=data_frame)
-    df.to_csv('vggsound_small.csv')
 
-    # meta = pd.read_csv('vggsound_small.csv')
-    # stat(meta)
+    # data_list = csv_filter()
+    # data_frame = {'filename': [], 'category': []}
+    #
     # num_processes = os.cpu_count()
     # with mp.Pool(processes=num_processes) as p:
-    #     vals = list(tqdm(p.imap(crop, meta.iterrows()), total=len(data_list)))
+    #     vals = list(tqdm(p.imap(check, data_list), total=len(data_list)))
+    # for val in vals:
+    #     if val:
+    #         data_frame['filename'] += [val[0]]
+    #         data_frame['category'] += [val[1]]
+    # df = pd.DataFrame(data=data_frame)
+    # df.to_csv('vggsound_small.csv')
+
+    meta = pd.read_csv('vggsound_small.csv')
+    stat(meta)
+    num_processes = os.cpu_count()
+    with mp.Pool(processes=16) as p:
+        vals = list(tqdm(p.imap(crop, meta.iterrows()), total=len(meta.iterrows())))
 

@@ -96,11 +96,5 @@ if __name__ == "__main__":
     num_processes = os.cpu_count()  # 16
     with mp.Pool(processes=num_processes) as p:
         list(tqdm(p.imap(down_load, dl_list_new), total=len(dl_list_new)))
-    # with mp.Pool(processes=16) as pool:
-    #     for _ in pool.starmap(
-    #             func=down_load,
-    #             iterable=dl_list_new,
-    #     ):
-    #         pass
 
 
