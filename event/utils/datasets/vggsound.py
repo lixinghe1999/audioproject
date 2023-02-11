@@ -119,8 +119,9 @@ if __name__ == "__main__":
     with mp.Pool(processes=num_processes) as p:
         vals = list(tqdm(p.imap(check, data_list), total=len(data_list)))
     for val in vals:
-        data_frame['filename'] += [val[0]]
-        data_frame['category'] += [val[1]]
+        if val:
+            data_frame['filename'] += [val[0]]
+            data_frame['category'] += [val[1]]
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
 
