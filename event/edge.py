@@ -36,15 +36,15 @@ def train(train_dataset, test_dataset):
         model.train()
         if e % 5 == 0 and e > 0:
             update_lr(optimizers[0], multiplier=.1)
-            update_lr(optimizers[1], multiplier=.1)
+            # update_lr(optimizers[1], multiplier=.1)
         for batch in tqdm(train_loader):
             audio, image, text, _ = batch
-            y = torch.zeros(len(text), len(dataset.class_idx_to_label), dtype=torch.int8)
-            for item_idx, label in enumerate(text):
-                class_ids = dataset.label_to_class_idx[label]
-                y[item_idx][class_ids] = 1
-            y = torch.argmax(y, dim=-1)
-            step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=y.to(device))
+            # y = torch.zeros(len(text), len(dataset.class_idx_to_label), dtype=torch.int8)
+            # for item_idx, label in enumerate(text):
+            #     class_ids = dataset.label_to_class_idx[label]
+            #     y[item_idx][class_ids] = 1
+            # y = torch.argmax(y, dim=-1)
+            step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
         model.eval()
         acc = []
         with torch.no_grad():
