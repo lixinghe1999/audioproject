@@ -102,9 +102,10 @@ if __name__ == "__main__":
                 else:
                     # crop(fname + '.mp4', fname + '.mp4')
                     # target = label_list.index(category)
-                    data_frame['filename'] += [fname]
+                    # data_frame['filename'] += [fname]
                     # data_frame['target'] += [target]
-                    data_frame['category'] += [category]
+                    # data_frame['category'] += [category]
+                    return fname, category
             except:
                 print('invalid data')
     # generate new csv to part of the dataset
@@ -121,7 +122,8 @@ if __name__ == "__main__":
     #     ):
     #         pass
     with mp.Pool(processes=8) as p:
-        list(tqdm(p.imap(check, data_list), total=len(data_list)))
+        vals = list(tqdm(p.imap(check, data_list), total=len(data_list)))
+        print(vals)
     df = pd.DataFrame(data=data_frame)
     df.to_csv('vggsound_small.csv')
 
