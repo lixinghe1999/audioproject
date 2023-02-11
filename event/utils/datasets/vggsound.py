@@ -33,7 +33,7 @@ class VGGSound(td.Dataset):
         for idx, row in meta.iterrows():
             self.data.append({
                 'audio': row['filename'] + '.flac',
-                'vision': row['filename'].replace('VggSound', 'VggSound_scaled') + '.mp4',
+                'vision': row['filename'].replace('VggSound', 'VggSound_small') + '.mp4',
                 'name': row['filename'],
                 'category': row['category'],
             })
