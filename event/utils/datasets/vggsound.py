@@ -86,7 +86,8 @@ def stat(meta):
     # plt.show()
 if __name__ == "__main__":
     def crop(data):
-        idx, (name, category) = data
+        idx, row = data
+        name, category = row
         input_file = name
         output_file = name
         subprocess.call(
