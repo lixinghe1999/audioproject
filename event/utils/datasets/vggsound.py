@@ -49,9 +49,6 @@ class VGGSound(td.Dataset):
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
 
-        # vid = ffmpeg.probe(filename_vision)
-        # center = float(vid['streams'][0]['duration']) / 2
-
         audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
         assert len(audio) == 160000
         # if len(audio) > self.length * sample_rate:
