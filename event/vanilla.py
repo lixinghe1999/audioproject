@@ -42,7 +42,7 @@ def train(train_dataset, test_dataset):
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             loss = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
-            if idx % 100 == 0 and idx > 0:
+            if idx % 200 == 0 and idx > 0:
                 print(loss.item())
         model.eval()
         acc = []
