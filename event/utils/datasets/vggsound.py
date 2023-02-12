@@ -95,9 +95,10 @@ if __name__ == "__main__":
         audio, sample_rate = librosa.load(input_file, sr=16000, duration=10)
         assert len(audio) == 160000
         # audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
-        soundfile.write(output_file, audio, sample_rate)
-        # subprocess.call(
-        #     ['ffmpeg', '-i', input_file, '-ac', '1', '-ar', '16000', '-c:a', 'libmp3lame', '-q:a', '9', output_file])
+        if os.path.exists(output_file):
+            pass
+        else:
+            soundfile.write(output_file, audio, sample_rate)
         input_file = name + '.mp4'
         output_file = name.replace('VggSound', 'VggSound_small') + '.png'
         if os.path.exists(output_file):
@@ -139,9 +140,9 @@ if __name__ == "__main__":
     meta = pd.read_csv('vggsound_small.csv', index_col=0)
     stat(meta)
     num_processes = os.cpu_count()
-    for d in meta.iterrows():
-        crop(d)
-        break
-    # with mp.Pool(processes=16) as p:
-    #     vals = list(tqdm(p.imap(crop, meta.iterrows())))
+    # for d in meta.iterrows():
+    #     crop(d)
+    #     break
+    with mp.Pool(processes=16) as p:
+        vals = list(tqdm(p.imap(crop, meta.iterrows())))
 
