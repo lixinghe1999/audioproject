@@ -6,9 +6,6 @@ import torch
 from torch import Tensor
 from typing import Type
 from model.resnet import ModifiedResNet
-def set_exist_attr(m, attr, value):
-    if hasattr(m, attr):
-        setattr(m, attr, value)
 class MMTM(nn.Module):
   def __init__(self, dim_1, dim_2, ratio):
     super(MMTM, self).__init__()
@@ -200,9 +197,9 @@ class AVnet(nn.Module):
         self.image.load_state_dict(torch.load('resnet50.pth'))
         self.image.fc = torch.nn.Linear(1024, num_cls)
 
-        # self.mmtm1 = MMTM(128, 128, 4)
-        # self.mmtm2 = MMTM(256, 256, 4)
-        # self.mmtm3 = MMTM(512, 512, 4)
+        self.mmtm1 = MMTM(128, 128, 4)
+        self.mmtm2 = MMTM(256, 256, 4)
+        self.mmtm3 = MMTM(512, 512, 4)
     def get_audio_params(self):
         parameters = [
             {'params': self.audio.parameters()},
@@ -248,15 +245,15 @@ class AVnet(nn.Module):
 
         audio = self.audio.layer2(audio)
         image = self.image.layer2(image)
-        # audio, image = self.mmtm2(audio, image)
+        audio, image = self.mmtm1(audio, image)
 
         audio = self.audio.layer3(audio)
         image = self.image.layer3(image)
-        # audio, image = self.mmtm3(audio, image)
+        audio, image = self.mmtm2(audio, image)
 
         audio = self.audio.layer4(audio)
         image = self.image.layer4(image)
-        # audio, image = self.mmtm4(audio, image)
+        audio, image = self.mmtm3(audio, image)
 
         audio = self.audio.avgpool(audio)
         audio = torch.flatten(audio, 1)
