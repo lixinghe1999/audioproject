@@ -94,7 +94,7 @@ if __name__ == "__main__":
         output_file = name.replace('VggSound', 'VggSound_small') + '.flac'
         audio, sample_rate = librosa.load(input_file, sr=16000, duration=10)
         assert len(audio) == 160000
-        audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
+        # audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
         soundfile.write(output_file, audio, sample_rate)
         # subprocess.call(
         #     ['ffmpeg', '-i', input_file, '-ac', '1', '-ar', '16000', '-c:a', 'libmp3lame', '-q:a', '9', output_file])
