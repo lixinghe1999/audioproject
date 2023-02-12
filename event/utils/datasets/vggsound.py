@@ -14,7 +14,7 @@ class ToTensor1D(tv.transforms.ToTensor):
         tensor_2d = super(ToTensor1D, self).__call__(tensor[..., np.newaxis])
         return tensor_2d.squeeze_(0)
 transform_image = tv.transforms.Compose([
-            tv.transforms.Resize(224, interpolation=tv.transforms.InterpolationMode.BICUBIC),
+            tv.transforms.Resize(256, interpolation=tv.transforms.InterpolationMode.BICUBIC),
             tv.transforms.CenterCrop(224),
             tv.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
         ])
@@ -53,7 +53,7 @@ class VGGSound(td.Dataset):
         # assert len(audio) == 160000
         audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
         # audio = torch.zeros(1, 16000)
-        image = tv.io.read_image(filename_vision)
+        image = tv.io.read_image(filename_vision)/255
         # image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
         # image = (image[0] / 255).permute(2, 0, 1)
         # image = torch.zeros(3, 224, 224)
