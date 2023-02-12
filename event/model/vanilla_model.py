@@ -197,9 +197,9 @@ class AVnet(nn.Module):
         self.image.load_state_dict(torch.load('resnet50.pth'))
         self.image.fc = torch.nn.Linear(1024, num_cls)
 
-        self.mmtm1 = MMTM(128, 128, 4)
-        self.mmtm2 = MMTM(256, 256, 4)
-        self.mmtm3 = MMTM(512, 512, 4)
+        self.mmtm1 = MMTM(128, 512, 4)
+        self.mmtm2 = MMTM(256, 1024, 4)
+        self.mmtm3 = MMTM(512, 2048, 4)
     def get_audio_params(self):
         parameters = [
             {'params': self.audio.parameters()},
