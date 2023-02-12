@@ -88,6 +88,7 @@ def stat(meta):
     # plt.show()
 if __name__ == "__main__":
     def crop(data):
+        resize = tv.transforms.Resize(size=480)
         idx, row = data
         name = row[0]
         input_file = name + '.flac'
@@ -106,6 +107,7 @@ if __name__ == "__main__":
         else:
             image, _, _ = tv.io.read_video(input_file, start_pts=5, end_pts=5, pts_unit='sec')
             image = (image[0] / 255).permute(2, 0, 1)
+            image = resize(image)
             tv.utils.save_image(image, output_file)
     def check(data):
         data_dir = '../dataset/VggSound'
@@ -140,9 +142,9 @@ if __name__ == "__main__":
     meta = pd.read_csv('vggsound_small.csv', index_col=0)
     stat(meta)
     num_processes = os.cpu_count()
-    # for d in meta.iterrows():
-    #     crop(d)
-    #     break
-    with mp.Pool(processes=16) as p:
-        vals = list(tqdm(p.imap(crop, meta.iterrows())))
+    for d in meta.iterrows():
+        crop(d)
+        break
+    # with mp.Pool(processes=16) as p:
+    #     vals = list(tqdm(p.imap(crop, meta.iterrows())))
 
