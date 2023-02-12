@@ -33,8 +33,8 @@ class VGGSound(td.Dataset):
         count = 0
         for idx, row in meta.iterrows():
             self.data.append({
-                'audio': row['filename'] + '.flac',
-                'vision': row['filename'].replace('VggSound', 'VggSound_small') + '.mp4',
+                'audio': row['filename'].replace('VggSound', 'VggSound_small') + '.flac',
+                'vision': row['filename'].replace('VggSound', 'VggSound_small') + '.png',
                 'name': row['filename'],
                 'category': row['category'],
             })
@@ -49,14 +49,15 @@ class VGGSound(td.Dataset):
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
 
-        # audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
+        audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
         # assert len(audio) == 160000
-        # audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
-        audio = torch.zeros(1, 16000)
+        audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
+        # audio = torch.zeros(1, 16000)
+        image = tv.io.read_image(filename_vision)
         # image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
         # image = (image[0] / 255).permute(2, 0, 1)
-        image = torch.zeros(3, 224, 224)
-        # print(audio.shape, image.shape)
+        # image = torch.zeros(3, 224, 224)
+        print(audio.shape, image.shape)
         target = self.data[index]['category']
         target = self.label_to_class_idx[target]
         if self.transform_image is not None:
