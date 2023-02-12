@@ -99,6 +99,7 @@ if __name__ == "__main__":
             pass
         else:
             image, _, _ = tv.io.read_video(input_file, start_pts=5, end_pts=5, pts_unit='sec')
+            image = (image[0] / 255).permute(2, 0, 1)
             tv.utils.save_image(image, output_file)
     def check(data):
         data_dir = '../dataset/VggSound'
