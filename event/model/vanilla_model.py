@@ -141,7 +141,7 @@ class SingleNet(nn.Module):
             self.normalized = True
             self.onesided = True
         else:
-            self.net = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=1000)
+            self.net = ResNet(img_channels=3, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=1000)
             self.net.load_state_dict(torch.load('resnet34.pth'))
             self.net.fc = torch.nn.Linear(512, num_cls)
     def preprocessing_audio(self, audio):

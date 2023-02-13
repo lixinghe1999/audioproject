@@ -14,7 +14,7 @@ def step(model, input_data, optimizers, criteria, label):
     # Track history only in training
     for branch in [0]:
         optimizer = optimizers[branch]
-        output = model(audio)
+        output = model(image)
         # Backward
         optimizer.zero_grad()
         loss = criteria(output, label)
@@ -47,14 +47,14 @@ def train(train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                predict = model(audio.to(device))
+                predict = model(image.to(device))
                 acc.append((torch.argmax(predict, dim=-1).cpu() == text).sum() / len(text))
         print('epoch', e, np.mean(acc))
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     # model = AVnet().to(device)
-    model = SingleNet(modality='A').to(device)
+    model = SingleNet(modality='V').to(device)
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
