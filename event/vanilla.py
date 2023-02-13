@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 def step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # Track history only in training
-    for branch in [0]:
+    for branch in [0, 1]:
         optimizer = optimizers[branch]
         output = model(audio, image)
         # Backward
@@ -30,13 +30,13 @@ def train(train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=16, shuffle=False)
-    # optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
-    #               torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
-    optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
+    optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
+                  torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
+    # optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     for e in range(20):
         model.train()
-        if e % 5 == 0 and e > 0:
+        if e % 3 == 0 and e > 0:
             update_lr(optimizers[0], multiplier=.2)
             # update_lr(optimizers[1], multiplier=.1)
         for idx, batch in enumerate(tqdm(train_loader)):
