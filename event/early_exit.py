@@ -1,10 +1,8 @@
 import torchvision.models
-
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.vanilla_model import AVnet
-torchvision.models.resnet50()
+from model.exit_model import AVnet
 import warnings
 from tqdm import tqdm
 warnings.filterwarnings("ignore")
@@ -12,12 +10,14 @@ warnings.filterwarnings("ignore")
 def step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # Track history only in training
-    for branch in [0, 1]:
+    for branch in [0]:
         optimizer = optimizers[branch]
-        output = model(audio, image)
+        outputs = model(audio, image)
         # Backward
         optimizer.zero_grad()
-        loss = criteria(output, label)
+        loss = 0
+        for i, output in enumerate(outputs):
+            loss += (i+1) * 0.25 *criteria(output, label)
         loss.backward()
         optimizer.step()
     return loss
@@ -30,9 +30,9 @@ def train(train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
-    optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
-                  torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
-    # optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
+    # optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
+    #               torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
+    optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     for e in range(20):
         model.train()
