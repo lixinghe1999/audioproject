@@ -47,7 +47,7 @@ def train(train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                predict = model(audio.to(device), image.to(device))
+                predict = model(audio.to(device))
                 acc.append((torch.argmax(predict, dim=-1).cpu() == text).sum() / len(text))
         print('epoch', e, np.mean(acc))
 if __name__ == "__main__":
