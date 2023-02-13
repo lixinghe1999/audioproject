@@ -1,4 +1,3 @@
-import torchvision.models
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
@@ -29,29 +28,32 @@ def update_lr(optimizer, multiplier = .1):
 def train(train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1-4, batch_size=1, shuffle=False)
     # optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
     #               torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
     optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     for e in range(20):
         model.train()
+        model.exit = False
         if e % 3 == 0 and e > 0:
             update_lr(optimizers[0], multiplier=.2)
             # update_lr(optimizers[1], multiplier=.1)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             loss = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
-            if idx % 200 == 0 and idx > 0:
-                print(loss.item())
         model.eval()
         acc = []
+        model.exit = True
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                predict = model(audio.to(device), image.to(device))
-                acc.append((torch.argmax(predict, dim=-1).cpu() == text).sum() / len(text))
-        print('epoch', e, np.mean(acc))
+                outputs = model(audio.to(device), image.to(device))
+                early_exits = []
+                for output in outputs:
+                    early_exits.append((torch.argmax(output, dim=-1).cpu() == text).sum() / len(text))
+                acc.append(early_exits)
+        print('epoch', e, np.mean(acc, axis=0))
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)

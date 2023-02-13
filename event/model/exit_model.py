@@ -42,16 +42,16 @@ class MMTM(nn.Module):
 
     return visual * vis_out, skeleton * sk_out
 class AVnet(nn.Module):
-    def __init__(self, exit=True, layers=(3, 4, 6, 3), num_cls=309):
+    def __init__(self, exit=True, threshold=0.9, num_cls=309):
         '''
         :param exit: True - with exit, normally for testing, False - no exit, normally for training
-        :param train: True - get early exit for each block, False - don't get
-        :param layers: resnet18: [2, 2, 2, 2] resnet34: [3, 4, 6, 3]
+        :param threshold: confidence to continue calculation, can be Integer or List
         :param num_cls: number of class
         '''
         super(AVnet, self).__init__()
-        self.edge = exit
-        self.audio = ResNet(img_channels=1, layers=layers, block=BasicBlock, num_classes=num_cls)
+        self.exit = exit
+        self.threshold = threshold
+        self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
         self.n_fft = 512
         self.hop_length = 512
         self.win_length = 512
@@ -59,14 +59,13 @@ class AVnet(nn.Module):
         self.normalized = True
         self.onesided = True
 
-        self.image = ResNet(img_channels=3, layers=layers, block=BasicBlock, num_classes=1000)
+        self.image = ResNet(img_channels=3, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=1000)
         self.image.load_state_dict(torch.load('resnet34.pth'))
         self.image.fc = torch.nn.Linear(512, num_cls)
 
-        self.mmtm1 = MMTM(128, 128, 4)
-        self.mmtm2 = MMTM(256, 256, 4)
-        self.mmtm3 = MMTM(512, 512, 4)
-        self.fc = nn.Linear(512 * 2, num_cls)
+        # self.mmtm1 = MMTM(128, 128, 4)
+        # self.mmtm2 = MMTM(256, 256, 4)
+        # self.mmtm3 = MMTM(512, 512, 4)
         self.early_exit1 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64 * 2, num_cls)])
         self.early_exit2 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128 * 2, num_cls)])
         self.early_exit3 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256 * 2, num_cls)])
@@ -112,28 +111,36 @@ class AVnet(nn.Module):
         audio = self.audio.layer1(audio)
         image = self.image.layer1(image)
         early_output1 = self.early_exit1(torch.cat([audio, image], dim=1))
+        if self.exit and self.threshold > 0:
+            confidence = torch.softmax(early_output1, dim=1)
+            if torch.max(confidence, dim=1) > self.threshold:
+                return early_output1
 
         audio = self.audio.layer2(audio)
         image = self.image.layer2(image)
-        # audio, image = self.mmtm2(audio, image)
         early_output2 = self.early_exit2(torch.cat([audio, image], dim=1))
+        if self.exit and self.threshold > 0:
+            confidence = torch.softmax(early_output2, dim=1)
+            if torch.max(confidence, dim=1) > self.threshold:
+                return early_output2
 
         audio = self.audio.layer3(audio)
         image = self.image.layer3(image)
-        # audio, image = self.mmtm3(audio, image)
         early_output3 = self.early_exit3(torch.cat([audio, image], dim=1))
+        if self.exit and self.threshold > 0:
+            confidence = torch.softmax(early_output3, dim=1)
+            if torch.max(confidence, dim=1) > self.threshold:
+                return early_output3
 
         audio = self.audio.layer4(audio)
         image = self.image.layer4(image)
-        # audio, image = self.mmtm4(audio, image)
 
         audio = self.audio.avgpool(audio)
         image = self.audio.avgpool(image)
-
         audio = torch.flatten(audio, 1)
         image = torch.flatten(image, 1)
         output = (self.audio.fc(audio) + self.image.fc(image)) / 2
-        return [early_output1, early_output2, early_output3, output]
+        return output
 if __name__ == "__main__":
     num_cls = 100
     model = AVnet(num_cls=100)

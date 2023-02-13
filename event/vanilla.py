@@ -3,7 +3,7 @@ import torchvision.models
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.vanilla_model import AVnet
+from model.vanilla_model import AVnet, SingleNet
 torchvision.models.resnet50()
 import warnings
 from tqdm import tqdm
@@ -12,9 +12,9 @@ warnings.filterwarnings("ignore")
 def step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # Track history only in training
-    for branch in [0, 1]:
+    for branch in [0]:
         optimizer = optimizers[branch]
-        output = model(audio, image)
+        output = model(audio)
         # Backward
         optimizer.zero_grad()
         loss = criteria(output, label)
@@ -30,9 +30,9 @@ def train(train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
-    optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
-                  torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
-    # optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
+    # optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
+    #               torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
+    optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     for e in range(20):
         model.train()
@@ -42,8 +42,6 @@ def train(train_dataset, test_dataset):
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             loss = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
-            if idx % 200 == 0 and idx > 0:
-                print(loss.item())
         model.eval()
         acc = []
         with torch.no_grad():
@@ -55,7 +53,8 @@ def train(train_dataset, test_dataset):
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
-    model = AVnet().to(device)
+    # model = AVnet().to(device)
+    model = SingleNet(modality='A')
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
