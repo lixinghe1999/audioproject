@@ -9,10 +9,7 @@ from tqdm import tqdm
 import torchvision as tv
 import subprocess
 import multiprocessing as mp
-class ToTensor1D(tv.transforms.ToTensor):
-    def __call__(self, tensor: np.ndarray):
-        tensor_2d = super(ToTensor1D, self).__call__(tensor[..., np.newaxis])
-        return tensor_2d.squeeze_(0)
+transform_audio = tv.transforms.Compose([])
 transform_image = tv.transforms.Compose([
             tv.transforms.Resize(256, interpolation=tv.transforms.InterpolationMode.BICUBIC),
             tv.transforms.CenterCrop(224),
@@ -50,13 +47,8 @@ class VGGSound(td.Dataset):
         filename_vision: str = sample['vision']
 
         audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
-        # assert len(audio) == 160000
-        audio = (audio * 32768.0).astype(np.float32)[np.newaxis, :]
-        # audio = torch.zeros(1, 16000)
+        audio = audio.astype(np.float32)[np.newaxis, :]
         image = tv.io.read_image(filename_vision)/255
-        # image, _, _ = tv.io.read_video(filename_vision, start_pts=5, end_pts=5, pts_unit='sec')
-        # image = (image[0] / 255).permute(2, 0, 1)
-        # image = torch.zeros(3, 224, 224)
         target = self.data[index]['category']
         target = self.label_to_class_idx[target]
         if self.transform_image is not None:
@@ -72,20 +64,6 @@ def csv_filter():
         s = [row[0], row[1], row[2].replace(',', '')]
         dl_list_new.append(s)
     return dl_list_new
-def stat(meta):
-    num_class = dict()
-    for idx, row in meta.iterrows():
-        label = row[1]
-        if label in num_class:
-            num_class[label] += 1
-        else:
-            num_class[label] = 1
-    keys = num_class.keys()
-    values = sorted(num_class.values())
-    print('Whole number of clips:', sum(values))
-    print('Number of types:', len(keys))
-    # plt.bar(range(len(keys)), values)
-    # plt.show()
 if __name__ == "__main__":
     def crop(data):
         resize = tv.transforms.Resize(size=480)
@@ -140,7 +118,6 @@ if __name__ == "__main__":
     # df.to_csv('vggsound_small.csv')
 
     meta = pd.read_csv('vggsound_small.csv', index_col=0)
-    stat(meta)
     num_processes = os.cpu_count()
     # for d in meta.iterrows():
     #     crop(d)
