@@ -16,7 +16,7 @@ def step(model, input_data, optimizers, criteria, label):
         optimizer.zero_grad()
         loss = 0
         for i, output in enumerate(outputs):
-            loss += (i+1) * 0.25 *criteria(output, label)
+            loss += (i+1) * 0.25 * criteria(output, label)
         loss.backward()
         optimizer.step()
     return loss
