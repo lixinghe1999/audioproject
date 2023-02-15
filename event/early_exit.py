@@ -29,7 +29,6 @@ def test_step(model, input_data, label):
         early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     for i in range(len(outputs), 4):
         early_exits[i] = -1
-    print(early_exits)
     return early_exits
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
@@ -62,14 +61,14 @@ def train(train_dataset, test_dataset):
                 acc.append(test_step(model, input_data=(audio.to(device), image.to(device)), label=text))
         acc = np.stack(acc)
         print('epoch', e)
-        print('accuracy for early-exits:', np.mean(acc, axis=0, where=acc > 0))
+        print('accuracy for early-exits:', np.mean(acc, axis=0, where= acc >= 0))
         print('early-exit percentage:', np.bincount(np.argmin(acc, axis=1))/acc.shape[0])
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     model = AVnet().to(device)
     dataset = VGGSound()
-    len_train = int(len(dataset) * 0.2)
+    len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
     train(train_dataset, test_dataset)
