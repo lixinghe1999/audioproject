@@ -6,7 +6,7 @@ import warnings
 from tqdm import tqdm
 warnings.filterwarnings("ignore")
 # remove annoying librosa warning
-def step(model, input_data, optimizers, criteria, label):
+def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # Track history only in training
     for branch in [0]:
@@ -19,7 +19,15 @@ def step(model, input_data, optimizers, criteria, label):
             loss += (i+1) * 0.25 * criteria(output, label)
         loss.backward()
         optimizer.step()
-    return loss
+    return loss.item()
+def test_step(model, input_data, label):
+    audio, image = input_data
+    # Track history only in training
+    early_exits = np.zeros((4))
+    outputs = model(audio, image)
+    for i, output in enumerate(outputs):
+        early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label)
+    return early_exits
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
     for param_group in state_dict['param_groups']:
@@ -41,19 +49,18 @@ def train(train_dataset, test_dataset):
             # update_lr(optimizers[1], multiplier=.1)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            loss = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
+            loss = train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
         model.eval()
         acc = []
         model.exit = True
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                outputs = model(audio.to(device), image.to(device))
-                early_exits = []
-                for output in outputs:
-                    early_exits.append((torch.argmax(output, dim=-1).cpu() == text).sum() / len(text))
-                acc.append(early_exits)
-        print('epoch', e, np.mean(acc, axis=0))
+                acc.append(test_step(model, input_data=(audio.to(device), image.to(device)), label=text))
+        acc = np.stack(acc)
+        print('epoch', e)
+        print('accuracy for early-exits:', np.mean(acc, axis=0, where=acc > 0))
+        print('early-exit percentage:', np.bincount(np.argmin(acc, axis=1))/acc.shape[0])
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)

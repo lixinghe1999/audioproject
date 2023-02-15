@@ -65,6 +65,7 @@ class AVnet(nn.Module):
         spec = torch.nn.functional.interpolate(spec.unsqueeze(1), size=self.spec_scale, mode='bilinear')
         return spec
     def forward(self, audio, image):
+        output_cache = []
         audio = self.preprocessing_audio(audio)
         audio = self.audio.conv1(audio)
         audio = self.audio.bn1(audio)
@@ -78,27 +79,30 @@ class AVnet(nn.Module):
 
         audio = self.audio.layer1(audio)
         image = self.image.layer1(image)
-        early_output1 = self.early_exit1(torch.cat([audio, image], dim=1))
+        early_output = self.early_exit1(torch.cat([audio, image], dim=1))
+        output_cache.append(early_output)
         if self.exit and self.threshold > 0:
-            confidence = torch.softmax(early_output1, dim=1)
+            confidence = torch.softmax(early_output, dim=1)
             if torch.max(confidence, dim=1) > self.threshold:
-                return early_output1
+                return output_cache
 
         audio = self.audio.layer2(audio)
         image = self.image.layer2(image)
-        early_output2 = self.early_exit2(torch.cat([audio, image], dim=1))
+        early_output = self.early_exit2(torch.cat([audio, image], dim=1))
+        output_cache.append(early_output)
         if self.exit and self.threshold > 0:
-            confidence = torch.softmax(early_output2, dim=1)
+            confidence = torch.softmax(early_output, dim=1)
             if torch.max(confidence, dim=1) > self.threshold:
-                return early_output2
+                return output_cache
 
         audio = self.audio.layer3(audio)
         image = self.image.layer3(image)
-        early_output3 = self.early_exit3(torch.cat([audio, image], dim=1))
+        early_output = self.early_exit3(torch.cat([audio, image], dim=1))
+        output_cache.append(early_output)
         if self.exit and self.threshold > 0:
-            confidence = torch.softmax(early_output3, dim=1)
+            confidence = torch.softmax(early_output, dim=1)
             if torch.max(confidence, dim=1) > self.threshold:
-                return early_output3
+                return output_cache
 
         audio = self.audio.layer4(audio)
         image = self.image.layer4(image)
@@ -108,7 +112,8 @@ class AVnet(nn.Module):
         audio = torch.flatten(audio, 1)
         image = torch.flatten(image, 1)
         output = (self.audio.fc(audio) + self.image.fc(image)) / 2
-        return [early_output1, early_output2, early_output3, output]
+        output_cache.append(output)
+        return output_cache
 class AVnet_Flex(nn.Module):
     def __init__(self, exit=True, threshold=0.9, num_cls=309):
         '''
