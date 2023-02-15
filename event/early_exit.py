@@ -35,7 +35,7 @@ def train_step(model, input_data, optimizers, criteria, label):
         optimizer.zero_grad()
         loss = 0
         for i, output in enumerate(outputs):
-            loss += (i+1) * 0.25 * criteria(output, label)
+            loss += criteria(output, label)
         loss.backward()
         optimizer.step()
     return loss.item()
@@ -62,10 +62,10 @@ def train(model, train_dataset, test_dataset):
     #               torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
     optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
-    for e in range(20):
+    for epoch in range(20):
         model.train()
         model.exit = False
-        if e % 5 == 0 and e > 0:
+        if epoch % 5 == 0 and epoch > 0:
             update_lr(optimizers[0], multiplier=.2)
             # update_lr(optimizers[1], multiplier=.1)
         for idx, batch in enumerate(tqdm(train_loader)):
@@ -83,9 +83,9 @@ def train(model, train_dataset, test_dataset):
                 ee.append(e)
         acc = np.stack(acc)
         ee = np.array(e)
-        print('epoch', e)
+        print('epoch', epoch)
         print('accuracy for early-exits:', np.mean(acc, axis=0, where= acc >= 0))
-        print('early-exit percentage:', np.bincount(ee)/ee.shape[0])
+        #print('early-exit percentage:', np.bincount(ee)/ee.shape[0])
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
