@@ -49,8 +49,7 @@ class VGGSound(td.Dataset):
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
         t_start = time.time()
-        audio, sample = ta.load(filename_audio)
-        print(audio.shape, audio.max())
+        audio, sr = ta.load(filename_audio)
         # audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
         # audio = audio.astype(np.float32)[np.newaxis, :]
         print(time.time() - t_start)
