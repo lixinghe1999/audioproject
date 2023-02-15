@@ -9,6 +9,7 @@ import torch
 import torch.utils.data as td
 from tqdm import tqdm
 import torchvision as tv
+import torchaudio as ta
 import subprocess
 import multiprocessing as mp
 transform_audio = tv.transforms.Compose([])
@@ -48,7 +49,8 @@ class VGGSound(td.Dataset):
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
         t_start = time.time()
-        audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
+        audio, sample = ta.load(filename_audio)
+        # audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
         print(time.time() - t_start)
         audio = audio.astype(np.float32)[np.newaxis, :]
         print(time.time() - t_start)
