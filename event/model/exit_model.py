@@ -83,7 +83,7 @@ class AVnet(nn.Module):
         output_cache.append(early_output)
         if self.exit and self.threshold > 0:
             print(early_output.shape)
-            confidence = torch.max(torch.softmax(early_output, dim=1), dim=1)
+            confidence = torch.softmax(early_output, dim=1).max()
             print(confidence)
             if confidence > self.threshold:
                 return output_cache
