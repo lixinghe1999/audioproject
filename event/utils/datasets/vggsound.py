@@ -50,9 +50,9 @@ class VGGSound(td.Dataset):
         filename_vision: str = sample['vision']
         t_start = time.time()
         audio, sample = ta.load(filename_audio)
+        print(audio.shape, audio.max())
         # audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
-        print(time.time() - t_start)
-        audio = audio.astype(np.float32)[np.newaxis, :]
+        # audio = audio.astype(np.float32)[np.newaxis, :]
         print(time.time() - t_start)
         image = tv.io.read_image(filename_vision)/255
         print(time.time() - t_start)
