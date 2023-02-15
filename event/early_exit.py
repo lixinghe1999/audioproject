@@ -27,7 +27,8 @@ def test_step(model, input_data, label):
     outputs = model(audio, image)
     for i, output in enumerate(outputs):
         early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
-    print(early_exits)
+    for i in range(len(outputs), 4):
+        early_exits[i] = -1
     return early_exits
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
