@@ -3,6 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/event/DS-Net" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/event/ast" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/event/scenic" vcs="Git" />
   </component>
 </project>
