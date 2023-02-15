@@ -69,7 +69,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(1)
     model = AVnet().to(device)
     dataset = VGGSound()
-    len_train = int(len(dataset) * 0.8)
+    len_train = int(len(dataset) * 0.2)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
     train(train_dataset, test_dataset)
