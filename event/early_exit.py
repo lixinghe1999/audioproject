@@ -29,6 +29,7 @@ def test_step(model, input_data, label):
         early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     for i in range(len(outputs), 4):
         early_exits[i] = -1
+    print(early_exits)
     return early_exits
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
