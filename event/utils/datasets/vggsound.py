@@ -1,4 +1,6 @@
 import os
+import time
+
 import librosa
 import numpy as np
 import pandas as pd
@@ -45,14 +47,19 @@ class VGGSound(td.Dataset):
         sample = self.data[index]
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
-
+        t_start = time.time()
         audio, sample_rate = librosa.load(filename_audio, sr=16000, duration=self.length)
+        print(time.time() - t_start)
         audio = audio.astype(np.float32)[np.newaxis, :]
+        print(time.time() - t_start)
         image = tv.io.read_image(filename_vision)/255
+        print(time.time() - t_start)
         target = self.data[index]['category']
         target = self.label_to_class_idx[target]
+        print(time.time() - t_start)
         if self.transform_image is not None:
             image = self.transform_image(image)
+        print(time.time() - t_start)
         return audio, image, target, sample['name']
 
     def __len__(self) -> int:

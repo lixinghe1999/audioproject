@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from torch.cuda.amp import autocast
 import os
-os.environ['TORCH_HOME'] = '../../pretrained_models'
+os.environ['TORCH_HOME'] = 'assets'
 import timm
 from timm.models.layers import to_2tuple, trunc_normal_
 
@@ -116,12 +116,12 @@ class ASTModel(nn.Module):
                 raise ValueError('currently model pretrained on only audioset is not supported, please set imagenet_pretrain = True to use audioset pretrained model.')
             if model_size != 'base384':
                 raise ValueError('currently only has base384 AudioSet pretrained model.')
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            if os.path.exists('../../pretrained_models/audioset_10_10_0.4593.pth') == False:
-                # this model performs 0.4593 mAP on the audioset eval set
-                audioset_mdl_url = 'https://www.dropbox.com/s/cv4knew8mvbrnvq/audioset_0.4593.pth?dl=1'
-                wget.download(audioset_mdl_url, out='../../pretrained_models/audioset_10_10_0.4593.pth')
-            sd = torch.load('../../pretrained_models/audioset_10_10_0.4593.pth', map_location=device)
+            # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            # if os.path.exists('assets/audioset_10_10_0.4593.pth') == False:
+            #     # this model performs 0.4593 mAP on the audioset eval set
+            #     audioset_mdl_url = 'https://www.dropbox.com/s/cv4knew8mvbrnvq/audioset_0.4593.pth?dl=1'
+            #     wget.download(audioset_mdl_url, out='../../pretrained_models/audioset_10_10_0.4593.pth')
+            sd = torch.load('assets/audioset_0.4593.pth')
             audio_model = ASTModel(label_dim=527, fstride=10, tstride=10, input_fdim=128, input_tdim=1024, imagenet_pretrain=False, audioset_pretrain=False, model_size='base384', verbose=False)
             audio_model = torch.nn.DataParallel(audio_model)
             audio_model.load_state_dict(sd, strict=False)
@@ -135,7 +135,6 @@ class ASTModel(nn.Module):
             if verbose == True:
                 print('frequncey stride={:d}, time stride={:d}'.format(fstride, tstride))
                 print('number of patches={:d}'.format(num_patches))
-
             new_pos_embed = self.v.pos_embed[:, 2:, :].detach().reshape(1, 1212, 768).transpose(1, 2).reshape(1, 768, 12, 101)
             # if the input sequence length is larger than the original audioset (10s), then cut the positional embedding
             if t_dim < 101:
@@ -150,7 +149,6 @@ class ASTModel(nn.Module):
                 new_pos_embed = torch.nn.functional.interpolate(new_pos_embed, size=(f_dim, t_dim), mode='bilinear')
             new_pos_embed = new_pos_embed.reshape(1, 768, num_patches).transpose(1, 2)
             self.v.pos_embed = nn.Parameter(torch.cat([self.v.pos_embed[:, :2, :].detach(), new_pos_embed], dim=1))
-
     def get_shape(self, fstride, tstride, input_fdim=128, input_tdim=1024):
         test_input = torch.randn(1, 1, input_fdim, input_tdim)
         test_proj = nn.Conv2d(1, self.original_embedding_dim, kernel_size=(16, 16), stride=(fstride, tstride))
@@ -185,18 +183,20 @@ class ASTModel(nn.Module):
         return x
 
 if __name__ == '__main__':
-    input_tdim = 100
-    ast_mdl = ASTModel(input_tdim=input_tdim)
-    # input a batch of 10 spectrogram, each with 100 time frames and 128 frequency bins
-    test_input = torch.rand([10, input_tdim, 128])
-    test_output = ast_mdl(test_input)
-    # output should be in shape [10, 527], i.e., 10 samples, each with prediction of 527 classes.
-    print(test_output.shape)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # input_tdim = 100
+    # ast_mdl = ASTModel(input_tdim=input_tdim)
+    # # input a batch of 10 spectrogram, each with 100 time frames and 128 frequency bins
+    # test_input = torch.rand([10, input_tdim, 128])
+    # test_output = ast_mdl(test_input)
+    # # output should be in shape [10, 527], i.e., 10 samples, each with prediction of 527 classes.
+    # print(test_output.shape)
 
     input_tdim = 256
-    ast_mdl = ASTModel(input_tdim=input_tdim,label_dim=50, audioset_pretrain=True)
+    ast_mdl = ASTModel(input_tdim=input_tdim,label_dim=50, audioset_pretrain=True).to(device)
     # input a batch of 10 spectrogram, each with 512 time frames and 128 frequency bins
-    test_input = torch.rand([10, input_tdim, 128])
+    test_input = torch.rand([10, input_tdim, 128]).to(device)
     test_output = ast_mdl(test_input)
     # output should be in shape [10, 50], i.e., 10 samples, each with prediction of 50 classes.
     print(test_output.shape)
