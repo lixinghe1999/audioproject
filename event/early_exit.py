@@ -6,6 +6,25 @@ import warnings
 from tqdm import tqdm
 warnings.filterwarnings("ignore")
 # remove annoying librosa warning
+def profile(model, test_dataset):
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
+    for threshold in [0.7, 0.8, 0.9, 0.95, 0.99]:
+        acc = []
+        ee = []
+        model.eval()
+        model.threshold = threshold
+        model.exit = True
+        with torch.no_grad():
+            for batch in tqdm(test_loader):
+                audio, image, text, _ = batch
+                a, e = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                acc.append(a)
+                ee.append(e)
+        acc = np.stack(acc)
+        ee = np.array(ee)
+        print('threshold', threshold)
+        print('accuracy for early-exits:', np.mean(acc, axis=0, where=acc >= 0))
+        print('early-exit percentage:', np.bincount(ee) / ee.shape[0])
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # Track history only in training
@@ -29,16 +48,16 @@ def test_step(model, input_data, label):
         early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     for i in range(len(outputs), 4):
         early_exits[i] = -1
-    return early_exits
+    return early_exits, len(outputs)
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
     for param_group in state_dict['param_groups']:
         param_group['lr'] = param_group['lr'] * multiplier
     optimizer.load_state_dict(state_dict)
-def train(train_dataset, test_dataset):
+def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
     # optimizers = [torch.optim.Adam(model.get_image_params(), lr=.0001, weight_decay=1e-4),
     #               torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
     optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
@@ -46,7 +65,7 @@ def train(train_dataset, test_dataset):
     for e in range(20):
         model.train()
         model.exit = False
-        if e % 3 == 0 and e > 0:
+        if e % 5 == 0 and e > 0:
             update_lr(optimizers[0], multiplier=.2)
             # update_lr(optimizers[1], multiplier=.1)
         for idx, batch in enumerate(tqdm(train_loader)):
@@ -54,15 +73,19 @@ def train(train_dataset, test_dataset):
             loss = train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
         model.eval()
         acc = []
-        model.exit = True
+        ee = []
+        # model.exit = True
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                acc.append(test_step(model, input_data=(audio.to(device), image.to(device)), label=text))
+                a, e = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                acc.append(a)
+                ee.append(e)
         acc = np.stack(acc)
+        ee = np.array(e)
         print('epoch', e)
         print('accuracy for early-exits:', np.mean(acc, axis=0, where= acc >= 0))
-        print('early-exit percentage:', np.bincount(np.argmin(acc, axis=1))/acc.shape[0])
+        print('early-exit percentage:', np.bincount(ee)/ee.shape[0])
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
@@ -71,5 +94,5 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    train(train_dataset, test_dataset)
+    train(model, train_dataset, test_dataset)
 
