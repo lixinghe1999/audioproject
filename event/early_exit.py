@@ -76,8 +76,7 @@ def update_lr(optimizer, multiplier = .1):
     for param_group in state_dict['param_groups']:
         param_group['lr'] = param_group['lr'] * multiplier
     optimizer.load_state_dict(state_dict)
-def train(model, train_dataset, test_dataset):
-    model.load_state_dict(torch.load('17_0.5727633648323562.pth'))
+def train(model, train_dataset, test_dataset)
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
