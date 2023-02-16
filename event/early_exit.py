@@ -11,7 +11,7 @@ def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
     model.exit = True
-    thresholds = [0.7, 0.8, 0.9, 0.95, 0.99]
+    thresholds = [0.8, 0.9, 0.95, 0.99]
     with torch.no_grad():
         for threshold in thresholds:
             acc = []
@@ -20,13 +20,14 @@ def profile(model, test_dataset):
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 a, e = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
-                print(a, e)
+                # print(a, e)
                 acc.append(a)
                 ee.append(e)
             acc = np.stack(acc)
             ee = np.array(ee)
+            acc = acc[np.arange(len(acc)), ee - 1]
             print('threshold', threshold)
-            print('accuracy for early-exits:', acc[np.arange(len(acc)), ee-1])
+            print('accuracy for early-exits:', np.mean(acc))
             print('early-exit percentage:', np.bincount(ee) / ee.shape[0])
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
