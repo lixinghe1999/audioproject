@@ -28,7 +28,7 @@ def profile(model, test_dataset):
             acc = acc[np.arange(len(acc)), ee - 1]
             print('threshold', threshold)
             print('accuracy for early-exits:', np.mean(acc))
-            print('early-exit percentage:', np.bincount(ee) / ee.shape[0])
+            print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # Track history only in training

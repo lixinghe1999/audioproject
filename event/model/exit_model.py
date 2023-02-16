@@ -37,22 +37,6 @@ class AVnet(nn.Module):
         self.early_exit1 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64 * 2, num_cls)])
         self.early_exit2 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128 * 2, num_cls)])
         self.early_exit3 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256 * 2, num_cls)])
-    def get_audio_params(self):
-        parameters = [
-            {'params': self.audio.parameters()},
-            {'params': self.mmtm1.parameters()},
-            {'params': self.mmtm2.parameters()},
-            {'params': self.mmtm3.parameters()},
-        ]
-        return parameters
-    def get_image_params(self):
-        parameters = [
-            {'params': self.image.parameters()},
-            {'params': self.mmtm1.parameters()},
-            {'params': self.mmtm2.parameters()},
-            {'params': self.mmtm3.parameters()},
-        ]
-        return parameters
     def preprocessing_audio(self, audio):
         spec = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
                           win_length=self.win_length, window=torch.hann_window(self.win_length, device=audio.device),
@@ -83,6 +67,7 @@ class AVnet(nn.Module):
         output_cache.append(early_output)
         if self.exit and self.threshold > 0:
             confidence = torch.softmax(early_output, dim=1).max()
+            print(confidence)
             if confidence > self.threshold:
                 return output_cache
 
@@ -92,6 +77,7 @@ class AVnet(nn.Module):
         output_cache.append(early_output)
         if self.exit and self.threshold > 0:
             confidence = torch.softmax(early_output, dim=1).max()
+            print(confidence)
             if confidence > self.threshold:
                 return output_cache
 
