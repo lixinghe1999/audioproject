@@ -39,7 +39,7 @@ def train_step(model, input_data, optimizers, criteria, label):
         optimizer.zero_grad()
         loss = 0
         for i, output in enumerate(outputs):
-            loss += criteria(output, label)
+            loss += (i+1) * 0.25 * criteria(output, label)
         loss.backward()
         optimizer.step()
     return loss.item()
@@ -99,6 +99,6 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    # train(model, train_dataset, test_dataset)
-    profile(model, test_dataset)
+    train(model, train_dataset, test_dataset)
+    # profile(model, test_dataset)
 
