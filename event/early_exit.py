@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 # remove annoying librosa warning
 def profile(model, test_dataset):
     model.load_state_dict(torch.load('4_0.572118710609352.pth'))
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
     model.eval()
     model.exit = True
     thresholds = [1]
