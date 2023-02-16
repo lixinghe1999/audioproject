@@ -13,24 +13,24 @@ def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
     model.exit = True
-    # thresholds = [0.7, 0.8, 0.9, 0.95, 0.99]
-    thresholds = [0.3, 0.4, 0.5, 0.6]
+    thresholds = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
     with torch.no_grad():
         for threshold in thresholds:
             acc = []
             ee = []
+            latency = 0
             model.threshold = threshold
-            t_start = time.time()
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, e = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                a, e, l = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
                 acc.append(a)
                 ee.append(e)
+                latency += l
             acc = np.stack(acc)
             ee = np.array(ee)
             acc = acc[np.arange(len(acc)), ee - 1]
             print('threshold', threshold)
-            print('latency:', (time.time() - t_start) / len(test_loader))
+            print('latency:', latency / len(test_loader))
             print('accuracy for early-exits:', np.mean(acc, axis=0))
             print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
 def train_step(model, input_data, optimizers, criteria, label):
@@ -57,12 +57,14 @@ def test_step(model, input_data, label):
     audio, image = input_data
     # Track history only in training
     early_exits = np.zeros((4))
+    t_start = time.time()
     outputs = model(audio, image)
+    l = time.time() - t_start
     for i, output in enumerate(outputs):
         early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     for i in range(len(outputs), 4):
         early_exits[i] = -1
-    return early_exits, len(outputs)
+    return early_exits, len(outputs), l
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
     for param_group in state_dict['param_groups']:
@@ -94,7 +96,7 @@ def train(model, train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                a, _, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
                 acc.append(a)
         acc = np.stack(acc)
         acc = np.mean(acc, axis=0, where=acc >= 0)
