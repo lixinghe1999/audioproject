@@ -62,6 +62,7 @@ def train(model, train_dataset, test_dataset):
     #               torch.optim.Adam(model.get_audio_params(), lr=.0001, weight_decay=1e-4)]
     optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
+    best_acc = 0
     for epoch in range(20):
         model.train()
         model.exit = False
@@ -82,10 +83,13 @@ def train(model, train_dataset, test_dataset):
                 acc.append(a)
                 ee.append(e)
         acc = np.stack(acc)
+        acc = np.mean(acc, axis=0, where=acc >= 0)
         ee = np.array(e)
         print('epoch', epoch)
-        print('accuracy for early-exits:', np.mean(acc, axis=0, where= acc >= 0))
-        #print('early-exit percentage:', np.bincount(ee)/ee.shape[0])
+        print('accuracy for early-exits:', )
+        if acc > best_acc:
+            best_acc = acc
+            torch.save(model.state_dict(), str(epoch) + '_' + str(acc[-1]) + '.pth')
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
