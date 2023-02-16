@@ -13,7 +13,8 @@ def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
     model.exit = True
-    thresholds = [0.7, 0.8, 0.9, 0.95, 0.99]
+    # thresholds = [0.7, 0.8, 0.9, 0.95, 0.99]
+    thresholds = [0.3, 0.4, 0.5, 0.6]
     with torch.no_grad():
         for threshold in thresholds:
             acc = []
