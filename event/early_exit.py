@@ -74,17 +74,14 @@ def train(model, train_dataset, test_dataset):
             loss = train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
         model.eval()
         acc = []
-        ee = []
         # model.exit = True
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, e = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                a, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
                 acc.append(a)
-                ee.append(e)
         acc = np.stack(acc)
         acc = np.mean(acc, axis=0, where=acc >= 0)
-        ee = np.array(e)
         print('epoch', epoch)
         print('accuracy for early-exits:', )
         if acc[-1] > best_acc:
