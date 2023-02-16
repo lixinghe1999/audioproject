@@ -87,7 +87,7 @@ def train(model, train_dataset, test_dataset):
         ee = np.array(e)
         print('epoch', epoch)
         print('accuracy for early-exits:', )
-        if acc > best_acc:
+        if acc[-1] > best_acc:
             best_acc = acc
             torch.save(model.state_dict(), str(epoch) + '_' + str(acc[-1]) + '.pth')
 if __name__ == "__main__":
