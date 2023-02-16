@@ -63,6 +63,7 @@ class AVnet(nn.Module):
 
         audio = self.audio.layer1(audio)
         image = self.image.layer1(image)
+        print(audio)
         early_output = self.early_exit1(torch.cat([audio, image], dim=1))
         print(early_output)
         output_cache.append(early_output)
