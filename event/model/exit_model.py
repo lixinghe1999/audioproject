@@ -76,6 +76,7 @@ class AVnet(nn.Module):
         early_output = self.early_exit2(torch.cat([audio, image], dim=1))
         output_cache.append(early_output)
         if self.exit and self.threshold > 0:
+            print(early_output)
             confidence = torch.softmax(early_output, dim=1).max()
             print(confidence)
             if confidence > self.threshold:
