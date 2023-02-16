@@ -25,9 +25,9 @@ def profile(model, test_dataset):
                 ee.append(e)
             acc = np.stack(acc)
             ee = np.array(ee)
-            acc = acc[np.arange(len(acc)), ee - 1]
+            # acc = acc[np.arange(len(acc)), ee - 1]
             print('threshold', threshold)
-            print('accuracy for early-exits:', np.mean(acc))
+            print('accuracy for early-exits:', np.mean(acc, axis=0))
             print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
@@ -41,7 +41,7 @@ def train_step(model, input_data, optimizers, criteria, label):
             loss += (i+1) * 0.25 * criteria(output, label)
         loss.backward()
         optimizer.step()
-    else: # independent loss
+    else:# independent loss
         outputs = model(audio, image)
         for i, optimizer in enumerate(optimizers):
             optimizer.zero_grad()
