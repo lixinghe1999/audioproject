@@ -11,7 +11,7 @@ def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
     model.exit = True
-    thresholds = [1]
+    thresholds = [0.8, 0.9, 0.95, 0.99]
     with torch.no_grad():
         for threshold in thresholds:
             acc = []
@@ -25,7 +25,7 @@ def profile(model, test_dataset):
                 ee.append(e)
             acc = np.stack(acc)
             ee = np.array(ee)
-            # acc = acc[np.arange(len(acc)), ee - 1]
+            acc = acc[np.arange(len(acc)), ee - 1]
             print('threshold', threshold)
             print('accuracy for early-exits:', np.mean(acc, axis=0))
             print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
