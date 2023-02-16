@@ -48,9 +48,9 @@ class AVnet(nn.Module):
                           pad_mode='reflect', normalized=self.normalized, onesided=True, return_complex=True)
         spec = torch.abs(spec)
         spec = torch.log(spec + 1e-7)
-        mean = torch.mean(spec)
-        std = torch.std(spec)
-        spec = (spec - mean) / (std + 1e-9)
+        # mean = torch.mean(spec)
+        # std = torch.std(spec)
+        # spec = (spec - mean) / (std + 1e-9)
         spec = torch.nn.functional.interpolate(spec.unsqueeze(1), size=self.spec_scale, mode='bilinear')
         return spec
     def forward(self, audio, image):

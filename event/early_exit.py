@@ -69,13 +69,13 @@ def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
-    optimizers = [torch.optim.Adam(model.early_exit_parameter(1), lr=.0001, weight_decay=1e-4),
-                  torch.optim.Adam(model.early_exit_parameter(2), lr=.0001, weight_decay=1e-4),
-                  torch.optim.Adam(model.early_exit_parameter(3), lr=.0001, weight_decay=1e-4),]
-    # optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
+    # optimizers = [torch.optim.Adam(model.early_exit_parameter(1), lr=.0001, weight_decay=1e-4),
+    #               torch.optim.Adam(model.early_exit_parameter(2), lr=.0001, weight_decay=1e-4),
+    #               torch.optim.Adam(model.early_exit_parameter(3), lr=.0001, weight_decay=1e-4),]
+    optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
-    for epoch in range(5):
+    for epoch in range(10):
         model.train()
         model.exit = False
         if epoch % 5 == 0 and epoch > 0:
@@ -106,6 +106,6 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    # train(model, train_dataset, test_dataset)
-    profile(model, test_dataset)
+    train(model, train_dataset, test_dataset)
+    # profile(model, test_dataset)
 
