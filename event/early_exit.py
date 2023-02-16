@@ -75,7 +75,7 @@ def train(model, train_dataset, test_dataset):
     # optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
-    for epoch in range(20):
+    for epoch in range(5):
         model.train()
         model.exit = False
         if epoch % 5 == 0 and epoch > 0:
