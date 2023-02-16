@@ -3,7 +3,7 @@ import time
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.exit_model import AVnet
+from model.exit_model import AVnet, AVnet_Flex
 import warnings
 from tqdm import tqdm
 warnings.filterwarnings("ignore")
@@ -41,8 +41,10 @@ def train_step(model, input_data, optimizers, criteria, label):
         outputs = model(audio, image)
         optimizer.zero_grad()
         loss = 0
-        for i, output in enumerate(outputs):
-            loss += (i+1) * 0.25 * criteria(output, label)
+        for output_audio, output_image in zip(outputs['audio'], outputs['image']):
+            loss += criteria((output_audio + output_image)/2, label)
+        # for i, output in enumerate(outputs):
+        #     loss += (i+1) * 0.25 * criteria(output, label)
         loss.backward()
         optimizer.step()
     else:# independent loss
@@ -60,6 +62,10 @@ def test_step(model, input_data, label):
     t_start = time.time()
     outputs = model(audio, image)
     l = time.time() - t_start
+    output_tmp = []
+    for output_audio, output_image in zip(outputs['audio'], outputs['image']):
+        output_tmp.append((output_audio + output_image) / 2)
+    outputs = output_tmp
     for i, output in enumerate(outputs):
         early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     for i in range(len(outputs), 4):
@@ -107,11 +113,11 @@ def train(model, train_dataset, test_dataset):
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
-    model = AVnet().to(device)
+    model = AVnet_Flex().to(device)
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    # train(model, train_dataset, test_dataset)
-    profile(model, test_dataset)
+    train(model, train_dataset, test_dataset)
+    # profile(model, test_dataset)
 

@@ -13,7 +13,7 @@ import torch
 from model.modified_resnet import ModifiedResNet
 from model.resnet34 import ResNet, BasicBlock
 class AVnet(nn.Module):
-    def __init__(self, exit=True, threshold=0.9, num_cls=309):
+    def __init__(self, exit=False, threshold=0.9, num_cls=309):
         '''
         :param exit: True - with exit, normally for testing, False - no exit, normally for training
         :param threshold: confidence to continue calculation, can be Integer or List
@@ -102,7 +102,7 @@ class AVnet(nn.Module):
         output_cache.append(output)
         return output_cache
 class AVnet_Flex(nn.Module):
-    def __init__(self, exit=True, threshold=0.9, num_cls=309):
+    def __init__(self, exit=False, threshold=0.9, num_cls=309):
         '''
         :param exit: True - with exit, normally for testing, False - no exit, normally for training
         :param threshold: confidence to continue calculation, can be Integer or List
@@ -152,7 +152,6 @@ class AVnet_Flex(nn.Module):
                           pad_mode='reflect', normalized=self.normalized, onesided=True, return_complex=True)
         spec = torch.abs(spec)
         spec = torch.log(spec + 1e-7)
-        spec = (spec - torch.mean(spec)) / (torch.std(spec) + 1e-9)
         spec = torch.nn.functional.interpolate(spec.unsqueeze(1), size=self.spec_scale, mode='bilinear')
         return spec
     def inference_update(self, early_output, modal):
@@ -213,7 +212,7 @@ class AVnet_Flex(nn.Module):
             output_cache['audio'].append(early_output)
             self.inference_update(early_output, 'audio_exit')
         if not self.image_exit:
-            image = self.image.layer3(image)
+            image = self.image.layer4(image)
             early_output = self.early_exit4b(image)
             output_cache['image'].append(early_output)
             self.inference_update(early_output, 'image_exit')
