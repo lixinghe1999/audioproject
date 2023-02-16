@@ -7,7 +7,8 @@ from tqdm import tqdm
 warnings.filterwarnings("ignore")
 # remove annoying librosa warning
 def profile(model, test_dataset):
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
+    model.load_state_dict(torch.load('16_0.570066823899371.pth'))
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=6, shuffle=False)
     model.eval()
     model.exit = True
     thresholds = [0.7, 0.8, 0.9, 0.95, 0.99]
@@ -19,6 +20,7 @@ def profile(model, test_dataset):
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 a, e = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                print(a, e)
                 acc.append(a)
                 ee.append(e)
             acc = np.stack(acc)
@@ -96,5 +98,6 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    train(model, train_dataset, test_dataset)
+    # train(model, train_dataset, test_dataset)
+    profile(model, test_dataset)
 
