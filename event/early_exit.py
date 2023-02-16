@@ -24,7 +24,7 @@ def profile(model, test_dataset):
             acc = np.stack(acc)
             ee = np.array(ee)
             print('threshold', threshold)
-            print('accuracy for early-exits:', acc[:, ee-1])
+            print('accuracy for early-exits:', acc[np.arange(len(acc)), ee-1])
             print('early-exit percentage:', np.bincount(ee) / ee.shape[0])
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
@@ -84,7 +84,7 @@ def train(model, train_dataset, test_dataset):
         acc = np.stack(acc)
         acc = np.mean(acc, axis=0, where=acc >= 0)
         print('epoch', epoch)
-        print('accuracy for early-exits:', )
+        print('accuracy for early-exits:', acc)
         if acc[-1].item() > best_acc:
             best_acc = acc
             torch.save(model.state_dict(), str(epoch) + '_' + str(acc[-1].item() ) + '.pth')
