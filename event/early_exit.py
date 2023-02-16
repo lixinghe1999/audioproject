@@ -1,3 +1,5 @@
+import time
+
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
@@ -17,16 +19,17 @@ def profile(model, test_dataset):
             acc = []
             ee = []
             model.threshold = threshold
+            t_start = time.time()
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 a, e = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
-                # print(a, e)
                 acc.append(a)
                 ee.append(e)
             acc = np.stack(acc)
             ee = np.array(ee)
             acc = acc[np.arange(len(acc)), ee - 1]
             print('threshold', threshold)
+            print('latency:', (time.time() - t_start) / len(test_loader))
             print('accuracy for early-exits:', np.mean(acc, axis=0))
             print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
 def train_step(model, input_data, optimizers, criteria, label):
