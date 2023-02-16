@@ -46,9 +46,9 @@ def train_step(model, input_data, optimizers, criteria, label):
         for i, optimizer in enumerate(optimizers):
             optimizer.zero_grad()
             loss = criteria(outputs[i], label)
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
-    # return loss.item()
+    return loss.item()
 def test_step(model, input_data, label):
     audio, image = input_data
     # Track history only in training
