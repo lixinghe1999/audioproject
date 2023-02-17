@@ -28,10 +28,10 @@ def profile(model, test_dataset):
                 latency += l
             acc = np.stack(acc)
             ee = np.array(ee)
-            acc = acc[np.arange(len(acc)), ee - 1]
             print('threshold', threshold)
             print('latency:', latency / len(test_loader))
-            print('accuracy for early-exits:', np.mean(acc, axis=0))
+            print('accuracy for each exit:', np.mean(acc, axis=0, where= acc > 0))
+            print('accuracy for early-exits:', np.mean(acc[np.arange(len(acc)), ee - 1], axis=0))
             print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
@@ -63,7 +63,16 @@ def test_step(model, input_data, label):
     outputs = model(audio, image)
     l = time.time() - t_start
     output_tmp = []
-    for output_audio, output_image in zip(outputs['audio'], outputs['image']):
+    max_exits = max(len(outputs['audio']), len(outputs['image']))
+    for i in range(max_exits):
+        if i >= len(outputs['audio']):
+            output_audio = outputs['audio'][i]
+        else:
+            output_audio = 0
+        if i >= len(outputs['image']):
+            output_image = outputs['image'][i]
+        else:
+            output_image = 0
         output_tmp.append((output_audio + output_image) / 2)
     outputs = output_tmp
     for i, output in enumerate(outputs):
