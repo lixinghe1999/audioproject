@@ -103,6 +103,7 @@ class AVnet_Gate(nn.Module):
         print(len(output_cache['audio']) + len(output_cache['image']))
 
         if not self.audio_exit:
+            print('continue')
             audio = self.audio.layer2(audio)
             early_output = self.early_exit2a(audio)
             output_cache['audio'].append(early_output)
