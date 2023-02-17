@@ -81,13 +81,12 @@ def train(model, train_dataset, test_dataset):
             audio, image, text, _ = batch
             train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
         model.eval()
-        acc = [[]] * 8
+        acc = [[], [], [], [], [], [], [], []]
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
                 acc[e-1] += [a]
-                print(acc)
         mean_acc = []
         for ac in acc:
             mean_acc.append(np.mean(ac))
