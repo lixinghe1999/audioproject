@@ -3,7 +3,7 @@ import pandas as pd
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.exit_model import AVnet, AVnet_Flex
+from model.gate_model import AVnet_Gate
 import warnings
 from tqdm import tqdm
 from datetime import date
@@ -46,26 +46,13 @@ def profile(model, test_dataset):
     df.to_excel(writer, sheet_name=date.today().strftime("%d/%m/%Y %H:%M:%S"))
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
-    if len(optimizers) == 1:
-        # cumulative loss
-        optimizer = optimizers[0]
-        outputs = model(audio, image)
-        optimizer.zero_grad()
-        loss = 0
-        for output_audio, output_image in zip(outputs['audio'], outputs['image']):
-            loss += criteria(output_audio, label)
-            loss += criteria(output_image, label)
-        # for i, output in enumerate(outputs):
-        #     loss += (i+1) * 0.25 * criteria(output, label)
-        loss.backward()
-        optimizer.step()
-    else: # independent loss
-        outputs = model(audio, image)
-        for i, optimizer in enumerate(optimizers):
-            optimizer.zero_grad()
-            loss = criteria(outputs[i], label)
-            loss.backward(retain_graph=True)
-            optimizer.step()
+    # cumulative loss
+    optimizer = optimizers[0]
+    output = model(audio, image)
+    optimizer.zero_grad()
+    loss = criteria(output, label)
+    loss.backward()
+    optimizer.step()
     return loss.item()
 def test_step(model, input_data, label):
     audio, image = input_data
@@ -103,9 +90,6 @@ def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
-    # optimizers = [torch.optim.Adam(model.early_exit_parameter(1), lr=.0001, weight_decay=1e-4),
-    #               torch.optim.Adam(model.early_exit_parameter(2), lr=.0001, weight_decay=1e-4),
-    #               torch.optim.Adam(model.early_exit_parameter(3), lr=.0001, weight_decay=1e-4),]
     optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
@@ -134,7 +118,7 @@ def train(model, train_dataset, test_dataset):
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
-    model = AVnet_Flex().to(device)
+    model = AVnet_Gate().to(device)
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train

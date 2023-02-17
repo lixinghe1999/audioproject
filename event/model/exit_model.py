@@ -9,7 +9,6 @@ We implement multi-modal dynamic network here
 
 '''
 import time
-
 import torch.nn as nn
 import torch
 from model.modified_resnet import ModifiedResNet
@@ -126,25 +125,18 @@ class AVnet_Flex(nn.Module):
         self.image.load_state_dict(torch.load('resnet34.pth'))
         self.image.fc = torch.nn.Linear(512, num_cls)
 
-        self.early_exit1a = nn.Sequential(
-            *[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, num_cls)])
-        self.early_exit1b = nn.Sequential(
-            *[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, num_cls)])
+        self.early_exit1a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, num_cls)])
+        self.early_exit1b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, num_cls)])
 
-        self.early_exit2a = nn.Sequential(
-            *[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, num_cls)])
-        self.early_exit2b = nn.Sequential(
-            *[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, num_cls)])
+        self.early_exit2a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, num_cls)])
+        self.early_exit2b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, num_cls)])
 
-        self.early_exit3a = nn.Sequential(
-            *[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, num_cls)])
-        self.early_exit3b = nn.Sequential(
-            *[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, num_cls)])
+        self.early_exit3a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, num_cls)])
+        self.early_exit3b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, num_cls)])
 
-        self.early_exit4a = nn.Sequential(
-            *[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, num_cls)])
-        self.early_exit4b = nn.Sequential(
-            *[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, num_cls)])
+        self.early_exit4a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, num_cls)])
+        self.early_exit4b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, num_cls)])
+
     def preprocessing_audio(self, audio):
         spec = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
                           win_length=self.win_length,
@@ -154,8 +146,9 @@ class AVnet_Flex(nn.Module):
         spec = torch.log(spec + 1e-7)
         spec = torch.nn.functional.interpolate(spec.unsqueeze(1), size=self.spec_scale, mode='bilinear')
         return spec
-    def inference_update(self, early_output, modal):
+    def inference_update(self, early_output, modal, random_thres=1.0):
         if self.exit and self.threshold > 0:
+            # exit based on threshold
             confidence = torch.softmax(early_output, dim=1).max()
             if confidence > self.threshold:
                 setattr(self, modal, True)
@@ -177,34 +170,34 @@ class AVnet_Flex(nn.Module):
         audio = self.audio.layer1(audio)
         early_output = self.early_exit1a(audio)
         output_cache['audio'].append(early_output)
-        self.inference_update(early_output, 'audio_exit')
+        self.inference_update(early_output, 'audio_exit', 0.25)
 
         image = self.image.layer1(image)
         early_output = self.early_exit1b(image)
         output_cache['image'].append(early_output)
-        self.inference_update(early_output, 'image_exit')
+        self.inference_update(early_output, 'image_exit', 0.25)
 
         if not self.audio_exit:
             audio = self.audio.layer2(audio)
             early_output = self.early_exit2a(audio)
             output_cache['audio'].append(early_output)
-            self.inference_update(early_output, 'audio_exit')
+            self.inference_update(early_output, 'audio_exit', 0.33)
         if not self.image_exit:
             image = self.image.layer2(image)
             early_output = self.early_exit2b(image)
             output_cache['image'].append(early_output)
-            self.inference_update(early_output, 'image_exit')
+            self.inference_update(early_output, 'image_exit', 0.33)
 
         if not self.audio_exit:
             audio = self.audio.layer3(audio)
             early_output = self.early_exit3a(audio)
             output_cache['audio'].append(early_output)
-            self.inference_update(early_output, 'audio_exit')
+            self.inference_update(early_output, 'audio_exit', 0.5)
         if not self.image_exit:
             image = self.image.layer3(image)
             early_output = self.early_exit3b(image)
             output_cache['image'].append(early_output)
-            self.inference_update(early_output, 'image_exit')
+            self.inference_update(early_output, 'image_exit', 0.5)
 
         if not self.audio_exit:
             audio = self.audio.layer4(audio)
@@ -217,6 +210,7 @@ class AVnet_Flex(nn.Module):
             output_cache['image'].append(early_output)
             self.inference_update(early_output, 'image_exit')
         return output_cache
+
 if __name__ == "__main__":
     num_cls = 100
     device = 'cuda'
