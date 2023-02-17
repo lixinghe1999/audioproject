@@ -132,7 +132,7 @@ class AVnet_Gate(nn.Module):
             early_output = self.early_exit4b(image)
             output_cache['image'].append(early_output)
         output = self.projection(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1))
-        return output
+        return output_cache, output
 if __name__ == "__main__":
     num_cls = 100
     device = 'cuda'

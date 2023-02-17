@@ -46,7 +46,7 @@ def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # cumulative loss
     optimizer = optimizers[0]
-    output = model(audio, image)
+    output_cache, output = model(audio, image)
     optimizer.zero_grad()
     loss = criteria(output, label)
     loss.backward()
@@ -54,12 +54,11 @@ def train_step(model, input_data, optimizers, criteria, label):
     return loss.item()
 def test_step(model, input_data, label):
     audio, image = input_data
-    early_exits = np.zeros((4))
     t_start = time.time()
-    output = model(audio, image)
+    output_cache, output = model(audio, image)
     l = time.time() - t_start
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
-    return acc, l
+    return acc, len(output_cache['audio']) + len(output_cache['image']), l
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
     for param_group in state_dict['param_groups']:
@@ -82,18 +81,19 @@ def train(model, train_dataset, test_dataset):
             audio, image, text, _ = batch
             train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
         model.eval()
-        acc = []
+        acc = [[]] * 8
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
-                acc.append(a)
-        acc = np.stack(acc)
-        acc = np.mean(acc, axis=0, where=acc >= 0)
+                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                acc[e-1].append(a)
+        mean_acc = []
+        for ac in acc:
+            mean_acc.append(np.mean(ac))
         print('epoch', epoch)
-        print('accuracy for early-exits:', acc)
+        print('accuracy for early-exits:', mean_acc)
         # best_acc = acc[-1].item()
-        torch.save(model.state_dict(), str(epoch) + '_' + str(acc.item()) + '.pth')
+        torch.save(model.state_dict(), str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
