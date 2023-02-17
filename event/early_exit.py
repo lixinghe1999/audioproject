@@ -23,6 +23,7 @@ def profile(model, test_dataset):
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 a, e, l = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                print(a, e, l)
                 acc.append(a)
                 ee.append(e)
                 latency += l

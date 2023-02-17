@@ -12,8 +12,8 @@ import time
 
 import torch.nn as nn
 import torch
-from model.modified_resnet import ModifiedResNet
-from model.resnet34 import ResNet, BasicBlock
+from modified_resnet import ModifiedResNet
+from resnet34 import ResNet, BasicBlock
 class AVnet(nn.Module):
     def __init__(self, exit=False, threshold=0.9, num_cls=309):
         '''
@@ -220,7 +220,7 @@ class AVnet_Flex(nn.Module):
 if __name__ == "__main__":
     num_cls = 100
     device = 'cuda'
-    model = AVnet(num_cls=100).to(device)
+    model = AVnet_Flex(num_cls=100).to(device)
     model.eval()
     audio = torch.zeros(1, 1, 160000).to(device)
     image = torch.zeros(1, 3, 224, 224).to(device)
