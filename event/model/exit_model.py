@@ -12,8 +12,8 @@ import time
 
 import torch.nn as nn
 import torch
-from modified_resnet import ModifiedResNet
-from resnet34 import ResNet, BasicBlock
+from model.modified_resnet import ModifiedResNet
+from model.resnet34 import ResNet, BasicBlock
 class AVnet(nn.Module):
     def __init__(self, exit=False, threshold=0.9, num_cls=309):
         '''
