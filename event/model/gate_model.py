@@ -132,6 +132,7 @@ class AVnet_Gate(nn.Module):
             early_output = self.early_exit4b(image)
             output_cache['image'].append(early_output)
         output = self.projection(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1))
+        print(len(output_cache['audio']) + len(output_cache['image']))
         return output_cache, output
 if __name__ == "__main__":
     num_cls = 100
