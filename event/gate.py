@@ -86,8 +86,7 @@ def train(model, train_dataset, test_dataset):
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
-                print(a, e)
-                acc[e-1].append(a)
+                acc[e-1] += [a]
         mean_acc = []
         for ac in acc:
             mean_acc.append(np.mean(ac))
