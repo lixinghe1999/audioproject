@@ -8,10 +8,12 @@ We implement multi-modal dynamic network here
  3) utilize modality fusion to get early-exit
 
 '''
+import time
+
 import torch.nn as nn
 import torch
-from model.modified_resnet import ModifiedResNet
-from model.resnet34 import ResNet, BasicBlock
+from modified_resnet import ModifiedResNet
+from resnet34 import ResNet, BasicBlock
 class AVnet(nn.Module):
     def __init__(self, exit=False, threshold=0.9, num_cls=309):
         '''
@@ -92,13 +94,11 @@ class AVnet(nn.Module):
 
         audio = self.audio.layer4(audio)
         image = self.image.layer4(image)
-
         audio = self.audio.avgpool(audio)
         image = self.audio.avgpool(image)
         audio = torch.flatten(audio, 1)
         image = torch.flatten(image, 1)
         output = (self.audio.fc(audio) + self.image.fc(image)) / 2
-        # confidence = torch.softmax(output, dim=1).max()
         output_cache.append(output)
         return output_cache
 class AVnet_Flex(nn.Module):
@@ -219,9 +219,15 @@ class AVnet_Flex(nn.Module):
         return output_cache
 if __name__ == "__main__":
     num_cls = 100
-    model = AVnet(num_cls=100)
-    audio = torch.zeros(16, 1, 220500)
-    image = torch.zeros(16, 3, 224, 224)
-    outputs = model(audio, image)
-    for output in outputs:
-        print(output.shape)
+    device = 'cuda'
+    model = AVnet(num_cls=100).to(device)
+    model.eval()
+    audio = torch.zeros(1, 1, 160000).to(device)
+    image = torch.zeros(1, 3, 224, 224).to(device)
+
+    with torch.no_grad():
+        for i in range(20):
+            if i == 1:
+                t_start = time.time()
+            model(audio, image)
+    print((time.time() - t_start) / 19)

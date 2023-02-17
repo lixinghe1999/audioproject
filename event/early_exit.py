@@ -9,7 +9,7 @@ from tqdm import tqdm
 warnings.filterwarnings("ignore")
 # remove annoying librosa warning
 def profile(model, test_dataset):
-    model.load_state_dict(torch.load('9_0.5584866352051309.pth'))
+    model.load_state_dict(torch.load('9_0.5502319182239989.pth'))
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
     model.exit = True
@@ -117,6 +117,6 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    train(model, train_dataset, test_dataset)
-    # profile(model, test_dataset)
+    # train(model, train_dataset, test_dataset)
+    profile(model, test_dataset)
 
