@@ -76,7 +76,7 @@ def train(model, train_dataset, test_dataset):
         model.exit = False
         if epoch % 5 == 0 and epoch > 0:
             for optimizer in optimizers:
-                update_lr(optimizer, multiplier=.2)
+                update_lr(optimizer, multiplier=.3)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
