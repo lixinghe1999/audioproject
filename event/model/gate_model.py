@@ -100,7 +100,6 @@ class AVnet_Gate(nn.Module):
                               'audio_exit', 0.25)
         self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
                               'image_exit', 0.25)
-        print(len(output_cache['audio']) + len(output_cache['image']))
         if not self.audio_exit:
             audio = self.audio.layer2(audio)
             early_output = self.early_exit2a(audio)
@@ -113,8 +112,6 @@ class AVnet_Gate(nn.Module):
             output_cache['image'].append(early_output)
             self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
                                   'image_exit', 0.33)
-        print(len(output_cache['audio']) + len(output_cache['image']))
-
         if not self.audio_exit:
             audio = self.audio.layer3(audio)
             early_output = self.early_exit3a(audio)
@@ -127,8 +124,6 @@ class AVnet_Gate(nn.Module):
             output_cache['image'].append(early_output)
             self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
                                   'image_exit', 0.5)
-        print(len(output_cache['audio']) + len(output_cache['image']))
-
         if not self.audio_exit:
             audio = self.audio.layer4(audio)
             early_output = self.early_exit4a(audio)
@@ -138,7 +133,6 @@ class AVnet_Gate(nn.Module):
             early_output = self.early_exit4b(image)
             output_cache['image'].append(early_output)
         output = self.projection(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1))
-        print(len(output_cache['audio']) + len(output_cache['image']))
         return output_cache, output
 if __name__ == "__main__":
     num_cls = 100

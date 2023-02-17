@@ -71,7 +71,7 @@ def train(model, train_dataset, test_dataset):
     optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
-    for epoch in range(10):
+    for epoch in range(30):
         model.train()
         model.exit = False
         if epoch % 5 == 0 and epoch > 0:
@@ -93,7 +93,8 @@ def train(model, train_dataset, test_dataset):
             mean_acc.append(np.mean(ac))
         print('epoch', epoch)
         print('accuracy for early-exits:', mean_acc)
-        # best_acc = acc[-1].item()
+        if mean_acc[-1] > best_acc:
+            best_acc = mean_acc[-1]
         torch.save(model.state_dict(), str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
