@@ -58,7 +58,7 @@ def test_step(model, input_data, label):
     output_cache, output = model(audio, image)
     l = time.time() - t_start
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
-    return acc, len(output_cache['audio']) + len(output_cache['image']), l
+    return acc.item(), len(output_cache['audio']) + len(output_cache['image']), l
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
     for param_group in state_dict['param_groups']:
