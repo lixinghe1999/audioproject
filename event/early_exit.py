@@ -65,11 +65,11 @@ def test_step(model, input_data, label):
     output_tmp = []
     max_exits = max(len(outputs['audio']), len(outputs['image']))
     for i in range(max_exits):
-        if i >= len(outputs['audio']):
+        if i < len(outputs['audio']):
             output_audio = outputs['audio'][i]
         else:
             output_audio = 0
-        if i >= len(outputs['image']):
+        if i < len(outputs['image']):
             output_image = outputs['image'][i]
         else:
             output_image = 0
