@@ -101,7 +101,7 @@ class AVnet_Gate(nn.Module):
         self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
                               'image_exit', 0.25)
         print(len(output_cache['audio']) + len(output_cache['image']))
-
+        print(self.audio_exit, self.image_exit)
         if not self.audio_exit:
             print('continue')
             audio = self.audio.layer2(audio)
