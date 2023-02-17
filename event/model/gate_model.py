@@ -89,11 +89,12 @@ class AVnet_Gate(nn.Module):
         audio = self.audio.layer1(audio)
         early_output = self.early_exit1a(audio)
         output_cache['audio'].append(early_output)
-        self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
-                              'audio_exit', 0.25)
         image = self.image.layer1(image)
         early_output = self.early_exit1b(image)
         output_cache['image'].append(early_output)
+
+        self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
+                              'audio_exit', 0.25)
         self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
                               'image_exit', 0.25)
 
