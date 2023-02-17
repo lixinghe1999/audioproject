@@ -76,7 +76,7 @@ def test_step(model, input_data, label):
     outputs = model(audio, image)
     l = time.time() - t_start
     output_tmp = []
-    max_exits = max(len(outputs['audio']), len(outputs['image']))
+    max_exits = min(len(outputs['audio']), len(outputs['image']))
     for i in range(max_exits):
         if i < len(outputs['audio']):
             output_audio = outputs['audio'][i]
