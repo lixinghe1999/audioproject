@@ -93,7 +93,7 @@ def train(model, train_dataset, test_dataset):
         print('epoch', epoch)
         print('accuracy for early-exits:', acc)
         # best_acc = acc[-1].item()
-        torch.save(model.state_dict(), str(epoch) + '_' + str(acc[-1].item()) + '.pth')
+        torch.save(model.state_dict(), str(epoch) + '_' + str(acc.item()) + '.pth')
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
