@@ -71,7 +71,10 @@ class AVnet_Gate(nn.Module):
                     setattr(self, modal, True)
                 else:
                     setattr(self, modal, False)
-        elif torch.rand(1) < random_thres:
+        else:
+            random_number = torch.rand(1)
+            print(random_number)
+            if random_number < random_thres:
                 setattr(self, modal, True)
     def forward(self, audio, image):
         output_cache = {'audio': [], 'image': []}
