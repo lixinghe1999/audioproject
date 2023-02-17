@@ -67,7 +67,7 @@ def update_lr(optimizer, multiplier = .1):
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=16, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=8, batch_size=32, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=8, shuffle=False)
     optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
@@ -86,6 +86,7 @@ def train(model, train_dataset, test_dataset):
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                print(a, e)
                 acc[e-1].append(a)
         mean_acc = []
         for ac in acc:
