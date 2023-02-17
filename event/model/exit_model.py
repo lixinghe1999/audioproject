@@ -156,8 +156,8 @@ class AVnet_Flex(nn.Module):
         return spec
     def inference_update(self, early_output, modal):
         if self.exit and self.threshold > 0:
-            confidence = torch.softmax(early_output, dim=1)
-            if torch.max(confidence, dim=1) > self.threshold:
+            confidence = torch.softmax(early_output, dim=1).max()
+            if confidence > self.threshold:
                 setattr(self, modal, True)
             else:
                 setattr(self, modal, False)
