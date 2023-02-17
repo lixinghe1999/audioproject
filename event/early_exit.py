@@ -37,11 +37,11 @@ def profile(model, test_dataset):
             print('threshold', threshold)
             print('latency:', latency / len(test_loader))
             print('accuracy for each exit:', np.mean(acc, axis=0, where=acc >= 0))
-            print('accuracy for early-exits:', np.mean(acc[np.arange(len(acc)), ee - 1], axis=0))
+            # print('accuracy for early-exits:', np.mean(acc[np.arange(len(acc)), ee - 1], axis=0))
             print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
             data_frame['latency'] += [latency / len(test_loader)]
             data_frame['accuracy'] += [np.mean(acc, axis=0, where=acc >= 0)]
-            data_frame['accuracy_exit'] += [np.mean(acc[np.arange(len(acc)), ee - 1], axis=0)]
+            # data_frame['accuracy_exit'] += [np.mean(acc[np.arange(len(acc)), ee - 1], axis=0)]
             data_frame['exit_percentage'] += [np.bincount(ee-1) / ee.shape[0]]
     df = pd.DataFrame(data=data_frame)
     df.to_excel(writer, sheet_name=date.today().strftime("%d/%m/%Y %H:%M:%S"))
@@ -70,29 +70,29 @@ def train_step(model, input_data, optimizers, criteria, label):
     return loss.item()
 def test_step(model, input_data, label):
     audio, image = input_data
-    # Track history only in training
     early_exits = np.zeros((4))
     t_start = time.time()
     outputs = model(audio, image)
     l = time.time() - t_start
     output_tmp = []
     max_exits = min(len(outputs['audio']), len(outputs['image']))
+    length_exits = len(outputs['audio']) + len(outputs['image'])
     for i in range(max_exits):
         if i < len(outputs['audio']):
             output_audio = outputs['audio'][i]
         else:
-            output_audio = 0
+            output_audio = outputs['audio'][-1]
         if i < len(outputs['image']):
             output_image = outputs['image'][i]
         else:
-            output_image = 0
+            output_image = outputs['image'][-1]
         output_tmp.append((output_audio + output_image) / 2)
     outputs = output_tmp
     for i, output in enumerate(outputs):
         early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
-    for i in range(len(outputs), 4):
+    for i in range(len(outputs), len(early_exits)):
         early_exits[i] = -1
-    return early_exits, len(outputs), l
+    return early_exits, length_exits, l
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
     for param_group in state_dict['param_groups']:
