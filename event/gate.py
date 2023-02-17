@@ -7,9 +7,7 @@ from model.gate_model import AVnet_Gate
 import warnings
 from tqdm import tqdm
 from datetime import date
-
 warnings.filterwarnings("ignore")
-# remove annoying librosa warning
 def profile(model, test_dataset):
     ckpt_name = '9_0.5913482705752054.pth'
     model.load_state_dict(torch.load(ckpt_name))
@@ -87,9 +85,9 @@ def update_lr(optimizer, multiplier = .1):
         param_group['lr'] = param_group['lr'] * multiplier
     optimizer.load_state_dict(state_dict)
 def train(model, train_dataset, test_dataset):
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=8, batch_size=64, shuffle=False)
     optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
@@ -123,6 +121,6 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    # train(model, train_dataset, test_dataset)
-    profile(model, test_dataset)
+    train(model, train_dataset, test_dataset)
+    # profile(model, test_dataset)
 
