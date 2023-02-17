@@ -31,7 +31,7 @@ def profile(model, test_dataset):
             ee = np.array(ee)
             print('threshold', threshold)
             print('latency:', latency / len(test_loader))
-            print('accuracy for each exit:', np.mean(acc, axis=0, where= acc > 0))
+            print('accuracy for each exit:', np.mean(acc, axis=0, where=acc >= 0))
             print('accuracy for early-exits:', np.mean(acc[np.arange(len(acc)), ee - 1], axis=0))
             print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
 def train_step(model, input_data, optimizers, criteria, label):
@@ -43,7 +43,8 @@ def train_step(model, input_data, optimizers, criteria, label):
         optimizer.zero_grad()
         loss = 0
         for output_audio, output_image in zip(outputs['audio'], outputs['image']):
-            loss += criteria((output_audio + output_image)/2, label)
+            loss += criteria(output_audio, label)
+            loss += criteria(output_image, label)
         # for i, output in enumerate(outputs):
         #     loss += (i+1) * 0.25 * criteria(output, label)
         loss.backward()
@@ -127,6 +128,6 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    # train(model, train_dataset, test_dataset)
-    profile(model, test_dataset)
+    train(model, train_dataset, test_dataset)
+    # profile(model, test_dataset)
 
