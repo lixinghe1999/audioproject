@@ -74,7 +74,7 @@ class AVnet_Gate(nn.Module):
         else:
             for modal in ['audio_exit', 'image_exit']:
                 # random exit -> for training
-                if torch.rand() < random_thres:
+                if torch.rand(1) < random_thres:
                     setattr(self, modal, True)
                 else:
                     setattr(self, modal, False)
