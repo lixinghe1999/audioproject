@@ -56,29 +56,10 @@ def test_step(model, input_data, label):
     audio, image = input_data
     early_exits = np.zeros((4))
     t_start = time.time()
-    outputs = model(audio, image)
+    output = model(audio, image)
     l = time.time() - t_start
-
-    output_tmp = []
-    max_exits = min(len(outputs['audio']), len(outputs['image']))
-    length_exits = len(outputs['audio']) + len(outputs['image'])
-    for i in range(max_exits):
-        if i < len(outputs['audio']):
-            output_audio = outputs['audio'][i]
-        else:
-            output_audio = outputs['audio'][-1]
-        if i < len(outputs['image']):
-            output_image = outputs['image'][i]
-        else:
-            output_image = outputs['image'][-1]
-        output_tmp.append((output_audio + output_image) / 2)
-    outputs = output_tmp
-
-    for i, output in enumerate(outputs):
-        early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
-    for i in range(len(outputs), len(early_exits)):
-        early_exits[i] = -1
-    return early_exits, length_exits, l
+    acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
+    return acc, l
 def update_lr(optimizer, multiplier = .1):
     state_dict = optimizer.state_dict()
     for param_group in state_dict['param_groups']:
@@ -105,7 +86,7 @@ def train(model, train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, _, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                a, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
                 acc.append(a)
         acc = np.stack(acc)
         acc = np.mean(acc, axis=0, where=acc >= 0)
