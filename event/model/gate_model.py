@@ -73,11 +73,11 @@ class AVnet_Gate(nn.Module):
                     setattr(self, modal, False)
         else:
             random_number = torch.rand(1)
-            print(random_number)
             if random_number.item() < random_thres:
-                print('exit!')
                 setattr(self, modal, True)
     def forward(self, audio, image):
+        self.audio_exit = False
+        self.image_exit = False
         output_cache = {'audio': [], 'image': []}
         audio = self.preprocessing_audio(audio)
         audio = self.audio.conv1(audio)
@@ -101,9 +101,7 @@ class AVnet_Gate(nn.Module):
         self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
                               'image_exit', 0.25)
         print(len(output_cache['audio']) + len(output_cache['image']))
-        print(self.audio_exit, self.image_exit)
         if not self.audio_exit:
-            print('continue')
             audio = self.audio.layer2(audio)
             early_output = self.early_exit2a(audio)
             output_cache['audio'].append(early_output)
