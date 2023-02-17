@@ -61,23 +61,18 @@ class AVnet_Gate(nn.Module):
         spec = torch.log(spec + 1e-7)
         spec = torch.nn.functional.interpolate(spec.unsqueeze(1), size=self.spec_scale, mode='bilinear')
         return spec
-    def inference_update(self, early_output, random_thres=1.0):
+    def inference_update(self, early_output, modal, random_thres=1.0):
         if self.exit:
             # exit based on threshold
             work_load = self.gate(early_output)
             attributes = ['audio_exit', 'image_exit']
             for conf, attr in zip(work_load, attributes):
                 if conf > self.threshold:
-                    setattr(self, attr, True)
-                else:
-                    setattr(self, attr, False)
-        else:
-            for modal in ['audio_exit', 'image_exit']:
-                # random exit -> for training
-                if torch.rand(1) < random_thres:
                     setattr(self, modal, True)
                 else:
                     setattr(self, modal, False)
+        elif torch.rand(1) < random_thres:
+                setattr(self, modal, True)
     def forward(self, audio, image):
         output_cache = {'audio': [], 'image': []}
         audio = self.preprocessing_audio(audio)
@@ -94,31 +89,39 @@ class AVnet_Gate(nn.Module):
         audio = self.audio.layer1(audio)
         early_output = self.early_exit1a(audio)
         output_cache['audio'].append(early_output)
+        self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
+                              'audio_exit', 0.25)
         image = self.image.layer1(image)
         early_output = self.early_exit1b(image)
         output_cache['image'].append(early_output)
-        self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1), 0.25)
+        self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
+                              'image_exit', 0.25)
 
         if not self.audio_exit:
             audio = self.audio.layer2(audio)
             early_output = self.early_exit2a(audio)
             output_cache['audio'].append(early_output)
+            self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
+                                'audio_exit', 0.33)
         if not self.image_exit:
             image = self.image.layer2(image)
             early_output = self.early_exit2b(image)
             output_cache['image'].append(early_output)
-        self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1), 0.33)
+            self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
+                                  'image_exit', 0.33)
 
         if not self.audio_exit:
             audio = self.audio.layer3(audio)
             early_output = self.early_exit3a(audio)
             output_cache['audio'].append(early_output)
+            self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
+                                  'audio_exit', 0.5)
         if not self.image_exit:
             image = self.image.layer3(image)
             early_output = self.early_exit3b(image)
             output_cache['image'].append(early_output)
-        self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1), 0.5)
-
+            self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1),
+                                  'image_exit', 0.5)
         if not self.audio_exit:
             audio = self.audio.layer4(audio)
             early_output = self.early_exit4a(audio)
@@ -127,7 +130,6 @@ class AVnet_Gate(nn.Module):
             image = self.image.layer4(image)
             early_output = self.early_exit4b(image)
             output_cache['image'].append(early_output)
-        self.inference_update(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1), 0.5)
         output = self.projection(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1))
         return output
 if __name__ == "__main__":
