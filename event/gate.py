@@ -81,7 +81,7 @@ def train(model, train_dataset, test_dataset):
             audio, image, text, _ = batch
             train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
         model.eval()
-        acc = [[], [], [], [], [], [], [], []]
+        acc = [[0], [], [], [], [], [], [], []]
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
