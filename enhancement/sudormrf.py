@@ -213,7 +213,7 @@ class sudormrf(nn.Module):
     def __init__(self,
                  out_channels=128,
                  in_channels=512,
-                 num_blocks=15,
+                 num_blocks=8,
                  upsampling_depth=4,
                  enc_kernel_size=21,
                  enc_num_basis=512,
@@ -338,7 +338,7 @@ def model_size(model):
 
 if __name__ == "__main__":
     model = sudormrf()
-    torch.save(model.state_dict(), 'try.pth')
+    # torch.save(model.state_dict(), 'try.pth')
     # ckpt = torch.load('Improved_Sudormrf_U16_Bases512_WSJ02mix.pt')
     # model.load_state_dict(ckpt['model'])
     dummy_input = torch.rand(1, 1, 48000)

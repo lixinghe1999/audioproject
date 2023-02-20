@@ -48,7 +48,7 @@ def train_step(model, input_data, optimizers, criteria, label):
     optimizer = optimizers[0]
     output_cache, output = model(audio, image)
     optimizer.zero_grad()
-    loss = criteria(output, label)
+    loss = criteria(output, label) * (len(output_cache['audio']) + len(output_cache['image']))/8
     loss.backward()
     optimizer.step()
     return loss.item()
@@ -94,7 +94,7 @@ def train(model, train_dataset, test_dataset):
         print('accuracy for early-exits:', mean_acc)
         if mean_acc[-1] > best_acc:
             best_acc = mean_acc[-1]
-        torch.save(model.state_dict(), str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
+            torch.save(model.state_dict(), str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
