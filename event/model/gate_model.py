@@ -118,7 +118,7 @@ class AVnet_Gate(nn.Module):
         if self.exit:
             # exit based on gate network
             compress_level = torch.argmax(gate)
-            if level > self.compress_level:
+            if level > compress_level:
                 setattr(self, modal, True)
             else:
                 setattr(self, modal, False)
