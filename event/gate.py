@@ -45,10 +45,13 @@ def train_step(model, input_data, optimizers, criteria, label, mode='dynamic'):
     loss.backward()
     optimizer.step()
     return loss.item()
-def test_step(model, input_data, label):
+def test_step(model, input_data, label, mode='dynamic'):
     audio, image = input_data
     t_start = time.time()
-    output_cache, output = model(audio, image)
+    if mode == 'dynamic':
+        output_cache, output = model(audio, image)
+    else:
+        output_cache, output = model(audio, image, (-1, -1, -1))
     l = time.time() - t_start
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item(), len(output_cache['audio']) + len(output_cache['image']), l
@@ -65,6 +68,10 @@ def train(model, train_dataset, test_dataset):
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(30):
+        if epoch < 10:
+            mode = 'fixed'
+        else:
+            mode = 'dynamic'
         model.train()
         model.exit = False
         if epoch % 4 == 0 and epoch > 0:
@@ -72,18 +79,14 @@ def train(model, train_dataset, test_dataset):
                 update_lr(optimizer, multiplier=.4)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            if epoch < 10:
-                train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
-                           criteria=criteria, label=text.to(device), mode='fixed')
-            else:
-                train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
-                           criteria=criteria, label=text.to(device), mode='dynamic')
+            train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
+                           criteria=criteria, label=text.to(device), mode=mode)
         model.eval()
         acc = [[0], [], [], [], [], [], [], []]
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
                 acc[e-1] += [a]
         mean_acc = []
         for ac in acc:

@@ -275,16 +275,22 @@ class sudormrf(nn.Module):
         std = torch.std(input_wav, dim=(1, 2), keepdim=True)
         input_wav = (input_wav - mean) / (std + 1e-9)
         # Front end
+
         x = self.pad_to_appropriate_length(input_wav)
+        print(x.shape)
         x = self.encoder(x)
+        print(x.shape)
 
 
         # Split paths
         s = x.clone()
         # Separation module
         x = self.ln(x)
+        print(x.shape)
         x = self.bottleneck(x)
+        print(x.shape)
         x = self.sm(x)
+        print(x.shape)
         # film_vector = self.film_generator(dvec).view(
         #     -1, self.num_blocks, 2, self.out_channels)
         # for i, m in enumerate(self.sm):
@@ -294,11 +300,14 @@ class sudormrf(nn.Module):
         #     x = m(x)
 
         x = self.mask_net(x)
+        print(x.shape)
         x = x.view(x.shape[0], self.num_sources, self.enc_num_basis, -1)
         x = self.mask_nl_class(x)
+        print(x.shape)
         x = x * s.unsqueeze(1)
         # Back end
         estimated_waveforms = self.decoder(x.view(x.shape[0], -1, x.shape[-1]))
+        print(estimated_waveforms.shape)
         estimated_waveforms = self.remove_trailing_zeros(estimated_waveforms, input_wav)
         estimated_waveforms = (estimated_waveforms * std) + mean
         return estimated_waveforms
@@ -346,4 +355,4 @@ if __name__ == "__main__":
     estimated_sources = model(dummy_input)
     print(estimated_sources.shape)
     print(model_size(model))
-    print(model_speed(model, [dummy_input]))
+    # print(model_speed(model, [dummy_input]))
