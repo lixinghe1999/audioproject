@@ -80,30 +80,30 @@ class AVnet(nn.Module):
         audio = audio.unsqueeze(1)
         audio = audio.transpose(2, 3)
 
-        audio = self.audio.patch_embed(audio)
-        image = self.image.patch_embed(image)
+        audio = self.audio.v.patch_embed(audio)
+        image = self.image.v.patch_embed(image)
 
-        cls_tokens = self.audio.cls_token.expand(B, -1, -1)
-        dist_token = self.audio.dist_token.expand(B, -1, -1)
+        cls_tokens = self.audio.v.cls_token.expand(B, -1, -1)
+        dist_token = self.audio.v.dist_token.expand(B, -1, -1)
         audio = torch.cat((cls_tokens, dist_token, audio), dim=1)
-        audio = audio + self.audio.pos_embed
-        audio = self.audio.pos_drop(audio)
-        for blk in self.audio.blocks:
+        audio = audio + self.audio.v.pos_embed
+        audio = self.audio.v.pos_drop(audio)
+        for blk in self.audio.v.blocks:
             audio = blk(audio)
-        audio = self.audio.norm(audio)
+        audio = self.audio.v.norm(audio)
         audio = (audio[:, 0] + audio[:, 1]) / 2
-        audio = self.mlp_head(audio)
+        audio = self.audio.mlp_head(audio)
 
-        cls_tokens = self.image.cls_token.expand(B, -1, -1)
-        dist_token = self.image.dist_token.expand(B, -1, -1)
+        cls_tokens = self.image.v.cls_token.expand(B, -1, -1)
+        dist_token = self.image.v.dist_token.expand(B, -1, -1)
         image = torch.cat((cls_tokens, dist_token, image), dim=1)
-        image = image + self.image.pos_embed
-        image = self.image.pos_drop(image)
-        for blk in self.image.blocks:
-            x = blk(image)
-        image = self.v.norm(image)
+        image = image + self.image.v.pos_embed
+        image = self.image.v.pos_drop(image)
+        for blk in self.image.v.blocks:
+            image = blk(image)
+        image = self.image.v.norm(image)
         image = (image[:, 0] + image[:, 1]) / 2
-        image = self.mlp_head(image)
+        image = self.image.mlp_head(image)
 
         # audio = self.audio.conv1(audio)
         # audio = self.audio.bn1(audio)
