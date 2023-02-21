@@ -50,7 +50,7 @@ class AVnet(nn.Module):
         :param num_cls: number of class
         '''
         super(AVnet, self).__init__()
-        self.audio = ASTModel(input_tdim=1024, verbose=False)
+        self.audio = ASTModel(input_tdim=1024, audioset_pretrain=True, verbose=False)
         self.image = VITModel()
         # self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
         #
