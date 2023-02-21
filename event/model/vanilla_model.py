@@ -45,7 +45,7 @@ class MMTM(nn.Module):
 class AVnet(nn.Module):
     def __init__(self):
         super(AVnet, self).__init__()
-        self.audio = ASTModel(input_tdim=1024, audioset_pretrain=False, verbose=True, model_size='base224')
+        self.audio = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224')
         self.image = VITModel(model_size='base224')
         # self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
         #
