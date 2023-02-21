@@ -22,10 +22,8 @@ def profile(model, test_dataset):
 
             gate_label = model.label(output_cache, text)
             gate_label = torch.argmax(gate_label, dim=-1, keepdim=True).cpu().numpy()
-            print(np.argmax(output.cpu().numpy(), axis=-1), text, error)
             if torch.argmax(output, dim=-1).cpu() != text:
                 error += 1
-            print(error)
             compress_level.append(gate_label)
     compress_level = np.concatenate(compress_level, axis=-1)
     compress_diff = np.mean(np.abs(compress_level[0] - compress_level[1]))
