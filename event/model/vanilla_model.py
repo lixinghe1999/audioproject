@@ -43,14 +43,9 @@ class MMTM(nn.Module):
 
     return visual * vis_out, skeleton * sk_out
 class AVnet(nn.Module):
-    def __init__(self, num_cls=309):
-        '''
-        :param train: True - get early exit for each block, False - don't get
-        :param layers: resnet18: [2, 2, 2, 2] resnet34: [3, 4, 6, 3]
-        :param num_cls: number of class
-        '''
+    def __init__(self):
         super(AVnet, self).__init__()
-        self.audio = ASTModel(input_tdim=1024, audioset_pretrain=True, verbose=False)
+        self.audio = ASTModel(input_tdim=1024, audioset_pretrain=True, verbose=True)
         self.image = VITModel()
         # self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
         #
