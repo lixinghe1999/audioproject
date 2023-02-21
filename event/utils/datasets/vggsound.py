@@ -12,8 +12,8 @@ import torchaudio as ta
 import multiprocessing as mp
 transform_audio = tv.transforms.Compose([])
 transform_image = tv.transforms.Compose([
-            tv.transforms.Resize(256, interpolation=tv.transforms.InterpolationMode.BICUBIC),
-            tv.transforms.CenterCrop(224),
+            tv.transforms.Resize(400, interpolation=tv.transforms.InterpolationMode.BICUBIC),
+            tv.transforms.CenterCrop(384),
             tv.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
         ])
 class VGGSound(td.Dataset):

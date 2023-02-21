@@ -80,7 +80,6 @@ class AVnet(nn.Module):
 
 
     def forward(self, audio, image):
-        audio = self.preprocessing_audio(audio)
         audio = self.audio.conv1(audio)
         audio = self.audio.bn1(audio)
         audio = self.audio.relu(audio)
