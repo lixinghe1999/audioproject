@@ -21,15 +21,15 @@ def profile(model, test_dataset):
             output_cache, output = model(audio.to(device), image.to(device), (-1, -1, -1))
 
             gate_label = model.label(output_cache, text)
-            gate_label = torch.argmax(gate_label, dim=-1, keepdim=True).to(torch.float)
-            if torch.argmax(output, dim=-1).cpu() != text:
+            gate_label = torch.argmax(gate_label, dim=-1, keepdim=True).cpu().numpy()
+            if np.argmax(output, axis=-1) != text:
                 error += 1
             compress_level.append(gate_label)
             break
-    compress_level = torch.cat(compress_level, dim=-1)
-    compress_diff = torch.mean(torch.abs(compress_level[0] - compress_level[1]))
-    compress_audio = torch.bincount(compress_level[0])
-    compress_image = torch.bincount(compress_level[1])
+    compress_level = np.cat(compress_level, axis=-1)
+    compress_diff = np.mean(np.abs(compress_level[0] - compress_level[1]))
+    compress_audio = np.bincount(compress_level[0])
+    compress_image = np.bincount(compress_level[1])
     print("compression level difference (average):", compress_diff)
     print("compression level distribution:", compress_audio, compress_image)
     print("overall accuracy:", 1 - error / len(test_loader))
