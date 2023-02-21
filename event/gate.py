@@ -9,39 +9,17 @@ from tqdm import tqdm
 from datetime import date
 warnings.filterwarnings("ignore")
 def profile(model, test_dataset):
-    ckpt_name = '9_0.5913482705752054.pth'
+    ckpt_name = '28_0.5.pth'
     model.load_state_dict(torch.load(ckpt_name))
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
-    model.exit = True
-    thresholds = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
-    writer = pd.ExcelWriter('result_recording.xlsx', engine='xlsxwriter')
-    data_frame = {'threshold': thresholds, 'latency': [], 'accuracy': [], 'accuracy_exit': [], 'exit_percentage': []}
     with torch.no_grad():
-        for threshold in thresholds:
-            acc = []
-            ee = []
-            latency = 0
-            model.threshold = threshold
-            for batch in tqdm(test_loader):
-                audio, image, text, _ = batch
-                a, e, l = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
-                acc.append(a)
-                ee.append(e)
-                latency += l
-            acc = np.stack(acc)
-            ee = np.array(ee)
-            print('threshold', threshold)
-            print('latency:', latency / len(test_loader))
-            print('accuracy for each exit:', np.mean(acc, axis=0, where=acc >= 0))
-            # print('accuracy for early-exits:', np.mean(acc[np.arange(len(acc)), ee - 1], axis=0))
-            print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
-            data_frame['latency'] += [latency / len(test_loader)]
-            data_frame['accuracy'] += [np.mean(acc, axis=0, where=acc >= 0)]
-            # data_frame['accuracy_exit'] += [np.mean(acc[np.arange(len(acc)), ee - 1], axis=0)]
-            data_frame['exit_percentage'] += [np.bincount(ee-1) / ee.shape[0]]
-    df = pd.DataFrame(data=data_frame)
-    df.to_excel(writer, sheet_name=date.today().strftime("%d/%m/%Y %H:%M:%S"))
+        for batch in tqdm(test_loader):
+            audio, image, text, _ = batch
+            output_cache, output = model(audio, image, (-1, -1, -1))
+            gate_label = model.label_rule(output_cache, text)
+            print(gate_label)
+            break
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # cumulative loss
@@ -92,8 +70,8 @@ def train(model, train_dataset, test_dataset):
             mean_acc.append(np.mean(ac))
         print('epoch', epoch)
         print('accuracy for early-exits:', mean_acc)
-        if mean_acc[-1] > best_acc:
-            best_acc = mean_acc[-1]
+        if np.mean(mean_acc) > best_acc:
+            best_acc = np.mean(mean_acc)
             torch.save(model.state_dict(), str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -103,6 +81,6 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    train(model, train_dataset, test_dataset)
-    # profile(model, test_dataset)
+    # train(model, train_dataset, test_dataset)
+    profile(model, test_dataset)
 

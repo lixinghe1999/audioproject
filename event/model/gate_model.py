@@ -127,7 +127,7 @@ class AVnet_Gate(nn.Module):
             random_number = torch.rand(1)
             if random_number.item() < random_thres:
                 setattr(self, modal, True)
-    def label_rule(self, output_cache, label):
+    def label(self, output_cache, label):
         # label rule -> according the task
         # classification:
         # 1. starting from no compression: i & j
@@ -150,7 +150,7 @@ class AVnet_Gate(nn.Module):
         return gate_label
     def gate_train(self, audio, image, label):
         output_cache, output = self.forward(audio, image, random_threshold=(-1, -1, -1)) # get all the possibilities
-        gate_label = self.label_rule(output_cache, label) # [batch, 4 * 2]
+        gate_label = self.label(output_cache, label) # [batch, 4 * 2]
         output, gate = self.gate(output_cache) # [batch, 4 * 2]
         loss_c = nn.functional.cross_entropy(gate, gate_label) # compression-level loss
         output = self.projection(output, dim=1)
