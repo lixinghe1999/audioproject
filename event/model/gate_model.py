@@ -145,7 +145,7 @@ class AVnet_Gate(nn.Module):
                 sum2 = helper(i, j-1)
                 current_min = min(sum1, sum2, i+j)
                 if current_min < self.global_min:
-                    global_min = current_min
+                    self.global_min = current_min
                     self.global_i = i
                     self.global_j = j
                 return current_min
