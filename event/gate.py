@@ -22,8 +22,10 @@ def profile(model, test_dataset):
 
             gate_label = model.label(output_cache, text)
             gate_label = torch.argmax(gate_label, dim=-1, keepdim=True).cpu().numpy()
+            print(output, text, error)
             if np.argmax(output.cpu().numpy(), axis=-1) != text:
                 error += 1
+            print(error)
             compress_level.append(gate_label)
     compress_level = np.concatenate(compress_level, axis=-1)
     compress_diff = np.mean(np.abs(compress_level[0] - compress_level[1]))
@@ -32,13 +34,16 @@ def profile(model, test_dataset):
     print("compression level difference (average):", compress_diff)
     print("compression level distribution:", compress_audio, compress_image)
     print("overall accuracy:", 1 - error / len(test_loader))
-def train_step(model, input_data, optimizers, criteria, label):
+def train_step(model, input_data, optimizers, criteria, label, mode='dynamic'):
     audio, image = input_data
     # cumulative loss
     optimizer = optimizers[0]
-    output_cache, output = model(audio, image)
+    if mode == 'dynamic':
+        output_cache, output = model(audio, image)
+    else:
+        output_cache, output = model(audio, image, (-1, -1, -1))
     optimizer.zero_grad()
-    loss = criteria(output, label) * (len(output_cache['audio']) + len(output_cache['image']))/8
+    loss = criteria(output, label)
     loss.backward()
     optimizer.step()
     return loss.item()
