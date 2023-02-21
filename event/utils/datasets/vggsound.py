@@ -1,6 +1,5 @@
 import os
 import time
-
 import librosa
 import numpy as np
 import pandas as pd
@@ -10,7 +9,6 @@ import torch.utils.data as td
 from tqdm import tqdm
 import torchvision as tv
 import torchaudio as ta
-import subprocess
 import multiprocessing as mp
 transform_audio = tv.transforms.Compose([])
 transform_image = tv.transforms.Compose([
@@ -43,7 +41,20 @@ class VGGSound(td.Dataset):
                 self.label_to_class_idx[row['category']] = count
                 count += 1
         self.length = length
-
+    def preprocessing_audio(self, audio):
+        fbank = ta.compliance.kaldi.fbank(audio, htk_compat=True, sample_frequency=16000, use_energy=False,
+                                                  window_type='hanning', num_mel_bins=128, dither=0.0,
+                                                  frame_shift=10)
+        target_length = 1024
+        n_frames = fbank.shape[0]
+        p = target_length - n_frames
+        # cut and pad
+        if p > 0:
+            m = torch.nn.ZeroPad2d((0, 0, 0, p))
+            fbank = m(fbank)
+        elif p < 0:
+            fbank = fbank[0:target_length, :]
+        return fbank
     def __getitem__(self, index: int):
         sample = self.data[index]
         filename_audio: str = sample['audio']
@@ -55,6 +66,7 @@ class VGGSound(td.Dataset):
         target = self.label_to_class_idx[target]
         if self.transform_image is not None:
             image = self.transform_image(image)
+        audio = self.preprocessing_audio(audio)
         return audio, image, target, sample['name']
 
     def __len__(self) -> int:

@@ -77,21 +77,8 @@ class AVnet(nn.Module):
             {'params': self.mmtm3.parameters()},
         ]
         return parameters
-    def preprocessing_audio(self, audio):
-        fbank = torchaudio.compliance.kaldi.fbank(audio, htk_compat=True, sample_frequency=16000, use_energy=False,
-                                                  window_type='hanning', num_mel_bins=128, dither=0.0,
-                                                  frame_shift=10)
-        target_length = 1024
-        n_frames = fbank.shape[0]
-        p = target_length - n_frames
-        # cut and pad
-        if p > 0:
-            m = torch.nn.ZeroPad2d((0, 0, 0, p))
-            fbank = m(fbank)
-        elif p < 0:
-            fbank = fbank[0:target_length, :]
-        fbank = (fbank - self.norm_mean) / (self.norm_std * 2)
-        return fbank
+
+
     def forward(self, audio, image):
         audio = self.preprocessing_audio(audio)
         audio = self.audio.conv1(audio)
