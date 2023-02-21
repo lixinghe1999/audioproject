@@ -61,6 +61,8 @@ def update_lr(optimizer, multiplier = .1):
         param_group['lr'] = param_group['lr'] * multiplier
     optimizer.load_state_dict(state_dict)
 def train(model, train_dataset, test_dataset):
+    ckpt_name = '28_0.5.pth'
+    model.load_state_dict(torch.load(ckpt_name))
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=8, shuffle=False)
@@ -78,10 +80,10 @@ def train(model, train_dataset, test_dataset):
         if epoch % 4 == 0 and epoch > 0:
             for optimizer in optimizers:
                 update_lr(optimizer, multiplier=.4)
-        for idx, batch in enumerate(tqdm(train_loader)):
-            audio, image, text, _ = batch
-            train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
-                           criteria=criteria, label=text.to(device), mode=mode)
+        # for idx, batch in enumerate(tqdm(train_loader)):
+        #     audio, image, text, _ = batch
+        #     train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
+        #                    criteria=criteria, label=text.to(device), mode=mode)
         model.eval()
         acc = [[0], [], [], [], [], [], [], []]
         with torch.no_grad():
