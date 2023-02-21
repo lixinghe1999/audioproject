@@ -177,9 +177,12 @@ class ASTModel(nn.Module):
         x = self.mlp_head(x)
         return x
 class VITModel(nn.Module):
-    def __init__(self, label_dim=309):
+    def __init__(self, label_dim=309, model_size='base384'):
         super(VITModel, self).__init__()
-        self.v = timm.create_model('vit_deit_base_distilled_patch16_384', pretrained=True)
+        if model_size == 'base224':
+            self.v = timm.create_model('vit_deit_base_distilled_patch16_224', pretrained=True)
+        elif model_size == 'base384':
+            self.v = timm.create_model('vit_deit_base_distilled_patch16_384', pretrained=True)
         self.original_embedding_dim = self.v.pos_embed.shape[2]
         self.mlp_head = nn.Sequential(nn.LayerNorm(self.original_embedding_dim),
                                       nn.Linear(self.original_embedding_dim, label_dim))
