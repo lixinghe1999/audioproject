@@ -22,7 +22,7 @@ def profile(model, test_dataset):
 
             gate_label = model.label(output_cache, text)
             gate_label = torch.argmax(gate_label, dim=-1, keepdim=True).cpu().numpy()
-            if np.argmax(output, axis=-1) != text:
+            if np.argmax(output.cpu().numpy(), axis=-1) != text:
                 error += 1
             compress_level.append(gate_label)
             break
