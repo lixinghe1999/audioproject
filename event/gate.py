@@ -20,7 +20,9 @@ def profile(model, test_dataset):
             audio, image, text, _ = batch
             output_cache, output = model(audio.to(device), image.to(device), (-1, -1, -1))
 
-            gate_label = torch.argmax(model.label(output_cache, text), dim=-1, keepdim=True)
+            gate_label = model.label(output_cache, text)
+            print(gate_label)
+            gate_label = torch.argmax(gate_label, dim=-1, keepdim=True)
             print(gate_label)
             if torch.argmax(output, dim=-1).cpu() != text:
                 error += 1
