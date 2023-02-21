@@ -135,7 +135,7 @@ class AVnet_Gate(nn.Module):
         # 3. if not, output the compression level
         gate_label = torch.zeros(2, 4)
         i, j = len(output_cache['audio'])-1, len(output_cache['image'])-1
-        while(1):
+        while i>=0 & j>=0:
             predict_label = self.projection(torch.cat([output_cache['audio'][i], output_cache['image'][j]], dim=-1))
             if torch.argmax(predict_label, dim=-1).cpu() == label:
                 random_number = torch.rand(1)
