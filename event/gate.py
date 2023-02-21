@@ -26,7 +26,7 @@ def profile(model, test_dataset):
                 error += 1
             compress_level.append(gate_label)
             break
-    compress_level = np.cat(compress_level, axis=-1)
+    compress_level = np.concatenate(compress_level, axis=-1)
     compress_diff = np.mean(np.abs(compress_level[0] - compress_level[1]))
     compress_audio = np.bincount(compress_level[0])
     compress_image = np.bincount(compress_level[1])
