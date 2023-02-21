@@ -68,10 +68,11 @@ def train(model, train_dataset, test_dataset):
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(30):
-        if epoch < 10:
-            mode = 'fixed'
-        else:
-            mode = 'dynamic'
+        # if epoch < 10:
+        #     mode = 'fixed'
+        # else:
+        #     mode = 'dynamic'
+        mode = 'dynamic'
         model.train()
         model.exit = False
         if epoch % 4 == 0 and epoch > 0:

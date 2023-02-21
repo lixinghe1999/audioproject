@@ -152,18 +152,6 @@ class AVnet_Gate(nn.Module):
         gate_label = torch.zeros(2, 4, dtype=torch.int8)
         gate_label[0, self.global_i] = 1
         gate_label[1, self.global_j] = 1
-        # while i >= 0 and j >= 0:
-        #     predict_label = self.projection(torch.cat([output_cache['audio'][i], output_cache['image'][j]], dim=-1))
-        #     if torch.argmax(predict_label, dim=-1).cpu() == label:
-        #         random_number = torch.rand(1)
-        #         if random_number.item() < 0.5:
-        #             i -= 1
-        #         else:
-        #             j -= 1
-        #     else:
-        #         gate_label[0, i] = 1
-        #         gate_label[1, j] = 1
-        #         break
         return gate_label
     def gate_train(self, audio, image, label):
         output_cache, output = self.forward(audio, image, random_threshold=(-1, -1, -1)) # get all the possibilities
@@ -187,11 +175,9 @@ class AVnet_Gate(nn.Module):
         output_cache = {'audio': [], 'image': []}
 
         audio = self.audio.layer1(audio)
-        early_output = self.early_exit1a(audio)
-        output_cache['audio'].append(early_output)
+        output_cache['audio'].append(self.early_exit1a(audio))
         image = self.image.layer1(image)
-        early_output = self.early_exit1b(image)
-        output_cache['image'].append(early_output)
+        output_cache['image'].append(self.early_exit1b(image))
         if self.gate is None:
             self.inference_update('audio_exit', random_thres=random_threshold[0])
             self.inference_update('image_exit', random_thres=random_threshold[0])
@@ -202,12 +188,10 @@ class AVnet_Gate(nn.Module):
 
         if not self.audio_exit:
             audio = self.audio.layer2(audio)
-            early_output = self.early_exit2a(audio)
-            output_cache['audio'].append(early_output)
+            output_cache['audio'].append(self.early_exit2a(audio))
         if not self.image_exit:
             image = self.image.layer2(image)
-            early_output = self.early_exit2b(image)
-            output_cache['image'].append(early_output)
+            output_cache['image'].append(self.early_exit2b(image))
         if self.gate is None:
             self.inference_update('audio_exit', random_thres=random_threshold[1])
             self.inference_update('image_exit', random_thres=random_threshold[1])
@@ -218,12 +202,10 @@ class AVnet_Gate(nn.Module):
 
         if not self.audio_exit:
             audio = self.audio.layer3(audio)
-            early_output = self.early_exit3a(audio)
-            output_cache['audio'].append(early_output)
+            output_cache['audio'].append(self.early_exit3a(audio))
         if not self.image_exit:
             image = self.image.layer3(image)
-            early_output = self.early_exit3b(image)
-            output_cache['image'].append(early_output)
+            output_cache['image'].append(self.early_exit3b(image))
         if self.gate is None:
             self.inference_update('audio_exit', random_thres=random_threshold[2])
             self.inference_update('image_exit', random_thres=random_threshold[2])
@@ -234,12 +216,10 @@ class AVnet_Gate(nn.Module):
 
         if not self.audio_exit:
             audio = self.audio.layer4(audio)
-            early_output = self.early_exit4a(audio)
-            output_cache['audio'].append(early_output)
+            output_cache['audio'].append(self.early_exit4a(audio))
         if not self.image_exit:
             image = self.image.layer4(image)
-            early_output = self.early_exit4b(image)
-            output_cache['image'].append(early_output)
+            output_cache['image'].append(self.early_exit4b(image))
 
         output = self.projection(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1))
         return output_cache, output
