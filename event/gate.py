@@ -67,12 +67,17 @@ def train(model, train_dataset, test_dataset):
     for epoch in range(30):
         model.train()
         model.exit = False
-        if epoch % 5 == 0 and epoch > 0:
+        if epoch % 4 == 0 and epoch > 0:
             for optimizer in optimizers:
                 update_lr(optimizer, multiplier=.4)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
+            if epoch < 10:
+                train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
+                           criteria=criteria, label=text.to(device), mode='fixed')
+            else:
+                train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
+                           criteria=criteria, label=text.to(device), mode='dynamic')
         model.eval()
         acc = [[0], [], [], [], [], [], [], []]
         with torch.no_grad():
@@ -96,6 +101,6 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    # train(model, train_dataset, test_dataset)
-    profile(model, test_dataset)
+    train(model, train_dataset, test_dataset)
+    # profile(model, test_dataset)
 
