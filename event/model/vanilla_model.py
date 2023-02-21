@@ -80,34 +80,64 @@ class AVnet(nn.Module):
 
 
     def forward(self, audio, image):
-        audio = self.audio.conv1(audio)
-        audio = self.audio.bn1(audio)
-        audio = self.audio.relu(audio)
-        audio = self.audio.maxpool(audio)
+        print(audio.shape, image.shape)
+        B = audio.shape[0]
+        audio = audio.unsqueeze(1)
+        audio = audio.transpose(2, 3)
 
-        image = self.image.stem(image)
+        audio = self.audio.patch_embed(audio)
+        image = self.image.patch_embed(image)
 
-        audio = self.audio.layer1(audio)
-        image = self.image.layer1(image)
+        cls_tokens = self.audio.cls_token.expand(B, -1, -1)
+        dist_token = self.audio.dist_token.expand(B, -1, -1)
+        audio = torch.cat((cls_tokens, dist_token, audio), dim=1)
+        audio = audio + self.audio.pos_embed
+        audio = self.audio.pos_drop(audio)
+        for blk in self.audio.blocks:
+            audio = blk(audio)
+        audio = self.audio.norm(audio)
+        audio = (audio[:, 0] + audio[:, 1]) / 2
+        audio = self.mlp_head(audio)
 
-        audio = self.audio.layer2(audio)
-        image = self.image.layer2(image)
-        audio, image = self.mmtm1(audio, image)
+        cls_tokens = self.image.cls_token.expand(B, -1, -1)
+        dist_token = self.image.dist_token.expand(B, -1, -1)
+        image = torch.cat((cls_tokens, dist_token, image), dim=1)
+        image = image + self.image.pos_embed
+        image = self.image.pos_drop(image)
+        for blk in self.image.blocks:
+            x = blk(image)
+        image = self.v.norm(image)
+        image = (image[:, 0] + image[:, 1]) / 2
+        image = self.mlp_head(image)
 
-        audio = self.audio.layer3(audio)
-        image = self.image.layer3(image)
-        audio, image = self.mmtm2(audio, image)
-
-        audio = self.audio.layer4(audio)
-        image = self.image.layer4(image)
-        audio, image = self.mmtm3(audio, image)
-
-        audio = self.audio.avgpool(audio)
-        audio = torch.flatten(audio, 1)
-
-        image = self.image.attnpool(image)
-
-        output = (self.audio.fc(audio) + self.image.fc(image)) / 2
+        # audio = self.audio.conv1(audio)
+        # audio = self.audio.bn1(audio)
+        # audio = self.audio.relu(audio)
+        # audio = self.audio.maxpool(audio)
+        #
+        # image = self.image.stem(image)
+        #
+        # audio = self.audio.layer1(audio)
+        # image = self.image.layer1(image)
+        #
+        # audio = self.audio.layer2(audio)
+        # image = self.image.layer2(image)
+        # audio, image = self.mmtm1(audio, image)
+        #
+        # audio = self.audio.layer3(audio)
+        # image = self.image.layer3(image)
+        # audio, image = self.mmtm2(audio, image)
+        #
+        # audio = self.audio.layer4(audio)
+        # image = self.image.layer4(image)
+        # audio, image = self.mmtm3(audio, image)
+        #
+        # audio = self.audio.avgpool(audio)
+        # audio = torch.flatten(audio, 1)
+        #
+        # image = self.image.attnpool(image)
+        #
+        # output = (self.audio.fc(audio) + self.image.fc(image)) / 2
         return output
 class SingleNet(nn.Module):
     def __init__(self, modality='A', num_cls=309):

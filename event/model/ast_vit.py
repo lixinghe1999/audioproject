@@ -163,20 +163,16 @@ class ASTModel(nn.Module):
         x = x.transpose(2, 3)
 
         B = x.shape[0]
-        print(x.shape)
         x = self.v.patch_embed(x)
-        print(x.shape)
         cls_tokens = self.v.cls_token.expand(B, -1, -1)
         dist_token = self.v.dist_token.expand(B, -1, -1)
         x = torch.cat((cls_tokens, dist_token, x), dim=1)
-        print(x.shape)
         x = x + self.v.pos_embed
         x = self.v.pos_drop(x)
         for blk in self.v.blocks:
             x = blk(x)
         x = self.v.norm(x)
         x = (x[:, 0] + x[:, 1]) / 2
-        print(x.shape)
 
         x = self.mlp_head(x)
         return x
