@@ -7,41 +7,6 @@ import torchaudio
 from model.modified_resnet import ModifiedResNet
 from model.resnet34 import ResNet, BasicBlock
 from model.ast_vit import ASTModel, VITModel
-class MMTM(nn.Module):
-  def __init__(self, dim_1, dim_2, ratio):
-    super(MMTM, self).__init__()
-    dim = dim_1 + dim_2
-    dim_out = int(2*dim/ratio)
-    self.fc_squeeze = nn.Linear(dim, dim_out)
-
-    self.fc_visual = nn.Linear(dim_out, dim_1)
-    self.fc_skeleton = nn.Linear(dim_out, dim_2)
-    self.relu = nn.ReLU()
-    self.sigmoid = nn.Sigmoid()
-
-  def forward(self, visual, skeleton):
-    squeeze_array = []
-    for tensor in [visual, skeleton]:
-      tview = tensor.view(tensor.shape[:2] + (-1,))
-      squeeze_array.append(torch.mean(tview, dim=-1))
-    squeeze = torch.cat(squeeze_array, 1)
-
-    excitation = self.fc_squeeze(squeeze)
-    excitation = self.relu(excitation)
-
-    vis_out = self.fc_visual(excitation)
-    sk_out = self.fc_skeleton(excitation)
-
-    vis_out = self.sigmoid(vis_out)
-    sk_out = self.sigmoid(sk_out)
-
-    dim_diff = len(visual.shape) - len(vis_out.shape)
-    vis_out = vis_out.view(vis_out.shape + (1,) * dim_diff)
-
-    dim_diff = len(skeleton.shape) - len(sk_out.shape)
-    sk_out = sk_out.view(sk_out.shape + (1,) * dim_diff)
-
-    return visual * vis_out, skeleton * sk_out
 class AVnet(nn.Module):
     def __init__(self):
         super(AVnet, self).__init__()
@@ -72,10 +37,7 @@ class AVnet(nn.Module):
             {'params': self.mmtm3.parameters()},
         ]
         return parameters
-
-
     def forward(self, audio, image):
-        print(audio.shape, image.shape)
         B = audio.shape[0]
         audio = audio.unsqueeze(1)
         audio = audio.transpose(2, 3)
