@@ -3,10 +3,10 @@ We implement multi-modal dynamic network here
 '''
 import torch.nn as nn
 import torch
-from torch import Tensor
-from typing import Type
+import torchaudio
 from model.modified_resnet import ModifiedResNet
 from model.resnet34 import ResNet, BasicBlock
+from model.ast_vit import ASTModel, VITModel
 class MMTM(nn.Module):
   def __init__(self, dim_1, dim_2, ratio):
     super(MMTM, self).__init__()
@@ -50,17 +50,13 @@ class AVnet(nn.Module):
         :param num_cls: number of class
         '''
         super(AVnet, self).__init__()
-        self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
-        self.n_fft = 512
-        self.hop_length = 512
-        self.win_length = 512
-        self.spec_scale = 224
-        self.normalized = True
-        self.onesided = True
-
-        self.image = ModifiedResNet()
-        self.image.load_state_dict(torch.load('resnet50.pth'))
-        self.image.fc = torch.nn.Linear(1024, num_cls)
+        self.audio = ASTModel(input_tdim=1024, verbose=False)
+        self.image = VITModel()
+        # self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
+        #
+        # self.image = ModifiedResNet()
+        # self.image.load_state_dict(torch.load('resnet50.pth'))
+        # self.image.fc = torch.nn.Linear(1024, num_cls)
 
         self.mmtm1 = MMTM(128, 512, 4)
         self.mmtm2 = MMTM(256, 1024, 4)
@@ -82,16 +78,20 @@ class AVnet(nn.Module):
         ]
         return parameters
     def preprocessing_audio(self, audio):
-        spec = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
-                          win_length=self.win_length, window=torch.hann_window(self.win_length, device=audio.device),
-                          pad_mode='reflect', normalized=self.normalized, onesided=True, return_complex=True)
-        spec = torch.abs(spec)
-        spec = torch.log(spec + 1e-7)
-        mean = torch.mean(spec)
-        std = torch.std(spec)
-        spec = (spec - mean) / (std + 1e-9)
-        spec = torch.nn.functional.interpolate(spec.unsqueeze(1), size=self.spec_scale, mode='bilinear')
-        return spec
+        fbank = torchaudio.compliance.kaldi.fbank(audio, htk_compat=True, sample_frequency=16000, use_energy=False,
+                                                  window_type='hanning', num_mel_bins=128, dither=0.0,
+                                                  frame_shift=10)
+        target_length = 1024
+        n_frames = fbank.shape[0]
+        p = target_length - n_frames
+        # cut and pad
+        if p > 0:
+            m = torch.nn.ZeroPad2d((0, 0, 0, p))
+            fbank = m(fbank)
+        elif p < 0:
+            fbank = fbank[0:target_length, :]
+        fbank = (fbank - self.norm_mean) / (self.norm_std * 2)
+        return fbank
     def forward(self, audio, image):
         audio = self.preprocessing_audio(audio)
         audio = self.audio.conv1(audio)
