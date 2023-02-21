@@ -133,19 +133,31 @@ class AVnet_Gate(nn.Module):
         # 1. starting from no compression: i & j
         # 2. if correct, randomly compress one modality
         # 3. if not, output the previous compression level
+
         def helper(i, j):
+            global global_min, global_i, global_j
+            if i < 0 or j < 0:
+                return 1000
             predict_label = self.projection(torch.cat([output_cache['audio'][i], output_cache['image'][j]], dim=-1))
             if torch.argmax(predict_label, dim=-1).cpu() == label:
-                a1, b1 = helper(i-1, j)
-                a2, b2 = helper(i, j-1)
-                return min(a1, a2, i), min(b1, b2, j)
+                sum1 = helper(i-1, j)
+                sum2 = helper(i, j-1)
+                current_min = min(sum1, sum2, i+j)
+                if current_min < global_min:
+                    global_min = current_min
+                    global_i = i
+                    global_j = j
+                return current_min
             else:
-                return 1000, 1000
+                return 1000
+
         gate_label = torch.zeros(2, 4, dtype=torch.int8)
         i, j = len(output_cache['audio'])-1, len(output_cache['image'])-1
-        i, j = helper(i, j)
-        gate_label[0, i] = 1
-        gate_label[1, j] = 1
+        global_min = 1000
+        global_i, global_j = i, j
+        helper(i, j)
+        gate_label[0, global_i] = 1
+        gate_label[1, global_j] = 1
         # while i >= 0 and j >= 0:
         #     predict_label = self.projection(torch.cat([output_cache['audio'][i], output_cache['image'][j]], dim=-1))
         #     if torch.argmax(predict_label, dim=-1).cpu() == label:
