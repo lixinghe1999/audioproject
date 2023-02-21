@@ -25,6 +25,7 @@ def profile(model, test_dataset):
             if torch.argmax(output, dim=-1).cpu() != text:
                 error += 1
             compress_level.append(gate_label)
+            print(gate_label)
             break
     compress_level = torch.cat(compress_level, dim=-1)
     compress_diff = torch.mean(torch.abs(compress_level[0] - compress_level[1]))
