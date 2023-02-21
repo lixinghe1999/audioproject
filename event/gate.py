@@ -14,14 +14,21 @@ def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
     compress_level = []
+    error = 0
     with torch.no_grad():
         for batch in tqdm(test_loader):
             audio, image, text, _ = batch
             output_cache, output = model(audio.to(device), image.to(device), (-1, -1, -1))
-            gate_label = model.label(output_cache, text)
-            compress_level.append(torch.argmax(gate_label, dim=-1, keepdim=True))
-    compress_level = torch.mean(torch.cat(compress_level, dim=-1), dim=-1)
-    print(compress_level)
+
+            gate_label = torch.argmax(model.label(output_cache, text), dim=-1, keepdim=True)
+            if torch.argmax(output, dim=-1).cpu() != text:
+                error += 1
+            compress_level.append(gate_label)
+    compress_level = torch.cat(compress_level, dim=-1)
+    compress_audio = torch.bincount(compress_level[0])
+    compress_image = torch.bincount(compress_level[1])
+    print(compress_audio, compress_image)
+    print(error / len(test_loader))
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # cumulative loss

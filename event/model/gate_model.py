@@ -133,7 +133,7 @@ class AVnet_Gate(nn.Module):
         # 1. starting from no compression: i & j
         # 2. if correct, randomly compress one modality
         # 3. if not, output the compression level
-        gate_label = torch.zeros(2, 4)
+        gate_label = torch.zeros(2, 4, dtype=torch.float)
         i, j = len(output_cache['audio'])-1, len(output_cache['image'])-1
         while i>=0 and j>=0:
             predict_label = self.projection(torch.cat([output_cache['audio'][i], output_cache['image'][j]], dim=-1))
