@@ -132,21 +132,32 @@ class AVnet_Gate(nn.Module):
         # classification:
         # 1. starting from no compression: i & j
         # 2. if correct, randomly compress one modality
-        # 3. if not, output the compression level
-        gate_label = torch.zeros(2, 4, dtype=torch.int8)
-        i, j = len(output_cache['audio'])-1, len(output_cache['image'])-1
-        while i>=0 and j>=0:
+        # 3. if not, output the previous compression level
+        def helper(i, j):
             predict_label = self.projection(torch.cat([output_cache['audio'][i], output_cache['image'][j]], dim=-1))
             if torch.argmax(predict_label, dim=-1).cpu() == label:
-                random_number = torch.rand(1)
-                if random_number.item() < 0.5:
-                    i -= 1
-                else:
-                    j -= 1
+                a1, b1 = helper(i-1, j)
+                a2, b2 = helper(i, j-1)
+                return min(a1, a2, i), min(b1, b2, j)
             else:
-                gate_label[0, i] = 1
-                gate_label[1, j] = 1
-                break
+                return 1000, 1000
+        gate_label = torch.zeros(2, 4, dtype=torch.int8)
+        i, j = len(output_cache['audio'])-1, len(output_cache['image'])-1
+        i, j = helper(i, j)
+        gate_label[0, i] = 1
+        gate_label[1, j] = 1
+        # while i >= 0 and j >= 0:
+        #     predict_label = self.projection(torch.cat([output_cache['audio'][i], output_cache['image'][j]], dim=-1))
+        #     if torch.argmax(predict_label, dim=-1).cpu() == label:
+        #         random_number = torch.rand(1)
+        #         if random_number.item() < 0.5:
+        #             i -= 1
+        #         else:
+        #             j -= 1
+        #     else:
+        #         gate_label[0, i] = 1
+        #         gate_label[1, j] = 1
+        #         break
         return gate_label
     def gate_train(self, audio, image, label):
         output_cache, output = self.forward(audio, image, random_threshold=(-1, -1, -1)) # get all the possibilities

@@ -21,6 +21,7 @@ def profile(model, test_dataset):
             output_cache, output = model(audio.to(device), image.to(device), (-1, -1, -1))
 
             gate_label = torch.argmax(model.label(output_cache, text), dim=-1, keepdim=True)
+            print(gate_label)
             if torch.argmax(output, dim=-1).cpu() != text:
                 error += 1
             compress_level.append(gate_label)
