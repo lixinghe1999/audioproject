@@ -1,5 +1,4 @@
 import torchvision.models
-
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
@@ -53,8 +52,8 @@ def train(train_dataset, test_dataset):
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
-    # model = AVnet().to(device)
-    model = SingleNet(modality='V').to(device)
+    model = AVnet().to(device)
+    # model = SingleNet(modality='V').to(device)
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
