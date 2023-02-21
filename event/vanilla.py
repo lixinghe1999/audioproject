@@ -13,7 +13,7 @@ def step(model, input_data, optimizers, criteria, label):
     # Track history only in training
     for branch in [0]:
         optimizer = optimizers[branch]
-        output = model(image)
+        output = model(audio, image)
         # Backward
         optimizer.zero_grad()
         loss = criteria(output, label)
@@ -46,7 +46,7 @@ def train(train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                predict = model(image.to(device))
+                predict = model(audio.to(device), image.to(device))
                 acc.append((torch.argmax(predict, dim=-1).cpu() == text).sum() / len(text))
         print('epoch', e, np.mean(acc))
 if __name__ == "__main__":
