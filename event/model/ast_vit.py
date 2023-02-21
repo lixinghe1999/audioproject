@@ -186,7 +186,7 @@ class VITModel(nn.Module):
         self.original_embedding_dim = self.v.pos_embed.shape[2]
         self.mlp_head = nn.Sequential(nn.LayerNorm(self.original_embedding_dim),
                                       nn.Linear(self.original_embedding_dim, label_dim))
-
+    @autocast()
     def forward(self, x):
         B = x.shape[0]
         x = self.v.patch_embed(x)
