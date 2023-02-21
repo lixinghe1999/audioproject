@@ -19,6 +19,7 @@ def profile(model, test_dataset):
             audio, image, text, _ = batch
             output_cache, output = model(audio.to(device), image.to(device), (-1, -1, -1))
             gate_label = model.label(output_cache, text)
+            print(gate_label)
             compress_level.append(torch.argmax(gate_label, dim=-1, keepdim=True))
             print(compress_level)
     compress_level = torch.mean(torch.cat(compress_level, dim=-1), dim=-1)
