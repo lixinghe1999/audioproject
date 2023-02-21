@@ -21,18 +21,18 @@ def profile(model, test_dataset):
             output_cache, output = model(audio.to(device), image.to(device), (-1, -1, -1))
 
             gate_label = model.label(output_cache, text)
-            print(gate_label)
             gate_label = torch.argmax(gate_label, dim=-1, keepdim=True)
-            print(gate_label)
             if torch.argmax(output, dim=-1).cpu() != text:
                 error += 1
             compress_level.append(gate_label)
             break
     compress_level = torch.cat(compress_level, dim=-1)
+    compress_diff = torch.mean(torch.abs(compress_level[0] - compress_level[1]))
     compress_audio = torch.bincount(compress_level[0])
     compress_image = torch.bincount(compress_level[1])
-    print(compress_audio, compress_image)
-    print(error / len(test_loader))
+    print("compression level difference (average):", compress_diff)
+    print("compression level distribution:", compress_audio, compress_image)
+    print("overall accuracy:", 1 - error / len(test_loader))
 def train_step(model, input_data, optimizers, criteria, label):
     audio, image = input_data
     # cumulative loss
