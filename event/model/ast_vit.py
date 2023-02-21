@@ -205,14 +205,14 @@ class VITModel(nn.Module):
 if __name__ == '__main__':
     device = torch.device("cpu")
 
-    input_tdim = 100
-    ast = ASTModel(input_tdim=input_tdim)
+    input_tdim = 1024
+    ast = ASTModel(input_tdim=input_tdim, audioset_pretrain=True)
     # input a batch of 10 spectrogram, each with 100 time frames and 128 frequency bins
     test_input = torch.rand([10, input_tdim, 128])
     test_output = ast(test_input)
     # output should be in shape [10, 527], i.e., 10 samples, each with prediction of 527 classes.
     print(test_output.shape)
 
-    vit = VITModel()
-    test_input = torch.rand([10, 3, 384, 384])
-    print(vit(test_input).shape)
+    # vit = VITModel()
+    # test_input = torch.rand([10, 3, 384, 384])
+    # print(vit(test_input).shape)
