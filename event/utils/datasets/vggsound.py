@@ -46,8 +46,8 @@ class VGGSound(td.Dataset):
     def preprocessing_audio(self, audio):
         fbank = ta.compliance.kaldi.fbank(audio, htk_compat=True, sample_frequency=16000, use_energy=False,
                                                   window_type='hanning', num_mel_bins=128, dither=0.0,
-                                                  frame_shift=10)
-        target_length = 1024
+                                                  frame_shift=25)
+        target_length = 384
         n_frames = fbank.shape[0]
         p = target_length - n_frames
         # cut and pad
