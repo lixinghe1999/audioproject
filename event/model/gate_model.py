@@ -153,8 +153,8 @@ class AVnet_Gate(nn.Module):
                 return 1000
         helper(i, j)
         gate_label = torch.zeros(2, 4, dtype=torch.int8)
-        gate_label[0, global_i] = 1
-        gate_label[1, global_j] = 1
+        gate_label[0, self.global_i] = 1
+        gate_label[1, self.global_j] = 1
         # while i >= 0 and j >= 0:
         #     predict_label = self.projection(torch.cat([output_cache['audio'][i], output_cache['image'][j]], dim=-1))
         #     if torch.argmax(predict_label, dim=-1).cpu() == label:
