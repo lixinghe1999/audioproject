@@ -16,7 +16,7 @@ def profile(model, test_dataset):
     with torch.no_grad():
         for batch in tqdm(test_loader):
             audio, image, text, _ = batch
-            output_cache, output = model(audio, image, (-1, -1, -1))
+            output_cache, output = model(audio.to(device), image.to(device), (-1, -1, -1))
             gate_label = model.label_rule(output_cache, text)
             print(gate_label)
             break
