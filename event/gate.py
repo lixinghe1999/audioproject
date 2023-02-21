@@ -27,6 +27,7 @@ def profile(model, test_dataset):
             if torch.argmax(output, dim=-1).cpu() != text:
                 error += 1
             compress_level.append(gate_label)
+            break
     compress_level = torch.cat(compress_level, dim=-1)
     compress_audio = torch.bincount(compress_level[0])
     compress_image = torch.bincount(compress_level[1])
