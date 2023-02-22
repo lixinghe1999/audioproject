@@ -67,9 +67,9 @@ if __name__ == "__main__":
     if args.task == 'AV':
         model = AVnet().to(device)
     elif args.task == 'A':
-        model = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224')
+        model = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224').to(device)
     else:
-        model = VITModel(model_size='base224')
+        model = VITModel(model_size='base224').to(device)
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
