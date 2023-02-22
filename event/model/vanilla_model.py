@@ -4,6 +4,7 @@ We implement multi-modal dynamic network here
 import torch.nn as nn
 import torch
 import torchaudio
+from torch.cuda.amp import autocast
 from model.modified_resnet import ModifiedResNet
 from model.resnet34 import ResNet, BasicBlock
 from model.ast_vit import ASTModel, VITModel
@@ -13,7 +14,6 @@ class AVnet(nn.Module):
         self.audio = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224')
         self.image = VITModel(model_size='base224')
         # self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
-        #
         # self.image = ModifiedResNet()
         # self.image.load_state_dict(torch.load('resnet50.pth'))
         # self.image.fc = torch.nn.Linear(1024, num_cls)
@@ -37,6 +37,8 @@ class AVnet(nn.Module):
             {'params': self.mmtm3.parameters()},
         ]
         return parameters
+
+    @autocast()
     def forward(self, audio, image):
         B = audio.shape[0]
         audio = audio.unsqueeze(1)
@@ -66,34 +68,6 @@ class AVnet(nn.Module):
         image = self.image.v.norm(image)
         image = (image[:, 0] + image[:, 1]) / 2
         image = self.image.mlp_head(image)
-
-        # audio = self.audio.conv1(audio)
-        # audio = self.audio.bn1(audio)
-        # audio = self.audio.relu(audio)
-        # audio = self.audio.maxpool(audio)
-        #
-        # image = self.image.stem(image)
-        #
-        # audio = self.audio.layer1(audio)
-        # image = self.image.layer1(image)
-        #
-        # audio = self.audio.layer2(audio)
-        # image = self.image.layer2(image)
-        # audio, image = self.mmtm1(audio, image)
-        #
-        # audio = self.audio.layer3(audio)
-        # image = self.image.layer3(image)
-        # audio, image = self.mmtm2(audio, image)
-        #
-        # audio = self.audio.layer4(audio)
-        # image = self.image.layer4(image)
-        # audio, image = self.mmtm3(audio, image)
-        #
-        # audio = self.audio.avgpool(audio)
-        # audio = torch.flatten(audio, 1)
-        #
-        # image = self.image.attnpool(image)
-        #
         output = (audio + image) / 2
         return output
 class SingleNet(nn.Module):
@@ -148,7 +122,7 @@ class SingleNet(nn.Module):
         return data
 if __name__ == "__main__":
     num_cls = 100
-    model = AVnet(num_cls=100)
+    model = AVnet()
     audio = torch.zeros(16, 1, 220500)
     image = torch.zeros(16, 3, 224, 224)
     outputs = model(audio, image)
