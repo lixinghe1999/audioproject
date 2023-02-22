@@ -40,8 +40,6 @@ class VGGSound(td.Dataset):
                 self.class_idx_to_label[count] = row['category']
                 self.label_to_class_idx[row['category']] = count
                 count += 1
-            if idx > 100:
-                break
         self.length = length
     def preprocessing_audio(self, audio):
         fbank = ta.compliance.kaldi.fbank(audio, htk_compat=True, sample_frequency=16000, use_energy=False,
