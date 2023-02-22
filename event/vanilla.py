@@ -43,7 +43,6 @@ def train(model, train_dataset, test_dataset):
         model.train()
         if epoch % 4 == 0 and epoch > 0:
             update_lr(optimizers[0], multiplier=.2)
-            # update_lr(optimizers[1], multiplier=.1)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             loss = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
