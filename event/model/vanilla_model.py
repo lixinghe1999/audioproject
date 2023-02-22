@@ -112,7 +112,7 @@ class AVnet(nn.Module):
             audio = blk_a(audio)
             image = blk_i(image)
             if i >= self.fusion_stage:
-                bottleneck_token = self.bottleneck[i-self.fusion_stage](torch.cat([bottleneck_token, audio, image], dim=-1))
+                bottleneck_token = self.bottleneck[i-self.fusion_stage](torch.cat((bottleneck_token, audio, image), dim=1))
 
         audio = self.audio.v.norm(audio)
         audio = (audio[:, 0] + audio[:, 1]) / 2
