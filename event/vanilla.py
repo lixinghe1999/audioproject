@@ -56,7 +56,7 @@ def train(model, train_dataset, test_dataset):
         print('epoch', epoch, np.mean(acc))
         if np.mean(acc) > best_acc:
             best_acc = np.mean(acc)
-            torch.save(model.state_dict(), str(epoch) + '_' + str(np.mean(acc)) + '.pth')
+            torch.save(model.state_dict(), args.task + '_' + str(epoch) + '_' + str(np.mean(acc)) + '.pth')
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task')
