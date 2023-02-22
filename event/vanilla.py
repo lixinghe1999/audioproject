@@ -70,6 +70,8 @@ if __name__ == "__main__":
     torch.cuda.set_device(1)
     if args.task == 'AV':
         model = AVnet().to(device)
+        model.audio.load_state_dict(torch.load('A_4_0.5673682.pth'))
+        model.image.load_state_dict(torch.load('V_6_0.5151336.pth'))
     elif args.task == 'A':
         model = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224').to(device)
     else:
