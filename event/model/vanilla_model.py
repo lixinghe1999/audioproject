@@ -85,6 +85,13 @@ class AVnet(nn.Module):
         self.bottleneck = nn.ModuleList([EncoderLayer(self.original_embedding_dim, 512, 4, 0.1) for _ in range(12-self.fusion_stage)])
         self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim),
                                       nn.Linear(self.original_embedding_dim, 309))
+
+    def fusion_parameter(self):
+        parameter = [{'params': self.bottleneck_token},
+                     {'params': self.bottleneck},
+                     {'params': self.projection}]
+        return parameter
+
     @autocast()
     def forward(self, audio, image):
         B = audio.shape[0]
