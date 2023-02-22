@@ -51,6 +51,7 @@ class BottleNeck_attention(nn.Module):
 class EncoderLayer(nn.Module):
     def __init__(self, d_model, ffn_hidden, bottleneck, drop_prob):
         super(EncoderLayer, self).__init__()
+        self.bottleneck = bottleneck
         self.attention = BottleNeck_attention(d_model=d_model, bottleneck=bottleneck)
         self.norm1 = nn.LayerNorm(d_model)
         self.dropout1 = nn.Dropout(p=drop_prob)
@@ -61,7 +62,7 @@ class EncoderLayer(nn.Module):
 
     def forward(self, x):
         # 1. compute self attention
-        _x = x
+        _x = x[:, :self.bottleneck, :]
         x = self.attention(q=x, k=x, v=x)
 
         # 2. add and norm
