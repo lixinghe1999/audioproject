@@ -37,6 +37,10 @@ def train(model, train_dataset, test_dataset):
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=8, shuffle=False)
     best_acc = 0
+    for param in model.audio.parameters():
+        param.requires_grad = False
+    for param in model.image.parameters():
+        param.requires_grad = False
     optimizers = [torch.optim.Adam(model.fusion_parameter(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     for epoch in range(20):
