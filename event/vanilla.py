@@ -51,7 +51,12 @@ def train(model, train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                predict = model(audio.to(device), image.to(device))
+                if args.task == 'AV':
+                    predict = model(audio.to(device), image.to(device))
+                elif args.task == 'A':
+                    predict = model(audio.to(device))
+                else:
+                    predict = model(image.to(device))
                 acc.append((torch.argmax(predict, dim=-1).cpu() == text).sum() / len(text))
         print('epoch', epoch, np.mean(acc))
         if np.mean(acc) > best_acc:
