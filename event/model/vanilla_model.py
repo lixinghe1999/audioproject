@@ -37,11 +37,14 @@ class BottleNeck_attention(nn.Module):
         batch_size, length, d_tensor = q.size()
 
         # 1. dot product Query with Key^T to compute similarity
-        k_t = k.transpose(2, 3)
+        k_t = k.transpose(1, 2)
+        print(k.shape, k_t.shape)
         score = (q[:, :self.bottleneck, :] @ k_t) / d_tensor**0.5  # scaled dot product
+        print(score.shape)
         score = nn.functional.softmax(score)
 
         v = score @ v
+        print(v.shape)
         return v
 
 
