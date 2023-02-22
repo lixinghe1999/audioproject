@@ -88,8 +88,8 @@ class AVnet(nn.Module):
 
     def fusion_parameter(self):
         parameter = [{'params': self.bottleneck_token},
-                     {'params': self.bottleneck},
-                     {'params': self.projection}]
+                     {'params': self.bottleneck.parameters()},
+                     {'params': self.projection.parameters()}]
         return parameter
 
     @autocast()
