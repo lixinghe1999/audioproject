@@ -100,7 +100,11 @@ class AVnet_Gate(nn.Module):
         # self.early_exit4b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, self.bottle_neck)])
         #
         # self.projection = nn.Linear(self.bottle_neck * 2, num_cls)
-
+    def fusion_parameter(self):
+        parameter = [{'params': self.bottleneck_token},
+                     {'params': self.bottleneck.parameters()},
+                     {'params': self.projection.parameters()}]
+        return parameter
     def stem(self, audio, image):
         audio = self.preprocessing_audio(audio)
         audio = self.audio.conv1(audio)
