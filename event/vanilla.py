@@ -27,7 +27,7 @@ def step(model, input_data, optimizers, criteria, label):
         loss.backward()
         optimizer.step()
     return loss
-def update_lr(optimizer, multiplier = .1):
+def update_lr(optimizer, multiplier):
     state_dict = optimizer.state_dict()
     for param_group in state_dict['param_groups']:
         param_group['lr'] = param_group['lr'] * multiplier
@@ -37,10 +37,10 @@ def train(model, train_dataset, test_dataset):
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
     best_acc = 0
-    for param in model.audio.parameters():
-        param.requires_grad = False
-    for param in model.image.parameters():
-        param.requires_grad = False
+    # for param in model.audio.parameters():
+    #     param.requires_grad = False
+    # for param in model.image.parameters():
+    #     param.requires_grad = False
     optimizers = [torch.optim.Adam(model.fusion_parameter(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     for epoch in range(20):
