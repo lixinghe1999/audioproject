@@ -85,7 +85,7 @@ if __name__ == "__main__":
         if mode == 'audio':
             mean = 0; std = 0
         else:
-            mean = np.array([0, 0, 0]); std = np.array([0, 0, 0])
+            mean = np.array([0.0, 0.0, 0.0]); std = np.array([0.0, 0.0, 0.0])
         for idx, batch in enumerate(tqdm(loader)):
             audio, image, text, _ = batch
             if mode == 'audio':
