@@ -139,7 +139,6 @@ class AVnet_Gate(nn.Module):
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
         return loss_c, loss_r
 
-    @autocast()
     def acculmulative_loss(self, output_cache, label, criteria):
         loss = 0
         for i, embed in enumerate(output_cache['bottle_neck']):
@@ -196,7 +195,7 @@ class AVnet_Gate(nn.Module):
 if __name__ == "__main__":
     num_cls = 100
     device = 'cuda'
-    model = AVnet_Gate(num_cls=100).to(device)
+    model = AVnet_Gate().to(device)
     model.eval()
     audio = torch.zeros(1, 1, 160000).to(device)
     image = torch.zeros(1, 3, 224, 224).to(device)
