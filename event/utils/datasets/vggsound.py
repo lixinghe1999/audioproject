@@ -86,19 +86,19 @@ if __name__ == "__main__":
             mean = 0; std = 0
         else:
             mean = np.array([0.0, 0.0, 0.0]); std = np.array([0.0, 0.0, 0.0])
-        for idx, batch in enumerate(tqdm(loader)):
-            audio, image, text, _ = batch
-            if mode == 'audio':
-                mean += torch.mean(audio)
-            else:
-                mean += torch.mean(image, dim=(0, 2, 3)).numpy()
+        # for idx, batch in enumerate(tqdm(loader)):
+        #     audio, image, text, _ = batch
+        #     if mode == 'audio':
+        #         mean += torch.mean(audio)
+        #     else:
+        #         mean += torch.mean(image, dim=(0, 2, 3)).numpy()
         mean = mean/len(loader)
         for idx, batch in enumerate(tqdm(loader)):
             audio, image, text, _ = batch
             if mode == 'audio':
                 std += ((audio - mean)**2).sum()/(audio.shape[-1] * audio.shape[-2])
             else:
-                std += torch.sum((image - mean)**2, dim=(0, 2, 3)).numpy()/(audio.shape[-1] * audio.shape[-2])
+                std += torch.sum((image - mean[np.newaxis, :, np.newaxis, np.newaxis])**2, dim=(0, 2, 3)).numpy()/(audio.shape[-1] * audio.shape[-2])
         std = (std/len(loader))**0.5
         print(mean, std)
     def crop(data):
