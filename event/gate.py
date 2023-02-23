@@ -71,9 +71,9 @@ def update_lr(optimizer, multiplier = .1):
         param_group['lr'] = param_group['lr'] * multiplier
     optimizer.load_state_dict(state_dict)
 def train(model, train_dataset, test_dataset):
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=64, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=64, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=batch_size, shuffle=False)
     for param in model.audio.parameters():
         param.requires_grad = False
     for param in model.image.parameters():
@@ -82,7 +82,6 @@ def train(model, train_dataset, test_dataset):
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(20):
-        mode = 'dynamic'
         model.train()
         if epoch % 4 == 0 and epoch > 0:
             for optimizer in optimizers:
@@ -108,17 +107,26 @@ def train(model, train_dataset, test_dataset):
             torch.save(model.state_dict(), str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--task')
+    parser.add_argument('-t', '--task', default='train')
+    parser.add_argument('-m', '--mode', default='dynamic')
+    parser.add_argument('-w', '--worker', default=4)
+    parser.add_argument('-b', '--batch', default=32)
     args = parser.parse_args()
+    mode = args.mode
+    workers = args.worker
+    batch_size = args.batch
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     model = AVnet_Gate().to(device)
     model.audio.load_state_dict(torch.load('A_4_0.5673682.pth'))
     model.image.load_state_dict(torch.load('V_6_0.5151336.pth'))
+
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
+
     if args.task == 'train':
         train(model, train_dataset, test_dataset)
     elif args.task == 'test':
