@@ -15,6 +15,7 @@ transform_image = tv.transforms.Compose([
             tv.transforms.Resize(256, interpolation=tv.transforms.InterpolationMode.BICUBIC),
             tv.transforms.CenterCrop(224),
             # tv.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
+            tv.transforms.Normalize((0.43818652, 0.4067926,  0.38199832), (0.28311136, 0.2763161,  0.2787475))
         ])
 class VGGSound(td.Dataset):
     def __init__(self,
@@ -140,7 +141,7 @@ if __name__ == "__main__":
             except:
                 print('invalid data')
     datast = VGGSound()
-    cal_norm(datast, 'image')
+    cal_norm(datast, 'audio')
 
     # data_list = csv_filter()
     # data_frame = {'filename': [], 'category': []}
