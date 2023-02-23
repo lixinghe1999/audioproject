@@ -91,6 +91,8 @@ if __name__ == "__main__":
             if mode == 'audio':
                 mean += torch.mean(audio)
             else:
+                print(mean)
+                print(torch.mean(image, dim=(0, 2, 3)))
                 mean += torch.mean(image, dim=(0, 2, 3))
         mean = mean/len(loader)
         for idx, batch in enumerate(tqdm(loader)):
