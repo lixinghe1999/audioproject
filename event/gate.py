@@ -91,15 +91,16 @@ def train(model, train_dataset, test_dataset):
             train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
                            criteria=criteria, label=text.to(device), mode=mode)
         model.eval()
-        acc = [[0], [], [], [], [], [], [], []]
+        acc = [0] * 24; count = [0] * 24
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
-                acc[e-1] += [a]
+                acc[e-1] += a
+                count[e-1] += 1
         mean_acc = []
-        for ac in acc:
-            mean_acc.append(np.mean(ac))
+        for i in range(len(acc)):
+            mean_acc.append(acc[i]/count[i])
         print('epoch', epoch)
         print('accuracy for early-exits:', mean_acc)
         if np.mean(mean_acc) > best_acc:
