@@ -87,12 +87,12 @@ if __name__ == "__main__":
             mean = 0; std = 0
         else:
             mean = np.array([0.0, 0.0, 0.0]); std = np.array([0.0, 0.0, 0.0])
-        # for idx, batch in enumerate(tqdm(loader)):
-        #     audio, image, text, _ = batch
-        #     if mode == 'audio':
-        #         mean += torch.mean(audio)
-        #     else:
-        #         mean += torch.mean(image, dim=(0, 2, 3)).numpy()
+        for idx, batch in enumerate(tqdm(loader)):
+            audio, image, text, _ = batch
+            if mode == 'audio':
+                mean += torch.mean(audio)
+            else:
+                mean += torch.mean(image, dim=(0, 2, 3)).numpy()
         mean = mean/len(loader)
         for idx, batch in enumerate(tqdm(loader)):
             audio, image, text, _ = batch
