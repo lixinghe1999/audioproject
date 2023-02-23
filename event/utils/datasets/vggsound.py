@@ -91,14 +91,14 @@ if __name__ == "__main__":
             if mode == 'audio':
                 mean += torch.mean(audio)
             else:
-                mean += torch.mean(audio, dim=(0, 2, 3))
+                mean += torch.mean(image, dim=(0, 2, 3))
         mean = mean/len(loader)
         for idx, batch in enumerate(tqdm(loader)):
             audio, image, text, _ = batch
             if mode == 'audio':
                 std += ((audio - mean)**2).sum()/(audio.shape[-1] * audio.shape[-2])
             else:
-                std += torch.sum((audio - mean)**2, dim=(0, 2, 3))/(audio.shape[-1] * audio.shape[-2])
+                std += torch.sum((image - mean)**2, dim=(0, 2, 3))/(audio.shape[-1] * audio.shape[-2])
         std = (std/len(loader))**0.5
         print(mean, std)
     def crop(data):
