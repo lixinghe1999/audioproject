@@ -169,7 +169,7 @@ class AVnet_Gate(nn.Module):
         for i, embed in enumerate(output_cache['bottle_neck']):
             output = self.projection(torch.mean(embed, dim=1))
             loss += i/12 * criteria(output, label)
-        return
+        return loss
     def forward(self, audio, image, mode='dynamic'):
         if mode == 'dynamic':
             self.exit = torch.randint(12, (2, 1))
