@@ -73,7 +73,7 @@ def update_lr(optimizer, multiplier = .1):
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=batch_size, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
     for param in model.audio.parameters():
         param.requires_grad = False
     for param in model.image.parameters():
@@ -100,12 +100,15 @@ def train(model, train_dataset, test_dataset):
                 count[e-1] += 1
         mean_acc = []
         for i in range(len(acc)):
-            mean_acc.append(acc[i]/count[i])
+            if count[i] == 0:
+                mean_acc.append(0)
+            else:
+                mean_acc.append(acc[i]/count[i])
         print('epoch', epoch)
         print('accuracy for early-exits:', mean_acc)
         if np.mean(mean_acc) > best_acc:
             best_acc = np.mean(mean_acc)
-            torch.save(model.state_dict(), str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
+            torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', default='train')
