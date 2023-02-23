@@ -47,9 +47,9 @@ def train(model, train_dataset, test_dataset):
         model.train()
         if epoch % 4 == 0 and epoch > 0:
             update_lr(optimizers[0], multiplier=.2)
-        for idx, batch in enumerate(tqdm(train_loader)):
-            audio, image, text, _ = batch
-            loss = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
+        # for idx, batch in enumerate(tqdm(train_loader)):
+        #     audio, image, text, _ = batch
+        #     loss = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
         model.eval()
         acc = []
         with torch.no_grad():
@@ -74,8 +74,9 @@ if __name__ == "__main__":
     torch.cuda.set_device(1)
     if args.task == 'AV':
         model = AVnet().to(device)
-        model.audio.load_state_dict(torch.load('A_4_0.5673682.pth'))
-        model.image.load_state_dict(torch.load('V_6_0.5151336.pth'))
+        model.load_state_dict(torch.load('AV_9_0.64882076.pth'))
+        # model.audio.load_state_dict(torch.load('A_4_0.5673682.pth'))
+        # model.image.load_state_dict(torch.load('V_6_0.5151336.pth'))
     elif args.task == 'A':
         model = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224').to(device)
     else:
