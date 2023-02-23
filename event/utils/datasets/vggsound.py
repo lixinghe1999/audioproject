@@ -59,7 +59,6 @@ class VGGSound(td.Dataset):
         sample = self.data[index]
         filename_audio: str = sample['audio']
         filename_vision: str = sample['vision']
-        t_start = time.time()
         audio, sr = ta.load(filename_audio)
         image = tv.io.read_image(filename_vision)/255
         target = self.data[index]['category']
@@ -79,6 +78,20 @@ def csv_filter():
         dl_list_new.append(s)
     return dl_list_new
 if __name__ == "__main__":
+    def cal_norm(dataset):
+        loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=1, batch_size=1, shuffle=True,
+                                             drop_last=True, pin_memory=False)
+        mean = 0
+        std = 0
+        for idx, batch in enumerate(tqdm(loader)):
+            audio, image, text, _ = batch
+            mean += torch.mean(audio)
+        mean = mean/len(loader)
+        for idx, batch in enumerate(tqdm(loader)):
+            audio, image, text, _ = batch
+            std += ((audio - mean)**2).sum()/(audio.shape[-1] * audio.shape[-2])
+        std = (std/len(loader))**0.5
+        print(mean, std)
     def crop(data):
         resize = tv.transforms.Resize(size=480)
         idx, row = data
@@ -116,7 +129,8 @@ if __name__ == "__main__":
                     return fname, category
             except:
                 print('invalid data')
-
+    datast = VGGSound()
+    cal_norm(datast)
 
     # data_list = csv_filter()
     # data_frame = {'filename': [], 'category': []}
@@ -131,11 +145,8 @@ if __name__ == "__main__":
     # df = pd.DataFrame(data=data_frame)
     # df.to_csv('vggsound_small.csv')
 
-    meta = pd.read_csv('vggsound_small.csv', index_col=0)
-    num_processes = os.cpu_count()
-    # for d in meta.iterrows():
-    #     crop(d)
-    #     break
-    with mp.Pool(processes=16) as p:
-        vals = list(tqdm(p.imap(crop, meta.iterrows())))
+    # meta = pd.read_csv('vggsound_small.csv', index_col=0)
+    # num_processes = os.cpu_count()
+    # with mp.Pool(processes=16) as p:
+    #     vals = list(tqdm(p.imap(crop, meta.iterrows())))
 
