@@ -15,8 +15,8 @@ def train_step(model, input_data, optimizers, criteria, label, mode='dynamic'):
     optimizer = optimizers[0]
     output_cache, output = model(audio, image, mode)
     optimizer.zero_grad()
-    loss = model.acculmulative_loss(output_cache, label, criteria)
-    # loss = criteria(output, label)
+    # loss = model.acculmulative_loss(output_cache, label, criteria)
+    loss = criteria(output, label)
     loss.backward()
     optimizer.step()
     return loss.item()
