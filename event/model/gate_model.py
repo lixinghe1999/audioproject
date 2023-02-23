@@ -167,7 +167,8 @@ class AVnet_Gate(nn.Module):
     def acculmulative_loss(self, output_cache, label, criteria):
         loss = 0
         for i, embed in enumerate(output_cache['bottle_neck']):
-            loss += i/12 * criteria(embed, label)
+            output = self.projection(torch.mean(embed, dim=1))
+            loss += i/12 * criteria(output, label)
         return
     def forward(self, audio, image, mode='dynamic'):
         if mode == 'dynamic':
