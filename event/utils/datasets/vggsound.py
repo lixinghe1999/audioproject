@@ -1,5 +1,4 @@
 import os
-import time
 import librosa
 import numpy as np
 import pandas as pd
@@ -10,6 +9,7 @@ from tqdm import tqdm
 import torchvision as tv
 import torchaudio as ta
 import multiprocessing as mp
+import argparse
 transform_audio = tv.transforms.Compose([])
 transform_image = tv.transforms.Compose([
             tv.transforms.Resize(256, interpolation=tv.transforms.InterpolationMode.BICUBIC),
@@ -19,7 +19,6 @@ transform_image = tv.transforms.Compose([
         ])
 class VGGSound(td.Dataset):
     def __init__(self,
-                 transform_audio=transform_audio,
                  transform_image=transform_image,
                  length=10,
                  **_):
@@ -56,6 +55,9 @@ class VGGSound(td.Dataset):
             fbank = m(fbank)
         elif p < 0:
             fbank = fbank[0:target_length, :]
+        # mean -4.268 and std 4.569 AST
+        # mean -5.1991 and std 4.4049
+        fbank = (fbank - (-5.1991)) / 4.4049
         return fbank
     def __getitem__(self, index: int):
         sample = self.data[index]
@@ -140,24 +142,29 @@ if __name__ == "__main__":
                     return fname, category
             except:
                 print('invalid data')
-    datast = VGGSound()
-    cal_norm(datast, 'audio')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', '--task')
+    args = parser.parse_args()
+    # do the mean & std extraction!! Be careful to cancel the normalization first
+    if args.task == 'norm':
+        datast = VGGSound()
+        cal_norm(datast, 'audio')
+    elif args.task == 'filter':
+        data_list = csv_filter()
+        data_frame = {'filename': [], 'category': []}
 
-    # data_list = csv_filter()
-    # data_frame = {'filename': [], 'category': []}
-    #
-    # num_processes = os.cpu_count()
-    # with mp.Pool(processes=num_processes) as p:
-    #     vals = list(tqdm(p.imap(check, data_list), total=len(data_list)))
-    # for val in vals:
-    #     if val:
-    #         data_frame['filename'] += [val[0]]
-    #         data_frame['category'] += [val[1]]
-    # df = pd.DataFrame(data=data_frame)
-    # df.to_csv('vggsound_small.csv')
-
-    # meta = pd.read_csv('vggsound_small.csv', index_col=0)
-    # num_processes = os.cpu_count()
-    # with mp.Pool(processes=16) as p:
-    #     vals = list(tqdm(p.imap(crop, meta.iterrows())))
+        num_processes = os.cpu_count()
+        with mp.Pool(processes=num_processes) as p:
+            vals = list(tqdm(p.imap(check, data_list), total=len(data_list)))
+        for val in vals:
+            if val:
+                data_frame['filename'] += [val[0]]
+                data_frame['category'] += [val[1]]
+        df = pd.DataFrame(data=data_frame)
+        df.to_csv('vggsound_small.csv')
+    elif args.task == 'downsize':
+        meta = pd.read_csv('vggsound_small.csv', index_col=0)
+        num_processes = os.cpu_count()
+        with mp.Pool(processes=16) as p:
+            vals = list(tqdm(p.imap(crop, meta.iterrows())))
 
