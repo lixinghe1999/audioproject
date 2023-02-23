@@ -118,8 +118,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', default='train')
     parser.add_argument('-m', '--mode', default='dynamic')
-    parser.add_argument('-w', '--worker', default=4)
-    parser.add_argument('-b', '--batch', default=32)
+    parser.add_argument('-w', '--worker', default=4, type=int)
+    parser.add_argument('-b', '--batch', default=32, type=int)
     args = parser.parse_args()
     mode = args.mode
     workers = args.worker
