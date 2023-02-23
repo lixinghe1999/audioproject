@@ -69,9 +69,9 @@ class AVnet_Gate(nn.Module):
 
         self.original_embedding_dim = self.audio.v.pos_embed.shape[2]
         self.bottleneck_token = nn.Parameter(torch.zeros(1, 4, self.original_embedding_dim))
-        self.fusion_stage = 0
+        self.fusion_stage = 6
         self.bottleneck = nn.ModuleList(
-            [EncoderLayer(self.original_embedding_dim, 1024, 4, 0.1) for _ in range(12 - self.fusion_stage)])
+            [EncoderLayer(self.original_embedding_dim, 2048, 4, 0.1) for _ in range(12 - self.fusion_stage)])
         self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim),
                                         nn.Linear(self.original_embedding_dim, 309))
     def fusion_parameter(self):
