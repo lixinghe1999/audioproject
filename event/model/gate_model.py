@@ -72,7 +72,7 @@ class AVnet_Gate(nn.Module):
         self.bottleneck_token = nn.Parameter(torch.zeros(1, 4, self.original_embedding_dim))
         self.fusion_stage = 0
         self.bottleneck = nn.ModuleList(
-            [EncoderLayer(self.original_embedding_dim, 2048, 4, 0.1) for _ in range(12 - self.fusion_stage)])
+            [EncoderLayer(self.original_embedding_dim, 1024, 4, 0.1) for _ in range(12 - self.fusion_stage)])
         self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim),
                                         nn.Linear(self.original_embedding_dim, 309))
         # self.bottle_neck = 128
@@ -164,20 +164,21 @@ class AVnet_Gate(nn.Module):
         output = self.projection(output, dim=1)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
         return loss_c, loss_r
-
+    def acculmulative_loss(self, output_cache, label, criteria):
+        loss = 0
+        for i, embed in enumerate(output_cache['bottle_neck']):
+            loss += i/12 * criteria(embed, label)
+        return
     def forward(self, audio, image, mode='dynamic'):
-        '''
-        :param audio: Modality 1
-        :param image: Modality 2
-        :param random_threshold: Random exit for training, set = (-1, -1 ...) if want gate training (no exit)
-        :return:
-        '''
         if mode == 'dynamic':
             self.exit = torch.randint(12, (2, 1))
-        else:
+        elif mode == 'no_exit':
             # by default, no exit
             self.exit = torch.tensor([11, 11])
-        output_cache = {'audio': [], 'image': []}
+        elif mode == 'gate':
+            # not implemented yet
+            pass
+        output_cache = {'audio': [], 'image': [], 'bottle_neck': []}
 
         B = audio.shape[0]
         audio = audio.unsqueeze(1)
@@ -209,6 +210,7 @@ class AVnet_Gate(nn.Module):
             if i >= self.fusion_stage:
                 bottleneck_token = self.bottleneck[i - self.fusion_stage](
                     torch.cat((bottleneck_token, audio, image), dim=1))
+                output_cache['bottle_neck'].append(bottleneck_token)
 
         output = self.projection(torch.mean(bottleneck_token, dim=1))
         #

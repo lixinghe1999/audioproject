@@ -15,7 +15,8 @@ def train_step(model, input_data, optimizers, criteria, label, mode='dynamic'):
     optimizer = optimizers[0]
     output_cache, output = model(audio, image, mode)
     optimizer.zero_grad()
-    loss = criteria(output, label)
+    loss = model.acculmulative_loss(output_cache, label, criteria)
+    # loss = criteria(output, label)
     loss.backward()
     optimizer.step()
     return loss.item()
@@ -82,6 +83,10 @@ def train(model, train_dataset, test_dataset):
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(20):
+        if epoch < 5:
+            mode = 'dynamic'
+        else:
+            mode = 'no_exit'
         model.train()
         if epoch % 4 == 0 and epoch > 0:
             for optimizer in optimizers:
