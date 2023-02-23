@@ -79,12 +79,13 @@ def csv_filter():
     return dl_list_new
 if __name__ == "__main__":
     def cal_norm(dataset):
-        loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=1, batch_size=1, shuffle=True,
+        loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=1, batch_size=4, shuffle=True,
                                              drop_last=True, pin_memory=False)
         mean = 0
         std = 0
         for idx, batch in enumerate(tqdm(loader)):
             audio, image, text, _ = batch
+            print(audio.shape)
             mean += torch.mean(audio)
         mean = mean/len(loader)
         for idx, batch in enumerate(tqdm(loader)):
