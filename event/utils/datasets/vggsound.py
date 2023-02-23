@@ -14,10 +14,11 @@ transform_audio = tv.transforms.Compose([])
 transform_image = tv.transforms.Compose([
             tv.transforms.Resize(256, interpolation=tv.transforms.InterpolationMode.BICUBIC),
             tv.transforms.CenterCrop(224),
-            tv.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
+            # tv.transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
         ])
 class VGGSound(td.Dataset):
     def __init__(self,
+                 transform_audio=transform_audio,
                  transform_image=transform_image,
                  length=10,
                  **_):
@@ -78,18 +79,26 @@ def csv_filter():
         dl_list_new.append(s)
     return dl_list_new
 if __name__ == "__main__":
-    def cal_norm(dataset):
+    def cal_norm(dataset, mode='audio'):
         loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=32, shuffle=True,
                                              drop_last=True, pin_memory=False)
-        mean = 0
-        std = 0
+        if mode == 'audio':
+            mean = 0; std = 0
+        else:
+            mean = np.array([0, 0, 0]); std = np.array([0, 0, 0])
         for idx, batch in enumerate(tqdm(loader)):
             audio, image, text, _ = batch
-            mean += torch.mean(audio)
+            if mode == 'audio':
+                mean += torch.mean(audio)
+            else:
+                mean += torch.mean(audio, dim=(0, 2, 3))
         mean = mean/len(loader)
         for idx, batch in enumerate(tqdm(loader)):
             audio, image, text, _ = batch
-            std += ((audio - mean)**2).sum()/(audio.shape[-1] * audio.shape[-2])
+            if mode == 'audio':
+                std += ((audio - mean)**2).sum()/(audio.shape[-1] * audio.shape[-2])
+            else:
+                std += torch.sum((audio - mean)**2, dim=(0, 2, 3))/(audio.shape[-1] * audio.shape[-2])
         std = (std/len(loader))**0.5
         print(mean, std)
     def crop(data):
@@ -130,7 +139,7 @@ if __name__ == "__main__":
             except:
                 print('invalid data')
     datast = VGGSound()
-    cal_norm(datast)
+    cal_norm(datast, 'image')
 
     # data_list = csv_filter()
     # data_frame = {'filename': [], 'category': []}
