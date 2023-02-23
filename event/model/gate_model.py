@@ -63,12 +63,7 @@ class AVnet_Gate(nn.Module):
         :param num_cls: number of class
         '''
         super(AVnet_Gate, self).__init__()
-        self.exit = exit
         self.gate = gate_network
-        if self.gate is None:
-            self.exit = False
-        self.audio_exit = False
-        self.image_exit = False
 
         self.audio = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224')
         self.image = VITModel(model_size='base224')

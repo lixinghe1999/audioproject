@@ -84,7 +84,6 @@ def train(model, train_dataset, test_dataset):
     for epoch in range(20):
         mode = 'dynamic'
         model.train()
-        model.exit = False
         if epoch % 4 == 0 and epoch > 0:
             for optimizer in optimizers:
                 update_lr(optimizer, multiplier=.4)
