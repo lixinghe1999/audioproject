@@ -91,10 +91,10 @@ def train(model, train_dataset, test_dataset):
         if epoch % 4 == 0 and epoch > 0:
             for optimizer in optimizers:
                 update_lr(optimizer, multiplier=.4)
-        # for idx, batch in enumerate(tqdm(train_loader)):
-        #     audio, image, text, _ = batch
-        #     train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
-        #                    criteria=criteria, label=text.to(device), mode=mode)
+        for idx, batch in enumerate(tqdm(train_loader)):
+            audio, image, text, _ = batch
+            train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
+                           criteria=criteria, label=text.to(device), mode=mode)
         model.eval()
         acc = [0] * 24; count = [0] * 24
         with torch.no_grad():
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     model = AVnet_Gate().to(device)
-    model.load_state_dict(torch.load('AV_9_0.64882076.pth'))
+    # model.load_state_dict(torch.load('AV_9_0.64882076.pth'))
     # model.audio.load_state_dict(torch.load('A_4_0.5673682.pth'))
     # model.image.load_state_dict(torch.load('V_6_0.5151336.pth'))
 

@@ -33,15 +33,15 @@ def update_lr(optimizer, multiplier = .1):
         param_group['lr'] = param_group['lr'] * multiplier
     optimizer.load_state_dict(state_dict)
 def train(model, train_dataset, test_dataset):
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=32, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=4, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
     best_acc = 0
-    # for param in model.audio.parameters():
-    #     param.requires_grad = False
-    # for param in model.image.parameters():
-    #     param.requires_grad = False
-    optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
+    for param in model.audio.parameters():
+        param.requires_grad = False
+    for param in model.image.parameters():
+        param.requires_grad = False
+    optimizers = [torch.optim.Adam(model.fusion_parameter(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     for epoch in range(20):
         model.train()
@@ -68,15 +68,19 @@ def train(model, train_dataset, test_dataset):
             torch.save(model.state_dict(), args.task + '_' + str(epoch) + '_' + str(np.mean(acc)) + '.pth')
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--task')
+    parser.add_argument('-t', '--task', default='train')
+    parser.add_argument('-m', '--mode', default='dynamic')
+    parser.add_argument('-w', '--worker', default=4, type=int)
+    parser.add_argument('-b', '--batch', default=32, type=int)
     args = parser.parse_args()
+    workers = args.worker
+    batch_size = args.batch
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     if args.task == 'AV':
         model = AVnet().to(device)
-        # model.load_state_dict(torch.load('AV_9_0.64882076.pth'))
-        # model.audio.load_state_dict(torch.load('A_4_0.5673682.pth'))
-        # model.image.load_state_dict(torch.load('V_6_0.5151336.pth'))
+        model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
+        model.image.load_state_dict(torch.load('V_5_0.5122983.pth'))
     elif args.task == 'A':
         model = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224').to(device)
     else:
