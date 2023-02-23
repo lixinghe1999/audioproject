@@ -13,10 +13,7 @@ def train_step(model, input_data, optimizers, criteria, label, mode='dynamic'):
     audio, image = input_data
     # cumulative loss
     optimizer = optimizers[0]
-    if mode == 'dynamic':
-        output_cache, output = model(audio, image)
-    else:
-        output_cache, output = model(audio, image, (-1, -1, -1))
+    output_cache, output = model(audio, image, mode)
     optimizer.zero_grad()
     loss = criteria(output, label)
     loss.backward()
@@ -25,10 +22,7 @@ def train_step(model, input_data, optimizers, criteria, label, mode='dynamic'):
 def test_step(model, input_data, label, mode='dynamic'):
     audio, image = input_data
     t_start = time.time()
-    if mode == 'dynamic':
-        output_cache, output = model(audio, image)
-    else:
-        output_cache, output = model(audio, image, (-1, -1, -1))
+    output_cache, output = model(audio, image, mode)
     l = time.time() - t_start
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item(), len(output_cache['audio']) + len(output_cache['image']), l
@@ -77,17 +71,17 @@ def update_lr(optimizer, multiplier = .1):
         param_group['lr'] = param_group['lr'] * multiplier
     optimizer.load_state_dict(state_dict)
 def train(model, train_dataset, test_dataset):
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=16, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=8, shuffle=False)
-    optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=4, batch_size=64, shuffle=False)
+    for param in model.audio.parameters():
+        param.requires_grad = False
+    for param in model.image.parameters():
+        param.requires_grad = False
+    optimizers = [torch.optim.Adam(model.fusion_parameter(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
-    for epoch in range(30):
-        # if epoch < 10:
-        #     mode = 'fixed'`
-        # else:
-        #     mode = 'dynamic'
+    for epoch in range(20):
         mode = 'dynamic'
         model.train()
         model.exit = False
@@ -120,6 +114,8 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     model = AVnet_Gate().to(device)
+    model.audio.load_state_dict(torch.load('A_4_0.5673682.pth'))
+    model.image.load_state_dict(torch.load('V_6_0.5151336.pth'))
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train

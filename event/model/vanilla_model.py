@@ -5,8 +5,6 @@ import torch.nn as nn
 import torch
 import torchaudio
 from torch.cuda.amp import autocast
-# from model.modified_resnet import ModifiedResNet
-# from model.resnet34 import ResNet, BasicBlock
 from model.ast_vit import ASTModel, VITModel
 class PositionwiseFeedForward(nn.Module):
     def __init__(self, d_model, hidden, drop_prob=0.1):
@@ -41,8 +39,6 @@ class BottleNeck_attention(nn.Module):
         score = nn.functional.softmax(score)
         v = score @ v
         return v
-
-
 class EncoderLayer(nn.Module):
     def __init__(self, d_model, ffn_hidden, bottleneck, drop_prob):
         super(EncoderLayer, self).__init__()
@@ -72,7 +68,6 @@ class EncoderLayer(nn.Module):
         x = self.dropout2(x)
         x = self.norm2(x + _x)
         return x
-
 class AVnet(nn.Module):
     def __init__(self):
         super(AVnet, self).__init__()
@@ -82,7 +77,7 @@ class AVnet(nn.Module):
         self.original_embedding_dim = self.audio.v.pos_embed.shape[2]
         self.bottleneck_token = nn.Parameter(torch.zeros(1, 4, self.original_embedding_dim))
         self.fusion_stage = 6
-        self.bottleneck = nn.ModuleList([EncoderLayer(self.original_embedding_dim, 512, 4, 0.1) for _ in range(12-self.fusion_stage)])
+        self.bottleneck = nn.ModuleList([EncoderLayer(self.original_embedding_dim, 2048, 4, 0.1) for _ in range(12-self.fusion_stage)])
         self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim),
                                       nn.Linear(self.original_embedding_dim, 309))
 

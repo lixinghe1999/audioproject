@@ -10,6 +10,8 @@ import torch.nn as nn
 import torch
 from model.modified_resnet import ModifiedResNet
 from model.resnet34 import ResNet, BasicBlock
+from model.ast_vit import ASTModel, VITModel
+from model.vanilla_model import EncoderLayer
 def gumbel_softmax(logits, tau=1, hard=False, dim=1, training=True):
     """ See `torch.nn.functional.gumbel_softmax()` """
     # if training:
@@ -67,41 +69,43 @@ class AVnet_Gate(nn.Module):
             self.exit = False
         self.audio_exit = False
         self.image_exit = False
-        self.bottle_neck = 128
 
-        self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
-        self.n_fft = 512
-        self.hop_length = 512
-        self.win_length = 512
-        self.spec_scale = 224
+        self.audio = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224')
+        self.image = VITModel(model_size='base224')
 
-        self.image = ResNet(img_channels=3, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=1000)
-        self.image.load_state_dict(torch.load('resnet34.pth'))
-        self.image.fc = torch.nn.Linear(512, num_cls)
+        self.original_embedding_dim = self.audio.v.pos_embed.shape[2]
+        self.bottleneck_token = nn.Parameter(torch.zeros(1, 4, self.original_embedding_dim))
+        self.fusion_stage = 0
+        self.bottleneck = nn.ModuleList(
+            [EncoderLayer(self.original_embedding_dim, 2048, 4, 0.1) for _ in range(12 - self.fusion_stage)])
+        self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim),
+                                        nn.Linear(self.original_embedding_dim, 309))
+        # self.bottle_neck = 128
+        #
+        # self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
+        # self.n_fft = 512
+        # self.hop_length = 512
+        # self.win_length = 512
+        # self.spec_scale = 224
+        #
+        # self.image = ResNet(img_channels=3, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=1000)
+        # self.image.load_state_dict(torch.load('resnet34.pth'))
+        # self.image.fc = torch.nn.Linear(512, num_cls)
+        #
+        # self.early_exit1a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, self.bottle_neck)])
+        # self.early_exit1b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, self.bottle_neck)])
+        #
+        # self.early_exit2a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, self.bottle_neck)])
+        # self.early_exit2b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, self.bottle_neck)])
+        #
+        # self.early_exit3a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, self.bottle_neck)])
+        # self.early_exit3b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, self.bottle_neck)])
+        #
+        # self.early_exit4a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, self.bottle_neck)])
+        # self.early_exit4b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, self.bottle_neck)])
+        #
+        # self.projection = nn.Linear(self.bottle_neck * 2, num_cls)
 
-        self.early_exit1a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, self.bottle_neck)])
-        self.early_exit1b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, self.bottle_neck)])
-
-        self.early_exit2a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, self.bottle_neck)])
-        self.early_exit2b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, self.bottle_neck)])
-
-        self.early_exit3a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, self.bottle_neck)])
-        self.early_exit3b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, self.bottle_neck)])
-
-        self.early_exit4a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, self.bottle_neck)])
-        self.early_exit4b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, self.bottle_neck)])
-
-        self.projection = nn.Linear(self.bottle_neck * 2, num_cls)
-
-    def preprocessing_audio(self, audio):
-        spec = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
-                          win_length=self.win_length,
-                          window=torch.hann_window(self.win_length, device=audio.device),
-                          pad_mode='reflect', normalized=True, onesided=True, return_complex=True)
-        spec = torch.abs(spec)
-        spec = torch.log(spec + 1e-7)
-        spec = torch.nn.functional.interpolate(spec.unsqueeze(1), size=self.spec_scale, mode='bilinear')
-        return spec
     def stem(self, audio, image):
         audio = self.preprocessing_audio(audio)
         audio = self.audio.conv1(audio)
@@ -154,7 +158,7 @@ class AVnet_Gate(nn.Module):
         gate_label[1, self.global_j] = 1
         return gate_label
     def gate_train(self, audio, image, label):
-        output_cache, output = self.forward(audio, image, random_threshold=(-1, -1, -1)) # get all the possibilities
+        output_cache, output = self.forward(audio, image) # get all the possibilities
         gate_label = self.label(output_cache, label) # [batch, 4 * 2]
         output, gate = self.gate(output_cache) # [batch, 4 * 2]
         loss_c = nn.functional.cross_entropy(gate, gate_label) # compression-level loss
@@ -162,66 +166,102 @@ class AVnet_Gate(nn.Module):
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
         return loss_c, loss_r
 
-    def forward(self, audio, image, random_threshold=(0.25, 0.33, 0.5)):
+    def forward(self, audio, image, mode='dynamic'):
         '''
         :param audio: Modality 1
         :param image: Modality 2
         :param random_threshold: Random exit for training, set = (-1, -1 ...) if want gate training (no exit)
         :return:
         '''
-        self.audio_exit = False
-        self.image_exit = False
-        audio, image = self.stem(audio, image)
+        if mode == 'dynamic':
+            self.exit = torch.randint(12, (2, 1))
+        else:
+            # by default, no exit
+            self.exit = torch.tensor([11, 11])
         output_cache = {'audio': [], 'image': []}
 
-        audio = self.audio.layer1(audio)
-        output_cache['audio'].append(self.early_exit1a(audio))
-        image = self.image.layer1(image)
-        output_cache['image'].append(self.early_exit1b(image))
-        if self.gate is None:
-            self.inference_update('audio_exit', random_thres=random_threshold[0])
-            self.inference_update('image_exit', random_thres=random_threshold[0])
-        else:
-            _, gate = self.gate(output_cache)
-            self.inference_update('audio_exit', gate[0], level=1)
-            self.inference_update('image_exit', gate[1], level=1)
+        B = audio.shape[0]
+        audio = audio.unsqueeze(1)
+        audio = audio.transpose(2, 3)
 
-        if not self.audio_exit:
-            audio = self.audio.layer2(audio)
-            output_cache['audio'].append(self.early_exit2a(audio))
-        if not self.image_exit:
-            image = self.image.layer2(image)
-            output_cache['image'].append(self.early_exit2b(image))
-        if self.gate is None:
-            self.inference_update('audio_exit', random_thres=random_threshold[1])
-            self.inference_update('image_exit', random_thres=random_threshold[1])
-        else:
-            _, gate = self.gate(output_cache)
-            self.inference_update('audio_exit', gate[0], level=2)
-            self.inference_update('image_exit', gate[1], level=2)
+        audio = self.audio.v.patch_embed(audio)
+        image = self.image.v.patch_embed(image)
 
-        if not self.audio_exit:
-            audio = self.audio.layer3(audio)
-            output_cache['audio'].append(self.early_exit3a(audio))
-        if not self.image_exit:
-            image = self.image.layer3(image)
-            output_cache['image'].append(self.early_exit3b(image))
-        if self.gate is None:
-            self.inference_update('audio_exit', random_thres=random_threshold[2])
-            self.inference_update('image_exit', random_thres=random_threshold[2])
-        else:
-            _, gate = self.gate(output_cache)
-            self.inference_update('audio_exit', gate[0], level=3)
-            self.inference_update('image_exit', gate[1], level=3)
+        cls_tokens = self.audio.v.cls_token.expand(B, -1, -1)
+        dist_token = self.audio.v.dist_token.expand(B, -1, -1)
+        audio = torch.cat((cls_tokens, dist_token, audio), dim=1)
+        audio = audio + self.audio.v.pos_embed
+        audio = self.audio.v.pos_drop(audio)
 
-        if not self.audio_exit:
-            audio = self.audio.layer4(audio)
-            output_cache['audio'].append(self.early_exit4a(audio))
-        if not self.image_exit:
-            image = self.image.layer4(image)
-            output_cache['image'].append(self.early_exit4b(image))
+        cls_tokens = self.image.v.cls_token.expand(B, -1, -1)
+        dist_token = self.image.v.dist_token.expand(B, -1, -1)
+        image = torch.cat((cls_tokens, dist_token, image), dim=1)
+        image = image + self.image.v.pos_embed
+        image = self.image.v.pos_drop(image)
 
-        output = self.projection(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1))
+        bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
+        for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks, self.image.v.blocks)):
+            if i <= self.exit[0].item():
+                audio = blk_a(audio)
+                output_cache['audio'].append(audio)
+            if i <= self.exit[1].item():
+                image = blk_i(image)
+                output_cache['image'].append(image)
+            if i >= self.fusion_stage:
+                bottleneck_token = self.bottleneck[i - self.fusion_stage](
+                    torch.cat((bottleneck_token, audio, image), dim=1))
+
+        output = self.projection(torch.mean(bottleneck_token, dim=1))
+        #
+        # audio, image = self.stem(audio, image)
+        # audio = self.audio.layer1(audio)
+        # output_cache['audio'].append(self.early_exit1a(audio))
+        # image = self.image.layer1(image)
+        # output_cache['image'].append(self.early_exit1b(image))
+        # if self.gate is None:
+        #     self.inference_update('audio_exit', random_thres=random_threshold[0])
+        #     self.inference_update('image_exit', random_thres=random_threshold[0])
+        # else:
+        #     _, gate = self.gate(output_cache)
+        #     self.inference_update('audio_exit', gate[0], level=1)
+        #     self.inference_update('image_exit', gate[1], level=1)
+        #
+        # if not self.audio_exit:
+        #     audio = self.audio.layer2(audio)
+        #     output_cache['audio'].append(self.early_exit2a(audio))
+        # if not self.image_exit:
+        #     image = self.image.layer2(image)
+        #     output_cache['image'].append(self.early_exit2b(image))
+        # if self.gate is None:
+        #     self.inference_update('audio_exit', random_thres=random_threshold[1])
+        #     self.inference_update('image_exit', random_thres=random_threshold[1])
+        # else:
+        #     _, gate = self.gate(output_cache)
+        #     self.inference_update('audio_exit', gate[0], level=2)
+        #     self.inference_update('image_exit', gate[1], level=2)
+        #
+        # if not self.audio_exit:
+        #     audio = self.audio.layer3(audio)
+        #     output_cache['audio'].append(self.early_exit3a(audio))
+        # if not self.image_exit:
+        #     image = self.image.layer3(image)
+        #     output_cache['image'].append(self.early_exit3b(image))
+        # if self.gate is None:
+        #     self.inference_update('audio_exit', random_thres=random_threshold[2])
+        #     self.inference_update('image_exit', random_thres=random_threshold[2])
+        # else:
+        #     _, gate = self.gate(output_cache)
+        #     self.inference_update('audio_exit', gate[0], level=3)
+        #     self.inference_update('image_exit', gate[1], level=3)
+        #
+        # if not self.audio_exit:
+        #     audio = self.audio.layer4(audio)
+        #     output_cache['audio'].append(self.early_exit4a(audio))
+        # if not self.image_exit:
+        #     image = self.image.layer4(image)
+        #     output_cache['image'].append(self.early_exit4b(image))
+        #
+        # output = self.projection(torch.cat([output_cache['audio'][-1], output_cache['image'][-1]], dim=1))
         return output_cache, output
 if __name__ == "__main__":
     num_cls = 100
