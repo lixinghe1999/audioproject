@@ -80,7 +80,8 @@ def csv_filter():
     return dl_list_new
 if __name__ == "__main__":
     def cal_norm(dataset, mode='audio'):
-        loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=32, shuffle=True,
+        batch = 32
+        loader = torch.utils.data.DataLoader(dataset=dataset, num_workers=4, batch_size=batch, shuffle=True,
                                              drop_last=True, pin_memory=False)
         if mode == 'audio':
             mean = 0; std = 0
@@ -96,9 +97,9 @@ if __name__ == "__main__":
         for idx, batch in enumerate(tqdm(loader)):
             audio, image, text, _ = batch
             if mode == 'audio':
-                std += ((audio - mean)**2).sum()/(audio.shape[-1] * audio.shape[-2])
+                std += ((audio - mean)**2).mean()
             else:
-                std += torch.sum((image - mean[np.newaxis, :, np.newaxis, np.newaxis])**2, dim=(0, 2, 3)).numpy()/(audio.shape[-1] * audio.shape[-2])
+                std += torch.mean((image - mean[np.newaxis, :, np.newaxis, np.newaxis])**2, dim=(0, 2, 3)).numpy()
         std = (std/len(loader))**0.5
         print(mean, std)
     def crop(data):
