@@ -84,9 +84,9 @@ def train(model, train_dataset, test_dataset):
     best_acc = 0
     for epoch in range(20):
         if epoch < 5:
-            mode = 'dynamic'
-        else:
             mode = 'no_exit'
+        else:
+            mode = 'dynamic'
         model.train()
         if epoch % 4 == 0 and epoch > 0:
             for optimizer in optimizers:
