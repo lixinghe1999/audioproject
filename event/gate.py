@@ -33,7 +33,7 @@ def gate_train(model, train_dataset, test_dataset):
     gate = Gate()
     model.eval()
     optimizers = [torch.optim.Adam(gate.parameters(), lr=.0001, weight_decay=1e-4)]
-    model.gate_network = gate
+    model.gate = gate
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(5):
