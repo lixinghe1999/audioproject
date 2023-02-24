@@ -72,8 +72,8 @@ class AVnet_Gate(nn.Module):
         # self.fusion_stage = 6
         # self.bottleneck = nn.ModuleList(
         #     [EncoderLayer(self.original_embedding_dim, 512, 4, 0.1) for _ in range(12 - self.fusion_stage)])
-        self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim),
-                                        nn.Linear(self.original_embedding_dim, 309))
+        self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim*2),
+                                        nn.Linear(self.original_embedding_dim*2, 309))
     def fusion_parameter(self):
         parameter = [# {'params': self.bottleneck_token},
                      #{'params': self.bottleneck.parameters()},
