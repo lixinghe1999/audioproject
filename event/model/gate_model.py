@@ -36,8 +36,8 @@ class Gate(nn.Module):
     def __init__(self):
         super(Gate, self).__init__()
         self.bottle_neck = 768
-        self.gate_audio = nn.Linear(self.bottle_neck, 12)
-        self.gate_image = nn.Linear(self.bottle_neck, 12)
+        self.gate_audio = nn.Linear(self.bottle_neck*2, 12)
+        self.gate_image = nn.Linear(self.bottle_neck*2, 12)
     def forward(self, output_cache):
         '''
         :param output_cache: dict: ['audio', 'image'] list -> 4 (for example) * [batch, bottle_neck]
