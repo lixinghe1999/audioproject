@@ -93,7 +93,11 @@ class AVnet_Gate(nn.Module):
             if i < 0 or j < 0:
                 pass
             else:
-                predict_label = self.projection(torch.cat([output_cache['audio'][i], output_cache['image'][j]], dim=-1))
+                audio = self.audio.v.norm(output_cache['audio'][i])
+                audio = (audio[:, 0] + audio[:, 1]) / 2
+                image = self.image.v.norm(output_cache['image'][j])
+                image = (image[:, 0] + image[:, 1]) / 2
+                predict_label = self.projection(torch.cat([audio, image], dim=-1))
                 if torch.argmax(predict_label, dim=-1).cpu() == label:
                     helper(i-1, j)
                     helper(i, j-1)
