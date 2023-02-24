@@ -41,7 +41,6 @@ def profile(model, test_dataset):
             gate_label = torch.argmax(gate_label, dim=-1, keepdim=True).cpu().numpy()
             if gate_label[0] == 12 and gate_label[1] == 12:
                 error += 1
-                print('catch')
             else:
                 compress_level.append(gate_label)
     compress_level = np.concatenate(compress_level, axis=-1)
