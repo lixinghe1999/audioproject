@@ -37,7 +37,7 @@ def gate_train(model, train_dataset, test_dataset):
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(5):
-        model.gate_network.train()
+        model.gate.train()
         if epoch % 2 == 0 and epoch > 0:
             for optimizer in optimizers:
                 update_lr(optimizer, multiplier=.4)
