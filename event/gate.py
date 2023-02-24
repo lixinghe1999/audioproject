@@ -129,8 +129,8 @@ if __name__ == "__main__":
     torch.cuda.set_device(1)
     model = AVnet_Gate().to(device)
     # model.load_state_dict(torch.load('AV_9_0.64882076.pth'))
-    model.audio.load_state_dict(torch.load('A_4_0.5673682.pth'))
-    model.image.load_state_dict(torch.load('V_6_0.5151336.pth'))
+    model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
+    model.image.load_state_dict(torch.load('V_5_0.5122983.pth'))
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
