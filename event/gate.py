@@ -2,7 +2,7 @@ import time
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.gate_model import AVnet_Gate
+from model.gate_model import AVnet_Gate, Gate
 import warnings
 from tqdm import tqdm
 import argparse
@@ -15,7 +15,6 @@ def train_step(model, input_data, optimizers, criteria, label, mode='dynamic'):
     optimizer = optimizers[0]
     output_cache, output = model(audio, image, mode)
     optimizer.zero_grad()
-    # loss = model.acculmulative_loss(output_cache, label, criteria)
     loss = criteria(output, label)
     loss.backward()
     optimizer.step()
@@ -27,6 +26,46 @@ def test_step(model, input_data, label, mode='dynamic'):
     l = time.time() - t_start
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item(), len(output_cache['audio']) + len(output_cache['image']), l
+def gate_train(model, train_dataset, test_dataset):
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
+                                               drop_last=True, pin_memory=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
+    gate = Gate()
+    model.eval()
+    optimizers = [torch.optim.Adam(gate.parameters(), lr=.0001, weight_decay=1e-4)]
+    model.gate_network = gate
+    criteria = torch.nn.CrossEntropyLoss()
+    best_acc = 0
+    for epoch in range(5):
+        model.gate_network.train()
+        if epoch % 2 == 0 and epoch > 0:
+            for optimizer in optimizers:
+                update_lr(optimizer, multiplier=.4)
+        for idx, batch in enumerate(tqdm(train_loader)):
+            audio, image, text, _ = batch
+            loss_c, loss_r = model.gate_train(audio.to(device), image.to(device), text)
+
+            train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
+                           criteria=criteria, label=text.to(device), mode=mode)
+        model.eval()
+        acc = [0] * 24; count = [0] * 24
+        with torch.no_grad():
+            for batch in tqdm(test_loader):
+                audio, image, text, _ = batch
+                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
+                acc[e-1] += a
+                count[e-1] += 1
+        mean_acc = []
+        for i in range(len(acc)):
+            if count[i] == 0:
+                mean_acc.append(0)
+            else:
+                mean_acc.append(acc[i]/count[i])
+        print('epoch', epoch)
+        print('accuracy for early-exits:', mean_acc)
+        if np.mean(mean_acc) > best_acc:
+            best_acc = np.mean(mean_acc)
+            torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
@@ -82,10 +121,6 @@ def train(model, train_dataset, test_dataset):
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(20):
-        # if epoch < 5:
-        #     mode = 'no_exit'
-        # else:
-        #     mode = 'dynamic'
         model.train()
         if epoch % 4 == 0 and epoch > 0:
             for optimizer in optimizers:
@@ -128,7 +163,7 @@ if __name__ == "__main__":
     torch.cuda.set_device(1)
     model = AVnet_Gate().to(device)
     model.load_state_dict(torch.load('train_17_0.7222222222222222.pth'))
-    #model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
+    # model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
     # model.image.load_state_dict(torch.load('V_5_0.5122983.pth'))
 
     dataset = VGGSound()
@@ -140,6 +175,8 @@ if __name__ == "__main__":
         train(model, train_dataset, test_dataset)
     elif args.task == 'test':
         test(model, test_dataset)
+    elif args.task == 'gate_train':
+        gate_train(model, train_dataset, test_dataset)
     elif args.task == 'profile':
         profile(model, test_dataset)
 

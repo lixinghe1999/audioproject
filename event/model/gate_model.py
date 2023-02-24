@@ -9,8 +9,8 @@ import time
 import torch.nn as nn
 import torch
 from torch.cuda.amp import autocast
-from model.ast_vit import ASTModel, VITModel
-from model.vanilla_model import EncoderLayer
+from ast_vit import ASTModel, VITModel
+# from vanilla_model import EncoderLayer
 def gumbel_softmax(logits, tau=1, hard=False, dim=1, training=True):
     """ See `torch.nn.functional.gumbel_softmax()` """
     # if training:
@@ -35,15 +35,14 @@ def gumbel_softmax(logits, tau=1, hard=False, dim=1, training=True):
 class Gate(nn.Module):
     def __init__(self):
         super(Gate, self).__init__()
-        self.bottle_neck = 128
-        self.gate_audio = nn.Linear(self.bottle_neck * 2, 4)
-        self.gate_image = nn.Linear(self.bottle_neck * 2, 4)
+        self.bottle_neck = 768
+        self.gate_audio = nn.Linear(self.bottle_neck, 12)
+        self.gate_image = nn.Linear(self.bottle_neck, 12)
     def forward(self, output_cache):
         '''
         :param output_cache: dict: ['audio', 'image'] list -> 4 (for example) * [batch, bottle_neck]
         :return: Gumbel_softmax decision
         '''
-
         gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
 
         logits_audio = self.gate_audio(gate_input)
@@ -86,14 +85,11 @@ class AVnet_Gate(nn.Module):
         # 1. starting from no compression: i & j
         # 2. if correct, randomly compress one modality
         # 3. if not, output the previous compression level
-
         global_i, global_j = len(output_cache['audio']), len(output_cache['image'])
         for i in range(len(output_cache['audio'])):
             for j in range(len(output_cache['image'])):
-                audio = self.audio.v.norm(output_cache['audio'][i])
-                audio = (audio[:, 0] + audio[:, 1]) / 2
-                image = self.image.v.norm(output_cache['image'][j])
-                image = (image[:, 0] + image[:, 1]) / 2
+                audio = output_cache['audio'][i]
+                image = output_cache['image'][j]
                 predict_label = self.projection(torch.cat([audio, image], dim=-1))
                 if torch.argmax(predict_label, dim=-1).cpu() == label:
                     if (i+j) < (global_i + global_j):
@@ -104,7 +100,7 @@ class AVnet_Gate(nn.Module):
         gate_label[1, global_j] = 1
         return gate_label
     def gate_train(self, audio, image, label):
-        output_cache, output = self.forward(audio, image) # get all the possibilities
+        output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
         gate_label = self.label(output_cache, label) # [batch, 4 * 2]
         output, gate = self.gate(output_cache) # [batch, 4 * 2]
         loss_c = nn.functional.cross_entropy(gate, gate_label) # compression-level loss
@@ -154,10 +150,14 @@ class AVnet_Gate(nn.Module):
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks, self.image.v.blocks)):
             if i <= self.exit[0].item():
                 audio = blk_a(audio)
-                output_cache['audio'].append(audio)
+                audio_norm = self.audio.v.norm(audio)
+                audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
+                output_cache['audio'].append(audio_norm)
             if i <= self.exit[1].item():
                 image = blk_i(image)
-                output_cache['image'].append(image)
+                image_norm = self.image.v.norm(image)
+                image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
+                output_cache['image'].append(image_norm)
             # if i >= self.fusion_stage:
             #     bottleneck_token = self.bottleneck[i - self.fusion_stage](
             #         torch.cat((bottleneck_token, audio, image), dim=1))
@@ -171,15 +171,15 @@ class AVnet_Gate(nn.Module):
         return output_cache, output
 if __name__ == "__main__":
     num_cls = 100
-    device = 'cuda'
+    device = 'cpu'
     model = AVnet_Gate().to(device)
     model.eval()
-    audio = torch.zeros(1, 1, 160000).to(device)
+    audio = torch.zeros(1, 384, 128).to(device)
     image = torch.zeros(1, 3, 224, 224).to(device)
 
     with torch.no_grad():
         for i in range(20):
             if i == 1:
                 t_start = time.time()
-            model(audio, image)
+            model(audio, image, 'no_exit')
     print((time.time() - t_start) / 19)
