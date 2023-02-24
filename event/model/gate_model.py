@@ -9,7 +9,7 @@ import time
 import torch.nn as nn
 import torch
 from torch.cuda.amp import autocast
-from ast_vit import ASTModel, VITModel
+from model.ast_vit import ASTModel, VITModel
 # from vanilla_model import EncoderLayer
 def gumbel_softmax(logits, tau=1, hard=False, dim=1, training=True):
     """ See `torch.nn.functional.gumbel_softmax()` """
