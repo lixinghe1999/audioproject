@@ -93,6 +93,7 @@ class AVnet_Gate(nn.Module):
                 for j in range(len(output_cache['image'])):
                     audio = output_cache['audio'][i]
                     image = output_cache['image'][j]
+                    print(audio.shape, image.shape)
                     predict_label = self.projection(torch.cat([audio[b], image[b]], dim=-1))
                     if torch.argmax(predict_label, dim=-1).cpu() == label:
                         if (i+j) < (global_i + global_j):
