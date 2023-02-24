@@ -87,7 +87,7 @@ class AVnet_Gate(nn.Module):
         # 2. if correct, randomly compress one modality
         # 3. if not, output the previous compression level
 
-        global_i, global_j = len(output_cache['audio']), len(output_cache['image'])
+        global_i, global_j = len(output_cache['audio'])-1, len(output_cache['image'])-1
         for i in range(len(output_cache['audio'])):
             for j in range(len(output_cache['image'])):
                 audio = self.audio.v.norm(output_cache['audio'][i])
