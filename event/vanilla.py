@@ -37,10 +37,10 @@ def train(model, train_dataset, test_dataset):
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
     best_acc = 0
-    # for param in model.audio.parameters():
-    #     param.requires_grad = False
-    # for param in model.image.parameters():
-    #     param.requires_grad = False
+    for param in model.audio.parameters():
+        param.requires_grad = False
+    for param in model.image.parameters():
+        param.requires_grad = False
     optimizers = [torch.optim.Adam(model.fusion_parameter(), lr=.0001, weight_decay=1e-4)]
     criteria = torch.nn.CrossEntropyLoss()
     for epoch in range(20):
@@ -69,7 +69,6 @@ def train(model, train_dataset, test_dataset):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', default='train')
-    parser.add_argument('-m', '--mode', default='dynamic')
     parser.add_argument('-w', '--worker', default=4, type=int)
     parser.add_argument('-b', '--batch', default=32, type=int)
     args = parser.parse_args()

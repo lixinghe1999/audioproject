@@ -75,15 +75,15 @@ class AVnet(nn.Module):
         self.image = VITModel(model_size='base224')
 
         self.original_embedding_dim = self.audio.v.pos_embed.shape[2]
-        self.bottleneck_token = nn.Parameter(torch.zeros(1, 1, self.original_embedding_dim))
-        self.fusion_stage = 6
-        self.bottleneck = nn.ModuleList([EncoderLayer(self.original_embedding_dim, 512, 1, 0.1) for _ in range(12-self.fusion_stage)])
-        self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim),
-                                      nn.Linear(self.original_embedding_dim, 309))
+        # self.bottleneck_token = nn.Parameter(torch.zeros(1, 1, self.original_embedding_dim))
+        # self.fusion_stage = 6
+        # self.bottleneck = nn.ModuleList([EncoderLayer(self.original_embedding_dim, 512, 1, 0.1) for _ in range(12-self.fusion_stage)])
+        self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim * 2),
+                                      nn.Linear(self.original_embedding_dim * 2, 309))
 
     def fusion_parameter(self):
-        parameter = [{'params': self.bottleneck_token},
-                     {'params': self.bottleneck.parameters()},
+        parameter = [#{'params': self.bottleneck_token},
+                     #{'params': self.bottleneck.parameters()},
                      {'params': self.projection.parameters()}]
         return parameter
 
@@ -108,18 +108,18 @@ class AVnet(nn.Module):
         image = image + self.image.v.pos_embed
         image = self.image.v.pos_drop(image)
 
-        bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
+        # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks, self.image.v.blocks)):
             audio = blk_a(audio)
             image = blk_i(image)
-            if i >= self.fusion_stage:
-                bottleneck_token = self.bottleneck[i-self.fusion_stage](torch.cat((bottleneck_token, audio, image), dim=1))
-        output = self.projection(bottleneck_token[:, 0, :])
-        # audio = self.audio.v.norm(audio)
-        # audio = (audio[:, 0] + audio[:, 1]) / 2
-        # image = self.image.v.norm(image)
-        # image = (image[:, 0] + image[:, 1]) / 2
-        # output = self.projection(torch.cat([audio, image], dim=-1))
+        #     if i >= self.fusion_stage:
+        #         bottleneck_token = self.bottleneck[i-self.fusion_stage](torch.cat((bottleneck_token, audio, image), dim=1))
+        # output = self.projection(bottleneck_token[:, 0, :])
+        audio = self.audio.v.norm(audio)
+        audio = (audio[:, 0] + audio[:, 1]) / 2
+        image = self.image.v.norm(image)
+        image = (image[:, 0] + image[:, 1]) / 2
+        output = self.projection(torch.cat([audio, image], dim=-1))
         return output
 if __name__ == "__main__":
     num_cls = 100
