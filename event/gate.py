@@ -39,16 +39,19 @@ def profile(model, test_dataset):
 
             gate_label = model.label(output_cache, text)
             gate_label = torch.argmax(gate_label, dim=-1, keepdim=True).cpu().numpy()
-            if torch.argmax(output, dim=-1).cpu() != text:
+            if gate_label[0] == 12 and gate_label[1] == 12:
                 error += 1
-            compress_level.append(gate_label)
+                print('catch')
+            else:
+                compress_level.append(gate_label)
     compress_level = np.concatenate(compress_level, axis=-1)
     compress_diff = np.abs(compress_level[0] - compress_level[1])
     compress_diff = np.bincount(compress_diff)
     compress_audio = np.bincount(compress_level[0])
     compress_image = np.bincount(compress_level[1])
     print("compression level difference:", compress_diff / len(test_loader))
-    print("compression level distribution:", compress_audio / len(test_loader), compress_image / len(test_loader))
+    print("audio compression level:", compress_audio / len(test_loader))
+    print("image compression level:", compress_image / len(test_loader))
     print("overall accuracy:", 1 - error / len(test_loader))
 def test(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
