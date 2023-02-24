@@ -99,7 +99,7 @@ class AVnet_Gate(nn.Module):
                     if (i+j) < (global_i + global_j):
                         global_i = i
                         global_j = j
-        gate_label = torch.zeros(2, 4, dtype=torch.int8)
+        gate_label = torch.zeros(2, 12, dtype=torch.int8)
         gate_label[0, global_i] = 1
         gate_label[1, global_j] = 1
         return gate_label
