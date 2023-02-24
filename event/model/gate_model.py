@@ -79,31 +79,7 @@ class AVnet_Gate(nn.Module):
                      #{'params': self.bottleneck.parameters()},
                      {'params': self.projection.parameters()}]
         return parameter
-    def stem(self, audio, image):
-        audio = self.preprocessing_audio(audio)
-        audio = self.audio.conv1(audio)
-        audio = self.audio.bn1(audio)
-        audio = self.audio.relu(audio)
-        audio = self.audio.maxpool(audio)
 
-        image = self.image.conv1(image)
-        image = self.image.bn1(image)
-        image = self.image.relu(image)
-        image = self.image.maxpool(image)
-        return audio, image
-    def inference_update(self, modal, gate=None, level=1, random_thres=1.0):
-        if self.exit:
-            # exit based on gate network
-            compress_level = torch.argmax(gate)
-            if level > compress_level:
-                setattr(self, modal, True)
-            else:
-                setattr(self, modal, False)
-        else:
-            # randomly exit to train
-            random_number = torch.rand(1)
-            if random_number.item() < random_thres:
-                setattr(self, modal, True)
     def label(self, output_cache, label):
         # label rule -> according the task
         # classification:

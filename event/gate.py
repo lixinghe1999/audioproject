@@ -28,8 +28,6 @@ def test_step(model, input_data, label, mode='dynamic'):
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item(), len(output_cache['audio']) + len(output_cache['image']), l
 def profile(model, test_dataset):
-    ckpt_name = '28_0.5.pth'
-    model.load_state_dict(torch.load(ckpt_name))
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
     compress_level = []
@@ -37,7 +35,7 @@ def profile(model, test_dataset):
     with torch.no_grad():
         for batch in tqdm(test_loader):
             audio, image, text, _ = batch
-            output_cache, output = model(audio.to(device), image.to(device), (-1, -1, -1))
+            output_cache, output = model(audio.to(device), image.to(device), 'no_exit')
 
             gate_label = model.label(output_cache, text)
             gate_label = torch.argmax(gate_label, dim=-1, keepdim=True).cpu().numpy()
@@ -52,7 +50,6 @@ def profile(model, test_dataset):
     print("compression level difference:", compress_diff / len(test_loader))
     print("compression level distribution:", compress_audio / len(test_loader), compress_image / len(test_loader))
     print("overall accuracy:", 1 - error / len(test_loader))
-
 def test(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
@@ -128,9 +125,9 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     model = AVnet_Gate().to(device)
-    # model.load_state_dict(torch.load('AV_9_0.64882076.pth'))
-    model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
-    model.image.load_state_dict(torch.load('V_5_0.5122983.pth'))
+    model.load_state_dict(torch.load('train_17_0.7222222222222222.pth'))
+    #model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
+    # model.image.load_state_dict(torch.load('V_5_0.5122983.pth'))
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
