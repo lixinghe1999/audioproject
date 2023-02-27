@@ -108,9 +108,8 @@ class AVnet_Gate(nn.Module):
         return gate_label
     def gate_train(self, audio, image, label):
         output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
-        gate_label = self.label(output_cache, label)
-        print(gate_label.shape)
-        print(gate_label)
+        gate_label = self.label(output_cache, label).to('cuda')
+
         output, gate_a, gate_i = self.gate(output_cache)
         print(output.shape, gate_a.shape, gate_i.shape)
         loss_c1 = nn.functional.cross_entropy(gate_a, torch.argmax(gate_label[:, 0], dim=-1)) # compression-level loss
