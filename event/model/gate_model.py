@@ -107,8 +107,10 @@ class AVnet_Gate(nn.Module):
         return gate_label
     def gate_train(self, audio, image, label):
         output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
-        gate_label = self.label(output_cache, label) # [batch, 4 * 2]
-        output, gate = self.gate(output_cache) # [batch, 4 * 2]
+        gate_label = self.label(output_cache, label)
+        print(gate_label.shape)
+        print(gate_label)
+        output, gate = self.gate(output_cache)
         print(output.shape, gate.shape)
         loss_c = nn.functional.cross_entropy(gate, gate_label[:, :, :-1].reshape(-1, 24)) # compression-level loss
         output = self.projection(output, dim=1)
