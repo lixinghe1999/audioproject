@@ -44,7 +44,7 @@ def gate_train(model, train_dataset, test_dataset):
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             optimizers[0].zero_grad()
-            loss_c, loss_r = model.gate_train(audio.to(device), image.to(device), text)
+            loss_c, loss_r = model.gate_train(audio.to(device), image.to(device), text.to(device))
             loss = loss_c * 0.5 + loss_r * 0.5
             loss.backward()
             optimizers[0].step()
