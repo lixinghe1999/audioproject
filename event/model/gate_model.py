@@ -89,11 +89,12 @@ class AVnet_Gate(nn.Module):
         # 2. if correct, randomly compress one modality
         # 3. if not, output the previous compression level
         batch = len(label)
-        gate_label = torch.zeros(batch, 2, 12 + 1, dtype=torch.int8)
+        blocks = len(output_cache['audio'])
+        gate_label = torch.zeros(batch, 2, blocks, dtype=torch.int8)
         for b in range(batch):
-            global_i, global_j = len(output_cache['audio']), len(output_cache['image'])
-            for i in range(len(output_cache['audio'])):
-                for j in range(len(output_cache['image'])):
+            global_i, global_j = blocks - 1, blocks - 1
+            for i in range(blocks):
+                for j in range(blocks):
                     audio = output_cache['audio'][i]
                     image = output_cache['image'][j]
                     predict_label = self.projection(torch.cat([audio[b], image[b]], dim=-1))
@@ -112,8 +113,8 @@ class AVnet_Gate(nn.Module):
         print(gate_label)
         output, gate_a, gate_i = self.gate(output_cache)
         print(output.shape, gate_a.shape, gate_i.shape)
-        loss_c1 = nn.functional.cross_entropy(gate_a, gate_label[:, 0, :-1]) # compression-level loss
-        loss_c2 = nn.functional.cross_entropy(gate_i, gate_label[:, 1, :-1])  # compression-level loss
+        loss_c1 = nn.functional.cross_entropy(gate_a, torch.argmax(gate_label[:, 0, :-1], dim=-1)) # compression-level loss
+        loss_c2 = nn.functional.cross_entropy(gate_i, torch.argmax(gate_label[:, 1, :-1], dim=-1))  # compression-level loss
         loss_c = loss_c1 + loss_c2
         output = self.projection(output, dim=1)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss

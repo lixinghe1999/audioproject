@@ -75,6 +75,7 @@ def profile(model, test_dataset):
     model.eval()
     compress_level = []
     error = 0
+    correct = 0
     with torch.no_grad():
         for batch in tqdm(test_loader):
             audio, image, text, _ = batch
@@ -82,7 +83,9 @@ def profile(model, test_dataset):
 
             gate_label = model.label(output_cache, text)
             gate_label = torch.argmax(gate_label, dim=-1, keepdim=True).cpu().numpy()
-            if gate_label[0] == 12 and gate_label[1] == 12:
+            if torch.argmax(output) == text:
+                correct += 1
+            elif gate_label[0] == 11 and gate_label[1] == 11:
                 error += 1
             else:
                 compress_level.append(gate_label)
@@ -95,6 +98,7 @@ def profile(model, test_dataset):
     print("audio compression level:", compress_audio / len(test_loader))
     print("image compression level:", compress_image / len(test_loader))
     print("overall accuracy:", 1 - error / len(test_loader))
+    print("final layer accuracy:", correct / len(test_loader))
 def test(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
