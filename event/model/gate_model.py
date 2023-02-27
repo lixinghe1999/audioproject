@@ -49,13 +49,13 @@ class Gate(nn.Module):
         logits_audio = self.gate_audio(gate_input)
         y_soft, ret_audio, index = gumbel_softmax(logits_audio)
         audio = torch.cat(output_cache['audio'], dim=-1)
-        print(audio.shape)
-        audio = audio.view(-1, 12, self.bottle_neck) * ret_audio.unsqueeze(2)
-        print(audio.shape)
+        audio = (audio.reshape(-1, 12, self.bottle_neck) * ret_audio.unsqueeze(2)).mean(dim=1)
+
         logits_image = self.gate_image(gate_input)
         y_soft, ret_image, index = gumbel_softmax(logits_image)
-        image = torch.cat(output_cache['image']) * ret_image
-        return torch.cat([audio, image]), torch.cat([ret_audio, ret_image])
+        image = torch.cat(output_cache['image'], dim=-1)
+        image = (image.reshape(-1, 12, self.bottle_neck) * ret_image.unsqueeze(2)).mean(dim=1)
+        return torch.cat([audio, image], dim=-1), torch.cat([ret_audio, ret_image], dim=-1)
 class AVnet_Gate(nn.Module):
     def __init__(self, gate_network=None):
         '''
@@ -109,6 +109,7 @@ class AVnet_Gate(nn.Module):
         output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
         gate_label = self.label(output_cache, label) # [batch, 4 * 2]
         output, gate = self.gate(output_cache) # [batch, 4 * 2]
+        print(output.shape, gate.shape)
         loss_c = nn.functional.cross_entropy(gate, gate_label) # compression-level loss
         output = self.projection(output, dim=1)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
