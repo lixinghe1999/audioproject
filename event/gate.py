@@ -83,7 +83,7 @@ def profile(model, test_dataset):
 
             gate_label = model.label(output_cache, text)
             print(gate_label)
-            gate_label = torch.argmax(gate_label, dim=-1).cpu()
+            gate_label = torch.argmax(gate_label[0], dim=-1).cpu()
             print(gate_label)
             if torch.argmax(output).cpu() == text:
                 correct += 1
