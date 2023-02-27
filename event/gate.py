@@ -85,6 +85,7 @@ def profile(model, test_dataset):
             gate_label = torch.argmax(gate_label[0], dim=-1, keepdim=True).cpu().numpy()
             if torch.argmax(output).cpu() == text:
                 correct += 1
+                compress_level.append(gate_label)
             elif gate_label[0] == 11 and gate_label[1] == 11:
                 error += 1
             else:
