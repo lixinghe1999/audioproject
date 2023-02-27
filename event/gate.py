@@ -82,6 +82,7 @@ def profile(model, test_dataset):
             output_cache, output = model(audio.to(device), image.to(device), 'no_exit')
 
             gate_label = model.label(output_cache, text)
+            print(gate_label)
             gate_label = torch.argmax(gate_label, dim=-1).cpu()
             print(gate_label)
             if torch.argmax(output).cpu() == text:
