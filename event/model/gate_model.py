@@ -50,8 +50,8 @@ class Gate(nn.Module):
         y_soft, ret_audio, index = gumbel_softmax(logits_audio)
         audio = torch.cat(output_cache['audio'], dim=-1)
         print(audio.shape)
-        audio = audio.view(-1, 12, self.bottle_neck) * ret_audio
-
+        audio = audio.view(-1, 12, self.bottle_neck) * ret_audio.unsqueeze(2)
+        print(audio.shape)
         logits_image = self.gate_image(gate_input)
         y_soft, ret_image, index = gumbel_softmax(logits_image)
         image = torch.cat(output_cache['image']) * ret_image
