@@ -133,7 +133,6 @@ def model_size(model):
     size_all_mb = (param_size + buffer_size) / 1024 ** 2
     return size_all_mb
 if __name__ == "__main__":
-
     device = 'cpu'
     acc = torch.rand(1, 3, 4800).to(device)
     noisy = torch.rand(1, 321, 151).to(device)
