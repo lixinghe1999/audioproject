@@ -89,7 +89,8 @@ def profile(model, test_dataset):
                 error += 1
             else:
                 compress_level.append(gate_label)
-            break
+            if len(compress_level) > 1:
+                break
     compress_level = np.concatenate(compress_level, axis=-1)
     compress_diff = np.abs(compress_level[0] - compress_level[1])
     compress_diff = np.bincount(compress_diff)
