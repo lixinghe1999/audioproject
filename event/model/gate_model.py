@@ -110,7 +110,7 @@ class AVnet_Gate(nn.Module):
         gate_label = self.label(output_cache, label) # [batch, 4 * 2]
         output, gate = self.gate(output_cache) # [batch, 4 * 2]
         print(output.shape, gate.shape)
-        loss_c = nn.functional.cross_entropy(gate, gate_label) # compression-level loss
+        loss_c = nn.functional.cross_entropy(gate, gate_label[:, :, :-1].reshape(-1, 24)) # compression-level loss
         output = self.projection(output, dim=1)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
         return loss_c, loss_r
