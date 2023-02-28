@@ -29,7 +29,7 @@ def test_step(model, input_data, label, mode='dynamic'):
 def gate_train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     gate = Gate().to(device)
     model.eval()
     optimizers = [torch.optim.Adam(gate.parameters(), lr=.0001, weight_decay=1e-4)]
