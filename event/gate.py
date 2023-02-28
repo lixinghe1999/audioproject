@@ -34,7 +34,6 @@ def gate_train(model, train_dataset, test_dataset):
     model.eval()
     optimizers = [torch.optim.Adam(gate.parameters(), lr=.0001, weight_decay=1e-4)]
     model.gate = gate
-    criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(5):
         model.gate.train()
@@ -48,15 +47,12 @@ def gate_train(model, train_dataset, test_dataset):
             loss = loss_c * 0.5 + loss_r * 0.5
             loss.backward()
             optimizers[0].step()
-
-            train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
-                           criteria=criteria, label=text.to(device), mode=mode)
         model.eval()
         acc = [0] * 24; count = [0] * 24
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
+                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='gate')
                 acc[e-1] += a
                 count[e-1] += 1
         mean_acc = []

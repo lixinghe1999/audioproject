@@ -44,8 +44,6 @@ class Gate(nn.Module):
         :return: Gumbel_softmax decision
         '''
         gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
-
-        print(gate_input.shape)
         logits_audio = self.gate_audio(gate_input)
         y_soft, ret_audio, index = gumbel_softmax(logits_audio)
         audio = torch.cat(output_cache['audio'], dim=-1)
@@ -128,14 +126,7 @@ class AVnet_Gate(nn.Module):
 
     @autocast()
     def forward(self, audio, image, mode='dynamic'):
-        if mode == 'dynamic':
-            self.exit = torch.randint(12, (2, 1))
-        elif mode == 'no_exit':
-            # by default, no exit
-            self.exit = torch.tensor([11, 11])
-        elif mode == 'gate':
-            # not implemented yet
-            pass
+
         output_cache = {'audio': [], 'image': [], 'bottle_neck': []}
 
         B = audio.shape[0]
@@ -157,14 +148,35 @@ class AVnet_Gate(nn.Module):
         image = image + self.image.v.pos_embed
         image = self.image.v.pos_drop(image)
 
+        # first block
+        audio = self.audio.v.blocks[0](audio)
+        audio_norm = self.audio.v.norm(audio)
+        audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
+        output_cache['audio'].append(audio_norm)
+
+        image = self.image.v.blocks[0](image)
+        image_norm = self.image.v.norm(image)
+        image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
+        output_cache['image'].append(image_norm)
+
+        if mode == 'dynamic':
+            self.exit = torch.randint(12, (2, 1))
+        elif mode == 'no_exit':
+            # by default, no exit
+            self.exit = torch.tensor([11, 11])
+        elif mode == 'gate':
+            # not implemented yet
+            output, gate_a, gate_i = self.gate(output_cache)
+            self.exit = torch.argmax(torch.cat([gate_a, gate_i]))
+
         # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
-        for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks, self.image.v.blocks)):
-            if i <= self.exit[0].item():
+        for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks[1:], self.image.v.blocks[1:])):
+            if i < self.exit[0].item():
                 audio = blk_a(audio)
                 audio_norm = self.audio.v.norm(audio)
                 audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
                 output_cache['audio'].append(audio_norm)
-            if i <= self.exit[1].item():
+            if i < self.exit[1].item():
                 image = blk_i(image)
                 image_norm = self.image.v.norm(image)
                 image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
