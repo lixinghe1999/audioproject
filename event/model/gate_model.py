@@ -176,6 +176,7 @@ class AVnet_Gate(nn.Module):
             gate_a, gate_i = self.gate(output_cache)
             print(gate_a, gate_i)
             self.exit = torch.argmax(torch.cat([gate_a, gate_i]))
+            print(self.exit)
 
         # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks[1:], self.image.v.blocks[1:])):

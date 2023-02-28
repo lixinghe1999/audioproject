@@ -188,7 +188,7 @@ if __name__ == "__main__":
     batch_size = args.batch
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.set_device(1)
+    torch.cuda.set_device(0)
     model = AVnet_Gate().to(device)
     model.load_state_dict(torch.load('train_17_0.7222222222222222.pth'))
     # model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
