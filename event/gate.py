@@ -50,6 +50,7 @@ def gate_train(model, train_dataset, test_dataset):
             mean_acc.append(0)
         else:
             mean_acc.append(acc[i] / count[i])
+    print('random exit')
     print('accuracy for early-exits:', np.round(mean_acc, 3))
     print('mean accuracy for early-exits:', np.round(np.sum(acc) / np.sum(count), 3))
     print('compression level distribution:', np.round(np.array(count) / np.sum(count), 3))
@@ -81,10 +82,10 @@ def gate_train(model, train_dataset, test_dataset):
                 mean_acc.append(0)
             else:
                 mean_acc.append(acc[i]/count[i])
-        print('epoch', epoch)
-        print('accuracy for early-exits:', mean_acc)
-        print('mean accuracy for early-exits:', np.sum(acc)/np.sum(count))
-        print('compression level distribution:', np.array(count)/np.sum(count))
+        print('epoch', epoch, 'trained gate exit')
+        print('accuracy for early-exits:', np.round(mean_acc, 3))
+        print('mean accuracy for early-exits:', np.round(np.sum(acc) / np.sum(count), 3))
+        print('compression level distribution:', np.round(np.array(count) / np.sum(count), 3))
         if np.mean(mean_acc) > best_acc:
             best_acc = np.mean(mean_acc)
             torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
