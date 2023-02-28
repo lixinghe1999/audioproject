@@ -174,6 +174,7 @@ class AVnet_Gate(nn.Module):
         elif mode == 'gate':
             # not implemented yet
             gate_a, gate_i = self.gate(output_cache)
+            print(gate_a, gate_i)
             self.exit = torch.argmax(torch.cat([gate_a, gate_i]))
 
         # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
