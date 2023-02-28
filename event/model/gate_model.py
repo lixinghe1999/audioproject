@@ -43,17 +43,25 @@ class Gate(nn.Module):
         :param output_cache: dict: ['audio', 'image'] list -> 4 (for example) * [batch, bottle_neck]
         :return: Gumbel_softmax decision
         '''
-        gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
-        logits_audio = self.gate_audio(gate_input)
-        y_soft, ret_audio, index = gumbel_softmax(logits_audio)
-        audio = torch.cat(output_cache['audio'], dim=-1)
-        audio = (audio.reshape(-1, 12, self.bottle_neck) * ret_audio.unsqueeze(2)).mean(dim=1)
+        if len(output_cache['audio']) == 1:
+            gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
+            logits_audio = self.gate_audio(gate_input)
+            y_soft, ret_audio, index = gumbel_softmax(logits_audio)
+            logits_image = self.gate_image(gate_input)
+            y_soft, ret_image, index = gumbel_softmax(logits_image)
+            return ret_audio, ret_image
+        else:
+            gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
+            logits_audio = self.gate_audio(gate_input)
+            y_soft, ret_audio, index = gumbel_softmax(logits_audio)
+            audio = torch.cat(output_cache['audio'], dim=-1)
+            audio = (audio.reshape(-1, 12, self.bottle_neck) * ret_audio.unsqueeze(2)).mean(dim=1)
 
-        logits_image = self.gate_image(gate_input)
-        y_soft, ret_image, index = gumbel_softmax(logits_image)
-        image = torch.cat(output_cache['image'], dim=-1)
-        image = (image.reshape(-1, 12, self.bottle_neck) * ret_image.unsqueeze(2)).mean(dim=1)
-        return torch.cat([audio, image], dim=-1), ret_audio, ret_image
+            logits_image = self.gate_image(gate_input)
+            y_soft, ret_image, index = gumbel_softmax(logits_image)
+            image = torch.cat(output_cache['image'], dim=-1)
+            image = (image.reshape(-1, 12, self.bottle_neck) * ret_image.unsqueeze(2)).mean(dim=1)
+            return torch.cat([audio, image], dim=-1), ret_audio, ret_image
 class AVnet_Gate(nn.Module):
     def __init__(self, gate_network=None):
         '''
@@ -165,7 +173,7 @@ class AVnet_Gate(nn.Module):
             self.exit = torch.tensor([11, 11])
         elif mode == 'gate':
             # not implemented yet
-            output, gate_a, gate_i = self.gate(output_cache)
+            gate_a, gate_i = self.gate(output_cache)
             self.exit = torch.argmax(torch.cat([gate_a, gate_i]))
 
         # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)

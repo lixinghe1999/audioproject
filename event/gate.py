@@ -36,24 +36,24 @@ def gate_train(model, train_dataset, test_dataset):
     model.gate = gate
 
     # first show the random compression-level
-    model.eval()
-    acc = [0] * 24;count = [0] * 24
-    with torch.no_grad():
-        for batch in tqdm(test_loader):
-            audio, image, text, _ = batch
-            a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='dynamic')
-            acc[e - 1] += a
-            count[e - 1] += 1
-    mean_acc = []
-    for i in range(len(acc)):
-        if count[i] == 0:
-            mean_acc.append(0)
-        else:
-            mean_acc.append(acc[i] / count[i])
-    print('random exit')
-    print('accuracy for early-exits:', np.round(mean_acc, 3))
-    print('mean accuracy for early-exits:', np.round(np.sum(acc) / np.sum(count), 3))
-    print('compression level distribution:', np.round(np.array(count) / np.sum(count), 3))
+    # model.eval()
+    # acc = [0] * 24;count = [0] * 24
+    # with torch.no_grad():
+    #     for batch in tqdm(test_loader):
+    #         audio, image, text, _ = batch
+    #         a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='dynamic')
+    #         acc[e - 1] += a
+    #         count[e - 1] += 1
+    # mean_acc = []
+    # for i in range(len(acc)):
+    #     if count[i] == 0:
+    #         mean_acc.append(0)
+    #     else:
+    #         mean_acc.append(acc[i] / count[i])
+    # print('random exit')
+    # print('accuracy for early-exits:', np.round(mean_acc, 3))
+    # print('mean accuracy for early-exits:', np.round(np.sum(acc) / np.sum(count), 3))
+    # print('compression level distribution:', np.round(np.array(count) / np.sum(count), 3))
 
     best_acc = 0
     for epoch in range(5):
@@ -61,13 +61,13 @@ def gate_train(model, train_dataset, test_dataset):
         if epoch % 2 == 0 and epoch > 0:
             for optimizer in optimizers:
                 update_lr(optimizer, multiplier=.4)
-        for idx, batch in enumerate(tqdm(train_loader)):
-            audio, image, text, _ = batch
-            optimizers[0].zero_grad()
-            loss_c, loss_r = model.gate_train(audio.to(device), image.to(device), text.to(device))
-            loss = loss_c * 0.5 + loss_r * 0.5
-            loss.backward()
-            optimizers[0].step()
+        # for idx, batch in enumerate(tqdm(train_loader)):
+        #     audio, image, text, _ = batch
+        #     optimizers[0].zero_grad()
+        #     loss_c, loss_r = model.gate_train(audio.to(device), image.to(device), text.to(device))
+        #     loss = loss_c * 0.5 + loss_r * 0.5
+        #     loss.backward()
+        #     optimizers[0].step()
         model.eval()
         acc = [0] * 24; count = [0] * 24
         with torch.no_grad():
