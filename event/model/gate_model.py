@@ -175,7 +175,7 @@ class AVnet_Gate(nn.Module):
             # not implemented yet
             gate_a, gate_i = self.gate(output_cache)
             print(gate_a, gate_i)
-            self.exit = torch.argmax(torch.cat([gate_a, gate_i], dim=-1))
+            self.exit = torch.argmax(torch.cat([gate_a, gate_i], dim=0), dim=-1)
             print(self.exit)
 
         # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
