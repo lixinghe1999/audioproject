@@ -50,9 +50,9 @@ def gate_train(model, train_dataset, test_dataset):
             mean_acc.append(0)
         else:
             mean_acc.append(acc[i] / count[i])
-    print('accuracy for early-exits:', mean_acc)
-    print('mean accuracy for early-exits:', np.sum(acc) / np.sum(count))
-    print('compression level distribution:', np.array(count) / np.sum(count))
+    print('accuracy for early-exits:', np.round(mean_acc, 3))
+    print('mean accuracy for early-exits:', np.round(np.sum(acc) / np.sum(count), 3))
+    print('compression level distribution:', np.round(np.array(count) / np.sum(count), 3))
 
     best_acc = 0
     for epoch in range(5):
