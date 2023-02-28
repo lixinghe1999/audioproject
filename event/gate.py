@@ -65,7 +65,7 @@ def gate_train(model, train_dataset, test_dataset):
             audio, image, text, _ = batch
             optimizers[0].zero_grad()
             loss_c, loss_r = model.gate_train(audio.to(device), image.to(device), text.to(device))
-            loss = loss_c * 0.8 + loss_r * 0.2
+            loss = loss_c * 0.7 + loss_r * 0.3
             loss.backward()
             optimizers[0].step()
         model.eval()
@@ -82,13 +82,17 @@ def gate_train(model, train_dataset, test_dataset):
                 mean_acc.append(0)
             else:
                 mean_acc.append(acc[i]/count[i])
+        acc_all = np.round(mean_acc, 3)
+        acc_avg = np.round(np.sum(acc) / np.sum(count), 3)
+        comp_dist = np.round(np.array(count) / np.sum(count), 3)
         print('epoch', epoch, 'trained gate exit')
-        print('accuracy for early-exits:', np.round(mean_acc, 3))
-        print('mean accuracy for early-exits:', np.round(np.sum(acc) / np.sum(count), 3))
-        print('compression level distribution:', np.round(np.array(count) / np.sum(count), 3))
-        if np.mean(mean_acc) > best_acc:
+        print('accuracy for early-exits:', acc_all)
+        print('mean accuracy for early-exits:', acc_avg)
+        print('compression level distribution:', comp_dist)
+        if acc_avg > best_acc:
             best_acc = np.mean(mean_acc)
-            torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
+            torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' +
+                       str(acc_avg) + '.pth')
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
