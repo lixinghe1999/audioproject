@@ -34,6 +34,26 @@ def gate_train(model, train_dataset, test_dataset):
     model.eval()
     optimizers = [torch.optim.Adam(gate.parameters(), lr=.0001, weight_decay=1e-4)]
     model.gate = gate
+
+    # first show the random compression-level
+    model.eval()
+    acc = [0] * 24;count = [0] * 24
+    with torch.no_grad():
+        for batch in tqdm(test_loader):
+            audio, image, text, _ = batch
+            a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='dynamic')
+            acc[e - 1] += a
+            count[e - 1] += 1
+    mean_acc = []
+    for i in range(len(acc)):
+        if count[i] == 0:
+            mean_acc.append(0)
+        else:
+            mean_acc.append(acc[i] / count[i])
+    print('accuracy for early-exits:', mean_acc)
+    print('mean accuracy for early-exits:', np.sum(acc) / np.sum(count))
+    print('compression level distribution:', np.array(count) / np.sum(count))
+
     best_acc = 0
     for epoch in range(5):
         model.gate.train()
@@ -63,6 +83,8 @@ def gate_train(model, train_dataset, test_dataset):
                 mean_acc.append(acc[i]/count[i])
         print('epoch', epoch)
         print('accuracy for early-exits:', mean_acc)
+        print('mean accuracy for early-exits:', np.sum(acc)/np.sum(count))
+        print('compression level distribution:', np.array(count)/np.sum(count))
         if np.mean(mean_acc) > best_acc:
             best_acc = np.mean(mean_acc)
             torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
