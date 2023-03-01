@@ -37,8 +37,8 @@ class Gate(nn.Module):
         super(Gate, self).__init__()
         # Option1, use the embedding of first block
         self.option = option
+        self.bottle_neck = 768
         if self.option == 1:
-            self.bottle_neck = 768
             self.gate_audio = nn.Linear(self.bottle_neck*2, 12)
             self.gate_image = nn.Linear(self.bottle_neck*2, 12)
         # Option2, another network: conv + max + linear
