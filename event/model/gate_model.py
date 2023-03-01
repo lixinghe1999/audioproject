@@ -54,7 +54,11 @@ class Gate(nn.Module):
          Or [batch, raw_data_shape] -> [batch, 3, 224, 224]
         :return: Gumbel_softmax decision
         '''
-        gate_input = torch.cat([audio, image], dim=-1)
+        print(audio.shape, image.shape)
+        if self.option == 1:
+            gate_input = torch.cat([output_cache['audio'], output_cache['image']], dim=-1)
+        else:
+            gate_input = torch.cat([audio, image], dim=-1)
         logits_audio = self.gate_audio(gate_input)
         y_soft, ret_audio, index = gumbel_softmax(logits_audio)
         logits_image = self.gate_image(gate_input)
