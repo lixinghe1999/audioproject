@@ -154,6 +154,7 @@ class AVnet_Gate(nn.Module):
         print((torch.argmax(gate_i, dim=-1) == gate_label[:, 1]).sum() / len(gate_label))
         output = self.projection(output)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
+        print((torch.argmax(output, dim=-1) == label).sum() / len(label))
         print(loss_c1.item(), loss_c2.item(), loss_r.item())
         loss = loss_c1 * 0.5 + loss_c2 * 0.3 + loss_r * 0.1
         loss.backward()
