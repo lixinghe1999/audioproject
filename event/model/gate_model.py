@@ -44,9 +44,9 @@ class Gate(nn.Module):
         # Option2, another network: conv + max + linear
         else:
             self.gate_audio = nn.Sequential(*[nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(4, 4)),
-                            nn.AdaptiveAvgPool2d(output_size=(1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
+                            nn.MaxPool2d(kernel_size=(7, 7)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
             self.gate_image = nn.Sequential(*[nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(4, 4)),
-                            nn.AdaptiveAvgPool2d(output_size=(1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
+                            nn.MaxPool2d(kernel_size=(7, 7)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
     def forward(self, audio, image, output_cache):
         '''
         :param audio, image: raw data
@@ -54,9 +54,8 @@ class Gate(nn.Module):
          Or [batch, raw_data_shape] -> [batch, 3, 224, 224]
         :return: Gumbel_softmax decision
         '''
-        print(audio.shape, image.shape)
         if self.option == 1:
-            gate_input = torch.cat([output_cache['audio'], output_cache['image']], dim=-1)
+            gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
             logits_audio = self.gate_audio(gate_input)
             y_soft, ret_audio, index = gumbel_softmax(logits_audio)
             logits_image = self.gate_image(gate_input)
@@ -66,9 +65,8 @@ class Gate(nn.Module):
             y_soft, ret_audio, index = gumbel_softmax(logits_audio)
             logits_image = self.gate_image(image)
             y_soft, ret_image, index = gumbel_softmax(logits_image)
-            print(ret_audio.shape, ret_image.shape)
 
-        if len(output_cache['audio']) == 0:
+        if len(output_cache['audio']) == 1:
             return ret_audio, ret_image
         else:
             audio = torch.cat(output_cache['audio'], dim=-1)
@@ -138,6 +136,7 @@ class AVnet_Gate(nn.Module):
         loss_c = loss_c1 + loss_c2
         output = self.projection(output)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
+        print(loss_c.item(), loss_r.item())
         return loss_c, loss_r
 
     def acculmulative_loss(self, output_cache, label, criteria):
@@ -148,23 +147,15 @@ class AVnet_Gate(nn.Module):
         return loss
 
     @autocast()
-    def forward(self, audio, image, mode='dynamic'):
-
+    def forward(self, x, y, mode='dynamic'):
+        audio = x.copy()
+        image = y.copy()
         output_cache = {'audio': [], 'image': [], 'bottle_neck': []}
-        if mode == 'dynamic':
-            self.exit = torch.randint(12, (2, 1))
-        elif mode == 'no_exit':
-            # by default, no exit
-            self.exit = torch.tensor([11, 11])
-        elif mode == 'gate':
-            # not implemented yet
-            gate_a, gate_i = self.gate(audio, image, output_cache)
-            self.exit = torch.argmax(torch.cat([gate_a, gate_i], dim=0), dim=-1)
+
 
         B = audio.shape[0]
         audio = audio.unsqueeze(1)
         audio = audio.transpose(2, 3)
-
 
         audio = self.audio.v.patch_embed(audio)
         image = self.image.v.patch_embed(image)
@@ -192,6 +183,15 @@ class AVnet_Gate(nn.Module):
         image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
         output_cache['image'].append(image_norm)
 
+        if mode == 'dynamic':
+            self.exit = torch.randint(12, (2, 1))
+        elif mode == 'no_exit':
+            # by default, no exit
+            self.exit = torch.tensor([11, 11])
+        elif mode == 'gate':
+            # not implemented yet
+            gate_a, gate_i = self.gate(x, y, output_cache)
+            self.exit = torch.argmax(torch.cat([gate_a, gate_i], dim=0), dim=-1)
 
         # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks[1:], self.image.v.blocks[1:])):
