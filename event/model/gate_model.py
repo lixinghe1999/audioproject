@@ -47,13 +47,14 @@ class Gate(nn.Module):
                                               nn.MaxPool2d(kernel_size=3), nn.Linear(64, 12)])
             self.gate_image = nn.Sequential(*[nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(4, 4)),
                                               nn.MaxPool2d(kernel_size=3), nn.Linear(64, 12)])
-    def forward(self, output_cache):
+    def forward(self, audio, image, output_cache):
         '''
+        :param audio, image: raw data
         :param output_cache: dict: ['audio', 'image'] list -> 12 (for example) * [batch, bottle_neck]
          Or [batch, raw_data_shape] -> [batch, 3, 224, 224]
         :return: Gumbel_softmax decision
         '''
-        gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
+        gate_input = torch.cat([audio, image], dim=-1)
         logits_audio = self.gate_audio(gate_input)
         y_soft, ret_audio, index = gumbel_softmax(logits_audio)
         logits_image = self.gate_image(gate_input)
@@ -120,7 +121,7 @@ class AVnet_Gate(nn.Module):
         output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
         gate_label = self.label(output_cache, label).to('cuda')
         gate_label = torch.argmax(gate_label, dim=-1)
-        output, gate_a, gate_i = self.gate(output_cache)
+        output, gate_a, gate_i = self.gate(audio, image, output_cache)
         loss_c1 = nn.functional.cross_entropy(gate_a, gate_label[:, 0]) # compression-level loss
         loss_c2 = nn.functional.cross_entropy(gate_i, gate_label[:, 1])  # compression-level loss
         print((torch.argmax(gate_a, dim=-1) == gate_label[:, 0]).sum() / len(gate_label))
