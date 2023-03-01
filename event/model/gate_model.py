@@ -10,6 +10,7 @@ import torch.nn as nn
 import torch
 from torch.cuda.amp import autocast
 from model.ast_vit import ASTModel, VITModel
+from model.resnet34 import ResNet
 # from vanilla_model import EncoderLayer
 def gumbel_softmax(logits, tau=1, hard=False, dim=1, training=True):
     """ See `torch.nn.functional.gumbel_softmax()` """
@@ -32,6 +33,7 @@ def gumbel_softmax(logits, tau=1, hard=False, dim=1, training=True):
         # y_hard = torch.Tensor([1, 0, 0, 0]).repeat(logits.shape[0], 1).cuda()
     ret = y_hard - y_soft.detach() + y_soft
     return y_soft, ret, index
+
 class Gate(nn.Module):
     def __init__(self, option=1):
         super(Gate, self).__init__()
@@ -43,10 +45,12 @@ class Gate(nn.Module):
             self.gate_image = nn.Linear(self.bottle_neck*2, 12)
         # Option2, another network: conv + max + linear
         else:
-            self.gate_audio = nn.Sequential(*[nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(4, 4)),
-                            nn.MaxPool2d(kernel_size=(7, 7)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
-            self.gate_image = nn.Sequential(*[nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(4, 4)),
-                            nn.MaxPool2d(kernel_size=(7, 7)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
+            self.gate_audio = ResNet(1, layers=(1, 1, 1, 1), num_classes=12)
+            self.gate_image = ResNet(3, layers=(1, 1, 1, 1), num_classes=12)
+            # self.gate_audio = nn.Sequential(*[nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(4, 4)),
+            #                 nn.MaxPool2d(kernel_size=(7, 7)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
+            # self.gate_image = nn.Sequential(*[nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(4, 4)),
+            #                 nn.MaxPool2d(kernel_size=(7, 7)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
     def forward(self, audio, image, output_cache):
         '''
         :param audio, image: raw data
