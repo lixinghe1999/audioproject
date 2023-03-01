@@ -116,15 +116,30 @@ class AVnet_Gate(nn.Module):
         for b in range(batch):
             global_i, global_j = blocks - 1, blocks - 1
             for i in range(blocks):
-                for j in range(blocks):
-                    audio = output_cache['audio'][i]
-                    image = output_cache['image'][j]
-                    predict_label = self.projection(torch.cat([audio[b], image[b]], dim=-1))
-                    predict_label = torch.argmax(predict_label, dim=-1).item()
-                    if predict_label == label[b]:
-                        if (i+j) < (global_i + global_j):
-                            global_i = i
-                            global_j = j
+                audio = output_cache['audio'][i]
+                predict_label = self.projection(torch.cat([audio[b], output_cache['image'][-1][b]], dim=-1))
+                predict_label = torch.argmax(predict_label, dim=-1).item()
+                if predict_label == label[b]:
+                    global_i = i
+                    break
+            for j in range(blocks):
+                image = output_cache['image'][j]
+                predict_label = self.projection(torch.cat([output_cache['audio'][-1][b], image[b]], dim=-1))
+                predict_label = torch.argmax(predict_label, dim=-1).item()
+                if predict_label == label[b]:
+                    global_j = j
+                    break
+
+            # for i in range(blocks, 0, -1):
+            #     for j in range(blocks, 0, -1):
+            #         audio = output_cache['audio'][i]
+            #         image = output_cache['image'][j]
+            #         predict_label = self.projection(torch.cat([audio[b], image[b]], dim=-1))
+            #         predict_label = torch.argmax(predict_label, dim=-1).item()
+            #         if predict_label == label[b]:
+            #             if (i+j) < (global_i + global_j):
+            #                 global_i = i
+            #                 global_j = j
             gate_label[b, 0, global_i] = 1
             gate_label[b, 1, global_j] = 1
         return gate_label
@@ -138,7 +153,7 @@ class AVnet_Gate(nn.Module):
         print((torch.argmax(gate_a, dim=-1) == gate_label[:, 0]).sum() / len(gate_label))
         print((torch.argmax(gate_i, dim=-1) == gate_label[:, 1]).sum() / len(gate_label))
         print(loss_c1.item(), loss_c2.item())
-        loss_c = loss_c1 + loss_c2
+        loss_c = (loss_c1 + loss_c2) / 2
         output = self.projection(output)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
         print(loss_c.item(), loss_r.item())
