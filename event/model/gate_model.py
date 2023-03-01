@@ -33,32 +33,36 @@ def gumbel_softmax(logits, tau=1, hard=False, dim=1, training=True):
     ret = y_hard - y_soft.detach() + y_soft
     return y_soft, ret, index
 class Gate(nn.Module):
-    def __init__(self):
+    def __init__(self, option=1):
         super(Gate, self).__init__()
-        self.bottle_neck = 768
-        self.gate_audio = nn.Linear(self.bottle_neck*2, 12)
-        self.gate_image = nn.Linear(self.bottle_neck*2, 12)
+        # Option1, use the embedding of first block
+        self.option = option
+        if self.option == 1:
+            self.bottle_neck = 768
+            self.gate_audio = nn.Linear(self.bottle_neck*2, 12)
+            self.gate_image = nn.Linear(self.bottle_neck*2, 12)
+        # Option2, another network: conv + max + linear
+        else:
+            self.gate_audio = nn.Sequential(*[nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(4, 4)),
+                                              nn.MaxPool2d(kernel_size=3), nn.Linear(64, 12)])
+            self.gate_image = nn.Sequential(*[nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(4, 4)),
+                                              nn.MaxPool2d(kernel_size=3), nn.Linear(64, 12)])
     def forward(self, output_cache):
         '''
-        :param output_cache: dict: ['audio', 'image'] list -> 4 (for example) * [batch, bottle_neck]
+        :param output_cache: dict: ['audio', 'image'] list -> 12 (for example) * [batch, bottle_neck]
+         Or [batch, raw_data_shape] -> [batch, 3, 224, 224]
         :return: Gumbel_softmax decision
         '''
+        gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
+        logits_audio = self.gate_audio(gate_input)
+        y_soft, ret_audio, index = gumbel_softmax(logits_audio)
+        logits_image = self.gate_image(gate_input)
+        y_soft, ret_image, index = gumbel_softmax(logits_image)
         if len(output_cache['audio']) == 1:
-            gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
-            logits_audio = self.gate_audio(gate_input)
-            y_soft, ret_audio, index = gumbel_softmax(logits_audio)
-            logits_image = self.gate_image(gate_input)
-            y_soft, ret_image, index = gumbel_softmax(logits_image)
             return ret_audio, ret_image
         else:
-            gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
-            logits_audio = self.gate_audio(gate_input)
-            y_soft, ret_audio, index = gumbel_softmax(logits_audio)
             audio = torch.cat(output_cache['audio'], dim=-1)
             audio = (audio.reshape(-1, 12, self.bottle_neck) * ret_audio.unsqueeze(2)).mean(dim=1)
-
-            logits_image = self.gate_image(gate_input)
-            y_soft, ret_image, index = gumbel_softmax(logits_image)
             image = torch.cat(output_cache['image'], dim=-1)
             image = (image.reshape(-1, 12, self.bottle_neck) * ret_image.unsqueeze(2)).mean(dim=1)
             return torch.cat([audio, image], dim=-1), ret_audio, ret_image
@@ -141,6 +145,15 @@ class AVnet_Gate(nn.Module):
         B = audio.shape[0]
         audio = audio.unsqueeze(1)
         audio = audio.transpose(2, 3)
+        if mode == 'dynamic':
+            self.exit = torch.randint(12, (2, 1))
+        elif mode == 'no_exit':
+            # by default, no exit
+            self.exit = torch.tensor([11, 11])
+        elif mode == 'gate':
+            # not implemented yet
+            gate_a, gate_i = self.gate(output_cache)
+            self.exit = torch.argmax(torch.cat([gate_a, gate_i], dim=0), dim=-1)
 
         audio = self.audio.v.patch_embed(audio)
         image = self.image.v.patch_embed(image)
@@ -168,15 +181,6 @@ class AVnet_Gate(nn.Module):
         image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
         output_cache['image'].append(image_norm)
 
-        if mode == 'dynamic':
-            self.exit = torch.randint(12, (2, 1))
-        elif mode == 'no_exit':
-            # by default, no exit
-            self.exit = torch.tensor([11, 11])
-        elif mode == 'gate':
-            # not implemented yet
-            gate_a, gate_i = self.gate(output_cache)
-            self.exit = torch.argmax(torch.cat([gate_a, gate_i], dim=0), dim=-1)
 
         # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks[1:], self.image.v.blocks[1:])):
