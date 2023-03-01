@@ -155,7 +155,7 @@ class AVnet_Gate(nn.Module):
         output = self.projection(output)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
         print(loss_c1.item(), loss_c2.item(), loss_r.item())
-        loss = loss_c1 * 0.6 + loss_c2 * 0.3 + loss_r * 0.1
+        loss = loss_c1 * 0.5 + loss_c2 * 0.4 + loss_r * 0.1
         loss.backward()
         return loss
 
