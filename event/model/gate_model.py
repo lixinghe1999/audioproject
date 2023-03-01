@@ -68,7 +68,7 @@ class Gate(nn.Module):
             y_soft, ret_image, index = gumbel_softmax(logits_image)
             print(ret_audio.shape, ret_image.shape)
 
-        if len(output_cache['audio']) == 1:
+        if len(output_cache['audio']) == 0:
             return ret_audio, ret_image
         else:
             audio = torch.cat(output_cache['audio'], dim=-1)
@@ -151,10 +151,6 @@ class AVnet_Gate(nn.Module):
     def forward(self, audio, image, mode='dynamic'):
 
         output_cache = {'audio': [], 'image': [], 'bottle_neck': []}
-
-        B = audio.shape[0]
-        audio = audio.unsqueeze(1)
-        audio = audio.transpose(2, 3)
         if mode == 'dynamic':
             self.exit = torch.randint(12, (2, 1))
         elif mode == 'no_exit':
@@ -162,8 +158,13 @@ class AVnet_Gate(nn.Module):
             self.exit = torch.tensor([11, 11])
         elif mode == 'gate':
             # not implemented yet
-            gate_a, gate_i = self.gate(output_cache)
+            gate_a, gate_i = self.gate(audio, image, output_cache)
             self.exit = torch.argmax(torch.cat([gate_a, gate_i], dim=0), dim=-1)
+
+        B = audio.shape[0]
+        audio = audio.unsqueeze(1)
+        audio = audio.transpose(2, 3)
+
 
         audio = self.audio.v.patch_embed(audio)
         image = self.image.v.patch_embed(image)
