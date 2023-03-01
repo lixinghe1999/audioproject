@@ -148,8 +148,8 @@ class AVnet_Gate(nn.Module):
 
     @autocast()
     def forward(self, x, y, mode='dynamic'):
-        audio = x.copy()
-        image = y.copy()
+        audio = x
+        image = y
         output_cache = {'audio': [], 'image': [], 'bottle_neck': []}
 
 
