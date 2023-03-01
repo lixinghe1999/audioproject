@@ -65,7 +65,7 @@ def gate_train(model, train_dataset, test_dataset):
             audio, image, text, _ = batch
             optimizers[0].zero_grad()
             loss_c, loss_r = model.gate_train(audio.to(device), image.to(device), text.to(device))
-            loss = loss_c * 0.7 + loss_r * 0.3
+            loss = loss_c * 0.9 + loss_r * 0.1
             loss.backward()
             optimizers[0].step()
         model.eval()
