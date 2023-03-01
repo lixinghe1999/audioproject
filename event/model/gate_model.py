@@ -44,9 +44,9 @@ class Gate(nn.Module):
         # Option2, another network: conv + max + linear
         else:
             self.gate_audio = nn.Sequential(*[nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(4, 4)),
-                                              nn.AdaptiveAvgPool2d(output_size=(1, 1)), nn.Linear(64, 12)])
+                            nn.AdaptiveAvgPool2d(output_size=(1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
             self.gate_image = nn.Sequential(*[nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(4, 4)),
-                                              nn.AdaptiveAvgPool2d(output_size=(1, 1)), nn.Linear(64, 12)])
+                            nn.AdaptiveAvgPool2d(output_size=(1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
     def forward(self, audio, image, output_cache):
         '''
         :param audio, image: raw data
