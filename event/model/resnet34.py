@@ -51,7 +51,7 @@ class ResNet(nn.Module):
             self,
             img_channels: int,
             layers: tuple,
-            block: Type[BasicBlock],
+            block: Type[BasicBlock] = BasicBlock,
             num_classes: int = 1000
     ) -> None:
         super(ResNet, self).__init__()
