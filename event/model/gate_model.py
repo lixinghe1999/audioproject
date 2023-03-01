@@ -150,12 +150,11 @@ class AVnet_Gate(nn.Module):
         output, gate_a, gate_i = self.gate(audio, image, output_cache)
         loss_c1 = nn.functional.cross_entropy(gate_a, gate_label[:, 0]) # compression-level loss
         loss_c2 = nn.functional.cross_entropy(gate_i, gate_label[:, 1])  # compression-level loss
-        print((torch.argmax(gate_a, dim=-1) == gate_label[:, 0]).sum() / len(gate_label))
-        print((torch.argmax(gate_i, dim=-1) == gate_label[:, 1]).sum() / len(gate_label))
+        print('gate acc:', (torch.argmax(gate_a, dim=-1) == gate_label[:, 0]).sum() / len(gate_label), (torch.argmax(gate_i, dim=-1) == gate_label[:, 1]).sum() / len(gate_label))
         output = self.projection(output)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
-        print(torch.argmax(gate_a, dim=-1).mean(), torch.argmax(gate_i, dim=-1).mean())
-        print((torch.argmax(output, dim=-1) == label).sum() / len(label))
+        print('compress:', (torch.argmax(gate_a, dim=-1).mean() + 1)/12 , (torch.argmax(gate_i, dim=-1).mean()+1)/12)
+        print('acc:', (torch.argmax(output, dim=-1) == label).sum() / len(label))
         print(loss_c1.item(), loss_c2.item(), loss_r.item())
         loss = loss_c1 * 0.5 + loss_c2 * 0.3 + loss_r * 0.1
         loss.backward()
