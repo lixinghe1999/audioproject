@@ -57,12 +57,17 @@ class Gate(nn.Module):
         print(audio.shape, image.shape)
         if self.option == 1:
             gate_input = torch.cat([output_cache['audio'], output_cache['image']], dim=-1)
+            logits_audio = self.gate_audio(gate_input)
+            y_soft, ret_audio, index = gumbel_softmax(logits_audio)
+            logits_image = self.gate_image(gate_input)
+            y_soft, ret_image, index = gumbel_softmax(logits_image)
         else:
-            gate_input = torch.cat([audio, image], dim=-1)
-        logits_audio = self.gate_audio(gate_input)
-        y_soft, ret_audio, index = gumbel_softmax(logits_audio)
-        logits_image = self.gate_image(gate_input)
-        y_soft, ret_image, index = gumbel_softmax(logits_image)
+            logits_audio = self.gate_audio(audio.unsqueeze(1))
+            y_soft, ret_audio, index = gumbel_softmax(logits_audio)
+            logits_image = self.gate_image(image)
+            y_soft, ret_image, index = gumbel_softmax(logits_image)
+            print(ret_audio.shape, ret_image.shape)
+
         if len(output_cache['audio']) == 1:
             return ret_audio, ret_image
         else:
