@@ -163,7 +163,7 @@ class AVnet_Gate(nn.Module):
         gate_label = torch.argmax(gate_label, dim=-1)
         output, gate_a, gate_i = self.gate(audio, image, output_cache)
 
-        computation_penalty = torch.range(1, 13)
+        computation_penalty = torch.range(1, 12)
         loss_c = gate_a * computation_penalty + gate_i * computation_penalty
 
         exit_distribution1 = torch.tensor([0.25447747, 0.06297973, 0.04575871, 0.0591419,  0.06809683, 0.06681756,
