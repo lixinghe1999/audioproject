@@ -143,6 +143,7 @@ class AVnet_Gate(nn.Module):
         for b in range(batch):
             i1, j1 = helper_1(output_cache['audio'], output_cache['image'], b)
             j2, i2 = helper_2(output_cache['image'], output_cache['audio'], b)
+            print(i1, j1, i2, j2)
             if (i1 + j1) < (i2 + j2):
                 gate_label[b, 0, i1] = 1
                 gate_label[b, 1, j1] = 1
