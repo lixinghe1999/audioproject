@@ -164,7 +164,7 @@ class AVnet_Gate(nn.Module):
         output, gate_a, gate_i = self.gate(audio, image, output_cache)
 
         computation_penalty = torch.range(1, 12).to('cuda')
-        loss_c = gate_a * computation_penalty + gate_i * computation_penalty
+        loss_c = (gate_a * computation_penalty + gate_i * computation_penalty).sum()
 
         exit_distribution1 = torch.tensor([0.25447747, 0.06297973, 0.04575871, 0.0591419,  0.06809683, 0.06681756,
                             0.06681756, 0.05284393, 0.03581972, 0.04172407, 0.037099, 0.04005117]).to('cuda')
