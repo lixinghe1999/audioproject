@@ -110,25 +110,55 @@ class AVnet_Gate(nn.Module):
         # 1. starting from no compression: i & j
         # 2. if correct, randomly compress one modality
         # 3. if not, output the previous compression level
+        def helper(modal1, modal2, b):
+            for i in range(blocks):
+                predict_label = self.projection(torch.cat([modal1[i][b], modal2[-1][b]], dim=-1))
+                predict_label = torch.argmax(predict_label, dim=-1).item()
+                if predict_label == label[b]:
+                    for j in range(blocks):
+                        predict_label = self.projection(torch.cat([modal1[i][b], modal2[-j-1][b]], dim=-1))
+                        predict_label = torch.argmax(predict_label, dim=-1).item()
+                        if predict_label == label[b]:
+                            return i, j
+            return blocks-1, blocks-1
+
         batch = len(label)
         blocks = len(output_cache['audio'])
         gate_label = torch.zeros(batch, 2, blocks, dtype=torch.int8)
         for b in range(batch):
-            global_i, global_j = blocks - 1, blocks - 1
-            for i in range(blocks):
-                audio = output_cache['audio'][i]
-                predict_label = self.projection(torch.cat([audio[b], output_cache['image'][-1][b]], dim=-1))
-                predict_label = torch.argmax(predict_label, dim=-1).item()
-                if predict_label == label[b]:
-                    global_i = i
-                    break
-            for j in range(blocks):
-                image = output_cache['image'][j]
-                predict_label = self.projection(torch.cat([output_cache['audio'][-1][b], image[b]], dim=-1))
-                predict_label = torch.argmax(predict_label, dim=-1).item()
-                if predict_label == label[b]:
-                    global_j = j
-                    break
+            i1, j1 = helper(output_cache['audio'], output_cache['image'], b)
+            i2, j2 = helper(output_cache['image'], output_cache['audio'], b)
+            print(i1, j1)
+            print(i2, j2)
+            # global_i, global_j = blocks - 1, blocks - 1
+            # for i in range(blocks):
+            #     audio = output_cache['audio'][i]
+            #     predict_label = self.projection(torch.cat([audio[b], output_cache['image'][-1][b]], dim=-1))
+            #     predict_label = torch.argmax(predict_label, dim=-1).item()
+            #     if predict_label == label[b]:
+            #         global_i = i
+            #         for j in range(blocks):
+            #             audio = output_cache['audio'][i]
+            #             predict_label = self.projection(torch.cat([audio[b], output_cache['image'][-j-1][b]], dim=-1))
+            #             predict_label = torch.argmax(predict_label, dim=-1).item()
+            #             if predict_label == label[b]:
+            #                 global_j = j
+            #                 break
+            #         break
+            # for j in range(blocks):
+            #     image = output_cache['image'][j]
+            #     predict_label = self.projection(torch.cat([output_cache['audio'][-1][b], image[b]], dim=-1))
+            #     predict_label = torch.argmax(predict_label, dim=-1).item()
+            #     if predict_label == label[b]:
+            #         global_j = j
+            #         for i in range(blocks):
+            #             audio = output_cache['image'][j]
+            #             predict_label = self.projection(torch.cat([audio[b], output_cache['image'][-i - 1][b]], dim=-1))
+            #             predict_label = torch.argmax(predict_label, dim=-1).item()
+            #             if predict_label == label[b]:
+            #                 global_i = i
+            #                 break
+            #         break
 
             # for i in range(blocks, 0, -1):
             #     for j in range(blocks, 0, -1):
@@ -140,8 +170,8 @@ class AVnet_Gate(nn.Module):
             #             if (i+j) < (global_i + global_j):
             #                 global_i = i
             #                 global_j = j
-            gate_label[b, 0, global_i] = 1
-            gate_label[b, 1, global_j] = 1
+            # gate_label[b, 0, global_i] = 1
+            # gate_label[b, 1, global_j] = 1
         return gate_label
     def gate_train(self, audio, image, label):
         output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
