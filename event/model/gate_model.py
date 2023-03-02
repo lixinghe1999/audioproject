@@ -160,9 +160,12 @@ class AVnet_Gate(nn.Module):
         gate_label = self.label(output_cache, label).to('cuda')
         gate_label = torch.argmax(gate_label, dim=-1)
         output, gate_a, gate_i = self.gate(audio, image, output_cache)
-        # balance_weight =
-        loss_c1 = nn.functional.cross_entropy(gate_a, gate_label[:, 0]) # compression-level loss
-        loss_c2 = nn.functional.cross_entropy(gate_i, gate_label[:, 1])  # compression-level loss
+        exit_distribution1 = torch.tensor([0.25447747, 0.06297973, 0.04575871, 0.0591419,  0.06809683, 0.06681756,
+                            0.06681756, 0.05284393, 0.03581972, 0.04172407, 0.037099, 0.04005117])
+        exit_distribution2 = torch.tensor([0.44636883, 0.04831726, 0.02164928, 0.01653218, 0.01623696, 0.02155088,
+                            0.0338516,  0.03099784, 0.03572131, 0.05392639, 0.05845306, 0.04802204])
+        loss_c1 = nn.functional.cross_entropy(gate_a, gate_label[:, 0], weight=1 / exit_distribution1) # compression-level loss
+        loss_c2 = nn.functional.cross_entropy(gate_i, gate_label[:, 1], weight=1 / exit_distribution2)  # compression-level loss
         print('gate acc:', (torch.argmax(gate_a, dim=-1) == gate_label[:, 0]).sum() / len(gate_label),
               (torch.argmax(gate_i, dim=-1) == gate_label[:, 1]).sum() / len(gate_label))
         output = self.projection(output)
