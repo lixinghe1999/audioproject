@@ -118,8 +118,8 @@ class AVnet_Gate(nn.Module):
                     for j in range(blocks):
                         predict_label = self.projection(torch.cat([modal1[i][b], modal2[-j-1][b]], dim=-1))
                         predict_label = torch.argmax(predict_label, dim=-1).item()
-                        if predict_label == label[b]:
-                            return i, j
+                        if predict_label != label[b]:
+                            return i, blocks - j
             return blocks-1, blocks-1
 
         batch = len(label)
