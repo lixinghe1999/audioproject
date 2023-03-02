@@ -145,16 +145,22 @@ class AVnet_Gate(nn.Module):
             j2, i2 = helper_2(output_cache['image'], output_cache['audio'], b)
             if (i1 + j1) < (i2 + j2):
                 i = i1; j = j1
-            else:
+            elif (i1 + j1) > (i2 + j2):
                 i = i2; j = j2
+            else:
+                if torch.rand(1)<0.5:
+                    i = i1; j = j1
+                else:
+                    i = i2; j = j2
             gate_label[b, 0, i] = 1; gate_label[b, 1, j] = 1
-            print(i, j)
+            # print(i, j)
         return gate_label
     def gate_train(self, audio, image, label):
         output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
         gate_label = self.label(output_cache, label).to('cuda')
         gate_label = torch.argmax(gate_label, dim=-1)
         output, gate_a, gate_i = self.gate(audio, image, output_cache)
+        # balance_weight =
         loss_c1 = nn.functional.cross_entropy(gate_a, gate_label[:, 0]) # compression-level loss
         loss_c2 = nn.functional.cross_entropy(gate_i, gate_label[:, 1])  # compression-level loss
         print('gate acc:', (torch.argmax(gate_a, dim=-1) == gate_label[:, 0]).sum() / len(gate_label),
