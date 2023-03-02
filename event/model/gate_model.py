@@ -138,51 +138,13 @@ class AVnet_Gate(nn.Module):
         gate_label = torch.zeros(batch, 2, blocks, dtype=torch.int8)
         for b in range(batch):
             i1, j1 = helper_1(output_cache['audio'], output_cache['image'], b)
-            i2, j2 = helper_2(output_cache['image'], output_cache['audio'], b)
-            print(i1, j1)
-            print(i2, j2)
-            # global_i, global_j = blocks - 1, blocks - 1
-            # for i in range(blocks):
-            #     audio = output_cache['audio'][i]
-            #     predict_label = self.projection(torch.cat([audio[b], output_cache['image'][-1][b]], dim=-1))
-            #     predict_label = torch.argmax(predict_label, dim=-1).item()
-            #     if predict_label == label[b]:
-            #         global_i = i
-            #         for j in range(blocks):
-            #             audio = output_cache['audio'][i]
-            #             predict_label = self.projection(torch.cat([audio[b], output_cache['image'][-j-1][b]], dim=-1))
-            #             predict_label = torch.argmax(predict_label, dim=-1).item()
-            #             if predict_label == label[b]:
-            #                 global_j = j
-            #                 break
-            #         break
-            # for j in range(blocks):
-            #     image = output_cache['image'][j]
-            #     predict_label = self.projection(torch.cat([output_cache['audio'][-1][b], image[b]], dim=-1))
-            #     predict_label = torch.argmax(predict_label, dim=-1).item()
-            #     if predict_label == label[b]:
-            #         global_j = j
-            #         for i in range(blocks):
-            #             audio = output_cache['image'][j]
-            #             predict_label = self.projection(torch.cat([audio[b], output_cache['image'][-i - 1][b]], dim=-1))
-            #             predict_label = torch.argmax(predict_label, dim=-1).item()
-            #             if predict_label == label[b]:
-            #                 global_i = i
-            #                 break
-            #         break
-
-            # for i in range(blocks, 0, -1):
-            #     for j in range(blocks, 0, -1):
-            #         audio = output_cache['audio'][i]
-            #         image = output_cache['image'][j]
-            #         predict_label = self.projection(torch.cat([audio[b], image[b]], dim=-1))
-            #         predict_label = torch.argmax(predict_label, dim=-1).item()
-            #         if predict_label == label[b]:
-            #             if (i+j) < (global_i + global_j):
-            #                 global_i = i
-            #                 global_j = j
-            # gate_label[b, 0, global_i] = 1
-            # gate_label[b, 1, global_j] = 1
+            j2, i2 = helper_2(output_cache['image'], output_cache['audio'], b)
+            if (i1 + j1) < (i2 + j2):
+                gate_label[b, 0, i1] = 1
+                gate_label[b, 1, j1] = 1
+            else:
+                gate_label[b, 0, i2] = 1
+                gate_label[b, 1, j2] = 1
         return gate_label
     def gate_train(self, audio, image, label):
         output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
