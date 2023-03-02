@@ -41,7 +41,7 @@ class Gate(nn.Module):
         self.option = option
         self.bottle_neck = 768
         if self.option == 1:
-            self.gate_audio = nn.Linear(self.bottle_neck * 2, 24)
+            self.gate = nn.Linear(self.bottle_neck * 2, 24)
             # self.gate_audio = nn.Linear(self.bottle_neck*2, 12)
             # self.gate_image = nn.Linear(self.bottle_neck*2, 12)
         # Option2, another network: conv + max + linear
