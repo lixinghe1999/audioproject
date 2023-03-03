@@ -30,7 +30,7 @@ def gate_train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
-    gate = Gate(option=2).to(device)
+    gate = Gate(option=1).to(device)
     model.gate = gate
     model.eval()
     optimizers = [torch.optim.Adam(model.gate_parameter(), lr=.0001, weight_decay=1e-4)]
