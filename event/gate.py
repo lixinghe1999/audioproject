@@ -33,7 +33,7 @@ def gate_train(model, train_dataset, test_dataset):
     gate = Gate(option=1).to(device)
     model.gate = gate
     model.eval()
-    optimizers = [torch.optim.Adam(model.gate_parameter(), lr=.0001, weight_decay=1e-4)]
+    optimizers = [torch.optim.Adam(model.gate_parameter(), lr=.001, weight_decay=1e-4)]
 
 
     # first show the random compression-level
