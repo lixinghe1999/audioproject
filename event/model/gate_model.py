@@ -184,7 +184,7 @@ class AVnet_Gate(nn.Module):
               (torch.argmax(gate_i, dim=-1).float().mean() + 1)/12)
         print('acc:', (torch.argmax(output, dim=-1) == label).sum() / len(label))
         print(loss_c.item(), loss_g1.item(), loss_g2.item(), loss_r.item())
-        loss = loss_g1 * 0.3 + loss_g2 * 0.3
+        loss = loss_g1 * 1 + loss_g2 * 0.3
         loss.backward()
         return loss
 
