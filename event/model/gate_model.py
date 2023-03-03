@@ -100,12 +100,14 @@ class AVnet_Gate(nn.Module):
     def fusion_parameter(self):
         parameter = [# {'params': self.bottleneck_token},
                      #{'params': self.bottleneck.parameters()},
-                     {'params': self.projection.parameters()}]
+                     ]
         return parameter
     def gate_parameter(self):
         parameter = [{'params': self.gate.parameters()},
-                     {'params': self.audio.v.blocks[0].parameters()},
-                     {'params': self.image.v.blocks[0].parameters()}]
+                     {'params': self.projection.parameters()},
+                     # {'params': self.audio.v.blocks[0].parameters()},
+                     # {'params': self.image.v.blocks[0].parameters()}
+        ]
         return parameter
 
     def label(self, output_cache, label):
