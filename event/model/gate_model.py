@@ -40,9 +40,9 @@ class Gate(nn.Module):
         self.option = option
         self.bottle_neck = 768
         if self.option == 1:
-            # self.gate = nn.Linear(self.bottle_neck * 2, 24)
-            self.gate_audio = nn.Linear(self.bottle_neck * 2, 12)
-            self.gate_image = nn.Linear(self.bottle_neck * 2, 12)
+            self.gate = nn.Linear(self.bottle_neck * 2, 24)
+            # self.gate_audio = nn.Linear(self.bottle_neck * 2, 12)
+            # self.gate_image = nn.Linear(self.bottle_neck * 2, 12)
         # Option2, another network: conv + max + linear
         else:
             self.gate_audio = ResNet(1, layers=(1, 1, 1, 1), num_classes=12)
@@ -56,11 +56,11 @@ class Gate(nn.Module):
         '''
         if self.option == 1:
             gate_input = torch.cat([output_cache['audio'][0], output_cache['image'][0]], dim=-1)
-            # logits = self.gate(gate_input)
-            # logits_audio = logits[:, :12]
-            # logits_image = logits[:, 12:]
-            logits_audio = self.gate_audio(gate_input)
-            logits_image = self.gate_image(gate_input)
+            logits = self.gate(gate_input)
+            logits_audio = logits[:, :12]
+            logits_image = logits[:, 12:]
+            # logits_audio = self.gate_audio(gate_input)
+            # logits_image = self.gate_image(gate_input)
             y_soft, ret_audio, index = gumbel_softmax(logits_audio)
             y_soft, ret_image, index = gumbel_softmax(logits_image)
         else:
