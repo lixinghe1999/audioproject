@@ -47,10 +47,6 @@ class Gate(nn.Module):
         else:
             self.gate_audio = ResNet(1, layers=(1, 1, 1, 1), num_classes=12)
             self.gate_image = ResNet(3, layers=(1, 1, 1, 1), num_classes=12)
-            # self.gate_audio = nn.Sequential(*[nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(4, 4)),
-            #                 nn.MaxPool2d(kernel_size=(7, 7)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
-            # self.gate_image = nn.Sequential(*[nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(4, 4)),
-            #                 nn.MaxPool2d(kernel_size=(7, 7)), nn.Flatten(start_dim=1), nn.Linear(64, 12)])
     def forward(self, audio, image, output_cache):
         '''
         :param audio, image: raw data
@@ -186,7 +182,7 @@ class AVnet_Gate(nn.Module):
               (torch.argmax(gate_i, dim=-1).float().mean() + 1)/12)
         print('acc:', (torch.argmax(output, dim=-1) == label).sum() / len(label))
         print(loss_c.item(), loss_g1.item(), loss_g2.item(), loss_r.item())
-        loss = loss_c * 0.3 + loss_g1 * 0.4 + loss_g2 * 0.2 + loss_r * 0.1
+        loss = loss_c * 0.3 + loss_r * 0.1
         loss.backward()
         return loss
 
