@@ -65,9 +65,10 @@ def gate_train(model, train_dataset, test_dataset):
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             optimizers[0].zero_grad()
-            loss = model.gate_train(audio.to(device), image.to(device), text.to(device))
-            #
-            # loss.backward()
+            [compress, acc] = model.gate_train(audio.to(device), image.to(device), text.to(device))
+            if idx % 100 == 0:
+                writer.add_scalar('Train/compression', {'audio': compress[0], 'image': compress[1]}, idx + epoch * len(train_loader))
+                writer.add_scalar('Train/acc', acc, idx + epoch * len(train_loader))
             optimizers[0].step()
         model.eval()
         acc = [0] * 24; count = [0] * 24
@@ -191,6 +192,8 @@ if __name__ == "__main__":
     mode = args.mode
     workers = args.worker
     batch_size = args.batch
+    from torch.utils.tensorboard import SummaryWriter
+    writer = SummaryWriter()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)

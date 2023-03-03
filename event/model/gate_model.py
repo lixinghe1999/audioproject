@@ -182,16 +182,17 @@ class AVnet_Gate(nn.Module):
         output = self.projection(output)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
 
-        print('gate acc:', (torch.argmax(gate_a, dim=-1) == gate_label[:, 0]).sum() / len(gate_label),
-             (torch.argmax(gate_i, dim=-1) == gate_label[:, 1]).sum() / len(gate_label))
-        print('compress:', (torch.argmax(gate_a, dim=-1).float().mean() + 1)/12 ,
-              (torch.argmax(gate_i, dim=-1).float().mean() + 1)/12)
-        print('acc:', (torch.argmax(output, dim=-1) == label).sum() / len(label))
-        print(loss_c.item(), loss_g.item(), loss_r.item())
+        # gate_acc = [(torch.argmax(gate_a, dim=-1) == gate_label[:, 0]).sum() / len(gate_label),
+        #      (torch.argmax(gate_i, dim=-1) == gate_label[:, 1]).sum() / len(gate_label)]
+        compress = [(torch.argmax(gate_a, dim=-1).float().mean() + 1)/12 ,
+              (torch.argmax(gate_i, dim=-1).float().mean() + 1)/12]
+        acc = (torch.argmax(output, dim=-1) == label).sum() / len(label)
+
+        # print(loss_c.item(), loss_g.item(), loss_r.item())
         # loss = loss_c * 0.3 + loss_g1 * 0.3 + loss_g2 * 0.3 + loss_r * 0.1
         loss = loss_c * 0.5 + loss_g * 0.4 + loss_r * 0.2
         loss.backward()
-        return loss
+        return [compress, acc]
 
     def acculmulative_loss(self, output_cache, label, criteria):
         loss = 0
@@ -205,7 +206,6 @@ class AVnet_Gate(nn.Module):
         audio = x
         image = y
         output_cache = {'audio': [], 'image': [], 'bottle_neck': []}
-
 
         B = audio.shape[0]
         audio = audio.unsqueeze(1)
