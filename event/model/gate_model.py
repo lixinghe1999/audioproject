@@ -170,8 +170,8 @@ class AVnet_Gate(nn.Module):
         #                     0.06681756, 0.05284393, 0.03581972, 0.04172407, 0.037099, 0.04005117]).to('cuda')
         # exit_distribution2 = torch.tensor([0.44636883, 0.04831726, 0.02164928, 0.01653218, 0.01623696, 0.02155088,
         #                     0.0338516,  0.03099784, 0.03572131, 0.05392639, 0.05845306, 0.04802204]).to('cuda')
-        loss_g1 = nn.functional.cross_entropy(gate_a, gate_label[:, 0]) # compression-level loss
-        loss_g2 = nn.functional.cross_entropy(gate_i, gate_label[:, 1])  # compression-level loss
+        loss_g1 = nn.functional.cross_entropy(gate_a, gate_label[:, 0])
+        loss_g2 = nn.functional.cross_entropy(gate_i, gate_label[:, 1])
 
         output = self.projection(output)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
@@ -182,7 +182,7 @@ class AVnet_Gate(nn.Module):
               (torch.argmax(gate_i, dim=-1).float().mean() + 1)/12)
         print('acc:', (torch.argmax(output, dim=-1) == label).sum() / len(label))
         print(loss_c.item(), loss_g1.item(), loss_g2.item(), loss_r.item())
-        loss = loss_c * 0.3 + loss_g1 * 0.3 + loss_g2 * 0.3 + loss_r * 0.1
+        loss = loss_g1 * 0.3 + loss_g2 * 0.3
         loss.backward()
         return loss
 
