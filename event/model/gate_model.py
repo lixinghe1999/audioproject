@@ -106,6 +106,11 @@ class AVnet_Gate(nn.Module):
                      #{'params': self.bottleneck.parameters()},
                      {'params': self.projection.parameters()}]
         return parameter
+    def gate_parameter(self):
+        parameter = [{'params': self.gate.parameters()},
+                     {'params': self.audio.v.blocks[0].parameters()},
+                     {'params': self.image.v.blocks[0].parameters()}]
+        return parameter
 
     def label(self, output_cache, label):
         # label rule -> according the task
@@ -152,7 +157,6 @@ class AVnet_Gate(nn.Module):
                 else:
                     i = i2; j = j2
             gate_label[b, 0, i] = 1; gate_label[b, 1, j] = 1
-            # print(i, j)
         return gate_label
     def gate_train(self, audio, image, label):
         '''

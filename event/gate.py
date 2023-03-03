@@ -31,9 +31,10 @@ def gate_train(model, train_dataset, test_dataset):
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     gate = Gate(option=1).to(device)
-    model.eval()
-    optimizers = [torch.optim.Adam(gate.parameters(), lr=.0001, weight_decay=1e-4)]
     model.gate = gate
+    model.eval()
+    optimizers = [torch.optim.Adam(model.gate_parameter(), lr=.0001, weight_decay=1e-4)]
+
 
     # first show the random compression-level
     # model.eval()
@@ -57,7 +58,7 @@ def gate_train(model, train_dataset, test_dataset):
 
     best_acc = 0
     for epoch in range(5):
-        model.gate.train()
+        model.train()
         if epoch % 2 == 0 and epoch > 0:
             for optimizer in optimizers:
                 update_lr(optimizer, multiplier=.4)
