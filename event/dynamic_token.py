@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
     audio, image = input_data
     # cumulative loss
-    output_cache, output = model(audio, image, mode)
+    output_cache, output = model(audio, image)
     optimizer.zero_grad()
     loss = criteria(output, label)
     loss.backward()
@@ -21,7 +21,7 @@ def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
 def test_step(model, input_data, label, mode='dynamic'):
     audio, image = input_data
     t_start = time.time()
-    output_cache, output = model(audio, image, mode)
+    output_cache, output = model(audio, image)
     l = time.time() - t_start
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item(), len(output_cache['audio']) + len(output_cache['image']), l
