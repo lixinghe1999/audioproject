@@ -621,7 +621,7 @@ class AudioTransformerDiffPruning(VisionTransformerDiffPruning):
         print('frequncey stride={:d}, time stride={:d}'.format(fstride, tstride))
         print('number of patches={:d}'.format(self.num_patches))
         if imagenet_pretrain == True:
-            self.load_state_dict(torch.load('deit_base_patch16_224.pth')['model'], strict=False)
+            self.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
         # the linear projection layer
         new_proj = torch.nn.Conv2d(1, self.original_embedding_dim, kernel_size=(16, 16), stride=(fstride, tstride))
         if imagenet_pretrain == True:
