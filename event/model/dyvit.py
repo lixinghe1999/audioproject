@@ -758,7 +758,7 @@ class AVnet_Dynamic(nn.Module):
         prev_decision = torch.ones(B, self.num_patches, 1, dtype=audio.dtype, device=audio.device)
         policy = torch.ones(B, self.num_patches + 2, 1, dtype=audio.dtype, device=audio.device)
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks, self.image.blocks)):
-            print(audio.shape, image.shape)
+            # print(audio.shape, image.shape)
             if i in self.pruning_loc:
                 spatial_x = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
                 token_len_audio = audio.shape[1] - 1
