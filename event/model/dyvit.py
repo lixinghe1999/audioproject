@@ -739,9 +739,9 @@ class AVnet_Dynamic(nn.Module):
             self.pre_logits = nn.Identity()
         # Classifier head
         self.head = nn.Linear(self.num_features * 2, num_classes) if num_classes > 0 else nn.Identity()
-        predictor_list = [PredictorLG(embed_dim) for _ in range(len(pruning_loc))]
-
-        self.score_predictor = nn.ModuleList(predictor_list)
+        if len(pruning_loc) > 0:
+            predictor_list = [PredictorLG(embed_dim) for _ in range(len(pruning_loc))]
+            self.score_predictor = nn.ModuleList(predictor_list)
 
         self.distill = distill
 
