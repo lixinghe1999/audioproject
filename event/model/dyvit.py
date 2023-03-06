@@ -745,7 +745,7 @@ class AVnet_Dynamic(nn.Module):
         self.pruning_loc = pruning_loc
         self.token_ratio = token_ratio
 
-    @autocast
+    @autocast()
     def forward(self, audio, image):
         B, audio = self.audio.preprocess(audio.unsqueeze(1))
         B, image = self.image.preprocess(image)
