@@ -70,7 +70,7 @@ def test(model, test_dataset):
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     criteria = torch.nn.CrossEntropyLoss()
@@ -83,24 +83,18 @@ def train(model, train_dataset, test_dataset):
                            criteria=criteria, label=text.to(device), mode=mode)
         scheduler.step()
         model.eval()
-        acc = [0] * 24; count = [0] * 24
+        acc = []
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
-                acc[e-1] += a
-                count[e-1] += 1
-        mean_acc = []
-        for i in range(len(acc)):
-            if count[i] == 0:
-                mean_acc.append(0)
-            else:
-                mean_acc.append(acc[i]/count[i])
+                a = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
+                acc.append(a)
+        mean_acc = np.mean(acc)
         print('epoch', epoch)
         print('accuracy for early-exits:', mean_acc)
-        if np.mean(mean_acc) > best_acc:
-            best_acc = np.mean(mean_acc)
-            torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
+        if mean_acc > best_acc:
+            best_acc = mean_acc
+            torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc) + '.pth')
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', default='train')
