@@ -606,7 +606,8 @@ class AudioTransformerDiffPruning(VisionTransformerDiffPruning):
     :param audioset_pretrain: if use full AudioSet and ImageNet pretrained model
     :param model_size: the model size of AST, should be in [tiny224, small224, base224, base384], base224 and base 384 are same model, but are trained differently during ImageNet pretraining.
     """
-    def __init__(self, config, imagenet_pretrain=True, label_dim=309, fstride=16, tstride=16, input_fdim=128, input_tdim=384, ):
+    def __init__(self, config, imagenet_pretrain=True, label_dim=309, fstride=16, tstride=16, input_fdim=128,
+                 input_tdim=384, ):
 
         super(AudioTransformerDiffPruning, self).__init__(**config)
 
@@ -619,8 +620,8 @@ class AudioTransformerDiffPruning(VisionTransformerDiffPruning):
         f_dim, t_dim = self.get_shape(fstride, tstride, input_fdim, input_tdim)
         self.num_patches = f_dim * t_dim
         self.patch_embed.num_patches = self.num_patches
-        print('frequncey stride={:d}, time stride={:d}'.format(fstride, tstride))
-        print('number of patches={:d}'.format(self.num_patches))
+        # print('frequncey stride={:d}, time stride={:d}'.format(fstride, tstride))
+        # print('number of patches={:d}'.format(self.num_patches))
         if imagenet_pretrain == True:
             self.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
         # the linear projection layer
@@ -715,13 +716,15 @@ class AudioTransformerDiffPruning(VisionTransformerDiffPruning):
             return x
 class AVnet_Dynamic(nn.Module):
     def __init__(self, representation_size=None, distill=False, embed_dim=768, num_classes=309, \
-                 pruning_loc=[3, 6, 9], token_ratio=[0.7, 0.7**2, 0.7**3]):
+                 pruning_loc=[3, 6, 9], token_ratio=[0.7, 0.7**2, 0.7**3], pretrained=True):
         super(AVnet_Dynamic, self).__init__()
         config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
                       pruning_loc=pruning_loc, token_ratio=token_ratio)
-        self.audio = AudioTransformerDiffPruning(config, imagenet_pretrain=True)
+        self.audio = AudioTransformerDiffPruning(config, imagenet_pretrain=pretrained)
         self.image = VisionTransformerDiffPruning(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4,
                                              qkv_bias=True, pruning_loc=pruning_loc, token_ratio=token_ratio)
+        if pretrained:
+            self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
 
         self.num_patches = self.audio.num_patches + 14 * 14
         # Representation layer
@@ -755,6 +758,7 @@ class AVnet_Dynamic(nn.Module):
         prev_decision = torch.ones(B, self.num_patches, 1, dtype=audio.dtype, device=audio.device)
         policy = torch.ones(B, self.num_patches + 2, 1, dtype=audio.dtype, device=audio.device)
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks, self.image.blocks)):
+            print(audio.shape, image.shape)
             if i in self.pruning_loc:
                 spatial_x = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
                 token_len_audio = audio.shape[1] - 1
@@ -842,7 +846,7 @@ if __name__ == "__main__":
     audio = torch.zeros(1, 384, 128).to(device)
     image = torch.zeros(1, 3, 224, 224).to(device)
 
-    num_iterations = 5
+    num_iterations = 10
     with torch.no_grad():
         for i in range(num_iterations):
             if i == 1:
@@ -850,23 +854,23 @@ if __name__ == "__main__":
             multi_modal_model(audio, image)
         print((time.time() - t_start) / (num_iterations - 1))
 
-    with torch.no_grad():
-        for i in range(num_iterations):
-            if i == 1:
-                t_start = time.time()
-            model(image)
-        print((time.time() - t_start) / (num_iterations - 1))
-
-    with torch.no_grad():
-        for i in range(num_iterations):
-            if i == 1:
-                t_start = time.time()
-            model_audio(audio)
-        print((time.time() - t_start) / (num_iterations - 1))
-
-    with torch.no_grad():
-        for i in range(num_iterations):
-            if i == 1:
-                t_start = time.time()
-            model_teacher(image)
-        print((time.time() - t_start) / (num_iterations-1))
+    # with torch.no_grad():
+    #     for i in range(num_iterations):
+    #         if i == 1:
+    #             t_start = time.time()
+    #         model(image)
+    #     print((time.time() - t_start) / (num_iterations - 1))
+    #
+    # with torch.no_grad():
+    #     for i in range(num_iterations):
+    #         if i == 1:
+    #             t_start = time.time()
+    #         model_audio(audio)
+    #     print((time.time() - t_start) / (num_iterations - 1))
+    #
+    # with torch.no_grad():
+    #     for i in range(num_iterations):
+    #         if i == 1:
+    #             t_start = time.time()
+    #         model_teacher(image)
+    #     print((time.time() - t_start) / (num_iterations-1))

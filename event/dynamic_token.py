@@ -20,7 +20,7 @@ def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
     return loss.item()
 def test_step(model, input_data, label, mode='dynamic'):
     audio, image = input_data
-    output, out_pred_prob = model(audio, image)
+    output = model(audio, image)
     print(output.shape)
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item()
