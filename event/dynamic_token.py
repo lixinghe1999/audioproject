@@ -3,6 +3,7 @@ from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
 from model.dyvit import AVnet_Dynamic
+from utils.losses import DistillDiffPruningLoss_dynamic
 import warnings
 from tqdm import tqdm
 import argparse
@@ -72,7 +73,6 @@ def train(model, train_dataset, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
-    criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     model.eval()
     acc = []
@@ -123,7 +123,8 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False).to(device)
-    model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
+
+
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
@@ -131,6 +132,13 @@ if __name__ == "__main__":
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
 
     if args.task == 'train':
+        train(model, train_dataset, test_dataset)
+    elif args.task == 'distill':
+        teacher_model = AVnet_Dynamic(pruning_loc=(), pretrained=False).to(device)
+        teacher_model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
+        teacher_model.eval()
+        criteria = DistillDiffPruningLoss_dynamic(teacher_model, torch.nn.CrossEntropyLoss(), clf_weight=1.0, keep_ratio=token_ratio,
+                                                  mse_token=True, ratio_weight=args.ratio_weight, distill_weight=0.5)
         train(model, train_dataset, test_dataset)
     elif args.task == 'test':
         test(model, test_dataset)
