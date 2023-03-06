@@ -21,10 +21,9 @@ def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
 def test_step(model, input_data, label, mode='dynamic'):
     audio, image = input_data
     t_start = time.time()
-    output_cache, output = model(audio, image)
-    l = time.time() - t_start
+    output, out_pred_prob = model(audio, image)
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
-    return acc.item(), len(output_cache['audio']) + len(output_cache['image']), l
+    return acc.item()
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
