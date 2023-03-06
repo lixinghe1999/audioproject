@@ -21,7 +21,6 @@ def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
 def test_step(model, input_data, label, mode='dynamic'):
     audio, image = input_data
     output = model(audio, image)
-    print(output.shape)
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item()
 def profile(model, test_dataset):
@@ -91,7 +90,7 @@ def train(model, train_dataset, test_dataset):
                 acc.append(a)
         mean_acc = np.mean(acc)
         print('epoch', epoch)
-        print('accuracy for early-exits:', mean_acc)
+        print('accuracy:', mean_acc)
         if mean_acc > best_acc:
             best_acc = mean_acc
             torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc) + '.pth')

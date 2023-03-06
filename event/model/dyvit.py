@@ -854,23 +854,23 @@ if __name__ == "__main__":
             multi_modal_model(audio, image)
         print((time.time() - t_start) / (num_iterations - 1))
 
-    # with torch.no_grad():
-    #     for i in range(num_iterations):
-    #         if i == 1:
-    #             t_start = time.time()
-    #         model(image)
-    #     print((time.time() - t_start) / (num_iterations - 1))
-    #
-    # with torch.no_grad():
-    #     for i in range(num_iterations):
-    #         if i == 1:
-    #             t_start = time.time()
-    #         model_audio(audio)
-    #     print((time.time() - t_start) / (num_iterations - 1))
-    #
-    # with torch.no_grad():
-    #     for i in range(num_iterations):
-    #         if i == 1:
-    #             t_start = time.time()
-    #         model_teacher(image)
-    #     print((time.time() - t_start) / (num_iterations-1))
+    with torch.no_grad():
+        for i in range(num_iterations):
+            if i == 1:
+                t_start = time.time()
+            model(image)
+        print((time.time() - t_start) / (num_iterations - 1))
+
+    with torch.no_grad():
+        for i in range(num_iterations):
+            if i == 1:
+                t_start = time.time()
+            model_audio(audio)
+        print((time.time() - t_start) / (num_iterations - 1))
+
+    with torch.no_grad():
+        for i in range(num_iterations):
+            if i == 1:
+                t_start = time.time()
+            model_teacher(image)
+        print((time.time() - t_start) / (num_iterations-1))
