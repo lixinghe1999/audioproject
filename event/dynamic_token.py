@@ -72,15 +72,15 @@ def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
-    optimizers = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizers, step_size=5, gamma=0.2)
+    optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(20):
         model.train()
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizer,
+            train_step(model, input_data=(audio.to(device), image.to(device)), optimizer=optimizer,
                            criteria=criteria, label=text.to(device), mode=mode)
         scheduler.step()
         model.eval()
