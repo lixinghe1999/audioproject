@@ -72,11 +72,7 @@ def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
-    for param in model.audio.parameters():
-        param.requires_grad = False
-    for param in model.image.parameters():
-        param.requires_grad = False
-    optimizers = torch.optim.Adam(model.fusion_parameter(), lr=.0001, weight_decay=1e-4)
+    optimizers = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizers, step_size=5, gamma=0.2)
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
