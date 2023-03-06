@@ -718,9 +718,9 @@ class AVnet_Dynamic(nn.Module):
         super(AVnet_Dynamic, self).__init__()
         config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
                       pruning_loc=pruning_loc, token_ratio=token_ratio)
-        self.audio = AudioTransformerDiffPruning(config, imagenet_pretrain=True).to(device)
+        self.audio = AudioTransformerDiffPruning(config, imagenet_pretrain=True)
         self.image = VisionTransformerDiffPruning(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4,
-                                             qkv_bias=True, pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
+                                             qkv_bias=True, pruning_loc=pruning_loc, token_ratio=token_ratio)
 
         self.num_patches = self.audio.num_patches + 14 * 14
         # Representation layer
