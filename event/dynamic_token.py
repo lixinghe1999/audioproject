@@ -109,8 +109,8 @@ if __name__ == "__main__":
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
-    model = AVnet_Dynamic().to(device)
-    model.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
+    model = AVnet_Dynamic(pretrained=True).to(device)
+    # model.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
