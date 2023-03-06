@@ -21,7 +21,8 @@ import math
 import logging
 from functools import partial
 from collections import OrderedDict
-from copy import Error, deepcopy
+
+from torch.cuda.amp import autocast
 import time
 
 import torch
@@ -744,6 +745,7 @@ class AVnet_Dynamic(nn.Module):
         self.pruning_loc = pruning_loc
         self.token_ratio = token_ratio
 
+    @autocast
     def forward(self, audio, image):
         B, audio = self.audio.preprocess(audio.unsqueeze(1))
         B, image = self.image.preprocess(image)
