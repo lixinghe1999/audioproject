@@ -12,7 +12,8 @@ warnings.filterwarnings("ignore")
 def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
     audio, image = input_data
     # cumulative loss
-    output_cache, output = model(audio, image)
+    output, out_pred_prob = model(audio, image)
+    print(output.shape)
     optimizer.zero_grad()
     loss = criteria(output, label)
     loss.backward()
