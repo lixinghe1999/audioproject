@@ -14,7 +14,7 @@ def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
     # cumulative loss
     outputs = model(*input_data)
     optimizer.zero_grad()
-    loss = criteria(input_data, outputs, label)
+    loss, loss_part = criteria(input_data, outputs, label)
     loss.backward()
     optimizer.step()
     return loss.item()
