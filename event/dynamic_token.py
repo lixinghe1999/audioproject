@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 
 def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
     # cumulative loss
-    outputs = model(**input_data)
+    outputs = model(*input_data)
     optimizer.zero_grad()
     loss = criteria(input_data, outputs, label)
     loss.backward()

@@ -148,7 +148,7 @@ class DistillDiffPruningLoss_dynamic(torch.nn.Module):
 
         with torch.no_grad():
 
-            cls_t, token_t = self.teacher_model(**inputs)
+            cls_t, token_t = self.teacher_model(*inputs)
 
         cls_kl_loss = F.kl_div(
                 F.log_softmax(pred, dim=-1),
