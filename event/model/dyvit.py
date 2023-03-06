@@ -820,7 +820,10 @@ class AVnet_Dynamic(nn.Module):
             else:
                 return x, out_pred_prob
         else:
-            return x
+            if self.distill:
+                return x, features
+            else:
+                return x
 if __name__ == "__main__":
     device = 'cpu'
     base_rate = 0.5
