@@ -74,6 +74,16 @@ def train(model, train_dataset, test_dataset):
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
+    model.eval()
+    acc = []
+    with torch.no_grad():
+        for batch in tqdm(test_loader):
+            audio, image, text, _ = batch
+            a = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
+            acc.append(a)
+        mean_acc = np.mean(acc)
+        print('accuracy:', mean_acc)
+
     for epoch in range(20):
         model.train()
         for idx, batch in enumerate(tqdm(train_loader)):
