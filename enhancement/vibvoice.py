@@ -184,8 +184,8 @@ class vibvoice(nn.Module):
             acc = torch.norm(acc.reshape(batch, 3, 33, -1), dim=1)
         noisy = torch.unsqueeze(noisy[:, 1:257, 1:], 1)
         acc = torch.unsqueeze(acc[:, 1:, 1:], 1)
-        acc = self.norm(acc)
-        noisy = self.norm(noisy)
+        # acc = self.norm(acc)
+        # noisy = self.norm(noisy)
         acc_mid, acc_output = self.IMU_branch(acc)
         mask = self.Residual_block(acc_mid, self.Audio_branch(noisy))
         clean = mask * noisy
