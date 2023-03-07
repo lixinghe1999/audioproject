@@ -187,14 +187,14 @@ if __name__ == "__main__":
         # print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
         # model.load_state_dict(checkpoint['model'])
 
-        # ckpt_dir = 'pretrain/vibvoice'
-        # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        ckpt_name = 'pretrain/sudormrf_large_new.pth'
+        ckpt_dir = 'pretrain/vibvoice'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        # ckpt_name = 'pretrain/sudormrf_large_new.pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
 
         model.load_state_dict(ckpt_start)
-        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/DNStrain_noise.json', 'json/train_imu.json'],
+        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
                                      simulation=True, person=people, ratio=-0.2, rir=rir, dvector=dvector)
         avg_metric = inference(test_dataset, 4, model)
         print("performance before training:", avg_metric)
@@ -211,26 +211,25 @@ if __name__ == "__main__":
             ckpt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
             ckpts.append(ckpt)
         # if True, use text (WER) to evaluate, else -> use reference audio
-        no_reference = False
-        simulation = not no_reference
+        no_reference = True
         if no_reference:
             for ckpt, p in zip(ckpts, people):
                 model.load_state_dict(ckpt)
                 test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav', 'json/noise_imu.json'],
-                                             person=[p], simulation=simulation, text=no_reference, dvector=dvector)
+                                             person=[p], simulation=False, text=no_reference, dvector=dvector)
                 avg_metric = inference(test_dataset, 4, model, text=no_reference)
                 print(p, avg_metric)
             envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
             for env in envs:
                 test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav', 'json/noise_imu.json'],
-                                             person=[env], simulation=simulation, text=no_reference, dvector=dvector)
+                                             person=[env], simulation=False, text=no_reference, dvector=dvector)
                 avg_metric = inference(test_dataset, 4, model, text=no_reference)
                 print(env, avg_metric)
         else:
             for ckpt, p in zip(ckpts, people):
                 model.load_state_dict(ckpt)
                 test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
-                                             person=[p], simulation=simulation, ratio=-0.2, rir=rir, dvector=dvector)
+                                             person=[p], simulation=True, ratio=-0.2, rir=rir, dvector=dvector)
                 avg_metric = inference(test_dataset, 4, model, text=no_reference)
                 print(p, avg_metric)
 

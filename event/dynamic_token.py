@@ -109,6 +109,9 @@ if __name__ == "__main__":
     batch_size = args.batch
     from torch.utils.tensorboard import SummaryWriter
     writer = SummaryWriter()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    torch.cuda.set_device(0)
+
     pruning_loc = ()
     base_rate = 0.7
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
@@ -117,8 +120,7 @@ if __name__ == "__main__":
     config_base = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
                        pruning_loc=pruning_loc, token_ratio=token_ratio)
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.set_device(0)
+
     # model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
     # model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
 
