@@ -190,21 +190,30 @@ if __name__ == "__main__":
         # avg_metric = inference(test_dataset, 16, model)
         # print("performance before training:", avg_metric)
 
-        ckpts = []
-        for p in people:
-            model.load_state_dict(ckpt_start)
-            p_except = [i for i in people if i != p]
-            train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
-                                         person=[p], simulation=True, rir=rir, dvector=dvector)
-            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
-                                          person=[p], simulation=True, rir=rir, ratio=0.8, dvector=dvector)
-            train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
-            ckpt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
-            ckpts.append(ckpt)
+        # ckpts = []
+        # for p in people:
+        #     model.load_state_dict(ckpt_start)
+        #     p_except = [i for i in people if i != p]
+        #     train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
+        #                                  person=[p], simulation=True, rir=rir, dvector=dvector)
+        #     train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+        #                                   person=[p], simulation=True, rir=rir, ratio=0.8, dvector=dvector)
+        #     train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
+        #     ckpt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
+        #     ckpts.append(ckpt)
+
+        model.load_state_dict(ckpt_start)
+        train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
+                                       person=people, simulation=True, rir=rir, dvector=dvector)
+        train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+                                       person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
+        train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
+        ckpt, _, _ = train(train_dataset, 10, 0.0001, 32, model)
+
         # if True, use text (WER) to evaluate, else -> use reference audio
         no_reference = True
         if no_reference:
-            for ckpt, p in zip(ckpts, people):
+            for p in people:
                 model.load_state_dict(ckpt)
                 test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_gt.json', 'json/noise_imu.json'],
                                              person=[p], simulation=False, text=no_reference, dvector=dvector)
