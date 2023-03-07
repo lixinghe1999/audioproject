@@ -721,8 +721,7 @@ class AVnet_Dynamic(nn.Module):
         config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
                       pruning_loc=pruning_loc, token_ratio=token_ratio)
         self.audio = AudioTransformerDiffPruning(config, imagenet_pretrain=pretrained)
-        self.image = VisionTransformerDiffPruning(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4,
-                                             qkv_bias=True, pruning_loc=pruning_loc, token_ratio=token_ratio)
+        self.image = VisionTransformerDiffPruning(**config)
         if pretrained:
             self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
 

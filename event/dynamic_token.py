@@ -2,7 +2,7 @@ import time
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.dyvit import AVnet_Dynamic
+from model.dyvit import AVnet_Dynamic, AudioTransformerDiffPruning, VisionTransformerDiffPruning
 from utils.losses import DistillDiffPruningLoss_dynamic
 import warnings
 from tqdm import tqdm
@@ -14,13 +14,13 @@ def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
     # cumulative loss
     outputs = model(*input_data)
     optimizer.zero_grad()
-    loss, loss_part = criteria(input_data, outputs, label)
+    # loss, loss_part = criteria(input_data, outputs, label)
+    loss = criteria(outputs[0], label)
     loss.backward()
     optimizer.step()
     return loss.item()
 def test_step(model, input_data, label, mode='dynamic'):
-    audio, image = input_data
-    output, features = model(audio, image)
+    output = model(*input_data)
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item()
 def profile(model, test_dataset):
@@ -87,7 +87,7 @@ def train(model, train_dataset, test_dataset):
         model.train()
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            train_step(model, input_data=(audio.to(device), image.to(device)), optimizer=optimizer,
+            train_step(model, input_data=(image.to(device)), optimizer=optimizer,
                            criteria=criteria, label=text.to(device), mode=mode)
         scheduler.step()
         model.eval()
@@ -95,7 +95,7 @@ def train(model, train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
+                a = test_step(model, input_data=(image.to(device)), label=text, mode=mode)
                 acc.append(a)
         mean_acc = np.mean(acc)
         print('epoch', epoch)
@@ -115,20 +115,22 @@ if __name__ == "__main__":
     batch_size = args.batch
     from torch.utils.tensorboard import SummaryWriter
     writer = SummaryWriter()
-    pruning_loc = [3, 6, 9]
+    pruning_loc = ()
     base_rate = 0.7
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
-    model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
-    model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
-
+    # model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
+    # model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
+    model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
+    model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
+    criteria = torch.nn.CrossEntropyLoss()
 
     if args.task == 'train':
         train(model, train_dataset, test_dataset)
