@@ -438,6 +438,8 @@ class VisionTransformerDiffPruning(nn.Module):
         x = x + self.pos_embed
         x = self.pos_drop(x)
         return B, x
+
+    @autocast()
     def forward(self, x):
         B, x = self.preprocess(x)
         p_count = 0
@@ -576,6 +578,7 @@ class VisionTransformerTeacher(nn.Module):
         self.num_classes = num_classes
         self.head = nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
 
+    @autocast()
     def forward(self, x):
         B = x.shape[0]
         x = self.patch_embed(x)
@@ -665,6 +668,7 @@ class AudioTransformerDiffPruning(VisionTransformerDiffPruning):
         t_dim = test_out.shape[3]
         return f_dim, t_dim
 
+    @autocast()
     def forward(self, x):
         """
         :param x: the input spectrogram, expected shape: (batch_size, time_frame_num, frequency_bins), e.g., (12, 1024, 128)
