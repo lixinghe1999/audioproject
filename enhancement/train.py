@@ -208,7 +208,7 @@ if __name__ == "__main__":
         train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
                                        person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
         train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
-        ckpt, _, _ = train(train_dataset, 10, 0.0001, 32, model)
+        ckpt, _, _ = train(train_dataset, 10, 0.0001, 64, model)
 
         # if True, use text (WER) to evaluate, else -> use reference audio
         no_reference = True
@@ -217,13 +217,13 @@ if __name__ == "__main__":
                 model.load_state_dict(ckpt)
                 test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_gt.json', 'json/noise_imu.json'],
                                              person=[p], simulation=False, text=no_reference, dvector=dvector)
-                avg_metric = inference(test_dataset, 4, model, text=no_reference)
+                avg_metric = inference(test_dataset, 8, model, text=no_reference)
                 print(p, avg_metric)
             envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
             for env in envs:
                 test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_gt.json', 'json/noise_imu.json'],
                                              person=[env], simulation=False, text=no_reference, dvector=dvector)
-                avg_metric = inference(test_dataset, 4, model, text=no_reference)
+                avg_metric = inference(test_dataset, 8, model, text=no_reference)
                 print(env, avg_metric)
         else:
             for ckpt, p in zip(ckpts, people):
