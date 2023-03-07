@@ -2,8 +2,8 @@ import torch
 from torch.nn import functional
 
 
-from audio_zen.model.base_model import BaseModel
-from audio_zen.model.module.sequence_model import SequenceModel
+from .base_model import BaseModel
+from .module.sequence_model import SequenceModel
 import time
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
@@ -173,8 +173,7 @@ def model_speed(model, input):
     return (time.time() - t_start)/step
 def model_save(model, audio):
     from torch.jit.mobile import (
-                _backport_for_mobile,
-                _get_model_bytecode_version,
+        _get_model_bytecode_version,
             )
     model.eval()
     scripted_module = torch.jit.trace(model, audio)
