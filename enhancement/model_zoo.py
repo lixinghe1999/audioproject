@@ -18,11 +18,11 @@ This script contains 4 model's training and test due to their large differences 
 4. Conformer, GAN, spectrogram real+imag -> real+imag
 '''
 # Uncomment for using another pre-trained model
-# asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
-#                                            savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
-#                                            run_opts={"device": "cuda"})
-# sisdr_loss = StabilizedPermInvSISDRMetric(n_actual_sources=2, n_estimated_sources=2,
-#                                   zero_mean=True, backward_loss=True, improvement=True)
+asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech",
+                                           savedir="pretrained_models/asr-transformer-transformerlm-librispeech",
+                                           run_opts={"device": "cuda"})
+sisdr_loss = StabilizedPermInvSISDRMetric(n_actual_sources=2, n_estimated_sources=2,
+                                  zero_mean=True, backward_loss=True, improvement=True)
 def eval(clean, predict, text=None):
     if text is not None:
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)

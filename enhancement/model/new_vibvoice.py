@@ -77,7 +77,7 @@ class vibvoice(nn.Module):
         self.fc1 = nn.Linear(lstm_dim, fc1_dim)
         self.fc2 = nn.Linear(fc1_dim, num_freq)
 
-        self.transfer_function = np.load('transfer_function_EMSB_filter.npy')
+        self.transfer_function = np.load('../transfer_function_EMSB_filter.npy')
         self.length_transfer_function = self.transfer_function.shape[0]
     def norm(self, x):
         mu = torch.mean(x, dim=list(range(1, x.dim())), keepdim=True)

@@ -8,7 +8,7 @@ import numpy as np
 freq_bin_high = 33
 
 def noise_extraction(time_bin):
-    noise_list = os.listdir('../dataset/noise/')
+    noise_list = os.listdir('../../dataset/noise/')
     index = np.random.randint(0, len(noise_list))
     noise_clip = np.load('../dataset/noise/' + noise_list[index])
     index = np.random.randint(0, noise_clip.shape[1] - time_bin)
@@ -167,7 +167,7 @@ class vibvoice(nn.Module):
         self.Audio_branch = Audio_branch()
         self.Residual_block = Residual_Block(384)
 
-        self.transfer_function = np.load('transfer_function_EMSB_filter.npy')
+        self.transfer_function = np.load('../transfer_function_EMSB_filter.npy')
         self.length_transfer_function = self.transfer_function.shape[0]
     def norm(self, x):
         mu = torch.mean(x, dim=list(range(1, x.dim())), keepdim=True)

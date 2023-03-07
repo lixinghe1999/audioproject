@@ -73,7 +73,7 @@ def test(model, test_dataset):
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=32, shuffle=False)
     optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     best_acc = 0
@@ -112,22 +112,22 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
 
-    pruning_loc = ()
+    pruning_loc = (3, 6, 9)
     base_rate = 0.7
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
-    config_small = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
-                        pruning_loc=pruning_loc, token_ratio=token_ratio)
-    config_base = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
-                       pruning_loc=pruning_loc, token_ratio=token_ratio)
+    # config_small = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
+    #                     pruning_loc=pruning_loc, token_ratio=token_ratio)
+    # config_base = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+    #                    pruning_loc=pruning_loc, token_ratio=token_ratio)
 
 
-    # model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
-    # model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
+    model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
+    model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
 
     # model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
     # model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
 
-    model = AudioTransformerDiffPruning(config_small, imagenet_pretrain=False).to(device)
+    # model = AudioTransformerDiffPruning(config_small, imagenet_pretrain=False).to(device)
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)

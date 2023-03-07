@@ -2,20 +2,11 @@ import os
 import matplotlib.pyplot as plt
 import torch
 torch.manual_seed(0)
-
-from dataset import NoisyCleanSet, EMSBDataset
-
-from fullsubnet import fullsubnet
-from vibvoice import vibvoice
-from conformer import TSCNet
-from SEANet import SEANet
-from voicefilter import voicefilter
-from sudormrf import sudormrf
-
+from dataset import NoisyCleanSet
+from model import TSCNet, vibvoice, fullsubnet
 import numpy as np
 from tqdm.auto import tqdm
 import argparse
-from discriminator import Discriminator_time, Discriminator_spectrogram, MultiScaleDiscriminator, SingleScaleDiscriminator
 import model_zoo
 def parse_sample(sample, text=False):
     if text:

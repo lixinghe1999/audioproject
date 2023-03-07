@@ -1,8 +1,7 @@
-from fullsubnet import FullSubNet
-from vibvoice import A2net
+from enhancement.model.fullsubnet import FullSubNet
+from enhancement.model.vibvoice import A2net
 from dataset import NoisyCleanSet
 from model_zoo import test_vibvoice, test_fullsubnet
-import soundfile as sf
 import scipy.io.wavfile as wav
 import torch
 '''
