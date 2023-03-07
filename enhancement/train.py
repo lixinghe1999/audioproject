@@ -27,7 +27,7 @@ def inference(dataset, BATCH_SIZE, model, text=False):
     Metric = []
     model.eval()
     with torch.no_grad():
-        for sample in test_loader:
+        for sample in tqdm(test_loader):
             text, clean, noise, acc = parse_sample(sample, text=text_inference)
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device, text)
             Metric.append(metric)
@@ -206,13 +206,13 @@ if __name__ == "__main__":
         if no_reference:
             for ckpt, p in zip(ckpts, people):
                 model.load_state_dict(ckpt)
-                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav', 'json/noise_imu.json'],
+                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_gt.json', 'json/noise_imu.json'],
                                              person=[p], simulation=False, text=no_reference, dvector=dvector)
                 avg_metric = inference(test_dataset, 4, model, text=no_reference)
                 print(p, avg_metric)
             envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
             for env in envs:
-                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav', 'json/noise_imu.json'],
+                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_gt.json', 'json/noise_imu.json'],
                                              person=[env], simulation=False, text=no_reference, dvector=dvector)
                 avg_metric = inference(test_dataset, 4, model, text=no_reference)
                 print(env, avg_metric)
