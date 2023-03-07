@@ -149,8 +149,8 @@ class BaseDataset:
                 data = signal.filtfilt(b, a, data, axis=0)
                 # data = np.clip(data, -0.05, 0.05)
             else:
-                data = np.zeros((48000))
-                # data, sr = librosa.load(file, offset=offset, duration=duration, sr=None)
+                # data = np.zeros((48000))
+                data, sr = librosa.load(file, offset=offset, duration=duration, sr=None)
             print(time.time() - t_start)
             return data, file
 class NoisyCleanSet:
