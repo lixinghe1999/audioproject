@@ -81,7 +81,7 @@ def train(model, train_dataset, test_dataset):
         model.train()
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            train_step(model, input_data=[audio.to(device)], optimizer=optimizer,
+            train_step(model, input_data=[audio.to(device), image.to(device)], optimizer=optimizer,
                            criteria=criteria, label=text.to(device))
         scheduler.step()
         model.eval()
@@ -89,7 +89,7 @@ def train(model, train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a = test_step(model, input_data=[audio.to(device)], label=text)
+                a = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)
                 acc.append(a)
         mean_acc = np.mean(acc)
         print('epoch', epoch)
