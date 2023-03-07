@@ -114,7 +114,7 @@ if __name__ == "__main__":
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.set_device(1)
+    torch.cuda.set_device(0)
     # model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
     # model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
     # model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
