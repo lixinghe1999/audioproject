@@ -140,22 +140,14 @@ class BaseDataset:
             if self.length:
                 offset = self.stride * index
                 duration = self.length
-            t_start = time.time()
             if file[-3:] == 'txt':
                 b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
                 data = np.loadtxt(file)
                 data = data[offset * self.sample_rate: (offset + duration) * self.sample_rate, :]
                 data /= 2 ** 14
                 data = signal.filtfilt(b, a, data, axis=0)
-                # data = np.clip(data, -0.05, 0.05)
             else:
-                # data = np.zeros((48000))
                 data, sr = librosa.load(file, offset=offset, duration=duration, sr=None)
-                # data, sr = ta.load(file, frame_offset=offset * self.sample_rate, num_frames=duration * self.sample_rate)
-                # data = data[0]
-                print(data.shape)
-
-            print(time.time() - t_start)
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20),

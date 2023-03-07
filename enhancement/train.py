@@ -57,12 +57,11 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Loss_list = []
         model.train()
         for i, sample in enumerate(tqdm(train_loader)):
-            pass
-            # text, clean, noise, acc = parse_sample(sample)
-            # loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            # if i % 1500 == 0 and i != 0:
-            #     print(loss)
-            # Loss_list.append(loss)
+            text, clean, noise, acc = parse_sample(sample)
+            loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
+            if i % 1500 == 0 and i != 0:
+                print(loss)
+            Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         if save_all:
             torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
@@ -206,7 +205,7 @@ if __name__ == "__main__":
         train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
                                        person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
         train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
-        ckpt, _, _ = train(train_dataset, 10, 0.0001, 8, model)
+        ckpt, _, _ = train(train_dataset, 10, 0.0001, 16, model)
 
         # if True, use text (WER) to evaluate, else -> use reference audio
         no_reference = True
