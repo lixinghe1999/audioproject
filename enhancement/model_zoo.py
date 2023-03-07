@@ -1,3 +1,5 @@
+import time
+
 import librosa
 import torch
 import numpy as np
@@ -133,12 +135,14 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
     clean_mag = clean_mag.to(device=device)
-    clean_mag = torch.unsqueeze(clean_mag[:, 1:257, 1:], 1)
+    t_start = time.time()
+    print(noisy_mag.shape, clean_mag.shape)
     predict = model(noisy_mag, acc)
+    print(time.time() - t_start)
     if isinstance(predict, tuple):
         predict = predict[0]
 
-    loss = Spectral_Loss(predict, clean_mag)
+    loss = Spectral_Loss(predict, torch.unsqueeze(clean_mag[:, 1:257, 1:], 1))
     #loss += 0.1 * F.mse_loss(acc, clean_mag[:, :, :32, :])
     loss.backward()
     optimizer.step()
