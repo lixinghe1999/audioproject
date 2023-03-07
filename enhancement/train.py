@@ -57,11 +57,12 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Loss_list = []
         model.train()
         for i, sample in enumerate(tqdm(train_loader)):
-            text, clean, noise, acc = parse_sample(sample)
-            loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 1500 == 0 and i != 0:
-                print(loss)
-            Loss_list.append(loss)
+            pass
+            # text, clean, noise, acc = parse_sample(sample)
+            # loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
+            # if i % 1500 == 0 and i != 0:
+            #     print(loss)
+            # Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         if save_all:
             torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
