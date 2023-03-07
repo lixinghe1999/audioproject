@@ -174,9 +174,6 @@ if __name__ == "__main__":
         # evaluation for personalized model
         dvector = None
         rir = 'json/rir.json'
-        # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
-        # print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
-        # model.load_state_dict(checkpoint['model'])
 
         ckpt_dir = 'pretrain/vibvoice'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
