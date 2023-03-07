@@ -121,10 +121,11 @@ if __name__ == "__main__":
     torch.cuda.set_device(0)
     # model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
     # model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
+
     # model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
     # model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
 
-    model = AudioTransformerDiffPruning(config_small, imagenet_pretrain=True).to(device)
+    model = AudioTransformerDiffPruning(config_small, imagenet_pretrain=False).to(device)
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
