@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
                   pruning_loc=pruning_loc, token_ratio=token_ratio)
-    model = AudioTransformerDiffPruning(config, imagenet_pretrain=True)
+    model = AudioTransformerDiffPruning(config, imagenet_pretrain=True).to(device)
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
