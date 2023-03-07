@@ -112,6 +112,10 @@ if __name__ == "__main__":
     pruning_loc = ()
     base_rate = 0.7
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
+    config_small = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
+                        pruning_loc=pruning_loc, token_ratio=token_ratio)
+    config_base = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+                       pruning_loc=pruning_loc, token_ratio=token_ratio)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
@@ -120,9 +124,7 @@ if __name__ == "__main__":
     # model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
     # model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
 
-    config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
-                  pruning_loc=pruning_loc, token_ratio=token_ratio)
-    model = AudioTransformerDiffPruning(config, imagenet_pretrain=True).to(device)
+    model = AudioTransformerDiffPruning(config_small, imagenet_pretrain=True).to(device)
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)

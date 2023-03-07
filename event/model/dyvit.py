@@ -719,11 +719,17 @@ class AudioTransformerDiffPruning(VisionTransformerDiffPruning):
         else:
             return x
 class AVnet_Dynamic(nn.Module):
-    def __init__(self, representation_size=None, distill=False, embed_dim=768, num_classes=309, \
+    def __init__(self, scale='base', representation_size=None, distill=False, num_classes=309, \
                  pruning_loc=[3, 6, 9], token_ratio=[0.7, 0.7**2, 0.7**3], pretrained=True):
         super(AVnet_Dynamic, self).__init__()
-        config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
-                      pruning_loc=pruning_loc, token_ratio=token_ratio)
+        if scale == 'base':
+            config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+                          pruning_loc=pruning_loc, token_ratio=token_ratio)
+            embed_dim = 768
+        elif scale == 'small':
+            config = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
+                                pruning_loc=pruning_loc, token_ratio=token_ratio)
+            embed_dim = 384
         self.audio = AudioTransformerDiffPruning(config, imagenet_pretrain=pretrained)
         self.image = VisionTransformerDiffPruning(**config)
         if pretrained:
