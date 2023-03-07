@@ -74,10 +74,10 @@ def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=32, shuffle=False)
-    optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=.00001, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     best_acc = 0
-    for epoch in range(20):
+    for epoch in range(10):
         model.train()
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
 
-    pruning_loc = (3, 6, 9)
+    pruning_loc = ()
     base_rate = 0.7
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
     # config_small = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
@@ -122,7 +122,9 @@ if __name__ == "__main__":
 
 
     model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
-    model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
+    model.audio.load_state_dict(torch.load('A_6_0.5303089942924621.pth'), strict=False)
+    model.image.load_state_dict(torch.load('V_7_0.5041330446762449.pth'), strict=False)
+    # model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
 
     # model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
     # model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
@@ -141,8 +143,8 @@ if __name__ == "__main__":
         teacher_model = AVnet_Dynamic(pruning_loc=(), pretrained=False, distill=True).to(device)
         teacher_model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
         teacher_model.eval()
-        criteria = DistillDiffPruningLoss_dynamic(teacher_model, torch.nn.CrossEntropyLoss(), clf_weight=1.0, keep_ratio=token_ratio,
-                                                  mse_token=True, ratio_weight=2.0, distill_weight=0.5)
+        criteria = DistillDiffPruningLoss_dynamic(teacher_model, torch.nn.CrossEntropyLoss(), clf_weight=1.0,
+                                                  keep_ratio=token_ratio, mse_token=True, ratio_weight=2.0, distill_weight=0.5)
         train(model, train_dataset, test_dataset)
     elif args.task == 'test':
         test(model, test_dataset)

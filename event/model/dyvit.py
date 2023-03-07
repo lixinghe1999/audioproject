@@ -719,14 +719,14 @@ class AudioTransformerDiffPruning(VisionTransformerDiffPruning):
         else:
             return x
 class AVnet_Dynamic(nn.Module):
-    def __init__(self, scale='base', representation_size=None, distill=False, num_classes=309, \
+    def __init__(self, scale='base', distill=False, num_classes=309, \
                  pruning_loc=[3, 6, 9], token_ratio=[0.7, 0.7**2, 0.7**3], pretrained=True):
         super(AVnet_Dynamic, self).__init__()
         if scale == 'base':
             config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
                           pruning_loc=pruning_loc, token_ratio=token_ratio)
             embed_dim = 768
-        elif scale == 'small':
+        else:
             config = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
                                 pruning_loc=pruning_loc, token_ratio=token_ratio)
             embed_dim = 384
@@ -736,18 +736,9 @@ class AVnet_Dynamic(nn.Module):
             self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
 
         self.num_patches = self.audio.num_patches + 14 * 14
-        # Representation layer
-        if representation_size:
-            self.num_features = representation_size
-            self.pre_logits = nn.Sequential(OrderedDict([
-                ('fc', nn.Linear(embed_dim, representation_size)),
-                ('act', nn.Tanh())
-            ]))
-        else:
-            self.num_features = embed_dim
-            self.pre_logits = nn.Identity()
+
         # Classifier head
-        self.head = nn.Linear(self.num_features * 2, num_classes) if num_classes > 0 else nn.Identity()
+        self.head = nn.Linear(embed_dim * 2, num_classes) if num_classes > 0 else nn.Identity()
         if len(pruning_loc) > 0:
             predictor_list = [PredictorLG(embed_dim) for _ in range(len(pruning_loc))]
             self.score_predictor = nn.ModuleList(predictor_list)
@@ -821,7 +812,6 @@ class AVnet_Dynamic(nn.Module):
         features = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
         x = torch.cat([audio[:, 0], image[:, 0]], dim=1)
         x = torch.flatten(x, start_dim=1)
-        x = self.pre_logits(x)
         x = self.head(x)
         if self.training:
             if self.distill:
