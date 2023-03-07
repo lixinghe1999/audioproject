@@ -151,7 +151,7 @@ class BaseDataset:
             else:
                 # data = np.zeros((48000))
                 # data, sr = librosa.load(file, offset=offset, duration=duration, sr=None)
-                data = ta.load(file, frame_offset=offset * self.sample_rate, num_frames=duration * self.sample_rate)
+                data, sr = ta.load(file, frame_offset=offset * self.sample_rate, num_frames=duration * self.sample_rate)
                 print(data.shape)
 
             print(time.time() - t_start)
