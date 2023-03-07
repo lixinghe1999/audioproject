@@ -135,10 +135,7 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     # VibVoice
     noisy_mag = noisy_mag.to(device=device)
     clean_mag = clean_mag.to(device=device)
-    t_start = time.time()
-    print(noisy_mag.shape, clean_mag.shape)
     predict = model(noisy_mag, acc)
-    print(time.time() - t_start)
     if isinstance(predict, tuple):
         predict = predict[0]
 
