@@ -9,7 +9,7 @@ import time
 import torch.nn as nn
 import torch
 from torch.cuda.amp import autocast
-from model.ast_vit import ASTModel, VITModel
+from model.gate_vit import ASTModel, VITModel
 from model.resnet34 import ResNet
 def gumbel_softmax(logits, tau=1, hard=False, dim=1, training=True):
     """ See `torch.nn.functional.gumbel_softmax()` """
