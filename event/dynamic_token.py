@@ -10,17 +10,21 @@ import argparse
 
 warnings.filterwarnings("ignore")
 
-def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
+def train_step(model, input_data, optimizer, criteria, label):
     # cumulative loss
     outputs = model(*input_data)
     optimizer.zero_grad()
-    # loss, loss_part = criteria(input_data, outputs, label)
-    loss = criteria(outputs[0], label)
+    if args.task == 'distill':
+        loss, loss_part = criteria(input_data, outputs, label)
+    else:
+        loss = criteria(outputs[0], label)
     loss.backward()
     optimizer.step()
     return loss.item()
-def test_step(model, input_data, label, mode='dynamic'):
+def test_step(model, input_data, label):
     output = model(*input_data)
+    if isinstance(output, tuple):
+        output = output[0]
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item()
 def profile(model, test_dataset):
@@ -73,29 +77,19 @@ def train(model, train_dataset, test_dataset):
     optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     best_acc = 0
-    # model.eval()
-    # acc = []
-    # with torch.no_grad():
-    #     for batch in tqdm(test_loader):
-    #         audio, image, text, _ = batch
-    #         a = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
-    #         acc.append(a)
-    #     mean_acc = np.mean(acc)
-    #     print('accuracy:', mean_acc)
-
     for epoch in range(20):
         model.train()
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            train_step(model, input_data=[image.to(device)], optimizer=optimizer,
-                           criteria=criteria, label=text.to(device), mode=mode)
+            train_step(model, input_data=[audio.to(device)], optimizer=optimizer,
+                           criteria=criteria, label=text.to(device))
         scheduler.step()
         model.eval()
         acc = []
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a = test_step(model, input_data=[image.to(device)], label=text, mode=mode)
+                a = test_step(model, input_data=[audio.to(device)], label=text)
                 acc.append(a)
         mean_acc = np.mean(acc)
         print('epoch', epoch)
@@ -123,16 +117,20 @@ if __name__ == "__main__":
     torch.cuda.set_device(1)
     # model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
     # model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
-    model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
-    model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
+    # model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
+    # model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
+
+    config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+                  pruning_loc=pruning_loc, token_ratio=token_ratio)
+    model = AudioTransformerDiffPruning(config, imagenet_pretrain=True)
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    criteria = torch.nn.CrossEntropyLoss()
 
     if args.task == 'train':
+        criteria = torch.nn.CrossEntropyLoss()
         train(model, train_dataset, test_dataset)
     elif args.task == 'distill':
         teacher_model = AVnet_Dynamic(pruning_loc=(), pretrained=False, distill=True).to(device)
