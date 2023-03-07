@@ -6,7 +6,7 @@ torch.manual_seed(0)
 from dataset import NoisyCleanSet, EMSBDataset
 
 from fullsubnet import fullsubnet
-from new_vibvoice import vibvoice
+from vibvoice import vibvoice
 from conformer import TSCNet
 from SEANet import SEANet
 from voicefilter import voicefilter
