@@ -28,48 +28,20 @@ def test_step(model, input_data, label):
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item()
 def profile(model, test_dataset):
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=32, shuffle=False)
     model.eval()
-    compress_level = []
-    error = 0
-    correct = 0
+    token_ratio = [[0.8, 0.8**2, 0.8**3], [0.7, 0.7**2, 0.7**3], [0.6, 0.6**2, 0.6**3], [0.75, 0.5, 0.25]]
+    acc = []
     with torch.no_grad():
-        for batch in tqdm(test_loader):
-            audio, image, text, _ = batch
-            output_cache, output = model(audio.to(device), image.to(device), 'no_exit')
-
-            gate_label = model.label(output_cache, text)
-            gate_label = torch.argmax(gate_label[0], dim=-1, keepdim=True).cpu().numpy()
-            if torch.argmax(output).cpu() == text:
-                correct += 1
-                compress_level.append(gate_label)
-            elif gate_label[0] == 11 and gate_label[1] == 11:
-                error += 1
-            else:
-                compress_level.append(gate_label)
-    compress_level = np.concatenate(compress_level, axis=-1)
-    compress_diff = np.abs(compress_level[0] - compress_level[1])
-    compress_diff = np.bincount(compress_diff)
-    compress_audio = np.bincount(compress_level[0])
-    compress_image = np.bincount(compress_level[1])
-    print("compression level difference:", compress_diff / len(test_loader))
-    print("audio compression level:", compress_audio / len(test_loader))
-    print("image compression level:", compress_image / len(test_loader))
-    print("overall accuracy:", 1 - error / len(test_loader))
-    print("final layer accuracy:", correct / len(test_loader))
-def test(model, test_dataset):
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
-    model.eval()
-    acc = [[0], [], [], [], [], [], [], []]
-    with torch.no_grad():
-        for batch in tqdm(test_loader):
-            audio, image, text, _ = batch
-            a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='dynamic')
-            acc[e - 1] += [a]
-    mean_acc = []
-    for ac in acc:
-        mean_acc.append(np.mean(ac))
-    print('accuracy for early-exits:', mean_acc)
+        for ratio in token_ratio:
+            model.token_ratio = ratio
+            for batch in tqdm(test_loader):
+                audio, image, text, _ = batch
+                a = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)
+                acc.append(a)
+        mean_acc = np.mean(acc)
+        print('preserved ratio', ratio)
+        print('accuracy:', mean_acc)
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
@@ -78,12 +50,12 @@ def train(model, train_dataset, test_dataset):
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     best_acc = 0
     for epoch in range(10):
-        model.train()
-        for idx, batch in enumerate(tqdm(train_loader)):
-            audio, image, text, _ = batch
-            train_step(model, input_data=[audio.to(device), image.to(device)], optimizer=optimizer,
-                           criteria=criteria, label=text.to(device))
-        scheduler.step()
+        # model.train()
+        # for idx, batch in enumerate(tqdm(train_loader)):
+        #     audio, image, text, _ = batch
+        #     train_step(model, input_data=[audio.to(device), image.to(device)], optimizer=optimizer,
+        #                    criteria=criteria, label=text.to(device))
+        # scheduler.step()
         model.eval()
         acc = []
         with torch.no_grad():
@@ -146,8 +118,6 @@ if __name__ == "__main__":
         criteria = DistillDiffPruningLoss_dynamic(teacher_model, torch.nn.CrossEntropyLoss(), clf_weight=1.0,
                                                   keep_ratio=[0.75, 0.5, 0.25], mse_token=True, ratio_weight=2.0, distill_weight=0.5)
         train(model, train_dataset, test_dataset)
-    elif args.task == 'test':
-        test(model, test_dataset)
     elif args.task == 'profile':
         profile(model, test_dataset)
 
