@@ -175,7 +175,7 @@ if __name__ == "__main__":
         dvector = None
         rir = 'json/rir.json'
 
-        ckpt_dir = 'pretrain/fullsubnet'
+        ckpt_dir = 'pretrain/fullsubnet_rir'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         # ckpt_name = 'pretrain/sudormrf_large_new.pth'
         # ckpt_name = 'pretrain/[ 2.56731426  3.34212493 14.60209821  0.84575664].pth'
