@@ -30,8 +30,8 @@ def test_step(model, input_data, label):
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     model.eval()
-    #  token_ratio = [[0.8, 0.8**2, 0.8**3], [0.7, 0.7**2, 0.7**3], [0.6, 0.6**2, 0.6**3], [0.75, 0.5, 0.25]]
-    token_ratio = [[0.6, 0.6**2, 0.6**3], [0.5, 0.5**2, 0.5**3]]
+    token_ratio = [[0.8, 0.8**2, 0.8**3], [0.7, 0.7**2, 0.7**3]]
+    # token_ratio = [[0.6, 0.6**2, 0.6**3], [0.5, 0.5**2, 0.5**3]]
     acc = []
     with torch.no_grad():
         for ratio in token_ratio:
@@ -81,8 +81,6 @@ if __name__ == "__main__":
     workers = args.worker
     batch_size = args.batch
     from torch.utils.tensorboard import SummaryWriter
-    import os
-    os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
     writer = SummaryWriter()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
