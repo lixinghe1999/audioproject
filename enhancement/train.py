@@ -181,6 +181,9 @@ if __name__ == "__main__":
         # ckpt_name = 'pretrain/[ 2.56731426  3.34212493 14.60209821  0.84575664].pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
+        for k, v in ckpt_start.items():
+            name = k[7:]  # remove `module.`
+            ckpt_start[name] = v
 
         # model.load_state_dict(ckpt_start)
         # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
