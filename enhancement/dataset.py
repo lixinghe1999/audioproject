@@ -7,7 +7,7 @@ import torch
 import torch.utils.data as Data
 import scipy.signal as signal
 import librosa
-from enhancement.feature import norm_amplitude, tailor_dB_FS, is_clipped
+from .feature import norm_amplitude, tailor_dB_FS, is_clipped
 
 import argparse
 rate_mic = 16000
