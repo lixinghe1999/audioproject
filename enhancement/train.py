@@ -214,7 +214,7 @@ if __name__ == "__main__":
         train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
                                        person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
         train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
-        ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
+        ckpt, _, _ = train(train_dataset, 5, 0.0001, 8, model)
 
         # if True, use text (WER) to evaluate, else -> use reference audio
         # ckpt_name = 'pretrain/[ 2.56731426  3.34212493 14.60209821  0.84575664].pth'
