@@ -50,12 +50,12 @@ def train(model, train_dataset, test_dataset):
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     best_acc = 0
     for epoch in range(10):
-        # model.train()
-        # for idx, batch in enumerate(tqdm(train_loader)):
-        #     audio, image, text, _ = batch
-        #     train_step(model, input_data=[audio.to(device), image.to(device)], optimizer=optimizer,
-        #                    criteria=criteria, label=text.to(device))
-        # scheduler.step()
+        model.train()
+        for idx, batch in enumerate(tqdm(train_loader)):
+            audio, image, text, _ = batch
+            train_step(model, input_data=[audio.to(device), image.to(device)], optimizer=optimizer,
+                           criteria=criteria, label=text.to(device))
+        scheduler.step()
         model.eval()
         acc = []
         with torch.no_grad():
