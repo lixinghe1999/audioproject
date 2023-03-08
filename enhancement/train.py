@@ -175,10 +175,10 @@ if __name__ == "__main__":
         dvector = None
         rir = 'json/rir.json'
 
-        ckpt_dir = 'pretrain/vibvoice'
+        ckpt_dir = 'pretrain/fullsubnet'
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         # ckpt_name = 'pretrain/sudormrf_large_new.pth'
-        #ckpt_name = 'pretrain/[ 2.56731426  3.34212493 14.60209821  0.84575664].pth'
+        # ckpt_name = 'pretrain/[ 2.56731426  3.34212493 14.60209821  0.84575664].pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
 
@@ -200,18 +200,18 @@ if __name__ == "__main__":
         #     ckpt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
         #     ckpts.append(ckpt)
 
-        # model.load_state_dict(ckpt_start)
-        # train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
-        #                                person=people, simulation=True, rir=rir, dvector=dvector)
-        # train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
-        #                                person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
-        # train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
-        # ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
+        model.load_state_dict(ckpt_start)
+        train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
+                                       person=people, simulation=True, rir=rir, dvector=dvector)
+        train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+                                       person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
+        train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
+        ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
 
         # if True, use text (WER) to evaluate, else -> use reference audio
-        ckpt_name = 'pretrain/[ 2.56731426  3.34212493 14.60209821  0.84575664].pth'
-        print('loaded checkpoint:', ckpt_name)
-        ckpt = torch.load(ckpt_name)
+        # ckpt_name = 'pretrain/[ 2.56731426  3.34212493 14.60209821  0.84575664].pth'
+        # print('loaded checkpoint:', ckpt_name)
+        # ckpt = torch.load(ckpt_name)
         no_reference = True
         if no_reference:
             for p in people:
