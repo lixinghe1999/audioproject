@@ -782,8 +782,8 @@ class AVnet_Dynamic(nn.Module):
                     num_keep_node = int(self.num_patches * self.token_ratio[p_count])
                     keep_policy = torch.argsort(score, dim=1, descending=True)[:, :num_keep_node]
                     prev_decision = batch_index_select(prev_decision, keep_policy)
-                    keep_audio = keep_policy[keep_policy < token_len_audio]
-                    keep_image = keep_policy[keep_policy >= token_len_audio] - self.audio.num_patches
+                    keep_audio = keep_policy[keep_policy < token_len_audio].unsqueeze(0)
+                    keep_image = keep_policy[keep_policy >= token_len_audio].unsqueeze(0) - self.audio.num_patches
 
                     cls_policy = torch.zeros(B, 1, dtype=keep_policy.dtype, device=keep_policy.device)
                     now_policy = torch.cat([cls_policy, keep_audio + 1], dim=1)
