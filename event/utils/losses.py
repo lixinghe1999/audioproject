@@ -132,7 +132,7 @@ class DistillDiffPruningLoss_dynamic(torch.nn.Module):
             labels: the labels for the base criterion
         """
 
-        pred, token_pred, mask, out_pred_score = outputs
+        pred, token_pred, mask, out_pred_score, early_output = outputs
 
         pred_loss = 0.0
 
@@ -147,7 +147,9 @@ class DistillDiffPruningLoss_dynamic(torch.nn.Module):
             pred_loss += (score[:, :192].mean() - score[:, 192:].mean())**2
 
         cls_loss = self.base_criterion(pred, labels)
-
+        early_weight = [0.25, 0.5, 0.75]
+        for i in range(len(early_output)):
+            cls_loss += early_weight[0] * self.base_criterion(early_output[i], labels)
         with torch.no_grad():
 
             cls_t, token_t = self.teacher_model(*inputs)

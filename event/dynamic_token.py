@@ -30,12 +30,11 @@ def test_step(model, input_data, label):
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     model.eval()
-    token_ratio = [[0.8, 0.8**2, 0.8**3], [0.7, 0.7**2, 0.7**3]]
-    # token_ratio = [[0.6, 0.6**2, 0.6**3], [0.5, 0.5**2, 0.5**3]]
+    token_ratio = [0.8, 0.7, 0.6, 0.5]
     acc = []
     with torch.no_grad():
         for ratio in token_ratio:
-            model.token_ratio = ratio
+            model.token_ratio = [ratio, ratio**2, ratio**3]
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
                 a = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)

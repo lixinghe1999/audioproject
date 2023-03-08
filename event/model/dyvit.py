@@ -747,7 +747,14 @@ class AVnet_Dynamic(nn.Module):
 
         self.pruning_loc = pruning_loc
         self.token_ratio = token_ratio
-
+    def output(self, audio, image):
+        audio = self.audio.norm(audio)
+        image = self.image.norm(image)
+        features = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
+        x = torch.cat([audio[:, 0], image[:, 0]], dim=1)
+        x = torch.flatten(x, start_dim=1)
+        x = self.head(x)
+        return x, features
     @autocast()
     def forward(self, audio, image):
         B, audio = self.audio.preprocess(audio.unsqueeze(1))
@@ -755,6 +762,7 @@ class AVnet_Dynamic(nn.Module):
 
         p_count = 0
         out_pred_prob = []
+        early_output = []
         prev_decision = torch.ones(B, self.num_patches, 1, dtype=audio.dtype, device=audio.device)
         policy = torch.ones(B, self.num_patches + 2, 1, dtype=audio.dtype, device=audio.device)
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks, self.image.blocks)):
@@ -777,6 +785,7 @@ class AVnet_Dynamic(nn.Module):
                     image = blk_i(image, policy=policy_i)
                     prev_decision = hard_keep_decision
                     policy = torch.cat([policy_a, policy_i], dim=1)
+                    early_output.append(self.output(audio, image)[0])
                 else:
                     score = pred_score[:, :, 0]
                     num_keep_node = int(self.num_patches * self.token_ratio[p_count])
@@ -805,15 +814,10 @@ class AVnet_Dynamic(nn.Module):
                 else:
                     audio = blk_a(audio)
                     image = blk_i(image)
-        audio = self.audio.norm(audio)
-        image = self.image.norm(image)
-        features = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
-        x = torch.cat([audio[:, 0], image[:, 0]], dim=1)
-        x = torch.flatten(x, start_dim=1)
-        x = self.head(x)
+        x, features = self.output(audio, image)
         if self.training:
             if self.distill:
-                return x, features, prev_decision.detach(), out_pred_prob
+                return x, features, prev_decision.detach(), out_pred_prob, early_output
             else:
                 return x, out_pred_prob
         else:
