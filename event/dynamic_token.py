@@ -39,9 +39,9 @@ def profile(model, test_dataset):
                 audio, image, text, _ = batch
                 a = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)
                 acc.append(a)
-        mean_acc = np.mean(acc)
-        print('preserved ratio', ratio)
-        print('accuracy:', mean_acc)
+            mean_acc = np.mean(acc)
+            print('preserved ratio', ratio)
+            print('accuracy:', mean_acc)
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
