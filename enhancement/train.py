@@ -179,14 +179,16 @@ if __name__ == "__main__":
         ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         # ckpt_name = 'pretrain/sudormrf_large_new.pth'
         # ckpt_name = 'pretrain/[ 2.56731426  3.34212493 14.60209821  0.84575664].pth'
-        from collections import OrderedDict
-        new_state_dict = OrderedDict()
-        print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
-        for k, v in ckpt_start.items():
-            name = k[7:]  # remove `module.`
-            new_state_dict[name] = v
-        ckpt_start = new_state_dict
+
+
+        # from collections import OrderedDict
+        # new_state_dict = OrderedDict()
+        # print('loaded checkpoint:', ckpt_name)
+        #  for k, v in ckpt_start.items():
+        #     name = k[7:]  # remove `module.`
+        #     new_state_dict[name] = v
+        # ckpt_start = new_state_dict
 
         # model.load_state_dict(ckpt_start)
         # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
