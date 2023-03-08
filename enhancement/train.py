@@ -190,12 +190,6 @@ if __name__ == "__main__":
         #     new_state_dict[name] = v
         # ckpt_start = new_state_dict
 
-        # model.load_state_dict(ckpt_start)
-        # test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
-        #                              simulation=True, person=people, ratio=-0.2, rir=rir, dvector=dvector)
-        # avg_metric = inference(test_dataset, 16, model)
-        # print("performance before training:", avg_metric)
-
         # ckpts = []
         # for p in people:
         #     model.load_state_dict(ckpt_start)
