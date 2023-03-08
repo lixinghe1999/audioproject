@@ -7,7 +7,7 @@ from utils.losses import DistillDiffPruningLoss_dynamic
 import warnings
 from tqdm import tqdm
 import argparse
-
+np.set_printoptions(precision=3, suppress=True, linewidth=200)
 warnings.filterwarnings("ignore")
 
 def train_step(model, input_data, optimizer, criteria, label):
@@ -41,7 +41,7 @@ def profile(model, test_dataset):
                 a = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)
                 acc.append(a)
             mean_acc = np.mean(acc)
-            print('preserved ratio', ratio)
+            print('preserved ratio:', ratio)
             print('accuracy:', mean_acc)
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
