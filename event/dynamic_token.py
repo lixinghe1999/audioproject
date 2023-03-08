@@ -28,7 +28,7 @@ def test_step(model, input_data, label):
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
     return acc.item()
 def profile(model, test_dataset):
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=32, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     model.eval()
     token_ratio = [[0.8, 0.8**2, 0.8**3], [0.7, 0.7**2, 0.7**3], [0.6, 0.6**2, 0.6**3], [0.75, 0.5, 0.25]]
     acc = []
