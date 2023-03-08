@@ -2,10 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 from torch.nn import functional
+import numpy as np
 
-from audio_zen.constant import EPSILON
-
-
+EPSILON = np.finfo(np.float32).eps
 class BaseModel(nn.Module):
     def __init__(self):
         super(BaseModel, self).__init__()
