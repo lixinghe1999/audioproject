@@ -1,8 +1,7 @@
 import numpy as np
 import torch
 
-from audio_zen.constant import EPSILON
-
+EPSILON = np.finfo(np.float32).eps
 
 def build_complex_ideal_ratio_mask(
     noisy_real, noisy_imag, clean_real, clean_imag
