@@ -124,7 +124,7 @@ if __name__ == "__main__":
     model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
     # model.audio.load_state_dict(torch.load('token_network/A_6_0.5303089942924621.pth'), strict=False)
     # model.image.load_state_dict(torch.load('token_network/V_7_0.5041330446762449.pth'), strict=False)
-    model.load_state_dict(torch.load('token_network/train_6_0.6778193269041527.pth'), strict=False)
+    model.load_state_dict(torch.load('token_network/AV_6_0.6778193269041527.pth'), strict=False)
 
     # model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
     # model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
