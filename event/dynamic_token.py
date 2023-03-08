@@ -141,7 +141,7 @@ if __name__ == "__main__":
         train(model, train_dataset, test_dataset)
     elif args.task == 'distill':
         teacher_model = AVnet_Dynamic(pruning_loc=(), pretrained=False, distill=True).to(device)
-        teacher_model.load_state_dict(torch.load('train_6_0.6778193269041527.pth'), strict=False)
+        teacher_model.load_state_dict(torch.load('token_network/AV_6_0.6778193269041527.pth'), strict=False)
         teacher_model.eval()
         criteria = DistillDiffPruningLoss_dynamic(teacher_model, torch.nn.CrossEntropyLoss(), clf_weight=1.0,
                                                   keep_ratio=token_ratio, mse_token=True, ratio_weight=2.0, distill_weight=0.5)
