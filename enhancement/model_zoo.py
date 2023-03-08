@@ -5,7 +5,7 @@ from evaluation import batch_pesq, SI_SDR, batch_stoi, eval_ASR, LSD
 import torch.nn.functional as F
 from scipy import signal
 from mask import build_complex_ideal_ratio_mask, decompress_cIRM
-from enhancement.feature import stft, istft
+from feature import stft, istft
 from sisdr_loss import StabilizedPermInvSISDRMetric
 
 from speechbrain.pretrained import EncoderDecoderASR
