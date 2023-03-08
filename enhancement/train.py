@@ -216,15 +216,15 @@ if __name__ == "__main__":
         if no_reference:
             for p in people:
                 model.load_state_dict(ckpt)
-                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_gt.json', 'json/noise_imu.json'],
+                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
                                              person=[p], simulation=False, text=no_reference, dvector=dvector)
-                avg_metric = inference(test_dataset, 8, model, text=no_reference)
+                avg_metric = inference(test_dataset, 4, model, text=no_reference)
                 print(p, avg_metric)
             envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
             for env in envs:
-                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_gt.json', 'json/noise_imu.json'],
+                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
                                              person=[env], simulation=False, text=no_reference, dvector=dvector)
-                avg_metric = inference(test_dataset, 8, model, text=no_reference)
+                avg_metric = inference(test_dataset, 4, model, text=no_reference)
                 print(env, avg_metric)
         else:
             for ckpt, p in zip(ckpts, people):
