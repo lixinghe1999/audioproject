@@ -31,8 +31,8 @@ def gate_train(model, train_dataset, test_dataset):
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     gate = Gate(option=1).to(device)
-    model.gate = gate
     model.eval()
+    model.gate = gate
     optimizers = [torch.optim.Adam(model.gate_parameter(), lr=.00001, weight_decay=1e-4)]
 
 
@@ -162,13 +162,13 @@ def train(model, train_dataset, test_dataset):
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
-                           criteria=criteria, label=text.to(device), mode=mode)
+                           criteria=criteria, label=text.to(device), mode='dynamic')
         model.eval()
         acc = [0] * 24; count = [0] * 24
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode=mode)
+                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='dynamic')
                 acc[e-1] += a
                 count[e-1] += 1
         mean_acc = []
@@ -185,11 +185,9 @@ def train(model, train_dataset, test_dataset):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', default='train')
-    parser.add_argument('-m', '--mode', default='dynamic')
     parser.add_argument('-w', '--worker', default=4, type=int)
     parser.add_argument('-b', '--batch', default=4, type=int)
     args = parser.parse_args()
-    mode = args.mode
     workers = args.worker
     batch_size = args.batch
     from torch.utils.tensorboard import SummaryWriter

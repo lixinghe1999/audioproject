@@ -104,7 +104,7 @@ class AVnet_Gate(nn.Module):
         return parameter
     def gate_parameter(self):
         parameter = [{'params': self.gate.parameters()},
-                     # {'params': self.projection.parameters()},
+                     {'params': self.projection.parameters()},
                      # {'params': self.audio.v.blocks[0].parameters()},
                      # {'params': self.image.v.blocks[0].parameters()}
         ]
