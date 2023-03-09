@@ -82,11 +82,11 @@ class AVnet(nn.Module):
         self.image = VisionTransformerDiffPruning(**config)
         if pretrained:
             self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
-        self.projection = nn.Sequential(nn.LayerNorm(embed_dim * 2),
+        self.head = nn.Sequential(nn.LayerNorm(embed_dim * 2),
                                       nn.Linear(embed_dim * 2, 309))
 
     def fusion_parameter(self):
-        parameter = [{'params': self.projection.parameters()}]
+        parameter = [{'params': self.head.parameters()}]
         return parameter
 
     @autocast()
