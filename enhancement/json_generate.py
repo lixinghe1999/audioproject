@@ -1,9 +1,7 @@
-import librosa
 import torchaudio
 import json
 import os
 import argparse
-import soundfile as sf
 
 def load(path, files, audio=False):
     log = []
@@ -64,6 +62,7 @@ if __name__ == "__main__":
         dict = {}
         for p in person:
             print(p)
+            print(os.listdir(os.path.join(directory, p)))
             g = os.walk(os.path.join(directory, p))
             for path, dir_list, file_list in g:
                 print(path)
