@@ -122,7 +122,7 @@ if __name__ == "__main__":
         # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
         # ckpt_start = torch.load(ckpt_name)
 
-        ckpt_name = 'pretrain/[ 2.14935723  2.92502818 13.68871124  0.87719504  5.141906  ].pth'
+        ckpt_name = 'pretrain/fullsubnet_[ 2.14935723  2.92502818 13.68871124  0.87719504  5.141906  ].pth'
         print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
 
