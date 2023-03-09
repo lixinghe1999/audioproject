@@ -11,206 +11,78 @@ We implement multi-modal dynamic network here
 import time
 import torch.nn as nn
 import torch
-from model.modified_resnet import ModifiedResNet
-from model.resnet34 import ResNet, BasicBlock
-class AVnet(nn.Module):
-    def __init__(self, exit=False, threshold=0.9, num_cls=309):
+from torch.cuda.amp import autocast
+from model.vit import ASTModel, VITModel
+from model.resnet34 import ResNet
+class AVnet_Exit(nn.Module):
+    def __init__(self):
         '''
         :param exit: True - with exit, normally for testing, False - no exit, normally for training
-        :param threshold: confidence to continue calculation, can be Integer or List
+        :param gate_network: extra gate network
         :param num_cls: number of class
         '''
-        super(AVnet, self).__init__()
-        self.exit = exit
-        self.threshold = threshold
-        self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
-        self.n_fft = 512
-        self.hop_length = 512
-        self.win_length = 512
-        self.spec_scale = 224
-        self.normalized = True
-        self.onesided = True
+        super(AVnet_Exit, self).__init__()
 
-        self.image = ResNet(img_channels=3, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=1000)
-        self.image.load_state_dict(torch.load('resnet34.pth'))
-        self.image.fc = torch.nn.Linear(512, num_cls)
+        self.audio = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224')
+        self.image = VITModel(model_size='base224')
 
-        self.early_exit1 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64 * 2, num_cls)])
-        self.early_exit2 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128 * 2, num_cls)])
-        self.early_exit3 = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256 * 2, num_cls)])
-    def early_exit_parameter(self, ee: int):
-        parameters = [
-            {'params': getattr(self, 'early_exit' + str(ee)).parameters()},
-        ]
-        return parameters
-    def preprocessing_audio(self, audio):
-        spec = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
-                          win_length=self.win_length, window=torch.hann_window(self.win_length, device=audio.device),
-                          pad_mode='reflect', normalized=self.normalized, onesided=True, return_complex=True)
-        spec = torch.abs(spec)
-        spec = torch.log(spec + 1e-7)
-        spec = torch.nn.functional.interpolate(spec.unsqueeze(1), size=self.spec_scale, mode='bilinear')
-        return spec
-    def forward(self, audio, image):
-        output_cache = []
-        audio = self.preprocessing_audio(audio)
-        audio = self.audio.conv1(audio)
-        audio = self.audio.bn1(audio)
-        audio = self.audio.relu(audio)
-        audio = self.audio.maxpool(audio)
+        self.original_embedding_dim = self.audio.v.pos_embed.shape[2]
+        self.projection = nn.ModuleList([nn.Sequential(nn.LayerNorm(self.original_embedding_dim*2),
+                                        nn.Linear(self.original_embedding_dim*2, 309)) for _ in range(12)])
+    def get_parameters(self):
+        parameter = [{'params': self.projection.parameters()}]
+        return parameter
 
-        image = self.image.conv1(image)
-        image = self.image.bn1(image)
-        image = self.image.relu(image)
-        image = self.image.maxpool(image)
-
-        audio = self.audio.layer1(audio)
-        image = self.image.layer1(image)
-        early_output = self.early_exit1(torch.cat([audio, image], dim=1))
-        output_cache.append(early_output)
-        if self.exit and self.threshold > 0:
-            confidence = torch.softmax(early_output, dim=1).max()
-            if confidence > self.threshold:
-                return output_cache
-
-        audio = self.audio.layer2(audio)
-        image = self.image.layer2(image)
-        early_output = self.early_exit2(torch.cat([audio, image], dim=1))
-        output_cache.append(early_output)
-        if self.exit and self.threshold > 0:
-            confidence = torch.softmax(early_output, dim=1).max()
-            if confidence > self.threshold:
-                return output_cache
-
-        audio = self.audio.layer3(audio)
-        image = self.image.layer3(image)
-        early_output = self.early_exit3(torch.cat([audio, image], dim=1))
-        output_cache.append(early_output)
-        if self.exit and self.threshold > 0:
-            confidence = torch.softmax(early_output, dim=1).max()
-            if confidence > self.threshold:
-                return output_cache
-
-        audio = self.audio.layer4(audio)
-        image = self.image.layer4(image)
-        audio = self.audio.avgpool(audio)
-        image = self.audio.avgpool(image)
-        audio = torch.flatten(audio, 1)
-        image = torch.flatten(image, 1)
-        output = (self.audio.fc(audio) + self.image.fc(image)) / 2
-        output_cache.append(output)
-        return output_cache
-class AVnet_Flex(nn.Module):
-    def __init__(self, exit=False, threshold=0.9, num_cls=309):
-        '''
-        :param exit: True - with exit, normally for testing, False - no exit, normally for training
-        :param threshold: confidence to continue calculation, can be Integer or List
-        :param num_cls: number of class
-        '''
-        super(AVnet_Flex, self).__init__()
-        self.exit = exit
-        self.threshold = threshold
-        self.audio_exit = False
-        self.image_exit = False
-
-        self.audio = ResNet(img_channels=1, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=num_cls)
-        self.n_fft = 512
-        self.hop_length = 512
-        self.win_length = 512
-        self.spec_scale = 224
-        self.normalized = True
-        self.onesided = True
-
-        self.image = ResNet(img_channels=3, layers=(3, 4, 6, 3), block=BasicBlock, num_classes=1000)
-        self.image.load_state_dict(torch.load('resnet34.pth'))
-        self.image.fc = torch.nn.Linear(512, num_cls)
-
-        self.early_exit1a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, num_cls)])
-        self.early_exit1b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(64, num_cls)])
-
-        self.early_exit2a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, num_cls)])
-        self.early_exit2b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(128, num_cls)])
-
-        self.early_exit3a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, num_cls)])
-        self.early_exit3b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(256, num_cls)])
-
-        self.early_exit4a = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, num_cls)])
-        self.early_exit4b = nn.Sequential(*[nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(start_dim=1), nn.Linear(512, num_cls)])
-
-    def preprocessing_audio(self, audio):
-        spec = torch.stft(audio.squeeze(1), n_fft=self.n_fft, hop_length=self.hop_length,
-                          win_length=self.win_length,
-                          window=torch.hann_window(self.win_length, device=audio.device),
-                          pad_mode='reflect', normalized=self.normalized, onesided=True, return_complex=True)
-        spec = torch.abs(spec)
-        spec = torch.log(spec + 1e-7)
-        spec = torch.nn.functional.interpolate(spec.unsqueeze(1), size=self.spec_scale, mode='bilinear')
-        return spec
-    def inference_update(self, early_output, modal, random_thres=1.0):
-        if self.exit and self.threshold > 0:
-            # exit based on threshold
-            confidence = torch.softmax(early_output, dim=1).max()
-            if confidence > self.threshold:
-                setattr(self, modal, True)
-            else:
-                setattr(self, modal, False)
-    def forward(self, audio, image):
+    @autocast()
+    def forward(self, x, y):
+        audio = x
+        image = y
         output_cache = {'audio': [], 'image': []}
-        audio = self.preprocessing_audio(audio)
-        audio = self.audio.conv1(audio)
-        audio = self.audio.bn1(audio)
-        audio = self.audio.relu(audio)
-        audio = self.audio.maxpool(audio)
+        output = []
 
-        image = self.image.conv1(image)
-        image = self.image.bn1(image)
-        image = self.image.relu(image)
-        image = self.image.maxpool(image)
+        B = audio.shape[0]
+        audio = audio.unsqueeze(1)
+        audio = audio.transpose(2, 3)
 
-        audio = self.audio.layer1(audio)
-        early_output = self.early_exit1a(audio)
-        output_cache['audio'].append(early_output)
-        self.inference_update(early_output, 'audio_exit', 0.25)
+        audio = self.audio.v.patch_embed(audio)
+        image = self.image.v.patch_embed(image)
 
-        image = self.image.layer1(image)
-        early_output = self.early_exit1b(image)
-        output_cache['image'].append(early_output)
-        self.inference_update(early_output, 'image_exit', 0.25)
+        cls_tokens = self.audio.v.cls_token.expand(B, -1, -1)
+        dist_token = self.audio.v.dist_token.expand(B, -1, -1)
+        audio = torch.cat((cls_tokens, dist_token, audio), dim=1)
+        audio = audio + self.audio.v.pos_embed
+        audio = self.audio.v.pos_drop(audio)
 
-        if not self.audio_exit:
-            audio = self.audio.layer2(audio)
-            early_output = self.early_exit2a(audio)
-            output_cache['audio'].append(early_output)
-            self.inference_update(early_output, 'audio_exit', 0.33)
-        if not self.image_exit:
-            image = self.image.layer2(image)
-            early_output = self.early_exit2b(image)
-            output_cache['image'].append(early_output)
-            self.inference_update(early_output, 'image_exit', 0.33)
+        cls_tokens = self.image.v.cls_token.expand(B, -1, -1)
+        dist_token = self.image.v.dist_token.expand(B, -1, -1)
+        image = torch.cat((cls_tokens, dist_token, image), dim=1)
+        image = image + self.image.v.pos_embed
+        image = self.image.v.pos_drop(image)
 
-        if not self.audio_exit:
-            audio = self.audio.layer3(audio)
-            early_output = self.early_exit3a(audio)
-            output_cache['audio'].append(early_output)
-            self.inference_update(early_output, 'audio_exit', 0.5)
-        if not self.image_exit:
-            image = self.image.layer3(image)
-            early_output = self.early_exit3b(image)
-            output_cache['image'].append(early_output)
-            self.inference_update(early_output, 'image_exit', 0.5)
+        # first block
+        audio = self.audio.v.blocks[0](audio)
+        audio_norm = self.audio.v.norm(audio)
+        audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
+        output_cache['audio'].append(audio_norm)
 
-        if not self.audio_exit:
-            audio = self.audio.layer4(audio)
-            early_output = self.early_exit4a(audio)
-            output_cache['audio'].append(early_output)
-            self.inference_update(early_output, 'audio_exit')
-        if not self.image_exit:
-            image = self.image.layer4(image)
-            early_output = self.early_exit4b(image)
-            output_cache['image'].append(early_output)
-            self.inference_update(early_output, 'image_exit')
-        return output_cache
+        image = self.image.v.blocks[0](image)
+        image_norm = self.image.v.norm(image)
+        image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
+        output_cache['image'].append(image_norm)
 
+        # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
+        for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks, self.image.v.blocks)):
+            audio = blk_a(audio)
+            audio_norm = self.audio.v.norm(audio)
+            audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
+            output_cache['audio'].append(audio_norm)
+            image = blk_i(image)
+            image_norm = self.image.v.norm(image)
+            image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
+            output_cache['image'].append(image_norm)
+
+            output = self.projection[i](torch.cat([audio_norm, image_norm], dim=-1))
+        return output_cache, output
 if __name__ == "__main__":
     num_cls = 100
     device = 'cuda'

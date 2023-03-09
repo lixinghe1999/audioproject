@@ -4,7 +4,7 @@ We implement multi-modal dynamic network here
 import torch.nn as nn
 import torch
 from torch.cuda.amp import autocast
-from model.gatevit import ASTModel, VITModel
+from model.vit_model import AudioTransformerDiffPruning, VisionTransformerDiffPruning
 class PositionwiseFeedForward(nn.Module):
     def __init__(self, d_model, hidden, drop_prob=0.1):
         super(PositionwiseFeedForward, self).__init__()
@@ -68,62 +68,40 @@ class EncoderLayer(nn.Module):
         x = self.norm2(x + _x)
         return x
 class AVnet(nn.Module):
-    def __init__(self):
+    def __init__(self, scale='base', pretrained=True):
         super(AVnet, self).__init__()
-        self.audio = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224')
-        self.image = VITModel(model_size='base224')
-
-        self.original_embedding_dim = self.audio.v.pos_embed.shape[2]
-        # self.bottleneck_token = nn.Parameter(torch.zeros(1, 1, self.original_embedding_dim))
-        # self.fusion_stage = 6
-        # self.bottleneck = nn.ModuleList([EncoderLayer(self.original_embedding_dim, 512, 1, 0.1) for _ in range(12-self.fusion_stage)])
-        self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim * 2),
-                                      nn.Linear(self.original_embedding_dim * 2, 309))
+        if scale == 'base':
+            config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+                          pruning_loc=())
+            embed_dim = 768
+        else:
+            config = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
+                          pruning_loc=())
+            embed_dim = 384
+        self.audio = AudioTransformerDiffPruning(config, imagenet_pretrain=pretrained)
+        self.image = VisionTransformerDiffPruning(**config)
+        if pretrained:
+            self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
+        self.projection = nn.Sequential(nn.LayerNorm(embed_dim * 2),
+                                      nn.Linear(embed_dim * 2, 309))
 
     def fusion_parameter(self):
-        parameter = [#{'params': self.bottleneck_token},
-                     #{'params': self.bottleneck.parameters()},
-                     {'params': self.projection.parameters()}]
+        parameter = [{'params': self.projection.parameters()}]
         return parameter
 
     @autocast()
     def forward(self, audio, image):
-        B = audio.shape[0]
-        audio = audio.unsqueeze(1)
-        audio = audio.transpose(2, 3)
+        B, audio = self.audio.preprocess(audio.unsqueeze(1))
+        B, image = self.image.preprocess(image)
 
-        audio = self.audio.v.patch_embed(audio)
-        image = self.image.v.patch_embed(image)
-
-        cls_tokens = self.audio.v.cls_token.expand(B, -1, -1)
-        dist_token = self.audio.v.dist_token.expand(B, -1, -1)
-        audio = torch.cat((cls_tokens, dist_token, audio), dim=1)
-        audio = audio + self.audio.v.pos_embed
-        audio = self.audio.v.pos_drop(audio)
-
-        cls_tokens = self.image.v.cls_token.expand(B, -1, -1)
-        dist_token = self.image.v.dist_token.expand(B, -1, -1)
-        image = torch.cat((cls_tokens, dist_token, image), dim=1)
-        image = image + self.image.v.pos_embed
-        image = self.image.v.pos_drop(image)
-
-        # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
-        for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks, self.image.v.blocks)):
+        for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks, self.image.blocks)):
             audio = blk_a(audio)
             image = blk_i(image)
-        #     if i >= self.fusion_stage:
-        #         bottleneck_token = self.bottleneck[i-self.fusion_stage](torch.cat((bottleneck_token, audio, image), dim=1))
-        # output = self.projection(bottleneck_token[:, 0, :])
-        audio = self.audio.v.norm(audio)
-        audio = (audio[:, 0] + audio[:, 1]) / 2
-        image = self.image.v.norm(image)
-        image = (image[:, 0] + image[:, 1]) / 2
-        output = self.projection(torch.cat([audio, image], dim=-1))
-        return output
-if __name__ == "__main__":
-    num_cls = 100
-    model = AVnet()
-    audio = torch.zeros(16, 1, 220500)
-    image = torch.zeros(16, 3, 224, 224)
-    outputs = model(audio, image)
-    print(outputs.shape)
+        audio = self.audio.norm(audio)
+        image = self.image.norm(image)
+        features = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
+        x = torch.cat([audio[:, 0], image[:, 0]], dim=1)
+        x = torch.flatten(x, start_dim=1)
+        x = self.head(x)
+        return x, features
+

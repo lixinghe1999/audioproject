@@ -3,53 +3,50 @@ from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
 from model.vanilla_model import AVnet
-from model.gatevit import ASTModel, VITModel
+from model.vit_model import AudioTransformerDiffPruning, VisionTransformerDiffPruning
 import argparse
 torchvision.models.resnet50()
 import warnings
 from tqdm import tqdm
 warnings.filterwarnings("ignore")
 # remove annoying librosa warning
-def step(model, input_data, optimizers, criteria, label):
+def step(model, input_data, optimizer, criteria, label):
     audio, image = input_data
     # Track history only in training
-    for branch in [0]:
-        optimizer = optimizers[branch]
-        if args.task == 'AV':
-            output = model(audio, image)
-        elif args.task == 'A':
-            output = model(audio)
-        else:
-            output = model(image)
-        # Backward
-        optimizer.zero_grad()
-        loss = criteria(output, label)
-        loss.backward()
-        optimizer.step()
+    if args.task == 'AV':
+        output = model(audio, image)
+    elif args.task == 'A':
+        output = model(audio)
+    else:
+        output = model(image)
+    # Backward
+    optimizer.zero_grad()
+    loss = criteria(output, label)
+    loss.backward()
+    optimizer.step()
     return loss
-def update_lr(optimizer, multiplier):
-    state_dict = optimizer.state_dict()
-    for param_group in state_dict['param_groups']:
-        param_group['lr'] = param_group['lr'] * multiplier
-    optimizer.load_state_dict(state_dict)
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
     best_acc = 0
-    # for param in model.audio.parameters():
-    #     param.requires_grad = False
-    # for param in model.image.parameters():
-    #     param.requires_grad = False
-    optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
+    if args.task == 'AV':
+        for param in model.audio.parameters():
+            param.requires_grad = False
+        for param in model.image.parameters():
+            param.requires_grad = False
+        optimizer = torch.optim.Adam(model.fusion_parameter(), lr=.0001, weight_decay=1e-4)
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     criteria = torch.nn.CrossEntropyLoss()
     for epoch in range(20):
         model.train()
-        if epoch % 4 == 0 and epoch > 0:
-            update_lr(optimizers[0], multiplier=.2)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            loss = step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
+            loss = step(model, input_data=(audio.to(device), image.to(device)), optimizer=optimizer,
+                        criteria=criteria, label=text.to(device))
+        scheduler.step()
         model.eval()
         acc = []
         with torch.no_grad():
@@ -65,7 +62,7 @@ def train(model, train_dataset, test_dataset):
         print('epoch', epoch, np.mean(acc))
         if np.mean(acc) > best_acc:
             best_acc = np.mean(acc)
-            torch.save(model.state_dict(), args.task + '_' + str(epoch) + '_' + str(np.mean(acc)) + '.pth')
+            torch.save(model.state_dict(), 'vanilla_' + args.task + '_' + str(epoch) + '_' + str(np.mean(acc)) + '.pth')
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', default='train')
@@ -76,14 +73,19 @@ if __name__ == "__main__":
     batch_size = args.batch
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
+    config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+                  pruning_loc=())
+    embed_dim = 768
     if args.task == 'AV':
         model = AVnet().to(device)
-        model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
-        model.image.load_state_dict(torch.load('V_5_0.5122983.pth'))
+        model.audio.load_state_dict(torch.load('A_6_0.5303089942924621.pth'))
+        model.image.load_state_dict(torch.load('V_7_0.5041330446762449.pth'))
     elif args.task == 'A':
-        model = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224').to(device)
+        model = AudioTransformerDiffPruning(config, imagenet_pretrain=True).to(device)
     else:
-        model = VITModel(model_size='base224').to(device)
+        model = VisionTransformerDiffPruning(**config).to(device)
+        model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
+
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train

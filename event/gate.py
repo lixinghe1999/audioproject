@@ -24,7 +24,7 @@ def test_step(model, input_data, label, mode='dynamic'):
     t_start = time.time()
     output_cache, output = model(audio, image, mode)
     l = time.time() - t_start
-    acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
+    acc = (torch.argmax(output, dim=-1).cpu() == label).sum() / len(label)
     return acc.item(), len(output_cache['audio']) + len(output_cache['image']), l
 def gate_train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
@@ -34,27 +34,6 @@ def gate_train(model, train_dataset, test_dataset):
     model.eval()
     model.gate = gate
     optimizers = [torch.optim.Adam(model.gate_parameter(), lr=.00001, weight_decay=1e-4)]
-
-
-    # first show the random compression-level
-    # model.eval()
-    # acc = [0] * 24;count = [0] * 24
-    # with torch.no_grad():
-    #     for batch in tqdm(test_loader):
-    #         audio, image, text, _ = batch
-    #         a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='dynamic')
-    #         acc[e - 1] += a
-    #         count[e - 1] += 1
-    # mean_acc = []
-    # for i in range(len(acc)):
-    #     if count[i] == 0:
-    #         mean_acc.append(0)
-    #     else:
-    #         mean_acc.append(acc[i] / count[i])
-    # print('random exit')
-    # print('accuracy for early-exits:', np.round(mean_acc, 3))
-    # print('mean accuracy for early-exits:', np.round(np.sum(acc) / np.sum(count), 3))
-    # print('compression level distribution:', np.round(np.array(count) / np.sum(count), 3))
 
     best_acc = 0
     for epoch in range(5):
@@ -168,7 +147,7 @@ def train(model, train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='dynamic')
+                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='fixed')
                 acc[e-1] += a
                 count[e-1] += 1
         mean_acc = []
@@ -196,7 +175,6 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
     model = AVnet_Gate().to(device)
-    model.load_state_dict(torch.load('gate_network/AV_0_0.6969697.pth'))
     # model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
     # model.image.load_state_dict(torch.load('V_5_0.5122983.pth'))
 

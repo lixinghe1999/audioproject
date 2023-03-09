@@ -2,7 +2,7 @@ import time
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.dyvit import AVnet_Dynamic, AudioTransformerDiffPruning, VisionTransformerDiffPruning
+from model.vit_model import AVnet_Dynamic, AudioTransformerDiffPruning, VisionTransformerDiffPruning
 from utils.losses import DistillDiffPruningLoss_dynamic
 import warnings
 from tqdm import tqdm
@@ -30,8 +30,7 @@ def test_step(model, input_data, label):
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     model.eval()
-    # token_ratio = [0.8, 0.7, 0.6, 0.5, 0.4]
-    token_ratio = [0.4, 0.3]
+    # token_ratio = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
     acc = []
     with torch.no_grad():
         for ratio in token_ratio:
