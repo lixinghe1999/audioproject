@@ -22,7 +22,6 @@ def step(model, input_data, optimizer, criteria, label):
     # Backward
     optimizer.zero_grad()
     loss = criteria(output, label)
-    print(loss.item())
     loss.backward()
     optimizer.step()
     return loss
