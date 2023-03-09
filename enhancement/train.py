@@ -110,43 +110,71 @@ if __name__ == "__main__":
         plt.plot(loss_curve)
         plt.savefig('loss.png')
     elif args.mode == 1:
-        # This script is for model fine-tune on self-collected dataset, by default-with all noises
-        BATCH_SIZE = 8
-        lr = 0.0001
-        EPOCH = 10
+        # evaluation for personalized model
         dvector = None
         rir = 'json/rir.json'
-        ckpt_dir = 'pretrain/fullsubnet_rir'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[0]
-        #ckpt_name = 'pretrain/fullsubnet_our.pth'
-        print("load checkpoint: {}".format(ckpt_name))
+        text_evaluation = False
+        # per-user train or single-train: 0-per_user, 1-single_train, 2-just_test
+        train_mode = 2
+
+        # Checkpoint loading - comment to select:
+        # ckpt_dir = 'pretrain/fullsubnet_rir'
+        # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        # ckpt_start = torch.load(ckpt_name)
+
+        ckpt_name = 'pretrain/[ 2.14935723  2.92502818 13.68871124  0.87719504  5.141906  ].pth'
+        print('loaded checkpoint:', ckpt_name)
         ckpt_start = torch.load(ckpt_name)
 
-        model.load_state_dict(ckpt_start)
+        if train_mode == 0:
+            ckpt = []
+            for p in people:
+                model.load_state_dict(ckpt_start)
+                p_except = [i for i in people if i != p]
+                train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
+                                             person=[p], simulation=True, rir=rir, dvector=dvector)
+                train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+                                              person=[p], simulation=True, rir=rir, ratio=0.8, dvector=dvector)
+                train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
+                pt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
+                ckpt.append(pt)
+        elif train_mode == 1:
+            model.load_state_dict(ckpt_start)
+            train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
+                                           person=people, simulation=True, rir=rir, dvector=dvector)
+            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+                                           person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
 
-        # checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
-        # print('loading pre-trained FullSubNet (SOTA)', checkpoint['best_score'])
-        # model.load_state_dict(checkpoint['model'])
+            positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
+            train_dataset3 = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
+                                           simulation=True, person=positions, ratio=0.8,)
 
-        train_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                        simulation=True, person=people, ratio=0.8, dvector=dvector, rir=rir)
-        test_dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
-                                          simulation=True, person=people, ratio=-0.2, dvector=dvector, rir=rir)
+            train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2, train_dataset3])
+            ckpt, _, _ = train(train_dataset, 5, 0.0001, 8, model)
+        else:
+            ckpt = ckpt_start
 
-        # positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-        # train_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
-        #                                simulation=True, person=positions, ratio=r,)
-        # test_dataset2 = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
-        #                               simulation=True, person=positions, ratio=-0.2,)
-        #
-        # train_dataset = torch.utils.data.ConcatDataset([train_dataset, train_dataset2])
-        # test_dataset = torch.utils.data.ConcatDataset([test_dataset, test_dataset2])
+        if isinstance(ckpt, list):
+            for pt, p in zip(ckpt, people):
+                model.load_state_dict(ckpt)
+                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
+                                             person=[p], simulation=not text_evaluation, text=text_evaluation, dvector=dvector)
+                avg_metric = inference(test_dataset, 4, model, text=text_evaluation)
+                print(p, avg_metric)
+        else:
+            for p in people:
+                model.load_state_dict(ckpt)
+                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
+                                             person=[p], simulation=not text_evaluation, text=text_evaluation, dvector=dvector)
+                avg_metric = inference(test_dataset, 4, model, text=text_evaluation)
+                print(p, avg_metric)
+            envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
+            for env in envs:
+                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
+                                             person=[env], simulation=not text_evaluation, text=text_evaluation, dvector=dvector)
+                avg_metric = inference(test_dataset, 4, model, text=text_evaluation)
+                print(env, avg_metric)
 
-
-        ckpt, loss_curve, metric_best = train([train_dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model)
-        model.load_state_dict(ckpt)
-        evaluation = True
-        if evaluation:
             for p in people:
                 dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
                                         person=[p], simulation=True, ratio=-0.2, dvector=dvector)
@@ -171,68 +199,19 @@ if __name__ == "__main__":
                                         person=[p], simulation=True, ratio=-0.2, dvector=dvector)
                 avg_metric = inference(dataset, 4, model)
                 print(p, avg_metric)
-    elif args.mode == 2:
-        # evaluation for personalized model
-        dvector = None
-        rir = 'json/rir.json'
 
-        ckpt_dir = 'pretrain/fullsubnet_rir'
-        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        # ckpt_name = 'pretrain/sudormrf_large_new.pth'
-        # ckpt_name = 'pretrain/[ 2.56731426  3.34212493 14.60209821  0.84575664].pth'
-        ckpt_start = torch.load(ckpt_name)
+            for p in ['he', 'hou']:
+                test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/tt.json', 'json/mask_imu.json'],
+                                             person=[p], simulation=True, dvector=dvector)
+                avg_metric = inference(test_dataset, 4, model)
+                print(p, avg_metric)
+
+            test_dataset = NoisyCleanSet(['json/mask_gt.json', 'json/tt.json', 'json/mask_imu.json'],
+                                         person=['he'], simulation=True, dvector=dvector)
+            avg_metric = inference(test_dataset, 4, model)
+            print('mask', avg_metric)
 
 
-        # from collections import OrderedDict
-        # new_state_dict = OrderedDict()
-        # print('loaded checkpoint:', ckpt_name)
-        #  for k, v in ckpt_start.items():
-        #     name = k[7:]  # remove `module.`
-        #     new_state_dict[name] = v
-        # ckpt_start = new_state_dict
-
-        # ckpts = []
-        # for p in people:
-        #     model.load_state_dict(ckpt_start)
-        #     p_except = [i for i in people if i != p]
-        #     train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
-        #                                  person=[p], simulation=True, rir=rir, dvector=dvector)
-        #     train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
-        #                                   person=[p], simulation=True, rir=rir, ratio=0.8, dvector=dvector)
-        #     train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
-        #     ckpt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
-        #     ckpts.append(ckpt)
-
-        # model.load_state_dict(ckpt_start)
-        # train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
-        #                                person=people, simulation=True, rir=rir, dvector=dvector)
-        # train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
-        #                                person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
-        # train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
-        # ckpt, _, _ = train(train_dataset, 5, 0.0001, 8, model)
-
-        ckpt_name = 'pretrain/[ 2.14935723  2.92502818 13.68871124  0.87719504  5.141906  ].pth'
-        print('loaded checkpoint:', ckpt_name)
-        ckpt = torch.load(ckpt_name)
-        no_reference = True
-        model.load_state_dict(ckpt)
-        test_dataset = NoisyCleanSet(['json/mask_gt.json', 'json/tt.json', 'json/mask_imu.json'],
-                                     person=['he'], simulation=True, dvector=dvector)
-        avg_metric = inference(test_dataset, 4, model)
-        print('mask', avg_metric)
-
-        # for p in people:
-        #     model.load_state_dict(ckpt)
-        #     test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-        #                                  person=[p], simulation=False, text=no_reference, dvector=dvector)
-        #     avg_metric = inference(test_dataset, 4, model, text=no_reference)
-        #     print(p, avg_metric)
-        # envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
-        # for env in envs:
-        #     test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-        #                                  person=[env], simulation=False, text=no_reference, dvector=dvector)
-        #     avg_metric = inference(test_dataset, 4, model, text=no_reference)
-        #     print(env, avg_metric)
     else:
         # investigate the performance of FullSubnet
         checkpoint = torch.load("fullsubnet_best_model_58epochs.tar")
