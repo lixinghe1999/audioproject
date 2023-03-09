@@ -216,7 +216,7 @@ if __name__ == "__main__":
         no_reference = True
         model.load_state_dict(ckpt)
         test_dataset = NoisyCleanSet(['json/mask_gt.json', 'json/tt.json', 'json/mask_imu.json'],
-                                     person=['he'], simulation=True, text=no_reference, dvector=dvector)
+                                     person=['he'], simulation=True, text=False, dvector=dvector)
         avg_metric = inference(test_dataset, 4, model, text=False)
         print('mask', avg_metric)
 
