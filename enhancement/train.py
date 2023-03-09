@@ -30,6 +30,7 @@ def inference(dataset, BATCH_SIZE, model, text=False):
         for sample in tqdm(test_loader):
             text, clean, noise, acc = parse_sample(sample, text=text_inference)
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device, text)
+            print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
@@ -216,8 +217,8 @@ if __name__ == "__main__":
         no_reference = True
         model.load_state_dict(ckpt)
         test_dataset = NoisyCleanSet(['json/mask_gt.json', 'json/tt.json', 'json/mask_imu.json'],
-                                     person=['he'], simulation=True, text=False, dvector=dvector)
-        avg_metric = inference(test_dataset, 4, model, text=False)
+                                     person=['he'], simulation=True, dvector=dvector)
+        avg_metric = inference(test_dataset, 4, model)
         print('mask', avg_metric)
 
         # for p in people:
