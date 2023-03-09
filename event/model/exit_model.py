@@ -39,12 +39,10 @@ class AVnet_Exit(nn.Module):
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks, self.image.blocks)):
             audio = blk_a(audio)
             image = blk_i(image)
-
-        audio = self.audio.norm(audio)
-        image = self.image.norm(image)
-        # features = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
-        x = torch.cat([audio[:, 0], image[:, 0]], dim=1)
-        x = torch.flatten(x, start_dim=1)
-        output.append(self.projection[-1](x))
+            audio_norm = self.audio.norm(audio)
+            image_norm = self.image.norm(image)
+            x = torch.cat([audio_norm[:, 0], image_norm[:, 0]], dim=1)
+            x = torch.flatten(x, start_dim=1)
+            output.append(self.projection[i](x))
         return output
 
