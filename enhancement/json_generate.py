@@ -72,6 +72,7 @@ if __name__ == "__main__":
                     #name = path.split('\\')[-1]
                     # Linux
                     name = path.split('/')[-1]
+                    print(name)
                     if name != 'mask':
                         break
                     else:
