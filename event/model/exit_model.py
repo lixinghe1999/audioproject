@@ -23,10 +23,10 @@ class AVnet_Exit(nn.Module):
         self.image = VisionTransformerDiffPruning(**config)
         if pretrained:
             self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
-        # self.projection = nn.ModuleList([nn.Sequential(nn.LayerNorm(embed_dim*2), nn.Linear(embed_dim*2, 309))
-        #                                  for _ in range(12)])
-        self.projection = nn.Sequential(nn.LayerNorm(embed_dim * 2),
-                                  nn.Linear(embed_dim * 2, 309))
+        self.projection = nn.ModuleList([nn.Sequential(nn.LayerNorm(embed_dim*2), nn.Linear(embed_dim*2, 309))
+                                         for _ in range(1)])
+        # self.projection = nn.Sequential(nn.LayerNorm(embed_dim * 2),
+        #                           nn.Linear(embed_dim * 2, 309))
     def get_parameters(self):
         parameter = [{'params': self.projection.parameters()}]
         return parameter
@@ -45,6 +45,6 @@ class AVnet_Exit(nn.Module):
         # features = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
         x = torch.cat([audio[:, 0], image[:, 0]], dim=1)
         x = torch.flatten(x, start_dim=1)
-        output.append(self.projection(x))
+        output.append(self.projection[0](x))
         return output
 
