@@ -87,21 +87,11 @@ if __name__ == "__main__":
     pruning_loc = (3, 6, 9)
     base_rate = 0.7
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
-    # config_small = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
-    #                     pruning_loc=pruning_loc, token_ratio=token_ratio)
-    # config_base = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
-    #                    pruning_loc=pruning_loc, token_ratio=token_ratio)
-
 
     model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
-    # model.audio.load_state_dict(torch.load('token_network/A_6_0.5303089942924621.pth'), strict=False)
-    # model.image.load_state_dict(torch.load('token_network/V_7_0.5041330446762449.pth'), strict=False)
-    model.load_state_dict(torch.load('distill_9_0.6713245424129108.pth'), strict=False)
-
-    # model = VisionTransformerDiffPruning(pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
-    # model.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
-
-    # model = AudioTransformerDiffPruning(config_small, imagenet_pretrain=False).to(device)
+    model.audio.load_state_dict(torch.load('A_6_0.5303089942924621.pth'), strict=False)
+    model.image.load_state_dict(torch.load('V_7_0.5041330446762449.pth'), strict=False)
+    # model.load_state_dict(torch.load('distill_9_0.6713245424129108.pth'), strict=False)
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)

@@ -97,16 +97,11 @@ class AVnet_Gate(nn.Module):
         self.image = VisionTransformerDiffPruning(**config)
         if pretrained:
             self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
-
-        self.original_embedding_dim = self.audio.v.pos_embed.shape[2]
-        self.projection = nn.Sequential(nn.LayerNorm(self.embed_dim*2),
-                                        nn.Linear(self.original_embedding_dim*2, 309))
-    def gate_parameter(self):
+        self.projection = nn.Sequential(nn.LayerNorm(embed_dim*2),
+                                        nn.Linear(embed_dim*2, 309))
+    def get_parameters(self):
         parameter = [{'params': self.gate.parameters()},
-                     {'params': self.projection.parameters()},
-                     # {'params': self.audio.v.blocks[0].parameters()},
-                     # {'params': self.image.v.blocks[0].parameters()}
-        ]
+                     {'params': self.projection.parameters()}]
         return parameter
 
     def label(self, output_cache, label):
@@ -195,7 +190,7 @@ class AVnet_Gate(nn.Module):
 
     @autocast()
     def forward(self, audio, image, mode='dynamic'):
-        output_cache = {'audio': [], 'image': [], 'bottle_neck': []}
+        output_cache = {'audio': [], 'image': []}
 
         B, audio = self.audio.preprocess(audio.unsqueeze(1))
         B, image = self.image.preprocess(image)
@@ -225,12 +220,10 @@ class AVnet_Gate(nn.Module):
             if i < self.exit[0].item():
                 audio = blk_a(audio)
                 audio_norm = self.audio.norm(audio)
-                audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
                 output_cache['audio'].append(audio_norm)
             if i < self.exit[1].item():
                 image = blk_i(image)
                 image_norm = self.image.norm(image)
-                image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
                 output_cache['image'].append(image_norm)
 
         audio = output_cache['audio'][-1]

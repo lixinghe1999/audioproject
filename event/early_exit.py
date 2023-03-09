@@ -1,50 +1,28 @@
-import time
-import pandas as pd
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
 from model.exit_model import AVnet_Exit
 import warnings
 from tqdm import tqdm
-from datetime import date
 import argparse
 
 warnings.filterwarnings("ignore")
 # remove annoying librosa warning
-def profile(model, test_dataset):
-    ckpt_name = '9_0.5913482705752054.pth'
-    model.load_state_dict(torch.load(ckpt_name))
+def test(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
     model.eval()
-    model.exit = True
-    thresholds = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
-    writer = pd.ExcelWriter('result_recording.xlsx', engine='xlsxwriter')
-    data_frame = {'threshold': thresholds, 'latency': [], 'accuracy': [], 'accuracy_exit': [], 'exit_percentage': []}
+    acc = []
+    exits = []
     with torch.no_grad():
-        for threshold in thresholds:
-            acc = []
-            ee = []
-            latency = 0
-            model.threshold = threshold
-            for batch in tqdm(test_loader):
-                audio, image, text, _ = batch
-                a, e, l = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
-                acc.append(a)
-                ee.append(e)
-                latency += l
-            acc = np.stack(acc)
-            ee = np.array(ee)
-            print('threshold', threshold)
-            print('latency:', latency / len(test_loader))
-            print('accuracy for each exit:', np.mean(acc, axis=0, where=acc >= 0))
-            # print('accuracy for early-exits:', np.mean(acc[np.arange(len(acc)), ee - 1], axis=0))
-            print('early-exit percentage:', np.bincount(ee-1) / ee.shape[0])
-            data_frame['latency'] += [latency / len(test_loader)]
-            data_frame['accuracy'] += [np.mean(acc, axis=0, where=acc >= 0)]
-            # data_frame['accuracy_exit'] += [np.mean(acc[np.arange(len(acc)), ee - 1], axis=0)]
-            data_frame['exit_percentage'] += [np.bincount(ee-1) / ee.shape[0]]
-    df = pd.DataFrame(data=data_frame)
-    df.to_excel(writer, sheet_name=date.today().strftime("%d/%m/%Y %H:%M:%S"))
+        for batch in tqdm(test_loader):
+            audio, image, text, _ = batch
+            a, e, = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+            acc.append(a)
+            exits.append(e)
+    acc = np.mean(acc, axis=0)
+    exits = np.mean(exits, axis=0)
+    print('accuracy for each threshold:', acc.tolist())
+    print('computation for each threshold:', exits.tolist())
 def train_step(model, input_data, optimizer, criteria, label):
     audio, image = input_data
     outputs = model(audio, image)
@@ -108,8 +86,8 @@ def train(model, train_dataset, test_dataset):
         acc = np.mean(acc, axis=0)
         exits = np.mean(exits, axis=0)
         print('epoch', epoch)
-        print('accuracy for each threshold:', acc)
-        print('computation for each threshold:', exits)
+        print('accuracy for each threshold:', acc.tolist())
+        print('computation for each threshold:', exits.tolist())
         if np.mean(acc) > best_acc:
             best_acc = np.mean(acc)
             torch.save(model.state_dict(), 'exit_' + args.task + '_' + str(epoch) + '_' + str(acc[-1]) + '.pth')
@@ -136,5 +114,5 @@ if __name__ == "__main__":
     if args.task == 'train':
         train(model, train_dataset, test_dataset)
     else:
-        profile(model, test_dataset)
+        test(model, test_dataset)
 

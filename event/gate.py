@@ -9,10 +9,9 @@ import argparse
 
 warnings.filterwarnings("ignore")
 
-def train_step(model, input_data, optimizers, criteria, label, mode='dynamic'):
+def train_step(model, input_data, optimizer, criteria, label, mode='dynamic'):
     audio, image = input_data
     # cumulative loss
-    optimizer = optimizers[0]
     output_cache, output = model(audio, image, mode)
     optimizer.zero_grad()
     loss = criteria(output, label)
@@ -117,37 +116,31 @@ def test(model, test_dataset):
     for ac in acc:
         mean_acc.append(np.mean(ac))
     print('accuracy for early-exits:', mean_acc)
-def update_lr(optimizer, multiplier = .1):
-    state_dict = optimizer.state_dict()
-    for param_group in state_dict['param_groups']:
-        param_group['lr'] = param_group['lr'] * multiplier
-    optimizer.load_state_dict(state_dict)
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     for param in model.audio.parameters():
         param.requires_grad = False
     for param in model.image.parameters():
         param.requires_grad = False
-    optimizers = [torch.optim.Adam(model.fusion_parameter(), lr=.0001, weight_decay=1e-4)]
+    optimizer = torch.optim.Adam(model.get_parameters(), lr=.0001, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
-    for epoch in range(20):
+    for epoch in range(10):
         model.train()
-        if epoch % 4 == 0 and epoch > 0:
-            for optimizer in optimizers:
-                update_lr(optimizer, multiplier=.4)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers,
+            train_step(model, input_data=(audio.to(device), image.to(device)), optimizer=optimizer,
                            criteria=criteria, label=text.to(device), mode='dynamic')
+        scheduler.step()
         model.eval()
         acc = [0] * 24; count = [0] * 24
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='fixed')
+                a, e, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text, mode='dynamic')
                 acc[e-1] += a
                 count[e-1] += 1
         mean_acc = []
@@ -175,8 +168,8 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
     model = AVnet_Gate().to(device)
-    # model.audio.load_state_dict(torch.load('A_9_0.5939591.pth'))
-    # model.image.load_state_dict(torch.load('V_5_0.5122983.pth'))
+    model.audio.load_state_dict(torch.load('A_6_0.5303089942924621.pth'))
+    model.image.load_state_dict(torch.load('V_7_0.5041330446762449.pth'))
 
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
