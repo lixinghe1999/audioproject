@@ -77,7 +77,7 @@ class Gate(nn.Module):
             image = (image.reshape(-1, 12, self.bottle_neck) * ret_image.unsqueeze(2)).mean(dim=1)
             return torch.cat([audio, image], dim=-1), ret_audio, ret_image
 class AVnet_Gate(nn.Module):
-    def __init__(self, gate_network=None, scale='base', pretrained=True):
+    def __init__(self, gate_network=Gate(option=1), scale='base', pretrained=True):
         '''
         :param exit: True - with exit, normally for testing, False - no exit, normally for training
         :param gate_network: extra gate network
