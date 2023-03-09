@@ -68,7 +68,7 @@ class EncoderLayer(nn.Module):
         x = self.norm2(x + _x)
         return x
 class AVnet(nn.Module):
-    def __init__(self, scale='base', pretrained=True):
+    def __init__(self, scale='base', pretrained=False):
         super(AVnet, self).__init__()
         if scale == 'base':
             config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
