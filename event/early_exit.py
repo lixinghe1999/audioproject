@@ -3,7 +3,7 @@ import pandas as pd
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.exit_model import AVnet, AVnet_Flex
+from model.exit_model import AVnet_Exit
 import warnings
 from tqdm import tqdm
 from datetime import date
@@ -44,97 +44,73 @@ def profile(model, test_dataset):
             data_frame['exit_percentage'] += [np.bincount(ee-1) / ee.shape[0]]
     df = pd.DataFrame(data=data_frame)
     df.to_excel(writer, sheet_name=date.today().strftime("%d/%m/%Y %H:%M:%S"))
-def train_step(model, input_data, optimizers, criteria, label):
+def train_step(model, input_data, optimizer, criteria, label):
     audio, image = input_data
-    if len(optimizers) == 1:
-        # cumulative loss
-        optimizer = optimizers[0]
-        outputs = model(audio, image)
-        optimizer.zero_grad()
-        loss = 0
-        for output_audio, output_image in zip(outputs['audio'], outputs['image']):
-            loss += criteria(output_audio, label)
-            loss += criteria(output_image, label)
-        # for i, output in enumerate(outputs):
-        #     loss += (i+1) * 0.25 * criteria(output, label)
-        loss.backward()
-        optimizer.step()
-    else: # independent loss
-        outputs = model(audio, image)
-        for i, optimizer in enumerate(optimizers):
-            optimizer.zero_grad()
-            loss = criteria(outputs[i], label)
-            loss.backward(retain_graph=True)
-            optimizer.step()
+    outputs = model(audio, image)
+    optimizer.zero_grad()
+    loss = 0
+    for i, output in enumerate(outputs):
+        loss += (i+1)/12 * criteria(output, label)
+    loss.backward()
+    optimizer.step()
     return loss.item()
 def test_step(model, input_data, label):
     audio, image = input_data
-    early_exits = np.zeros((4))
+
     t_start = time.time()
     outputs = model(audio, image)
     l = time.time() - t_start
 
-    output_tmp = []
-    max_exits = min(len(outputs['audio']), len(outputs['image']))
-    length_exits = len(outputs['audio']) + len(outputs['image'])
-    for i in range(max_exits):
-        if i < len(outputs['audio']):
-            output_audio = outputs['audio'][i]
-        else:
-            output_audio = outputs['audio'][-1]
-        if i < len(outputs['image']):
-            output_image = outputs['image'][i]
-        else:
-            output_image = outputs['image'][-1]
-        output_tmp.append((output_audio + output_image) / 2)
-    outputs = output_tmp
+    early_acc = np.zeros((4))
+    early_exit = np.zeros((4))
+    thresholds = [0.8, 0.9, 0.95, 0.99]
+    for j, thres in enumerate(thresholds):
+        for i, output in enumerate(outputs):
+            max_confidence = torch.max(output)
+            if max_confidence > thres:
+                acc = (torch.argmax(output, dim=-1).cpu() == label).sum() / len(label)
+                early_acc[j] = acc
+                early_exit[j] = (i+1)/12
+                break
+    return early_acc, early_exit
 
-    for i, output in enumerate(outputs):
-        early_exits[i] = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
-    for i in range(len(outputs), len(early_exits)):
-        early_exits[i] = -1
-    return early_exits, length_exits, l
-def update_lr(optimizer, multiplier = .1):
-    state_dict = optimizer.state_dict()
-    for param_group in state_dict['param_groups']:
-        param_group['lr'] = param_group['lr'] * multiplier
-    optimizer.load_state_dict(state_dict)
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
                                                drop_last=True, pin_memory=False)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=16, batch_size=64, shuffle=False)
-    # optimizers = [torch.optim.Adam(model.early_exit_parameter(1), lr=.0001, weight_decay=1e-4),
-    #               torch.optim.Adam(model.early_exit_parameter(2), lr=.0001, weight_decay=1e-4),
-    #               torch.optim.Adam(model.early_exit_parameter(3), lr=.0001, weight_decay=1e-4),]
-    optimizers = [torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)]
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
     for epoch in range(10):
         model.train()
         model.exit = False
-        if epoch % 5 == 0 and epoch > 0:
-            for optimizer in optimizers:
-                update_lr(optimizer, multiplier=.2)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            train_step(model, input_data=(audio.to(device), image.to(device)), optimizers=optimizers, criteria=criteria, label=text.to(device))
+            train_step(model, input_data=(audio.to(device), image.to(device)), optimizer=optimizer,
+                       criteria=criteria, label=text.to(device))
+        scheduler.step()
         model.eval()
         acc = []
+        exits = []
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, _, _ = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
+                a, e, = test_step(model, input_data=(audio.to(device), image.to(device)), label=text)
                 acc.append(a)
-        acc = np.stack(acc)
-        acc = np.mean(acc, axis=0, where=acc >= 0)
+                exits.append(e)
+        acc = np.mean(acc, axis=0)
+        exits = np.mean(exits, axis=0)
+
         print('epoch', epoch)
-        print('accuracy for early-exits:', acc)
-        # best_acc = acc[-1].item()
-        torch.save(model.state_dict(), str(epoch) + '_' + str(acc[-1].item()) + '.pth')
+        print('accuracy for each threshold:', acc)
+        print('computation for each threshold:', exits)
+        torch.save(model.state_dict(), 'exit_' + str(epoch) + '_' + str(acc[-1]) + '.pth')
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
-    model = AVnet_Flex().to(device)
+    model = AVnet_Exit().to(device)
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train

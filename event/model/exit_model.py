@@ -12,88 +12,41 @@ import time
 import torch.nn as nn
 import torch
 from torch.cuda.amp import autocast
-from model.vit import ASTModel, VITModel
-from model.resnet34 import ResNet
+from model.vit_model import AudioTransformerDiffPruning, VisionTransformerDiffPruning
 class AVnet_Exit(nn.Module):
-    def __init__(self):
-        '''
-        :param exit: True - with exit, normally for testing, False - no exit, normally for training
-        :param gate_network: extra gate network
-        :param num_cls: number of class
-        '''
+    def __init__(self, scale='base', pretrained=True):
         super(AVnet_Exit, self).__init__()
-
-        self.audio = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224')
-        self.image = VITModel(model_size='base224')
-
-        self.original_embedding_dim = self.audio.v.pos_embed.shape[2]
-        self.projection = nn.ModuleList([nn.Sequential(nn.LayerNorm(self.original_embedding_dim*2),
-                                        nn.Linear(self.original_embedding_dim*2, 309)) for _ in range(12)])
+        if scale == 'base':
+            config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+                          pruning_loc=())
+            embed_dim = 768
+        else:
+            config = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
+                          pruning_loc=())
+            embed_dim = 384
+        self.audio = AudioTransformerDiffPruning(config, imagenet_pretrain=pretrained)
+        self.image = VisionTransformerDiffPruning(**config)
+        if pretrained:
+            self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
+        self.projection = nn.ModuleList([nn.Linear(embed_dim*2, 309) for _ in range(12)])
     def get_parameters(self):
         parameter = [{'params': self.projection.parameters()}]
         return parameter
 
     @autocast()
-    def forward(self, x, y):
-        audio = x
-        image = y
-        output_cache = {'audio': [], 'image': []}
+    def forward(self, audio, image):
+        B, audio = self.audio.preprocess(audio.unsqueeze(1))
+        B, image = self.image.preprocess(image)
         output = []
-
-        B = audio.shape[0]
-        audio = audio.unsqueeze(1)
-        audio = audio.transpose(2, 3)
-
-        audio = self.audio.v.patch_embed(audio)
-        image = self.image.v.patch_embed(image)
-
-        cls_tokens = self.audio.v.cls_token.expand(B, -1, -1)
-        dist_token = self.audio.v.dist_token.expand(B, -1, -1)
-        audio = torch.cat((cls_tokens, dist_token, audio), dim=1)
-        audio = audio + self.audio.v.pos_embed
-        audio = self.audio.v.pos_drop(audio)
-
-        cls_tokens = self.image.v.cls_token.expand(B, -1, -1)
-        dist_token = self.image.v.dist_token.expand(B, -1, -1)
-        image = torch.cat((cls_tokens, dist_token, image), dim=1)
-        image = image + self.image.v.pos_embed
-        image = self.image.v.pos_drop(image)
-
-        # first block
-        audio = self.audio.v.blocks[0](audio)
-        audio_norm = self.audio.v.norm(audio)
-        audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
-        output_cache['audio'].append(audio_norm)
-
-        image = self.image.v.blocks[0](image)
-        image_norm = self.image.v.norm(image)
-        image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
-        output_cache['image'].append(image_norm)
-
-        # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
-        for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks, self.image.v.blocks)):
+        for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks, self.image.blocks)):
             audio = blk_a(audio)
-            audio_norm = self.audio.v.norm(audio)
-            audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
-            output_cache['audio'].append(audio_norm)
             image = blk_i(image)
-            image_norm = self.image.v.norm(image)
-            image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
-            output_cache['image'].append(image_norm)
 
-            output = self.projection[i](torch.cat([audio_norm, image_norm], dim=-1))
-        return output_cache, output
-if __name__ == "__main__":
-    num_cls = 100
-    device = 'cuda'
-    model = AVnet_Flex(num_cls=100).to(device)
-    model.eval()
-    audio = torch.zeros(1, 1, 160000).to(device)
-    image = torch.zeros(1, 3, 224, 224).to(device)
+            audio = self.audio.norm(audio)
+            image = self.image.norm(image)
+            # features = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
+            x = torch.cat([audio[:, 0], image[:, 0]], dim=1)
+            x = torch.flatten(x, start_dim=1)
+            output.append(self.projection[i](x))
+        return output
 
-    with torch.no_grad():
-        for i in range(20):
-            if i == 1:
-                t_start = time.time()
-            model(audio, image)
-    print((time.time() - t_start) / 19)
