@@ -99,9 +99,9 @@ class AVnet(nn.Module):
             image = blk_i(image)
         audio = self.audio.norm(audio)
         image = self.image.norm(image)
-        features = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
+        # features = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
         x = torch.cat([audio[:, 0], image[:, 0]], dim=1)
         x = torch.flatten(x, start_dim=1)
         x = self.head(x)
-        return x, features
+        return x
 
