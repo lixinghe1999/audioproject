@@ -50,10 +50,9 @@ def train_step(model, input_data, optimizer, criteria, label):
     outputs = model(audio, image)
     optimizer.zero_grad()
     loss = 0
-    # for i, output in enumerate(outputs):
-    #     loss += (i+1)/12 * criteria(output, label)
-    loss = criteria(outputs[-1], label)
-    print(loss.item())
+    for i, output in enumerate(outputs):
+        loss += (i+1)/12 * criteria(output, label)
+    # loss = criteria(outputs[-1], label)
     loss.backward()
     optimizer.step()
     return loss.item()
