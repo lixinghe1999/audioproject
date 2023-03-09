@@ -4,7 +4,7 @@ We implement multi-modal dynamic network here
 import torch.nn as nn
 import torch
 from torch.cuda.amp import autocast
-from gatevit import ASTModel, VITModel
+from model.gatevit import ASTModel, VITModel
 class PositionwiseFeedForward(nn.Module):
     def __init__(self, d_model, hidden, drop_prob=0.1):
         super(PositionwiseFeedForward, self).__init__()
