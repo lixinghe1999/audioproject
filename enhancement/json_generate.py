@@ -75,7 +75,7 @@ if __name__ == "__main__":
                     name = path.split('/')[-1]
                     # print(name)
                     if name != 'mask':
-                        break
+                        continue
                     else:
                         if name in ['test', 'mask', 'position', 'stick']:
                             dict = update(dict, name, file_list, p, kinds=3)
