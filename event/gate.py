@@ -32,22 +32,20 @@ def gate_train(model, train_dataset, test_dataset):
     gate = Gate(option=1).to(device)
     model.eval()
     model.gate = gate
-    optimizers = [torch.optim.Adam(model.gate_parameter(), lr=.00001, weight_decay=1e-4)]
-
+    optimizer = torch.optim.Adam(model.get_parameters(), lr=.00001, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     best_acc = 0
     for epoch in range(5):
         model.train()
-        if epoch % 4 == 0 and epoch > 0:
-            for optimizer in optimizers:
-                update_lr(optimizer, multiplier=.4)
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
-            optimizers[0].zero_grad()
+            optimizer.zero_grad()
             [compress, acc] = model.gate_train(audio.to(device), image.to(device), text.to(device))
-            if idx % 100 == 0:
-                writer.add_scalars('Train/compression', {'audio': compress[0], 'image': compress[1]}, idx + epoch * len(train_loader))
-                writer.add_scalar('Train/acc', acc, idx + epoch * len(train_loader))
-            optimizers[0].step()
+            # if idx % 100 == 0:
+            #     writer.add_scalars('Train/compression', {'audio': compress[0], 'image': compress[1]}, idx + epoch * len(train_loader))
+            #     writer.add_scalar('Train/acc', acc, idx + epoch * len(train_loader))
+            optimizer.step()
+        scheduler.step()
         model.eval()
         acc = [0] * 24; count = [0] * 24
         with torch.no_grad():
@@ -64,14 +62,16 @@ def gate_train(model, train_dataset, test_dataset):
                 mean_acc.append(acc[i]/count[i])
         acc_all = np.round(mean_acc, 3)
         acc_avg = np.round(np.sum(acc) / np.sum(count), 3)
-        comp_dist = np.round(np.array(count) / np.sum(count), 3)
+        comp_all = np.round(np.array(count) / np.sum(count), 3)
+        comp_avg = np.mean(comp_all)
         print('epoch', epoch, 'trained gate exit')
-        print('accuracy for early-exits:', acc_all)
-        print('mean accuracy for early-exits:', acc_avg)
-        print('compression level distribution:', comp_dist)
+        print('accuracy for early-exits:', acc_all.tolist())
+        print('mean accuracy ', acc_avg)
+        print('compression level distribution:', comp_all.tolist())
+        print('mean compression level:', comp_avg )
         if acc_avg > best_acc:
             best_acc = np.mean(mean_acc)
-            torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' +
+            torch.save(model.state_dict(), 'gate_' + str(args.task) + '_' + str(epoch) + '_' +
                        str(acc_avg) + '.pth')
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
@@ -153,7 +153,7 @@ def train(model, train_dataset, test_dataset):
         print('accuracy for early-exits:', mean_acc)
         if np.mean(mean_acc) > best_acc:
             best_acc = np.mean(mean_acc)
-            torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
+            torch.save(model.state_dict(), 'gate_' + str(args.task) + '_' + str(epoch) + '_' + str(mean_acc[-1]) + '.pth')
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', default='train')
@@ -181,6 +181,7 @@ if __name__ == "__main__":
     elif args.task == 'test':
         test(model, test_dataset)
     elif args.task == 'gate_train':
+        model.load_state_dict(torch.load('gate_train_9_0.6756756756756757.pth'))
         gate_train(model, train_dataset, test_dataset)
     elif args.task == 'profile':
         profile(model, test_dataset)
