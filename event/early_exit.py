@@ -7,6 +7,7 @@ from model.exit_model import AVnet_Exit
 import warnings
 from tqdm import tqdm
 from datetime import date
+import argparse
 
 warnings.filterwarnings("ignore")
 # remove annoying librosa warning
@@ -105,10 +106,16 @@ def train(model, train_dataset, test_dataset):
         print('accuracy for each threshold:', acc)
         print('computation for each threshold:', exits)
         if np.mean(acc) > best_acc:
-            torch.save(model.state_dict(), 'exit_' + str(epoch) + '_' + str(acc[-1]) + '.pth')
+            torch.save(model.state_dict(), 'exit_' + args.task + '_' + str(epoch) + '_' + str(acc[-1]) + '.pth')
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', '--task', default='train')
+    parser.add_argument('-w', '--worker', default=4, type=int)
+    parser.add_argument('-b', '--batch', default=32, type=int)
+    args = parser.parse_args()
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
     model = AVnet_Exit().to(device)
@@ -118,6 +125,8 @@ if __name__ == "__main__":
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
-    # train(model, train_dataset, test_dataset)
-    profile(model, test_dataset)
+    if args.task == 'train':
+        train(model, train_dataset, test_dataset)
+    else:
+        profile(model, test_dataset)
 
