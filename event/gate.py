@@ -32,6 +32,10 @@ def gate_train(model, train_dataset, test_dataset):
     gate = Gate(option=1).to(device)
     model.eval()
     model.gate = gate
+    for param in model.audio.parameters():
+        param.requires_grad = False
+    for param in model.image.parameters():
+        param.requires_grad = False
     optimizer = torch.optim.Adam(model.get_parameters(), lr=.00001, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     best_acc = 0
