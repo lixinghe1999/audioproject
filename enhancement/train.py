@@ -130,50 +130,52 @@ if __name__ == "__main__":
             for p in people:
                 model.load_state_dict(ckpt_start)
                 p_except = [i for i in people if i != p]
-                train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
+                train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/cv.json', 'json/noise_train_imu.json'],
                                              person=[p], simulation=True, rir=rir, dvector=dvector)
-                train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+                train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
                                               person=[p], simulation=True, rir=rir, ratio=0.8, dvector=dvector)
                 train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
                 pt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
                 ckpt.append(pt)
         elif train_mode == 1:
             model.load_state_dict(ckpt_start)
-            train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/tt.json', 'json/noise_train_imu.json'],
+            train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/cv.json', 'json/noise_train_imu.json'],
                                            person=people, simulation=True, rir=rir, dvector=dvector)
-            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/tt.json', 'json/train_imu.json'],
+            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
                                            person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
 
             positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
             train_dataset3 = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
                                            simulation=True, person=positions, ratio=0.8,)
 
-            train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2, train_dataset3])
+            train_dataset = torch.utils.data.ConcatDataset([train_dataset2, train_dataset3])
             ckpt, _, _ = train(train_dataset, 5, 0.0001, 8, model)
         else:
             ckpt = ckpt_start
 
-        if isinstance(ckpt, list):
-            for pt, p in zip(ckpt, people):
-                model.load_state_dict(ckpt)
-                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-                                             person=[p], simulation=not text_evaluation, text=text_evaluation, dvector=dvector)
-                avg_metric = inference(test_dataset, 4, model, text=text_evaluation)
-                print(p, avg_metric)
-        else:
-            for p in people:
-                model.load_state_dict(ckpt)
-                test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
-                                             person=[p], simulation=not text_evaluation, text=text_evaluation, dvector=dvector)
-                avg_metric = inference(test_dataset, 4, model, text=text_evaluation)
-                print(p, avg_metric)
+        if text_evaluation:
+            if isinstance(ckpt, list):
+                for pt, p in zip(ckpt, people):
+                    model.load_state_dict(ckpt)
+                    test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
+                                                 person=[p], simulation=not text_evaluation, text=text_evaluation, dvector=dvector)
+                    avg_metric = inference(test_dataset, 4, model, text=text_evaluation)
+                    print(p, avg_metric)
+            else:
+                for p in people:
+                    model.load_state_dict(ckpt)
+                    test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
+                                                 person=[p], simulation=not text_evaluation, text=text_evaluation, dvector=dvector)
+                    avg_metric = inference(test_dataset, 4, model, text=text_evaluation)
+                    print(p, avg_metric)
+
             envs = ['airpod', 'freebud', 'galaxy', 'office', 'corridor', 'stair', 'human-corridor', 'human-hall', 'human-outdoor']
             for env in envs:
                 test_dataset = NoisyCleanSet(['json/noise_gt.json', 'json/noise_wav.json', 'json/noise_imu.json'],
                                              person=[env], simulation=not text_evaluation, text=text_evaluation, dvector=dvector)
                 avg_metric = inference(test_dataset, 4, model, text=text_evaluation)
                 print(env, avg_metric)
-
+        else:
             for p in people:
                 dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
                                         person=[p], simulation=True, ratio=-0.2, dvector=dvector)
