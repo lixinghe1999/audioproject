@@ -65,6 +65,7 @@ if __name__ == "__main__":
         for p in person:
             g = os.walk(os.path.join(directory, p))
             for path, dir_list, file_list in g:
+                print(path)
                 N = len(file_list)
                 if N > 0:
                     # maybe different on Linux/ Windows
