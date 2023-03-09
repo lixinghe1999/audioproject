@@ -9,7 +9,7 @@ import time
 import torch.nn as nn
 import torch
 from torch.cuda.amp import autocast
-from model.vit import ASTModel, VITModel
+from model.vit_model import AudioTransformerDiffPruning, VisionTransformerDiffPruning
 from model.resnet34 import ResNet
 def gumbel_softmax(logits, tau=1, hard=False, dim=1, training=True):
     """ See `torch.nn.functional.gumbel_softmax()` """
@@ -77,7 +77,7 @@ class Gate(nn.Module):
             image = (image.reshape(-1, 12, self.bottle_neck) * ret_image.unsqueeze(2)).mean(dim=1)
             return torch.cat([audio, image], dim=-1), ret_audio, ret_image
 class AVnet_Gate(nn.Module):
-    def __init__(self, gate_network=None):
+    def __init__(self, gate_network=None, scale='base', pretrained=True):
         '''
         :param exit: True - with exit, normally for testing, False - no exit, normally for training
         :param gate_network: extra gate network
@@ -85,22 +85,22 @@ class AVnet_Gate(nn.Module):
         '''
         super(AVnet_Gate, self).__init__()
         self.gate = gate_network
-
-        self.audio = ASTModel(input_tdim=384, audioset_pretrain=False, verbose=True, model_size='base224')
-        self.image = VITModel(model_size='base224')
+        if scale == 'base':
+            config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+                          pruning_loc=())
+            embed_dim = 768
+        else:
+            config = dict(patch_size=16, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4, qkv_bias=True,
+                          pruning_loc=())
+            embed_dim = 384
+        self.audio = AudioTransformerDiffPruning(config, imagenet_pretrain=pretrained)
+        self.image = VisionTransformerDiffPruning(**config)
+        if pretrained:
+            self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
 
         self.original_embedding_dim = self.audio.v.pos_embed.shape[2]
-        # self.bottleneck_token = nn.Parameter(torch.zeros(1, 4, self.original_embedding_dim))
-        # self.fusion_stage = 6
-        # self.bottleneck = nn.ModuleList(
-        #     [EncoderLayer(self.original_embedding_dim, 512, 4, 0.1) for _ in range(12 - self.fusion_stage)])
-        self.projection = nn.Sequential(nn.LayerNorm(self.original_embedding_dim*2),
+        self.projection = nn.Sequential(nn.LayerNorm(self.embed_dim*2),
                                         nn.Linear(self.original_embedding_dim*2, 309))
-    def fusion_parameter(self):
-        parameter = [# {'params': self.bottleneck_token},
-                     #{'params': self.bottleneck.parameters()},
-                     ]
-        return parameter
     def gate_parameter(self):
         parameter = [{'params': self.gate.parameters()},
                      {'params': self.projection.parameters()},
@@ -193,46 +193,21 @@ class AVnet_Gate(nn.Module):
         loss.backward()
         return [compress, acc]
 
-    def acculmulative_loss(self, output_cache, label, criteria):
-        loss = 0
-        for i, embed in enumerate(output_cache['bottle_neck']):
-            output = self.projection(torch.mean(embed, dim=1))
-            loss += i/12 * criteria(output, label)
-        return loss
-
     @autocast()
-    def forward(self, x, y, mode='dynamic'):
-        audio = x
-        image = y
+    def forward(self, audio, image, mode='dynamic'):
         output_cache = {'audio': [], 'image': [], 'bottle_neck': []}
 
-        B = audio.shape[0]
-        audio = audio.unsqueeze(1)
-        audio = audio.transpose(2, 3)
-
-        audio = self.audio.v.patch_embed(audio)
-        image = self.image.v.patch_embed(image)
-
-        cls_tokens = self.audio.v.cls_token.expand(B, -1, -1)
-        dist_token = self.audio.v.dist_token.expand(B, -1, -1)
-        audio = torch.cat((cls_tokens, dist_token, audio), dim=1)
-        audio = audio + self.audio.v.pos_embed
-        audio = self.audio.v.pos_drop(audio)
-
-        cls_tokens = self.image.v.cls_token.expand(B, -1, -1)
-        dist_token = self.image.v.dist_token.expand(B, -1, -1)
-        image = torch.cat((cls_tokens, dist_token, image), dim=1)
-        image = image + self.image.v.pos_embed
-        image = self.image.v.pos_drop(image)
+        B, audio = self.audio.preprocess(audio.unsqueeze(1))
+        B, image = self.image.preprocess(image)
 
         # first block
-        audio = self.audio.v.blocks[0](audio)
-        audio_norm = self.audio.v.norm(audio)
+        audio = self.audio.blocks[0](audio)
+        audio_norm = self.audio.norm(audio)
         audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
         output_cache['audio'].append(audio_norm)
 
         image = self.image.v.blocks[0](image)
-        image_norm = self.image.v.norm(image)
+        image_norm = self.image.norm(image)
         image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
         output_cache['image'].append(image_norm)
 
@@ -243,41 +218,22 @@ class AVnet_Gate(nn.Module):
             self.exit = torch.tensor([11, 11])
         elif mode == 'gate':
             # not implemented yet
-            gate_a, gate_i = self.gate(x, y, output_cache)
+            gate_a, gate_i = self.gate(audio_norm, image_norm, output_cache)
             self.exit = torch.argmax(torch.cat([gate_a, gate_i], dim=0), dim=-1)
 
-        # bottleneck_token = self.bottleneck_token.expand(B, -1, -1)
-        for i, (blk_a, blk_i) in enumerate(zip(self.audio.v.blocks[1:], self.image.v.blocks[1:])):
+        for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks[1:], self.image.blocks[1:])):
             if i < self.exit[0].item():
                 audio = blk_a(audio)
-                audio_norm = self.audio.v.norm(audio)
+                audio_norm = self.audio.norm(audio)
                 audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
                 output_cache['audio'].append(audio_norm)
             if i < self.exit[1].item():
                 image = blk_i(image)
-                image_norm = self.image.v.norm(image)
+                image_norm = self.image.norm(image)
                 image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
                 output_cache['image'].append(image_norm)
-            # if i >= self.fusion_stage:
-            #     bottleneck_token = self.bottleneck[i - self.fusion_stage](
-            #         torch.cat((bottleneck_token, audio, image), dim=1))
-            #     output_cache['bottle_neck'].append(bottleneck_token)
-        # output = self.projection(torch.mean(bottleneck_token, dim=1))
+
         audio = output_cache['audio'][-1]
         image = output_cache['image'][-1]
         output = self.projection(torch.cat([audio, image], dim=-1))
         return output_cache, output
-if __name__ == "__main__":
-    num_cls = 100
-    device = 'cpu'
-    model = AVnet_Gate().to(device)
-    model.eval()
-    audio = torch.zeros(1, 384, 128).to(device)
-    image = torch.zeros(1, 3, 224, 224).to(device)
-
-    with torch.no_grad():
-        for i in range(20):
-            if i == 1:
-                t_start = time.time()
-            model(audio, image, 'no_exit')
-    print((time.time() - t_start) / 19)

@@ -80,7 +80,7 @@ def train(model, train_dataset, test_dataset):
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
+    optimizer = torch.optim.Adam(model.get_parameters(), lr=.0001, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     criteria = torch.nn.CrossEntropyLoss()
     best_acc = 0
@@ -106,6 +106,7 @@ def train(model, train_dataset, test_dataset):
         print('accuracy for each threshold:', acc)
         print('computation for each threshold:', exits)
         if np.mean(acc) > best_acc:
+            best_acc = np.mean(acc)
             torch.save(model.state_dict(), 'exit_' + args.task + '_' + str(epoch) + '_' + str(acc[-1]) + '.pth')
 
 

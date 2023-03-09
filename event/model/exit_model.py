@@ -1,12 +1,7 @@
 '''
-We implement multi-modal dynamic network here
-1. Early-exit: first concat two modal, (optional align, not need if the same Layer get same dimension) then add an early-exit branch
-2. Flexible Early-exit: Each modal get early-exit for each layer, output = (A + V)/2.
- How to do backpropagation?
- 1) all early-exit supervised by same ground-truth (seems decompose two modal?) almost the same as common early-exit
- 2) pre-defined all potential combination (seems too many loss?)
- 3) utilize modality fusion to get early-exit
-
+Baseline1:
+add early-exit on each block
+Two modality will always have same computation
 '''
 import time
 import torch.nn as nn

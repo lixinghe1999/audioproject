@@ -1,5 +1,5 @@
 '''
-We implement multi-modal dynamic network here
+Baseline0:
 '''
 import torch.nn as nn
 import torch
