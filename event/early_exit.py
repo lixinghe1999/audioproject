@@ -57,14 +57,12 @@ def train_step(model, input_data, optimizer, criteria, label):
     return loss.item()
 def test_step(model, input_data, label):
     audio, image = input_data
-
-    t_start = time.time()
     outputs = model(audio, image)
-    l = time.time() - t_start
 
-    early_acc = np.zeros((4))
-    early_exit = np.zeros((4))
+
     thresholds = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
+    early_acc = np.zeros((len(thresholds)))
+    early_exit = np.zeros((len(thresholds)))
     for j, thres in enumerate(thresholds):
         for i, output in enumerate(outputs):
             max_confidence = torch.max(torch.softmax(output, dim=-1))
