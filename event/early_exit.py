@@ -61,7 +61,6 @@ def test_step(model, input_data, label):
     audio, image = input_data
     outputs = model(audio, image)
 
-
     thresholds = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
     early_acc = np.zeros((len(thresholds)))
     early_exit = np.zeros((len(thresholds)))
