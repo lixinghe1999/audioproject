@@ -113,17 +113,19 @@ if __name__ == "__main__":
         dvector = None
         rir = 'json/rir.json'
         text_evaluation = False
+        # start checkpoint
+        ckpt_mode = 0
         # per-user train or single-train: 0-per_user, 1-single_train, 2-just_test
-        train_mode = 2
+        train_mode = 1
 
-        # Checkpoint loading - comment to select:
-        # ckpt_dir = 'pretrain/fullsubnet_rir'
-        # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        # ckpt_start = torch.load(ckpt_name)
-
-        ckpt_name = 'pretrain/fullsubnet_[ 2.14935723  2.92502818 13.68871124  0.87719504  5.141906  ].pth'
-        print('loaded checkpoint:', ckpt_name)
-        ckpt_start = torch.load(ckpt_name)
+        if ckpt_mode == 0:
+            ckpt_dir = 'pretrain/fullsubnet_rir'
+            ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+            ckpt_start = torch.load(ckpt_name)
+        else:
+            ckpt_name = 'pretrain/fullsubnet_[ 2.14935723  2.92502818 13.68871124  0.87719504  5.141906  ].pth'
+            print('loaded checkpoint:', ckpt_name)
+            ckpt_start = torch.load(ckpt_name)
 
         if train_mode == 0:
             ckpt = []
