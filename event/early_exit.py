@@ -67,7 +67,7 @@ def test_step(model, input_data, label):
     thresholds = [0.8, 0.9, 0.95, 0.99]
     for j, thres in enumerate(thresholds):
         for i, output in enumerate(outputs):
-            max_confidence = torch.max(output)
+            max_confidence = torch.max(torch.softmax(output))
             if max_confidence > thres:
                 acc = (torch.argmax(output, dim=-1).cpu() == label).sum() / len(label)
                 early_acc[j] = acc
