@@ -45,7 +45,7 @@ def gate_train(model, train_dataset, test_dataset):
             audio, image, text, _ = batch
             optimizer.zero_grad()
             [compress, acc] = model.gate_train(audio.to(device), image.to(device), text.to(device))
-            if idx % 100 == 0:
+            if idx % 200 == 0:
                 print(compress, acc)
             #     writer.add_scalars('Train/compression', {'audio': compress[0], 'image': compress[1]}, idx + epoch * len(train_loader))
             #     writer.add_scalar('Train/acc', acc, idx + epoch * len(train_loader))
@@ -68,7 +68,7 @@ def gate_train(model, train_dataset, test_dataset):
         acc_all = np.round(mean_acc, 3)
         acc_avg = np.round(np.sum(acc) / np.sum(count), 3)
         comp_all = np.round(np.array(count) / np.sum(count), 3)
-        comp_avg = np.mean(comp_all)
+        comp_avg = np.mean(comp_all * np.linspace(1, 24, 24))
         print('epoch', epoch, 'trained gate exit')
         print('accuracy for early-exits:', acc_all.tolist())
         print('mean accuracy ', acc_avg)
