@@ -73,6 +73,10 @@ def test_step(model, input_data, label):
                 early_acc[j] = acc
                 early_exit[j] = (i+1)/12
                 break
+            else:
+                acc = (torch.argmax(output, dim=-1).cpu() == label).sum() / len(label)
+                early_acc[j] = acc
+                early_exit[j] = (i + 1) / 12
     return early_acc, early_exit
 
 def train(model, train_dataset, test_dataset):
