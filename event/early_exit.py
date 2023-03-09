@@ -76,7 +76,7 @@ def test_step(model, input_data, label):
     return early_acc, early_exit
 
 def train(model, train_dataset, test_dataset):
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=16, batch_size=64, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
                                                drop_last=True, pin_memory=False)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=1, batch_size=1, shuffle=False)
 
@@ -86,11 +86,11 @@ def train(model, train_dataset, test_dataset):
     best_acc = 0
     for epoch in range(10):
         model.train()
-        for idx, batch in enumerate(tqdm(train_loader)):
-            audio, image, text, _ = batch
-            train_step(model, input_data=(audio.to(device), image.to(device)), optimizer=optimizer,
-                       criteria=criteria, label=text.to(device))
-        scheduler.step()
+        # for idx, batch in enumerate(tqdm(train_loader)):
+        #     audio, image, text, _ = batch
+        #     train_step(model, input_data=(audio.to(device), image.to(device)), optimizer=optimizer,
+        #                criteria=criteria, label=text.to(device))
+        # scheduler.step()
         model.eval()
         acc = []
         exits = []
@@ -115,6 +115,8 @@ if __name__ == "__main__":
     parser.add_argument('-w', '--worker', default=4, type=int)
     parser.add_argument('-b', '--batch', default=32, type=int)
     args = parser.parse_args()
+    workers = args.worker
+    batch_size = args.batch
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
