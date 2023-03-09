@@ -144,6 +144,7 @@ class BaseDataset:
                 data = data[offset * self.sample_rate: (offset + duration) * self.sample_rate, :]
                 data /= 2 ** 14
                 data = signal.filtfilt(b, a, data, axis=0)
+                data = np.clip(data, -0.05, 0.05)
             else:
                 data, sr = librosa.load(file, offset=offset, duration=duration, sr=None)
             return data, file
