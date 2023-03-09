@@ -85,7 +85,6 @@ def train(model, train_dataset, test_dataset):
     best_acc = 0
     for epoch in range(10):
         model.train()
-        model.exit = False
         for idx, batch in enumerate(tqdm(train_loader)):
             audio, image, text, _ = batch
             train_step(model, input_data=(audio.to(device), image.to(device)), optimizer=optimizer,
@@ -102,11 +101,13 @@ def train(model, train_dataset, test_dataset):
                 exits.append(e)
         acc = np.mean(acc, axis=0)
         exits = np.mean(exits, axis=0)
-
         print('epoch', epoch)
         print('accuracy for each threshold:', acc)
         print('computation for each threshold:', exits)
-        torch.save(model.state_dict(), 'exit_' + str(epoch) + '_' + str(acc[-1]) + '.pth')
+        if np.mean(acc) > best_acc:
+            torch.save(model.state_dict(), 'exit_' + str(epoch) + '_' + str(acc[-1]) + '.pth')
+
+
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(1)
