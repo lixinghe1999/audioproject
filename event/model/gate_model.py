@@ -197,13 +197,11 @@ class AVnet_Gate(nn.Module):
 
         # first block
         audio = self.audio.blocks[0](audio)
-        audio_norm = self.audio.norm(audio)
-        audio_norm = (audio_norm[:, 0] + audio_norm[:, 1]) / 2
+        audio_norm = self.audio.norm(audio)[:, 0]
         output_cache['audio'].append(audio_norm)
 
-        image = self.image.v.blocks[0](image)
-        image_norm = self.image.norm(image)
-        image_norm = (image_norm[:, 0] + image_norm[:, 1]) / 2
+        image = self.image.blocks[0](image)
+        image_norm = self.image.norm(image)[:, 0]
         output_cache['image'].append(image_norm)
 
         if mode == 'dynamic':
@@ -219,11 +217,11 @@ class AVnet_Gate(nn.Module):
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks[1:], self.image.blocks[1:])):
             if i < self.exit[0].item():
                 audio = blk_a(audio)
-                audio_norm = self.audio.norm(audio)
+                audio_norm = self.audio.norm(audio)[:, 0]
                 output_cache['audio'].append(audio_norm)
             if i < self.exit[1].item():
                 image = blk_i(image)
-                image_norm = self.image.norm(image)
+                image_norm = self.image.norm(image)[:, 0]
                 output_cache['image'].append(image_norm)
 
         audio = output_cache['audio'][-1]
