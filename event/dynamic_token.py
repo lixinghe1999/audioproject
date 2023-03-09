@@ -80,8 +80,8 @@ if __name__ == "__main__":
     mode = args.mode
     workers = args.worker
     batch_size = args.batch
-    from torch.utils.tensorboard import SummaryWriter
-    writer = SummaryWriter()
+    # from torch.utils.tensorboard import SummaryWriter
+    # writer = SummaryWriter()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
 

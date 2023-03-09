@@ -59,7 +59,7 @@ def gate_train(model, train_dataset, test_dataset):
     best_acc = 0
     for epoch in range(5):
         model.train()
-        if epoch % 2 == 0 and epoch > 0:
+        if epoch % 4 == 0 and epoch > 0:
             for optimizer in optimizers:
                 update_lr(optimizer, multiplier=.4)
         for idx, batch in enumerate(tqdm(train_loader)):
