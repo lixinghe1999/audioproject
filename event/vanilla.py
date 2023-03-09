@@ -3,7 +3,7 @@ from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
 from model.vanilla_model import AVnet
-from model.gate_vit import ASTModel, VITModel
+from model.gatevit import ASTModel, VITModel
 import argparse
 torchvision.models.resnet50()
 import warnings
