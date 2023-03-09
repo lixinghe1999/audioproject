@@ -64,7 +64,7 @@ def test_step(model, input_data, label):
 
     early_acc = np.zeros((4))
     early_exit = np.zeros((4))
-    thresholds = [0.8, 0.9, 0.95, 0.99]
+    thresholds = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
     for j, thres in enumerate(thresholds):
         for i, output in enumerate(outputs):
             max_confidence = torch.max(torch.softmax(output, dim=-1))
