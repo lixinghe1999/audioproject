@@ -63,9 +63,10 @@ if __name__ == "__main__":
         person = os.listdir(directory)
         dict = {}
         for p in person:
+            print(p)
             g = os.walk(os.path.join(directory, p))
             for path, dir_list, file_list in g:
-                print(path)
+                # print(path)
                 N = len(file_list)
                 if N > 0:
                     # maybe different on Linux/ Windows
@@ -73,7 +74,7 @@ if __name__ == "__main__":
                     #name = path.split('\\')[-1]
                     # Linux
                     name = path.split('/')[-1]
-                    print(name)
+                    # print(name)
                     if name != 'mask':
                         break
                     else:
