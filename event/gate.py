@@ -45,7 +45,8 @@ def gate_train(model, train_dataset, test_dataset):
             audio, image, text, _ = batch
             optimizer.zero_grad()
             [compress, acc] = model.gate_train(audio.to(device), image.to(device), text.to(device))
-            # if idx % 100 == 0:
+            if idx % 100 == 0:
+                print(compress, acc)
             #     writer.add_scalars('Train/compression', {'audio': compress[0], 'image': compress[1]}, idx + epoch * len(train_loader))
             #     writer.add_scalar('Train/acc', acc, idx + epoch * len(train_loader))
             optimizer.step()
