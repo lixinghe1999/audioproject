@@ -27,10 +27,9 @@ def inference(dataset, BATCH_SIZE, model, text=False):
     Metric = []
     model.eval()
     with torch.no_grad():
-        for sample in tqdm(test_loader):
+        for sample in test_loader:
             text, clean, noise, acc = parse_sample(sample, text=text_inference)
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device, text)
-            print(metric)
             Metric.append(metric)
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
