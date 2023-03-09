@@ -58,32 +58,7 @@ if __name__ == "__main__":
                     if file_name[-3:] in ['wav', 'lac']:
                         audio_files.append([os.path.join(path, file_name), torchaudio.info(os.path.join(path, file_name)).num_frames])
             json.dump(audio_files, open('json/' + dataset_name + '.json', 'w'), indent=4)
-    if args.mode == 1:
-        directory = "../dataset/DNS-Challenge/"
-        #datasets = ['test_set/synthetic/with_reverb/noisy', 'test_set/synthetic/with_reverb/clean',
-        #            'train_noise', 'train_clean']
-        datasets = ['train_noise', 'train_clean']
-        for dataset in datasets:
-            audio_files = []
-            g = os.walk(directory + dataset)
-            dataset_name = 'DNS' + dataset.split('/')[-1]
-            print(dataset_name)
-            for path, dir_list, file_list in g:
-                file_list = sorted(file_list, key=lambda x: x.split('_')[-1])
-                for file_name in file_list:
-                    if file_name[-3:] in ['wav', 'lac']:
-                        f_name = os.path.join(path, file_name)
-                        info = torchaudio.info(f_name)
-                        if info.sample_rate != 16000:
-                            continue
-                        else:
-                            # data, sr = librosa.load(f_name, sr=None)
-                            # data = librosa.resample(data, orig_sr=sr, target_sr=16000)
-                            # sf.write(f_name, data, 16000)
-                            frames = info.num_frames
-                            audio_files.append([os.path.join(path, file_name), frames])
-            json.dump(audio_files, open('json/' + dataset_name + '.json', 'w'), indent=4)
-    elif args.mode == 2:
+    elif args.mode == 1:
         directory = '../dataset/our'
         person = os.listdir(directory)
         dict = {}
@@ -97,10 +72,13 @@ if __name__ == "__main__":
                     #name = path.split('\\')[-1]
                     # Linux
                     name = path.split('/')[-1]
-                    if name in ['test', 'mask', 'position', 'stick']:
-                        dict = update(dict, name, file_list, p, kinds=3)
+                    if name != 'mask':
+                        break
                     else:
-                        dict = update(dict, name, file_list, p, kinds=4)
+                        if name in ['test', 'mask', 'position', 'stick']:
+                            dict = update(dict, name, file_list, p, kinds=3)
+                        else:
+                            dict = update(dict, name, file_list, p, kinds=4)
         for name in dict:
                 json.dump(dict[name][0], open('json/' + name + '_imu.json', 'w'), indent=4)
                 json.dump(dict[name][1], open('json/' + name + '_gt.json', 'w'), indent=4)
