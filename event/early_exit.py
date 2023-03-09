@@ -52,6 +52,7 @@ def train_step(model, input_data, optimizer, criteria, label):
     loss = 0
     for i, output in enumerate(outputs):
         loss += (i+1)/12 * criteria(output, label)
+    print(loss.item())
     loss.backward()
     optimizer.step()
     return loss.item()
