@@ -90,9 +90,8 @@ class Cross_attention(nn.Module):
         score = (q @ k_t) / self.d_tensor ** 0.5  # scaled dot product
         score = nn.functional.softmax(score)
         v = score @ v
-        x = self.norm(v + x)
-        x1 = x[:, :t1, :]
-        x2 = x[:, t1:, :]
+        x1 = self.norm(v[:, :t1, :] + _x1)
+        x2 = self.norm(v[:, t1:, :] + _x2)
         return x1, x2
 class AVnet(nn.Module):
     def __init__(self, scale='base', pretrained=False):
