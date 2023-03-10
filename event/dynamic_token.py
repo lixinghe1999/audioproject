@@ -107,6 +107,6 @@ if __name__ == "__main__":
                 keep_ratio=token_ratio, mse_token=True, ratio_weight=2.0, distill_weight=0.5)
         train(model, train_dataset, test_dataset)
     elif args.task == 'profile':
-        model.load_state_dict(torch.load('dynamic_distill_9_0.6738830938791577.pth'), strict=False)
+        model.load_state_dict(torch.load('dynamic_distill_8_0.6638456996654202.pth'), strict=False)
         profile(model, test_dataset)
 
