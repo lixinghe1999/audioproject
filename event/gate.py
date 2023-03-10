@@ -75,7 +75,7 @@ def gate_train(model, train_dataset, test_dataset):
         print('compression level distribution:', comp_all.tolist())
         print('mean compression level:', comp_avg )
         if acc_avg > best_acc:
-            best_acc = np.mean(mean_acc)
+            best_acc = acc_avg
             torch.save(model.state_dict(), 'gate_' + str(args.task) + '_' + str(epoch) + '_' +
                        str(acc_avg) + '.pth')
 def profile(model, test_dataset):

@@ -1,13 +1,13 @@
-import time
+
 from utils.datasets.vggsound import VGGSound
 import numpy as np
 import torch
-from model.vit_model import AVnet_Dynamic, AudioTransformerDiffPruning, VisionTransformerDiffPruning
+from model.vit_model import AudioTransformerDiffPruning, VisionTransformerDiffPruning
+from model.dynamicvit_model import AVnet_Dynamic
 from utils.losses import DistillDiffPruningLoss_dynamic
 import warnings
 from tqdm import tqdm
 import argparse
-np.set_printoptions(precision=3, suppress=True, linewidth=200)
 warnings.filterwarnings("ignore")
 
 def train_step(model, input_data, optimizer, criteria, label):
@@ -30,7 +30,7 @@ def test_step(model, input_data, label):
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     model.eval()
-    # token_ratio = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
+    token_ratio = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
     acc = []
     with torch.no_grad():
         for ratio in token_ratio:
@@ -68,7 +68,7 @@ def train(model, train_dataset, test_dataset):
         print('accuracy:', mean_acc)
         if mean_acc > best_acc:
             best_acc = mean_acc
-            torch.save(model.state_dict(), str(args.task) + '_' + str(epoch) + '_' + str(mean_acc) + '.pth')
+            torch.save(model.state_dict(), 'dynamic_' + str(args.task) + '_' + str(epoch) + '_' + str(mean_acc) + '.pth')
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', default='train')
@@ -79,8 +79,6 @@ if __name__ == "__main__":
     mode = args.mode
     workers = args.worker
     batch_size = args.batch
-    # from torch.utils.tensorboard import SummaryWriter
-    # writer = SummaryWriter()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(0)
 
@@ -103,7 +101,7 @@ if __name__ == "__main__":
         train(model, train_dataset, test_dataset)
     elif args.task == 'distill':
         teacher_model = AVnet_Dynamic(pruning_loc=(), pretrained=False, distill=True).to(device)
-        teacher_model.load_state_dict(torch.load('token_network/AV_6_0.6778193269041527.pth'), strict=False)
+        teacher_model.load_state_dict(torch.load('vanilla_AV_9_0.6942149.pth'), strict=False)
         teacher_model.eval()
         criteria = DistillDiffPruningLoss_dynamic(teacher_model, torch.nn.CrossEntropyLoss(), clf_weight=1.0,
                 keep_ratio=token_ratio, mse_token=True, ratio_weight=2.0, distill_weight=0.5)

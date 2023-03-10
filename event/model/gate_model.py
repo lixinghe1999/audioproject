@@ -176,9 +176,9 @@ class AVnet_Gate(nn.Module):
         output = self.projection(output)
         loss_r = nn.functional.cross_entropy(output, label) # recognition-level loss
 
-        compress = [(torch.argmax(gate_a, dim=-1).float().mean() + 1)/12 ,
-              (torch.argmax(gate_i, dim=-1).float().mean() + 1)/12]
-        acc = (torch.argmax(output, dim=-1) == label).sum() / len(label)
+        compress = [(torch.argmax(gate_a, dim=-1).float().mean() + 1).item()/12 ,
+              (torch.argmax(gate_i, dim=-1).float().mean() + 1).item()/12]
+        acc = (torch.argmax(output, dim=-1) == label).sum().item() / len(label)
 
         # print(loss_c.item(), (loss_g1 + loss_g2).item(), loss_r.item())
         loss = loss_c * 0.3 + loss_g1 * 0.3 + loss_g2 * 0.3 + loss_r * 0.1
