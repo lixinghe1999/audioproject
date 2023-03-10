@@ -87,8 +87,8 @@ if __name__ == "__main__":
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
 
     model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
-    model.audio.load_state_dict(torch.load('A_6_0.5303089942924621.pth'), strict=False)
-    model.image.load_state_dict(torch.load('V_7_0.5041330446762449.pth'), strict=False)
+    model.audio.load_state_dict(torch.load('vanilla_A_6_0.5303089942924621.pth'), strict=False)
+    model.image.load_state_dict(torch.load('vanilla_V_7_0.5041330446762449.pth'), strict=False)
     # model.load_state_dict(torch.load('distill_9_0.6713245424129108.pth'), strict=False)
 
     dataset = VGGSound()
