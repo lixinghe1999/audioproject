@@ -70,33 +70,31 @@ class EncoderLayer(nn.Module):
         x = self.norm2(x + _x)
         return x
 class Cross_attention(nn.Module):
-    def __init__(self, d1, d2):
+    def __init__(self, d_model):
         super(Cross_attention, self).__init__()
-        self.w_1 = nn.Linear(d1, d1)
-        self.w_2 = nn.Linear(d2, d2)
-        self.v_1 = nn.Linear(d1, d1)
-        self.v_2 = nn.Linear(d2, d2)
+        self.d_tensor = d_model
+        self.w_q = nn.Linear(d_model, d_model)
+        self.w_k = nn.Linear(d_model, d_model)
+        self.w_v = nn.Linear(d_model, d_model)
 
-        self.norm1 = nn.LayerNorm(d1)
-        self.norm2 = nn.LayerNorm(d2)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
 
     def forward(self, x1, x2):
         # dot product with weight matrices
         _x1, _x2 = x1, x2
-        x1, v1, x2, v2 = self.w_1(x1), self.v_1(x1), self.w_2(x2), self.v_2(x2),
+        t1 = x1.shape[1]
+        x = torch.cat([x1, x2], dim=1)
+        q, k, v = self.w_q(x), self.w_k(x), self.w_v(x)
 
-        d_tensor = x1.size()[-1]
-        # 1. dot product Query with Key^T to compute similarity
-        x2 = x2.transpose(1, 2)
-        score = (x1 @ x2) / d_tensor**0.5  # scaled dot product
-        score1 = nn.functional.softmax(score, dim=-1)
-        score2 = nn.functional.softmax(score.permute(0, 2, 1), dim=-1)
-
-        v1 = score1 @ v2
-        v2 = score2 @ v1
-
-        x1 = self.norm1(_x1 + v1)
-        x2 = self.norm1(_x2 + v2)
+        k_t = k.transpose(1, 2)
+        score = (q @ k_t) / self.d_tensor ** 0.5  # scaled dot product
+        score = nn.functional.softmax(score)
+        v = score @ v
+        x1 = v[:, :t1, :]
+        x2 = v[:, t1:, :]
+        x1 = self.norm1(x1 + _x1)
+        x2 = self.norm2(x2 + _x2)
         return x1, x2
 class AVnet(nn.Module):
     def __init__(self, scale='base', pretrained=False):
