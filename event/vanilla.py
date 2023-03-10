@@ -31,10 +31,10 @@ def train(model, train_dataset, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=4, shuffle=False)
     best_acc = 0
     if args.task == 'AV':
-        for param in model.audio.parameters():
-            param.requires_grad = False
-        for param in model.image.parameters():
-            param.requires_grad = False
+        # for param in model.audio.parameters():
+        #     param.requires_grad = False
+        # for param in model.image.parameters():
+        #     param.requires_grad = False
         optimizer = torch.optim.Adam(model.fusion_parameter(), lr=.0001, weight_decay=1e-4)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=.0001, weight_decay=1e-4)
