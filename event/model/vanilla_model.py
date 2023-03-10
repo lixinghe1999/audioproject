@@ -6,7 +6,7 @@ import time
 import torch.nn as nn
 import torch
 from torch.cuda.amp import autocast
-from vit_model import AudioTransformerDiffPruning, VisionTransformerDiffPruning
+from model.vit_model import AudioTransformerDiffPruning, VisionTransformerDiffPruning
 class PositionwiseFeedForward(nn.Module):
     def __init__(self, d_model, hidden, drop_prob=0.1):
         super(PositionwiseFeedForward, self).__init__()
