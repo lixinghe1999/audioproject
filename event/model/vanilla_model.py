@@ -119,7 +119,8 @@ class AVnet(nn.Module):
         self.fusion = nn.ModuleList([Cross_attention(embed_dim, embed_dim) for _ in range(12 - self.fusion_layer)])
 
     def fusion_parameter(self):
-        parameter = [{'params': self.head.parameters()}]
+        parameter = [{'params': self.head.parameters()},
+                     {'params': self.fusion.parameters()}]
         return parameter
 
     @autocast()
