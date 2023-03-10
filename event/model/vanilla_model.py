@@ -69,6 +69,35 @@ class EncoderLayer(nn.Module):
         x = self.dropout2(x)
         x = self.norm2(x + _x)
         return x
+class Cross_attention(nn.Module):
+    def __init__(self, d1, d2):
+        super(Cross_attention, self).__init__()
+        self.w_1 = nn.Linear(d1, d1)
+        self.w_2 = nn.Linear(d2, d2)
+        self.v_1 = nn.Linear(d1, d1)
+        self.v_2 = nn.Linear(d2, d2)
+
+        self.norm1 = nn.LayerNorm(d1)
+        self.norm2 = nn.LayerNorm(d2)
+
+    def forward(self, x1, x2):
+        # dot product with weight matrices
+        _x1, _x2 = x1, x2
+        x1, v1, x2, v2 = self.w_1(x1), self.v_1(x1), self.w_2(x2), self.v_2(x2),
+
+        d_tensor = x1.size()[-1]
+        # 1. dot product Query with Key^T to compute similarity
+        x2 = x2.transpose(1, 2)
+        score = (x1 @ x2) / d_tensor**0.5  # scaled dot product
+        score1 = nn.functional.softmax(score, dim=-1)
+        score2 = nn.functional.softmax(score.permute(0, 2, 1), dim=-1)
+
+        v1 = score1 @ v2
+        v2 = score2 @ v1
+
+        x1 = self.norm1(_x1 + v1)
+        x2 = self.norm1(_x2 + v2)
+        return x1, x2
 class AVnet(nn.Module):
     def __init__(self, scale='base', pretrained=False):
         super(AVnet, self).__init__()
@@ -86,6 +115,8 @@ class AVnet(nn.Module):
             self.image.load_state_dict(torch.load('assets/deit_base_patch16_224.pth')['model'], strict=False)
         self.head = nn.Sequential(nn.LayerNorm(embed_dim * 2),
                                       nn.Linear(embed_dim * 2, 309))
+        self.fusion_layer = 6
+        self.fusion = nn.ModuleList([Cross_attention(embed_dim, embed_dim) for _ in range(12 - self.fusion_layer)])
 
     def fusion_parameter(self):
         parameter = [{'params': self.head.parameters()}]
@@ -97,9 +128,10 @@ class AVnet(nn.Module):
         B, image = self.image.preprocess(image)
 
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks, self.image.blocks)):
-
             audio = blk_a(audio)
             image = blk_i(image)
+            if i >= self.fusion_layer:
+                audio, image = self.fusion[i-self.fusion_layer](audio, image)
 
         audio = self.audio.norm(audio)
         image = self.image.norm(image)
