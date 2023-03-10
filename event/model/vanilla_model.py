@@ -114,7 +114,7 @@ class AVnet(nn.Module):
         self.head = nn.Sequential(nn.LayerNorm(embed_dim * 2),
                                       nn.Linear(embed_dim * 2, 309))
         self.fusion_layer = 6
-        self.fusion = nn.ModuleList([Cross_attention(embed_dim, embed_dim) for _ in range(12 - self.fusion_layer)])
+        self.fusion = nn.ModuleList([Cross_attention(embed_dim) for _ in range(12 - self.fusion_layer)])
 
     def fusion_parameter(self):
         parameter = [{'params': self.head.parameters()},
