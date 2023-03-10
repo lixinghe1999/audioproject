@@ -77,8 +77,7 @@ class Cross_attention(nn.Module):
         self.w_k = nn.Linear(d_model, d_model)
         self.w_v = nn.Linear(d_model, d_model)
 
-        self.norm1 = nn.LayerNorm(d_model)
-        self.norm2 = nn.LayerNorm(d_model)
+        self.norm = nn.LayerNorm(d_model)
 
     def forward(self, x1, x2):
         # dot product with weight matrices
@@ -91,10 +90,9 @@ class Cross_attention(nn.Module):
         score = (q @ k_t) / self.d_tensor ** 0.5  # scaled dot product
         score = nn.functional.softmax(score)
         v = score @ v
-        x1 = v[:, :t1, :]
-        x2 = v[:, t1:, :]
-        x1 = self.norm1(x1 + _x1)
-        x2 = self.norm2(x2 + _x2)
+        x = self.norm(v + x)
+        x1 = x[:, :t1, :]
+        x2 = x[:, t1:, :]
         return x1, x2
 class AVnet(nn.Module):
     def __init__(self, scale='base', pretrained=False):
