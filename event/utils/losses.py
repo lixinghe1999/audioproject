@@ -144,12 +144,12 @@ class DistillDiffPruningLoss_dynamic(torch.nn.Module):
                 pos_ratio = score.mean(1)
             pred_loss += ((pos_ratio - ratio[i]) ** 2).mean()
             # extra loss: get unbalanced between two modalities
-            pred_loss += (score[:, :192].mean() - score[:, 192:].mean())**2
+            # pred_loss += (score[:, :192].mean() - score[:, 192:].mean())**2
 
         cls_loss = self.base_criterion(pred, labels)
-        early_weight = [0.25, 0.5, 0.75]
-        for i in range(len(early_output)):
-            cls_loss += early_weight[0] * self.base_criterion(early_output[i], labels)
+        # early_weight = [0.25, 0.5, 0.75]
+        # for i in range(len(early_output)):
+        #     cls_loss += early_weight[0] * self.base_criterion(early_output[i], labels)
         with torch.no_grad():
 
             cls_t, token_t = self.teacher_model(*inputs)
