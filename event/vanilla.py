@@ -78,8 +78,8 @@ if __name__ == "__main__":
     embed_dim = 768
     if args.task == 'AV':
         model = AVnet().to(device)
-        model.audio.load_state_dict(torch.load('A_6_0.5303089942924621.pth'))
-        model.image.load_state_dict(torch.load('V_7_0.5041330446762449.pth'))
+        model.audio.load_state_dict(torch.load('vanilla_A_6_0.5303089942924621.pth'))
+        model.image.load_state_dict(torch.load('vanilla_V_7_0.5041330446762449.pth'))
     elif args.task == 'A':
         model = AudioTransformerDiffPruning(config, imagenet_pretrain=True).to(device)
     else:
