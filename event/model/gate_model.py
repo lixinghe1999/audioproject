@@ -104,7 +104,10 @@ class AVnet_Gate(nn.Module):
                      {'params': self.projection.parameters()}]
         return parameter
 
-    def label(self, output_cache, label):
+    def label(self, output_cache, label, mode='flexible'):
+        # 1. model -> switch between two modality -> predict [2, 1]
+        # 2. main -> predict one branch [1, 12]
+        # 3. flexible -> predict [2, 12]
         # label rule -> according the task
         # classification:
         # 1. starting from no compression: i & j
@@ -116,11 +119,6 @@ class AVnet_Gate(nn.Module):
                 predict_label = torch.argmax(predict_label, dim=-1).item()
                 if predict_label == label[b]:
                     return i, blocks - 1
-                    # for j in range(blocks):
-                    #     predict_label = self.projection(torch.cat([modal1[i][b], modal2[-j-1][b]], dim=-1))
-                    #     predict_label = torch.argmax(predict_label, dim=-1).item()
-                    #     if predict_label != label[b]:
-                    #         return i, blocks - j
             return blocks-1, blocks-1
         def helper_2(modal1, modal2, b):
             for i in range(blocks):
@@ -128,11 +126,6 @@ class AVnet_Gate(nn.Module):
                 predict_label = torch.argmax(predict_label, dim=-1).item()
                 if predict_label == label[b]:
                     return i, blocks - 1
-                    # for j in range(blocks):
-                    #     predict_label = self.projection(torch.cat([modal2[-j-1][b], modal1[i][b]], dim=-1))
-                    #     predict_label = torch.argmax(predict_label, dim=-1).item()
-                    #     if predict_label != label[b]:
-                    #         return i, blocks - j
             return blocks-1, blocks-1
 
         batch = len(label)
@@ -141,15 +134,28 @@ class AVnet_Gate(nn.Module):
         for b in range(batch):
             i1, j1 = helper_1(output_cache['audio'], output_cache['image'], b)
             j2, i2 = helper_2(output_cache['image'], output_cache['audio'], b)
-            if (i1 + j1) < (i2 + j2):
-                i = i1; j = j1
-            elif (i1 + j1) > (i2 + j2):
-                i = i2; j = j2
-            else:
-                if torch.rand(1)<0.5:
-                    i = i1; j = j1
+            if mode == 'main':
+                i, j = i1, j1
+            elif mode == 'model':
+                if i1 < j2:
+                    i = i1; j = blocks-1
+                elif i1 > j2:
+                    i = blocks-1; j = j2
                 else:
+                    if torch.rand(1) < 0.5:
+                        i = i1; j = blocks - 1
+                    else:
+                        i = blocks-1; j = j2
+            else: # flexible
+                if (i1 + j1) < (i2 + j2):
+                    i = i1; j = j1
+                elif (i1 + j1) > (i2 + j2):
                     i = i2; j = j2
+                else:
+                    if torch.rand(1)<0.5:
+                        i = i1; j = j1
+                    else:
+                        i = i2; j = j2
             gate_label[b, 0, i] = 1; gate_label[b, 1, j] = 1
         return gate_label
     def gate_train(self, audio, image, label):
@@ -157,19 +163,12 @@ class AVnet_Gate(nn.Module):
         We get three loss: computation loss, Gate label loss, Recognition loss
         '''
         output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
-        gate_label = self.label(output_cache, label).to('cuda')
+        gate_label = self.label(output_cache, label, mode='main').to('cuda')
         gate_label = torch.argmax(gate_label, dim=-1)
         output, gate_a, gate_i = self.gate(audio, image, output_cache)
 
         computation_penalty = torch.range(1, 12).to('cuda')
         loss_c = (gate_a * computation_penalty + gate_i * computation_penalty).mean()
-        # loss_g = - (gate_a * computation_penalty - gate_i * computation_penalty).abs().mean()
-        # exit_distribution1 = torch.tensor([0.25447747, 0.06297973, 0.04575871, 0.0591419,  0.06809683, 0.06681756,
-        #                     0.06681756, 0.05284393, 0.03581972, 0.04172407, 0.037099, 0.04005117]).to('cuda')
-        # exit_distribution2 = torch.tensor([0.44636883, 0.04831726, 0.02164928, 0.01653218, 0.01623696, 0.02155088,
-        #                     0.0338516,  0.03099784, 0.03572131, 0.05392639, 0.05845306, 0.04802204]).to('cuda')
-        # exit_distribution1 = exit_distribution1 / exit_distribution1.sum()
-        # exit_distribution2 = exit_distribution2 / exit_distribution2.sum()
         loss_g1 = nn.functional.cross_entropy(gate_a, gate_label[:, 0])
         loss_g2 = nn.functional.cross_entropy(gate_i, gate_label[:, 1])
 
