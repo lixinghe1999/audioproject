@@ -107,12 +107,7 @@ class AVnet_Gate(nn.Module):
     def label(self, output_cache, label, mode='flexible'):
         # 1. model -> switch between two modality -> predict [2, 1]
         # 2. main -> predict one branch [1, 12]
-        # 3. flexible -> predict [2, 12]
-        # label rule -> according the task
-        # classification:
-        # 1. starting from no compression: i & j
-        # 2. if correct, randomly compress one modality
-        # 3. if not, output the previous compression level
+        # 3. flexible -> predict [2, 12] currently very close to model
         def helper_1(modal1, modal2, b):
             for i in range(blocks):
                 predict_label = self.projection(torch.cat([modal1[i][b], modal2[-1][b]], dim=-1))
@@ -135,17 +130,12 @@ class AVnet_Gate(nn.Module):
             i1, j1 = helper_1(output_cache['audio'], output_cache['image'], b)
             j2, i2 = helper_2(output_cache['image'], output_cache['audio'], b)
             if mode == 'main':
-                i, j = i1, j1
+                i, j = i1, blocks-1
             elif mode == 'model':
                 if i1 < j2:
-                    i = i1; j = blocks-1
-                elif i1 > j2:
-                    i = blocks-1; j = j2
+                    i = 0; j = blocks-1
                 else:
-                    if torch.rand(1) < 0.5:
-                        i = i1; j = blocks - 1
-                    else:
-                        i = blocks-1; j = j2
+                    i = blocks-1; j = 0
             else: # flexible
                 if (i1 + j1) < (i2 + j2):
                     i = i1; j = j1
@@ -163,7 +153,7 @@ class AVnet_Gate(nn.Module):
         We get three loss: computation loss, Gate label loss, Recognition loss
         '''
         output_cache, output = self.forward(audio, image, 'no_exit') # get all the possibilities
-        gate_label = self.label(output_cache, label, mode='main').to('cuda')
+        gate_label = self.label(output_cache, label, mode='model').to('cuda')
         gate_label = torch.argmax(gate_label, dim=-1)
         output, gate_a, gate_i = self.gate(audio, image, output_cache)
 
