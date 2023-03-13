@@ -200,6 +200,8 @@ class AVnet_Gate(nn.Module):
             # not implemented yet
             gate_a, gate_i = self.gate(audio_norm, image_norm, output_cache)
             self.exit = torch.argmax(torch.cat([gate_a, gate_i], dim=0), dim=-1)
+        else: # directly get the exit
+            self.exit = mode
 
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks[1:], self.image.blocks[1:])):
             if i < self.exit[0].item():

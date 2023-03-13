@@ -22,25 +22,28 @@ def train_step(model, input_data, optimizer, criteria, label):
     optimizer.step()
     return loss.item()
 def test_step(model, input_data, label):
-    output = model(*input_data)
-    if isinstance(output, tuple):
-        output = output[0]
+    outputs = model(*input_data)
+    output, t, r = outputs
     acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
-    return acc.item()
+    return acc.item(), r
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     model.eval()
     token_ratio = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
     acc = []
+    modality_ratio = []
     with torch.no_grad():
         for ratio in token_ratio:
             model.token_ratio = [ratio, ratio**2, ratio**3]
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)
+                a, r = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)
                 acc.append(a)
+                modality_ratio.append(r)
             mean_acc = np.mean(acc)
+            mean_ratio = np.mean(modality_ratio)
             print('preserved ratio:', ratio)
+            print('modality-wise ratio:', mean_ratio, 1-mean_ratio)
             print('accuracy:', mean_acc)
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
@@ -86,20 +89,23 @@ if __name__ == "__main__":
     base_rate = 0.7
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
 
-    model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
-    model.audio.load_state_dict(torch.load('vanilla_A_6_0.5303089942924621.pth'), strict=False)
-    model.image.load_state_dict(torch.load('vanilla_V_7_0.5041330446762449.pth'), strict=False)
-    # model.load_state_dict(torch.load('distill_9_0.6713245424129108.pth'), strict=False)
-
     dataset = VGGSound()
     len_train = int(len(dataset) * 0.8)
     len_test = len(dataset) - len_train
     train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len_train, len_test], generator=torch.Generator().manual_seed(42))
 
     if args.task == 'train':
+        model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
+        model.audio.load_state_dict(torch.load('vanilla_A_6_0.5303089942924621.pth'), strict=False)
+        model.image.load_state_dict(torch.load('vanilla_V_7_0.5041330446762449.pth'), strict=False)
+
         criteria = torch.nn.CrossEntropyLoss()
         train(model, train_dataset, test_dataset)
     elif args.task == 'distill':
+        model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False, distill=True).to(device)
+        model.audio.load_state_dict(torch.load('vanilla_A_6_0.5303089942924621.pth'), strict=False)
+        model.image.load_state_dict(torch.load('vanilla_V_7_0.5041330446762449.pth'), strict=False)
+
         teacher_model = AVnet_Dynamic(pruning_loc=(), pretrained=False, distill=True).to(device)
         teacher_model.load_state_dict(torch.load('vanilla_AV_9_0.6942149.pth'), strict=False)
         teacher_model.eval()
@@ -107,6 +113,7 @@ if __name__ == "__main__":
                 keep_ratio=token_ratio, mse_token=True, ratio_weight=2.0, distill_weight=0.5)
         train(model, train_dataset, test_dataset)
     elif args.task == 'profile':
-        model.load_state_dict(torch.load('dynamic_distill_8_0.6638456996654202.pth'), strict=False)
+        model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False).to(device)
+        model.load_state_dict(torch.load('dynamic_distill_9_0.6738830938791577.pth'), strict=False)
         profile(model, test_dataset)
 

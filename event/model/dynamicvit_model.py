@@ -54,6 +54,8 @@ class AVnet_Dynamic(nn.Module):
         early_output = []
         prev_decision = torch.ones(B, self.num_patches, 1, dtype=audio.dtype, device=audio.device)
         policy = torch.ones(B, self.num_patches + 2, 1, dtype=audio.dtype, device=audio.device)
+        t_stamp = []
+        t_start = time.time()
         for i, (blk_a, blk_i) in enumerate(zip(self.audio.blocks, self.image.blocks)):
             if i in self.pruning_loc:
                 spatial_x = torch.cat([audio[:, 1:], image[:, 1:]], dim=1)
@@ -103,6 +105,7 @@ class AVnet_Dynamic(nn.Module):
                 else:
                     audio = blk_a(audio)
                     image = blk_i(image)
+            t_stamp.append(time.time() - t_start)
         x, features = self.output(audio, image)
         if self.training:
             if self.distill:
@@ -113,25 +116,25 @@ class AVnet_Dynamic(nn.Module):
             if self.distill:
                 return x, features
             else:
-                return x
+                ratio = audio.shape[1] / (audio.shape[1] + image.shape[1])
+                return x, t_stamp, ratio
 if __name__ == "__main__":
     device = 'cpu'
     base_rate = 0.5
     pruning_loc = [3, 6, 9]
     token_ratio = [base_rate, base_rate ** 2, base_rate ** 3]
-
-    model = VisionTransformerDiffPruning(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
-            pruning_loc=pruning_loc, token_ratio=token_ratio).to(device)
-
     config = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
-            pruning_loc=pruning_loc, token_ratio=token_ratio)
+                  pruning_loc=pruning_loc, token_ratio=token_ratio)
+
+    model_image = VisionTransformerDiffPruning(**config).to(device)
+
     model_audio = AudioTransformerDiffPruning(config, imagenet_pretrain=True).to(device)
 
-    model_teacher = VisionTransformerTeacher().to(device)
+    model_teacher = AVnet_Dynamic(pruning_loc=()).to(device)
 
     multi_modal_model = AVnet_Dynamic().to(device)
 
-    model.eval()
+    model_image.eval()
     model_audio.eval()
     model_teacher.eval()
     multi_modal_model.eval()
@@ -151,7 +154,7 @@ if __name__ == "__main__":
         for i in range(num_iterations):
             if i == 1:
                 t_start = time.time()
-            model(image)
+            model_image(image)
         print((time.time() - t_start) / (num_iterations - 1))
 
     with torch.no_grad():
@@ -165,5 +168,5 @@ if __name__ == "__main__":
         for i in range(num_iterations):
             if i == 1:
                 t_start = time.time()
-            model_teacher(image)
+            model_teacher(audio, image)
         print((time.time() - t_start) / (num_iterations-1))
