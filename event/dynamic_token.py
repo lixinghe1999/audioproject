@@ -119,6 +119,6 @@ if __name__ == "__main__":
         train(model, train_dataset, test_dataset)
     elif args.task == 'profile':
         model = AVnet_Dynamic(pruning_loc=pruning_loc, token_ratio=token_ratio, pretrained=False).to(device)
-        model.load_state_dict(torch.load('dynamic_distill_9_0.6738830938791577.pth'), strict=False)
+        model.load_state_dict(torch.load('dynamic_distill_9_0.6833300531391459.pth'), strict=False)
         profile(model, test_dataset)
 
