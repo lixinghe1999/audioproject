@@ -25,8 +25,6 @@ class AVnet_Dynamic(nn.Module):
 
         self.num_patches = self.audio.num_patches + 14 * 14
 
-        # Classifier head
-        #self.head = nn.Linear(embed_dim * 2, num_classes) if num_classes > 0 else nn.Identity()
         self.head = nn.Sequential(nn.LayerNorm(embed_dim * 2), nn.Linear(embed_dim * 2, 309))
         if len(pruning_loc) > 0:
             predictor_list = [PredictorLG(embed_dim) for _ in range(len(pruning_loc))]

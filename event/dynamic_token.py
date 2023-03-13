@@ -23,9 +23,14 @@ def train_step(model, input_data, optimizer, criteria, label):
     return loss.item()
 def test_step(model, input_data, label):
     outputs = model(*input_data)
-    output, t, r = outputs
-    acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
-    return acc.item(), r
+    if args.task == 'profile':
+        output, t, r = outputs
+        acc = (torch.argmax(output, dim=-1).cpu() == label).sum() / len(label)
+        return acc.item(), r
+    else:
+        output, feature = outputs
+        acc = (torch.argmax(output, dim=-1).cpu() == label).sum()/len(label)
+        return acc.item()
 def profile(model, test_dataset):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, num_workers=workers, batch_size=1, shuffle=False)
     model.eval()
@@ -64,7 +69,7 @@ def train(model, train_dataset, test_dataset):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 audio, image, text, _ = batch
-                a, _ = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)
+                a = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)
                 acc.append(a)
         mean_acc = np.mean(acc)
         print('epoch', epoch)
