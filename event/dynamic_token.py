@@ -39,11 +39,11 @@ def profile(model, test_dataset):
                 audio, image, text, _ = batch
                 a, r = test_step(model, input_data=[audio.to(device), image.to(device)], label=text)
                 acc.append(a)
-                modality_ratio.append(r)
+                modality_ratio.append([r, 1-r, abs(2 * r - 1)])
             mean_acc = np.mean(acc)
-            mean_ratio = np.mean(modality_ratio)
+            mean_ratio = np.mean(modality_ratio, axis=0)
             print('preserved ratio:', ratio)
-            print('modality-wise ratio:', mean_ratio, 1-mean_ratio)
+            print('modality-wise ratio:', mean_ratio)
             print('accuracy:', mean_acc)
 def train(model, train_dataset, test_dataset):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=workers, batch_size=batch_size, shuffle=True,
