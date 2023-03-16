@@ -111,7 +111,7 @@ if __name__ == "__main__":
     elif args.mode == 1:
         # evaluation for personalized model
         dvector = None
-        rir = 'json/rir.json'
+        rir = None
         text_evaluation = False
         # start checkpoint
         ckpt_mode = 0
