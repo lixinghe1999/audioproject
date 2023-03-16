@@ -126,7 +126,7 @@ if __name__ == "__main__":
             ckpt_name = 'pretrain/fullsubnet_[ 2.14935723  2.92502818 13.68871124  0.87719504  5.141906  ].pth'
             print('loaded checkpoint:', ckpt_name)
             ckpt_start = torch.load(ckpt_name)
-
+        print(ckpt_name)
         if train_mode == 0:
             ckpt = []
             for p in people:
