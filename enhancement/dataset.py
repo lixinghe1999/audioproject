@@ -146,7 +146,7 @@ class BaseDataset:
                 b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
                 data = signal.filtfilt(b, a, data, axis=0)
 
-                b, a = signal.butter(4, 400, 'lowpass', fs=self.sample_rate)
+                b, a = signal.butter(4, 200, 'lowpass', fs=self.sample_rate)
                 data = signal.filtfilt(b, a, data, axis=0)
                 data = np.clip(data, -0.05, 0.05)
             else:
