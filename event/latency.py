@@ -15,7 +15,6 @@ def rfft_flop_jit(inputs, outputs):
     N = H * W
     flops = N * C * np.ceil(np.log2(N))
     return flops
-
 def calc_flops(model, input, show_details=False, ratios=None):
     with torch.no_grad():
         model.default_ratio = ratios
@@ -38,7 +37,6 @@ def throughput(images, model):
     for i in range(50):
         model(*images)
     torch.cuda.synchronize()
-    print(f"throughput averaged with 30 times")
     tic1 = time.time()
     for i in range(30):
         model(*images)

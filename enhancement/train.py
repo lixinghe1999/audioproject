@@ -119,7 +119,7 @@ if __name__ == "__main__":
         train_mode = 1
 
         if ckpt_mode == 0:
-            ckpt_dir = 'pretrain/fullsubnet_rir'
+            ckpt_dir = 'pretrain/vibvoice'
             ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
             ckpt_start = torch.load(ckpt_name)
         else:
