@@ -145,6 +145,7 @@ class BaseDataset:
                 data /= 2 ** 14
                 b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
                 data = signal.filtfilt(b, a, data, axis=0)
+                print(data.shape)
                 data = librosa.resample(data, self.sample_rate, 400, axis=0)
                 data = librosa.resample(data, 400, self.sample_rate, axis=0)
                 data = np.clip(data, -0.05, 0.05)
