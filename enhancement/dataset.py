@@ -148,6 +148,7 @@ class BaseDataset:
                 print(data.shape)
                 data = librosa.resample(data, orig_sr=self.sample_rate, target_sr=400, axis=1)
                 data = librosa.resample(data, orig_sr=400, target_sr=self.sample_rate, axis=1)
+                print(data.shape, 'good')
                 data = np.clip(data, -0.05, 0.05)
             else:
                 data, sr = librosa.load(file, offset=offset, duration=duration, sr=None)
