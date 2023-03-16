@@ -146,8 +146,8 @@ class BaseDataset:
                 b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
                 data = signal.filtfilt(b, a, data, axis=0)
                 print(data.shape)
-                data = librosa.resample(data, orig_sr=self.sample_rate, target_sr=400, axis=1)
-                data = librosa.resample(data, orig_sr=400, target_sr=self.sample_rate, axis=1)
+                data = librosa.resample(data, orig_sr=self.sample_rate, target_sr=400, axis=0)
+                data = librosa.resample(data, orig_sr=400, target_sr=self.sample_rate, axis=0)
                 print(data.shape, 'good')
                 data = np.clip(data, -0.05, 0.05)
             else:
