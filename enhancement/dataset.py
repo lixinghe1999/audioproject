@@ -10,7 +10,7 @@ import scipy.signal as signal
 import librosa
 from feature import norm_amplitude, tailor_dB_FS, is_clipped
 import soundfile as sf
-
+import torchaudio as ta
 import argparse
 rate_mic = 16000
 rate_imu = 1600
@@ -142,7 +142,8 @@ class BaseDataset:
                 data = signal.filtfilt(b, a, data, axis=0)
                 data = np.clip(data, -0.05, 0.05)
             else:
-                data, sr = sf.read(file, frames=duration * self.sample_rate, start=offset * self.sample_rate, dtype='float32')
+                # data, sr = sf.read(file, frames=duration * self.sample_rate, start=offset * self.sample_rate, dtype='float32')
+                data, sr = ta.load(file, frame_offset=offset * self.sample_rate, num_frames=duration * self.sample_rate)
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20),
