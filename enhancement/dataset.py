@@ -1,6 +1,8 @@
 import os
 import json
 import math
+import time
+
 import numpy as np
 import torch
 import torch.utils.data as Data
@@ -208,6 +210,7 @@ class NoisyCleanSet:
             self.rir = data
             self.rir_length = len(self.rir)
     def __getitem__(self, index):
+        t_start = time.time()
         clean, file = self.dataset[0][index]
         if self.simulation:
             # use rir dataset to add noise
@@ -236,6 +239,7 @@ class NoisyCleanSet:
         if self.text:
             sentence = sentences[int(file.split('/')[4][-1])-1]
             data.append(sentence)
+        print(time.time() - t_start)
         return data
     def __len__(self):
         return len(self.dataset[0])
