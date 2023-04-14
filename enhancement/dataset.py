@@ -215,7 +215,7 @@ class NoisyCleanSet:
             noise = self.dataset[1].__getitem__()
             t.append(time.time() - t_start)
             random_snr = np.random.choice(self.snr_list)
-            random_rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic, mono=False)[0]
+            random_rir = sf.read(self.rir[np.random.randint(0, self.rir_length)][0])
             t.append(time.time() - t_start)
             noise, clean = snr_mix(noise, clean, random_snr, -25, 10,
             rir = random_rir if use_reverb else None, eps=1e-6)
