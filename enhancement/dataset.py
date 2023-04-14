@@ -39,7 +39,6 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
             (noisy_y，clean_y)
         """
         if rir is not None:
-            print(clean_y.shape, rir.shape)
             clean_y = signal.fftconvolve(clean_y, rir)[:len(clean_y)]
         clean_y, _ = norm_amplitude(clean_y)
         clean_y, _, _ = tailor_dB_FS(clean_y, target_dB_FS)
@@ -147,7 +146,7 @@ class BaseDataset:
             else:
                 # data, sr = sf.read(file, frames=duration * self.sample_rate, start=offset * self.sample_rate, dtype='float32')
                 data, sr = ta.load(file, frame_offset=offset * self.sample_rate, num_frames=duration * self.sample_rate)
-                data = data[0]
+                data = data[0].numpy()
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20),
