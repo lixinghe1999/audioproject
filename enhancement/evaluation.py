@@ -76,12 +76,10 @@ def safe_log10(x, eps=1e-10):
     return np.log10(result, out=result, where=result > 0)
 
 def LSD(gt, est):
-
-    spectrogram1 = 10 * safe_log10(np.abs(signal.stft(gt, fs=16000, nperseg=640, noverlap=320, axis=1)[-1]))
-    spectrogram2 = 10 * safe_log10(np.abs(signal.stft(est, fs=16000, nperseg=640, noverlap=320, axis=1)[-1]))
-    error = (spectrogram1 - spectrogram2) ** 2
-    error = np.mean(error, axis=1) ** (1/2)
-    error = np.mean(error, axis=1)
+    spectrogram1 = signal.stft(gt, fs=16000, nperseg=640, noverlap=320, axis=1)[-1]
+    spectrogram2 = signal.stft(est, fs=16000, nperseg=640, noverlap=320, axis=1)[-1]
+    error = safe_log10(spectrogram1 ** 2) - safe_log10(spectrogram2 ** 2)
+    error = np.mean(np.mean(error ** 2) ** 0.5)
     print(np.mean(np.abs(gt - est)), error)
     return error
 
