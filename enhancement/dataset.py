@@ -151,9 +151,9 @@ class BaseDataset:
                 data = np.clip(data, -0.05, 0.05)
             else:
                 t_start = time.time()
-                # data, sr = librosa.load(file, offset=offset, duration=duration, sr=None)
+                data, sr = librosa.load(file, sr=None)
 
-                audio, sr = ta.load(file)
+                # data, sr = ta.load(file)
                 print(time.time() - t_start)
             return data, file
 class NoisyCleanSet:
