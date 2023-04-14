@@ -177,7 +177,7 @@ if __name__ == "__main__":
                                     person=people, simulation=True, ratio=-0.2, dvector=dvector)
             avg_metric = inference(dataset, 4, model)
             print('overall performance:', avg_metric)
-
+            exit()
             for p in people:
                 dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                         person=[p], simulation=True, ratio=-0.2, dvector=dvector)

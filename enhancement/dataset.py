@@ -141,9 +141,12 @@ class BaseDataset:
                 data /= 2 ** 14
                 b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
                 data = signal.filtfilt(b, a, data, axis=0)
+
+                b, a = signal.butter(4, 1200, 'lowpass', fs=self.sample_rate)
+                data = signal.filtfilt(b, a, data, axis=0)
+
                 data = np.clip(data, -0.05, 0.05)
             else:
-                # data, sr = sf.read(file, frames=duration * self.sample_rate, start=offset * self.sample_rate, dtype='float32')
                 data, sr = ta.load(file, frame_offset=offset * self.sample_rate, num_frames=duration * self.sample_rate)
                 data = data[0].numpy()
             return data, file
