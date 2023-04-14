@@ -38,13 +38,12 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
         Returns:
             (noisy_y，clean_y)
         """
+        t_start = time.time()
         if rir is not None:
-            if rir.ndim > 1:
-                rir_idx = np.random.randint(0, rir.shape[0])
-                rir = rir[rir_idx, :]
-
+            rir_idx = np.random.randint(0, rir.shape[0])
+            rir = rir[rir_idx, :]
             clean_y = signal.fftconvolve(clean_y, rir)[:len(clean_y)]
-
+        print(time.time() - t_start)
         clean_y, _ = norm_amplitude(clean_y)
         clean_y, _, _ = tailor_dB_FS(clean_y, target_dB_FS)
         clean_rms = (clean_y ** 2).mean() ** 0.5
@@ -66,14 +65,14 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
         # 使用 noisy 的 rms 放缩音频
         noisy_y, _, noisy_scalar = tailor_dB_FS(noisy_y, noisy_target_dB_FS)
         clean_y *= noisy_scalar
-
+        print(time.time() - t_start)
         # 合成带噪语音的时候可能会 clipping，虽然极少
         # 对 noisy, clean_y, noise_y 稍微进行调整
         if is_clipped(noisy_y):
             noisy_y_scalar = np.max(np.abs(noisy_y)) / (0.99 - eps)  # 相当于除以 1
             noisy_y = noisy_y / noisy_y_scalar
             clean_y = clean_y / noisy_y_scalar
-
+        print(time.time() - t_start)
         return noisy_y, clean_y
 
 class NoiseDataset:
@@ -210,23 +209,19 @@ class NoisyCleanSet:
             self.rir = data
             self.rir_length = len(self.rir)
     def __getitem__(self, index):
-        t_start = time.time()
-        print('get one')
+
         clean, file = self.dataset[0][index]
         if self.simulation:
             # use rir dataset to add noise
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
             noise = self.dataset[1].__getitem__()
             snr = np.random.choice(self.snr_list)
-            print('read', time.time() - t_start)
             noise, clean = snr_mix(noise, clean, snr, -25, 10,
             rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic, mono=False)[0]
             if use_reverb else None, eps=1e-6)
-            print('mix', time.time() - t_start)
         else:
             # already added noisy
             noise, _ = self.dataset[1][index]
-
         data = [clean.astype(np.float32), noise.astype(np.float32)]
         if self.dvector is not None:
             spk = file.split('/')[-3]
@@ -243,7 +238,6 @@ class NoisyCleanSet:
         if self.text:
             sentence = sentences[int(file.split('/')[4][-1])-1]
             data.append(sentence)
-        print('last', time.time() - t_start)
         return data
     def __len__(self):
         return len(self.dataset[0])
