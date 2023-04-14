@@ -1,4 +1,6 @@
 import os
+import time
+
 import matplotlib.pyplot as plt
 import torch
 torch.manual_seed(0)
@@ -41,7 +43,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     else:
         # without pre-defined train/ test
         length = len(dataset)
-        test_size = min(int(0.1 * length), 1000)
+        test_size = min(int(0.1 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True,
@@ -56,8 +58,11 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Loss_list = []
         model.train()
         for i, sample in enumerate(tqdm(train_loader)):
+            t_start = time.time()
             text, clean, noise, acc = parse_sample(sample)
+            print(time.time() - t_start)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
+            print(time.time() - t_start)
             if i % 1500 == 0 and i != 0:
                 print(loss)
             Loss_list.append(loss)
@@ -93,7 +98,7 @@ if __name__ == "__main__":
     # model = torch.nn.DataParallel(model, device_ids=[0, 1])
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 64
+        BATCH_SIZE = 16
         lr = 0.0001
         EPOCH = 20
         # ckpt_start = torch.load('pretrain/0.0792353513582573.pth')
@@ -101,10 +106,7 @@ if __name__ == "__main__":
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/all_noise.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
-        test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/all_noise.json'], simulation=True,
-                                ratio=1, rir='json/rir.json', dvector=None)
-
-        ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, save_all=True)
+        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
     elif args.mode == 1:

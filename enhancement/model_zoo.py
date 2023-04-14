@@ -27,10 +27,6 @@ def eval(clean, predict, text=None):
         wer_clean, wer_noisy = eval_ASR(clean, predict, text, asr_model)
         metrics = [wer_clean, wer_noisy]
     else:
-        # Optional Upsample
-        # clean = librosa.resample(clean, orig_sr=8000, target_sr=16000)
-        # predict = librosa.resample(predict, orig_sr=8000, target_sr=16000)
-
         metric1 = batch_pesq(clean, predict, 'wb')
         metric2 = batch_pesq(clean, predict, 'nb')
         metric3 = SI_SDR(clean, predict)
