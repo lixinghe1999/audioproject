@@ -57,7 +57,9 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     for e in range(EPOCH):
         Loss_list = []
         model.train()
+        t_start = time.time()
         for i, sample in enumerate(tqdm(train_loader)):
+            print(time.time() - t_start)
             t_start = time.time()
             text, clean, noise, acc = parse_sample(sample)
             print(time.time() - t_start)
