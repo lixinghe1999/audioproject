@@ -213,9 +213,8 @@ class NoisyCleanSet:
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
             noise = self.dataset[1].__getitem__()
             random_snr = np.random.choice(self.snr_list)
-            random_rir, sr = sf.read(self.rir[np.random.randint(0, self.rir_length)][0], dtype='float32')
             noise, clean = snr_mix(noise, clean, random_snr, -25, 10,
-            rir = random_rir if use_reverb else None, eps=1e-6)
+            rir = sf.read(self.rir[np.random.randint(0, self.rir_length)][0], dtype='float32')[0] if use_reverb else None, eps=1e-6)
         else:
             noise, _ = self.dataset[1][index]
         data = [clean.astype(np.float32), noise.astype(np.float32)]
