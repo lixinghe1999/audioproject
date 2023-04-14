@@ -47,7 +47,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True,
-                                               drop_last=True, pin_memory=True)
+                                               drop_last=True, pin_memory=False)
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     loss_best = 100
