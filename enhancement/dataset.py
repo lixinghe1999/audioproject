@@ -136,7 +136,6 @@ class BaseDataset:
                 offset = self.stride * index
                 duration = self.length
             if file[-3:] == 'txt':
-
                 data = np.loadtxt(file)
                 data = data[offset * self.sample_rate: (offset + duration) * self.sample_rate, :]
                 data /= 2 ** 14
