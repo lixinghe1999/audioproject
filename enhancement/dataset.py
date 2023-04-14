@@ -153,7 +153,7 @@ class BaseDataset:
             else:
                 t_start = time.time()
                 # data, sr = librosa.load(file, sr=None)
-                data, sr = sf.read(file)
+                data, sr = sf.read(file, frames=duration, start=offset)
                 # data, sr = ta.load(file)
                 print(time.time() - t_start)
             return data, file
