@@ -132,26 +132,26 @@ if __name__ == "__main__":
             for p in people:
                 model.load_state_dict(ckpt_start)
                 p_except = [i for i in people if i != p]
-                train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/cv.json', 'json/noise_train_imu.json'],
+                train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/all_noise.json', 'json/noise_train_imu.json'],
                                              person=[p], simulation=True, rir=rir, dvector=dvector)
-                train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+                train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                               person=[p], simulation=True, rir=rir, ratio=0.8, dvector=dvector)
                 train_dataset = torch.utils.data.ConcatDataset([train_dataset1, train_dataset2])
                 pt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
                 ckpt.append(pt)
         elif train_mode == 1:
             model.load_state_dict(ckpt_start)
-            train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/cv.json', 'json/noise_train_imu.json'],
+            train_dataset1 = NoisyCleanSet(['json/noise_train_gt.json', 'json/all_noise.json', 'json/noise_train_imu.json'],
                                            person=people, simulation=True, rir=rir, dvector=dvector)
-            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+            train_dataset2 = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                            person=people, simulation=True, rir=rir, ratio=0.8, dvector=dvector)
 
             positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
-            train_dataset3 = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
+            train_dataset3 = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
                                            simulation=True, person=positions, ratio=0.8,)
 
             train_dataset = torch.utils.data.ConcatDataset([train_dataset2, train_dataset3])
-            ckpt, _, _ = train(train_dataset, 5, 0.0001, 8, model)
+            ckpt, _, _ = train(train_dataset, 5, 0.0001, 1, model)
         else:
             ckpt = ckpt_start
 
@@ -179,7 +179,7 @@ if __name__ == "__main__":
                 print(env, avg_metric)
         else:
             for p in people:
-                dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json', 'json/train_imu.json'],
+                dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                         person=[p], simulation=True, ratio=-0.2, dvector=dvector)
                 avg_metric = inference(dataset, 4, model)
                 print(p, avg_metric)
@@ -191,25 +191,25 @@ if __name__ == "__main__":
                 print(noise, avg_metric)
 
             for level in [10, 5, 1]:
-                dataset = NoisyCleanSet(['json/train_gt.json', 'json/cv.json',  'json/train_imu.json'], person=people,
+                dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json',  'json/train_imu.json'], person=people,
                                          simulation=True, snr=[level - 1, level + 1], ratio=-0.2, dvector=dvector)
                 avg_metric = inference(dataset, 4, model)
                 print(level, avg_metric)
 
             positions = ['glasses', 'vr-up', 'vr-down', 'headphone-inside', 'headphone-outside', 'cheek', 'temple', 'back', 'nose']
             for p in positions:
-                dataset = NoisyCleanSet(['json/position_gt.json', 'json/cv.json', 'json/position_imu.json'],
+                dataset = NoisyCleanSet(['json/position_gt.json', 'json/all_noise.json', 'json/position_imu.json'],
                                         person=[p], simulation=True, ratio=-0.2, dvector=dvector)
                 avg_metric = inference(dataset, 4, model)
                 print(p, avg_metric)
 
             for p in ['he', 'hou']:
-                test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/tt.json', 'json/mask_imu.json'],
+                test_dataset = NoisyCleanSet(['json/mobile_gt.json', 'json/all_noise.json', 'json/mask_imu.json'],
                                              person=[p], simulation=True, dvector=dvector)
                 avg_metric = inference(test_dataset, 4, model)
                 print(p, avg_metric)
 
-            test_dataset = NoisyCleanSet(['json/mask_gt.json', 'json/tt.json', 'json/mask_imu.json'],
+            test_dataset = NoisyCleanSet(['json/mask_gt.json', 'json/all_noise.json', 'json/mask_imu.json'],
                                          person=['he'], simulation=True, dvector=dvector)
             avg_metric = inference(test_dataset, 4, model)
             print('mask', avg_metric)
