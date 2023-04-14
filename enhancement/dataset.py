@@ -211,7 +211,9 @@ class NoisyCleanSet:
             self.rir_length = len(self.rir)
     def __getitem__(self, index):
         t_start = time.time()
+        print('get one')
         clean, file = self.dataset[0][index]
+        print(time.time() - t_start)
         if self.simulation:
             # use rir dataset to add noise
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
