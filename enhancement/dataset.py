@@ -142,6 +142,7 @@ class BaseDataset:
                 data = signal.filtfilt(b, a, data, axis=0)
                 data = np.clip(data, -0.05, 0.05)
             else:
+                print(file)
                 data, sr = sf.read(file, frames=duration * self.sample_rate, start=offset * self.sample_rate)
             return data, file
 class NoisyCleanSet:
