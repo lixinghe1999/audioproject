@@ -85,7 +85,7 @@ def mag_phase(complex_tensor):
 
 def norm_amplitude(y, scalar=None, eps=1e-6):
     if not scalar:
-        scalar = np.max(np.abs(y)) + eps
+        scalar = y.abs().max() + eps
 
     return y / scalar, scalar
 
