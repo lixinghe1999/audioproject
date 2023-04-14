@@ -87,7 +87,7 @@ class NoiseDataset:
         remaining_length = self.target_length
         while remaining_length > 0:
             noise_file, info = self.files[np.random.randint(0, self.__len__())]
-            noise_new_added, sr = sf.read(noise_file)
+            noise_new_added, sr = sf.read(noise_file, dtype='float32')
             noise_y = np.append(noise_y, noise_new_added)
             remaining_length -= len(noise_new_added)
             # If still need to add new noise, insert a small silence segment firstly
@@ -210,7 +210,7 @@ class NoisyCleanSet:
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
             noise = self.dataset[1].__getitem__()
             random_snr = np.random.choice(self.snr_list)
-            random_rir, sr = sf.read(self.rir[np.random.randint(0, self.rir_length)][0])
+            random_rir, sr = sf.read(self.rir[np.random.randint(0, self.rir_length)][0], dtype='float32')
             noise, clean = snr_mix(noise, clean, random_snr, -25, 10,
             rir = random_rir if use_reverb else None, eps=1e-6)
         else:
