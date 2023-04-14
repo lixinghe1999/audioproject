@@ -39,6 +39,7 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
             (noisy_y，clean_y)
         """
         if rir is not None:
+            print(clean_y.shape, rir.shape)
             clean_y = signal.fftconvolve(clean_y, rir)[:len(clean_y)]
         clean_y, _ = norm_amplitude(clean_y)
         clean_y, _, _ = tailor_dB_FS(clean_y, target_dB_FS)
