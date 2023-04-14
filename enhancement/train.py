@@ -36,7 +36,7 @@ def inference(dataset, BATCH_SIZE, model, text=False):
     avg_metric = np.mean(np.concatenate(Metric, axis=0), axis=0)
     return avg_metric
 
-def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
+def train(dataset, EPOCH, lr, BATCH_SIZE, model,):
     if isinstance(dataset, list):
         # with pre-defined train/ test
         train_dataset, test_dataset = dataset
@@ -57,15 +57,13 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     for e in range(EPOCH):
         Loss_list = []
         model.train()
-        # for i, sample in enumerate(tqdm(train_loader)):
-        #     text, clean, noise, acc = parse_sample(sample)
-        #     loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-        #     if i % 500 == 0 and i != 0:
-        #         print(loss)
-        #     Loss_list.append(loss)
+        for i, sample in enumerate(tqdm(train_loader)):
+            text, clean, noise, acc = parse_sample(sample)
+            loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
+            if i % 500 == 0 and i != 0:
+                print(loss)
+            Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
-        if save_all:
-            torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
         loss_curve.append(mean_lost)
         scheduler.step()
         avg_metric = inference(test_dataset, 4, model)
@@ -74,7 +72,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
             ckpt_best = model.state_dict()
             loss_best = mean_lost
             metric_best = avg_metric
-    torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
+            torch.save(ckpt_best, 'pretrain/' + str(metric_best) + '.pth')
     return ckpt_best, loss_curve, metric_best
 
 
@@ -105,7 +103,7 @@ if __name__ == "__main__":
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/all_noise.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
-        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=True)
+        ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model)
         plt.plot(loss_curve)
         plt.savefig('loss.png')
     elif args.mode == 1:
