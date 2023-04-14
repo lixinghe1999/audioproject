@@ -38,6 +38,7 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
         Returns:
             (noisy_y，clean_y)
         """
+        t_start = time.time()
         if rir is not None:
             clean_y = signal.fftconvolve(clean_y, rir)[:len(clean_y)]
         clean_y, _ = norm_amplitude(clean_y)
@@ -67,6 +68,7 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
             noisy_y_scalar = np.max(np.abs(noisy_y)) / (0.99 - eps)  # 相当于除以 1
             noisy_y = noisy_y / noisy_y_scalar
             clean_y = clean_y / noisy_y_scalar
+        print(time.time() - t_start)
         return noisy_y, clean_y
 
 class NoiseDataset:
