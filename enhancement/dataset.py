@@ -11,6 +11,7 @@ import scipy.signal as signal
 import librosa
 from feature import norm_amplitude, tailor_dB_FS, is_clipped
 import torchaudio as ta
+import soundfile as sf
 
 import argparse
 rate_mic = 16000
@@ -151,8 +152,8 @@ class BaseDataset:
                 data = np.clip(data, -0.05, 0.05)
             else:
                 t_start = time.time()
-                data, sr = librosa.load(file, sr=None)
-
+                # data, sr = librosa.load(file, sr=None)
+                data, sr = sf.read('existing_file.wav')
                 # data, sr = ta.load(file)
                 print(time.time() - t_start)
             return data, file
