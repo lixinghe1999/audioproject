@@ -40,8 +40,6 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
         """
         t_start = time.time()
         if rir is not None:
-            rir_idx = np.random.randint(0, rir.shape[0])
-            rir = rir[rir_idx, :]
             clean_y = signal.fftconvolve(clean_y, rir)[:len(clean_y)]
         print(time.time() - t_start)
         clean_y, _ = norm_amplitude(clean_y)
