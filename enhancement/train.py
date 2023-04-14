@@ -151,7 +151,7 @@ if __name__ == "__main__":
                                            simulation=True, person=positions, ratio=0.8,)
 
             train_dataset = torch.utils.data.ConcatDataset([train_dataset2, train_dataset3])
-            ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
+            ckpt, _, _ = train(train_dataset, 5, 0.0001, 64, model)
         else:
             ckpt = ckpt_start
 
