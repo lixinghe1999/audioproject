@@ -2,6 +2,8 @@ import os
 
 import json
 import math
+import time
+
 import numpy as np
 import torch
 import torch.utils.data as Data
@@ -145,13 +147,11 @@ class BaseDataset:
                 data /= 2 ** 14
                 b, a = signal.butter(4, 80, 'highpass', fs=self.sample_rate)
                 data = signal.filtfilt(b, a, data, axis=0)
-                # print(data.shape)
-                # data = librosa.resample(data, orig_sr=self.sample_rate, target_sr=400, axis=0)
-                # data = librosa.resample(data, orig_sr=400, target_sr=self.sample_rate, axis=0)
-                # print(data.shape, 'good')
                 data = np.clip(data, -0.05, 0.05)
             else:
+                t_start = time.time()
                 data, sr = librosa.load(file, offset=offset, duration=duration, sr=None)
+                print(time.time() - t_start)
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20),
