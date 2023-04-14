@@ -38,7 +38,6 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
         Returns:
             (noisy_y，clean_y)
         """
-        t_start = time.time()
         if rir is not None:
             clean_y = signal.fftconvolve(clean_y, rir)[:len(clean_y)]
         clean_y, _ = norm_amplitude(clean_y)
@@ -68,7 +67,6 @@ def snr_mix(noise_y, clean_y, snr, target_dB_FS, target_dB_FS_floating_value, ri
             noisy_y_scalar = np.max(np.abs(noisy_y)) / (0.99 - eps)  # 相当于除以 1
             noisy_y = noisy_y / noisy_y_scalar
             clean_y = clean_y / noisy_y_scalar
-        print(time.time() - t_start)
         return noisy_y, clean_y
 
 class NoiseDataset:
@@ -205,26 +203,19 @@ class NoisyCleanSet:
             self.rir = data
             self.rir_length = len(self.rir)
     def __getitem__(self, index):
-        t_start = time.time()
         t = []
         clean, file = self.dataset[0][index]
-        t.append(time.time() - t_start)
         if self.simulation:
             # use rir dataset to add noise
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
             noise = self.dataset[1].__getitem__()
-            t.append(time.time() - t_start)
             random_snr = np.random.choice(self.snr_list)
             random_rir, sr = sf.read(self.rir[np.random.randint(0, self.rir_length)][0])
-            print(random_rir.shape)
-            t.append(time.time() - t_start)
             noise, clean = snr_mix(noise, clean, random_snr, -25, 10,
             rir = random_rir if use_reverb else None, eps=1e-6)
-            t.append(time.time() - t_start)
         else:
             # already added noisy
             noise, _ = self.dataset[1][index]
-        print(t)
         data = [clean.astype(np.float32), noise.astype(np.float32)]
         if self.dvector is not None:
             spk = file.split('/')[-3]
