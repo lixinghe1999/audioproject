@@ -73,13 +73,12 @@ def SI_SDR(reference, estimation, sr=16000):
 
 def safe_log10(x, eps=1e-10):
     result = np.where(x > eps, x, -10)
-    return np.log10(result, out=result, where=result > 0)
+    return 10 * np.log10(result, out=result, where=result > 0)
 
 def LSD(gt, est):
     spectrogram1 = np.abs(signal.stft(gt, fs=16000, nperseg=640, noverlap=320, axis=1)[-1])
     spectrogram2 = np.abs(signal.stft(est, fs=16000, nperseg=640, noverlap=320, axis=1)[-1])
     error = safe_log10(spectrogram1) - safe_log10(spectrogram2)
-    print(error.shape)
     error = np.mean(error ** 2, axis=(1, 2)) ** 0.5
     print(np.mean(np.abs(gt - est)), error)
     return error
