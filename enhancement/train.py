@@ -46,7 +46,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         test_size = min(int(0.1 * length), 2000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=4, batch_size=BATCH_SIZE, shuffle=True,
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=1, batch_size=BATCH_SIZE, shuffle=True,
                                                drop_last=True, pin_memory=False)
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     # model = torch.nn.DataParallel(model, device_ids=[0, 1])
     if args.mode == 0:
         # This script is for model pre-training on LibriSpeech
-        BATCH_SIZE = 16
+        BATCH_SIZE = 1
         lr = 0.0001
         EPOCH = 20
         # ckpt_start = torch.load('pretrain/0.0792353513582573.pth')
