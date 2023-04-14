@@ -145,6 +145,7 @@ class BaseDataset:
             else:
                 # data, sr = sf.read(file, frames=duration * self.sample_rate, start=offset * self.sample_rate, dtype='float32')
                 data, sr = ta.load(file, frame_offset=offset * self.sample_rate, num_frames=duration * self.sample_rate)
+                data = data[0]
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20),
