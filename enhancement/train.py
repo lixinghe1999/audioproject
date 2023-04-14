@@ -29,7 +29,7 @@ def inference(dataset, BATCH_SIZE, model, text=False):
     Metric = []
     model.eval()
     with torch.no_grad():
-        for sample in test_loader:
+        for sample in tqdm(test_loader):
             text, clean, noise, acc = parse_sample(sample, text=text_inference)
             metric = getattr(model_zoo, 'test_' + model_name)(model, acc, noise, clean, device, text)
             Metric.append(metric)
@@ -64,7 +64,7 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model,):
         mean_lost = np.mean(Loss_list)
         loss_curve.append(mean_lost)
         scheduler.step()
-        avg_metric = inference(test_dataset, 4, model)
+        avg_metric = inference(test_dataset, 16, model)
         print(avg_metric)
         if mean_lost < loss_best:
             ckpt_best = model.state_dict()
