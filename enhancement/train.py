@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/all_noise.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
-        test_dataset = NoisyCleanSet(['json/dev.json', 'json/all_noise.json'], simulation=True,
+        test_dataset = NoisyCleanSet(['json/librispeech-dev.json', 'json/all_noise.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
 
         ckpt_best, loss_curve, metric_best = train([dataset, test_dataset], EPOCH, lr, BATCH_SIZE, model, save_all=True)
