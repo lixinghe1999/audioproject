@@ -95,7 +95,7 @@ class NoiseDataset:
         while remaining_length > 0:
             noise_file, info = self.files[np.random.randint(0, self.__len__())]
             # noise_new_added, sr = librosa.load(noise_file, sr=self.sr)
-            noise_new_added, sr = sf.read(noise_file, samplerate=self.sr)
+            noise_new_added, sr = sf.read(noise_file)
             noise_y = np.append(noise_y, noise_new_added)
             remaining_length -= len(noise_new_added)
             # If still need to add new noise, insert a small silence segment firstly
