@@ -44,9 +44,8 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         test_size = min(int(0.1 * length), 1000)
         train_size = length - test_size
         train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True, drop_last=True,
-                                   pin_memory=True)
-
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=8, batch_size=BATCH_SIZE, shuffle=True,
+                                               drop_last=True, pin_memory=True)
     optimizer = torch.optim.Adam(params=model.parameters(), lr=lr, betas=(0.9, 0.999))
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.2)
     loss_best = 100
@@ -151,7 +150,7 @@ if __name__ == "__main__":
                                            simulation=True, person=positions, ratio=0.8,)
 
             train_dataset = torch.utils.data.ConcatDataset([train_dataset2, train_dataset3])
-            ckpt, _, _ = train(train_dataset, 5, 0.0001, 64, model)
+            ckpt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
         else:
             ckpt = ckpt_start
 
