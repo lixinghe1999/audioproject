@@ -105,19 +105,21 @@ if __name__ == "__main__":
         rir = None
         text_evaluation = False
         # start checkpoint
-        ckpt_mode = 0
+        ckpt_mode = 2
         # per-user train or single-train: 0-per_user, 1-single_train, 2-just_test
-        train_mode = 1
+        train_mode = 2
 
         if ckpt_mode == 0:
             ckpt_dir = 'pretrain/vibvoice'
             ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
             ckpt_start = torch.load(ckpt_name)
-        else:
+        elif ckpt_mode == 1:
             ckpt_name = 'pretrain/fullsubnet_[ 2.14935723  2.92502818 13.68871124  0.87719504  5.141906  ].pth'
-            print('loaded checkpoint:', ckpt_name)
             ckpt_start = torch.load(ckpt_name)
-        print(ckpt_name)
+        else:
+            ckpt_name = 'pretrain/[ 2.39249867  2.96939845 14.47059834  0.93109596 18.08529382].pth'
+            ckpt_start = torch.load(ckpt_name)
+        print('loaded checkpoint:', ckpt_name)
         if train_mode == 0:
             ckpt = []
             for p in people:

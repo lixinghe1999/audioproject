@@ -48,7 +48,6 @@ if __name__ == "__main__":
         #             'wham_noise/tr', 'wham_noise/cv', 'wham_noise/tt', 'rir_fullsubnet/rir']
         datasets = ['dev', 'background', 'music']
         for dataset in datasets:
-            print(dataset)
             audio_files = []
             g = os.walk(directory + dataset)
             dataset_name = dataset.split('/')[-1]
