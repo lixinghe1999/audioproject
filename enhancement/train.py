@@ -173,13 +173,18 @@ if __name__ == "__main__":
                 avg_metric = inference(test_dataset, 4, model, text=text_evaluation)
                 print(env, avg_metric)
         else:
+            dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
+                                    person=people, simulation=True, ratio=-0.2, dvector=dvector)
+            avg_metric = inference(dataset, 4, model)
+            print('overall performance:', avg_metric)
+
             for p in people:
                 dataset = NoisyCleanSet(['json/train_gt.json', 'json/all_noise.json', 'json/train_imu.json'],
                                         person=[p], simulation=True, ratio=-0.2, dvector=dvector)
                 avg_metric = inference(dataset, 4, model)
                 print(p, avg_metric)
 
-            for noise in ['background.json', 'librispeech-dev.json', 'music.json']:
+            for noise in ['background.json', 'dev.json', 'music.json']:
                 dataset = NoisyCleanSet(['json/train_gt.json', 'json/' + noise,  'json/train_imu.json'],
                                         person=people, simulation=True, ratio=-0.2, dvector=dvector)
                 avg_metric = inference(dataset, 4, model)
