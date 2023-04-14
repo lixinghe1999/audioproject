@@ -56,7 +56,6 @@ def sisdr_loss(pr_batch, t_batch, initial_mixtures, eps=1e-8):
     #sisnr -= base_sisdr.mean()
     sisnr = sisnr.mean()
     return -sisnr
-
 def Spectral_Loss(x_mag, y_mag):
     """Calculate forward propagation.
           Args:
@@ -96,7 +95,6 @@ def test_sudormrf(model, acc, noise, clean, device='cuda', text=None):
     predict = predict.cpu().numpy()
     clean = clean.numpy()
     return eval(clean, predict, text=text)
-
 def train_voicefilter(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag, _, _, _ = stft(noise, 400, 160, 400)
     clean_mag, _, _, _ = stft(clean, 400, 160, 400)
@@ -122,7 +120,6 @@ def test_voicefilter(model, acc, noise, clean, device='cuda', text=None, data=Fa
     predict = istft((predict, noisy_phase), 400, 160, 400, input_type="mag_phase").numpy()
     clean = clean.numpy()
     return eval(clean, predict, text=text)
-
 def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag, _, _, _ = stft(noise, 640, 320, 640)
     clean_mag, _, _, _ = stft(clean, 640, 320, 640)
