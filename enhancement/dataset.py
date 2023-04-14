@@ -217,7 +217,6 @@ class NoisyCleanSet:
             noise, clean = snr_mix(noise, clean, random_snr, -25, 10,
             rir = random_rir if use_reverb else None, eps=1e-6)
         else:
-            # already added noisy
             noise, _ = self.dataset[1][index]
         data = [clean.astype(np.float32), noise.astype(np.float32)]
         if self.dvector is not None:

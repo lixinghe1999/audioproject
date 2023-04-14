@@ -58,10 +58,9 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
         Loss_list = []
         model.train()
         for i, sample in enumerate(tqdm(train_loader)):
-            t_start = time.time()
             text, clean, noise, acc = parse_sample(sample)
             loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 1500 == 0 and i != 0:
+            if i % 500 == 0 and i != 0:
                 print(loss)
             Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
@@ -115,7 +114,7 @@ if __name__ == "__main__":
         # start checkpoint
         ckpt_mode = 0
         # per-user train or single-train: 0-per_user, 1-single_train, 2-just_test
-        train_mode = 1
+        train_mode = 2
 
         if ckpt_mode == 0:
             ckpt_dir = 'pretrain/vibvoice'
