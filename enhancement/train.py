@@ -120,6 +120,7 @@ if __name__ == "__main__":
             ckpt_name = 'pretrain/[ 2.39249867  2.96939845 14.47059834  0.93109596 18.08529382].pth'
             ckpt_start = torch.load(ckpt_name)
         print('loaded checkpoint:', ckpt_name)
+
         if train_mode == 0:
             ckpt = []
             for p in people:
@@ -147,6 +148,7 @@ if __name__ == "__main__":
             ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
         else:
             ckpt = ckpt_start
+            model.load_state_dict(ckpt)
 
         if text_evaluation:
             if isinstance(ckpt, list):
