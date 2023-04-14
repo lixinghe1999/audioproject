@@ -131,7 +131,6 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     noisy_mag, _, _, _ = stft(noise, 640, 320, 640)
     clean_mag, _, _, _ = stft(clean, 640, 320, 640)
     optimizer.zero_grad()
-    # VibVoice
     noisy_mag = noisy_mag.to(device=device)
     clean_mag = clean_mag.to(device=device)
     predict, acc = model(noisy_mag, acc)
@@ -140,12 +139,9 @@ def train_vibvoice(model, acc, noise, clean, optimizer, device='cuda'):
     loss.backward()
     optimizer.step()
     return loss.item()
-def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False):
-
+def test_vibvoice(model, acc, noise, clean, device='cuda', text=None):
     noisy_mag, noisy_phase, _, _ = stft(noise, 640, 320, 640)
-    # VibVoice
     noisy_mag = noisy_mag.to(device=device)
-
     predict = model(noisy_mag, acc)
     if isinstance(predict, tuple):
         predict = predict[0]
@@ -153,11 +149,7 @@ def test_vibvoice(model, acc, noise, clean, device='cuda', text=None, data=False
     predict = F.pad(predict, (1, 0, 1, 321 - 257)).squeeze(1)
     predict = istft((predict, noisy_phase), 640, 320, 640, input_type="mag_phase").numpy()
     clean = clean.numpy()
-    if data:
-        noise = noise.numpy()
-        return eval(clean, predict, text=text), predict, noise
-    else:
-        return eval(clean, predict, text=text)
+    return eval(clean, predict, text=text)
 def train_fullsubnet(model, acc, noise, clean, optimizer, device='cuda'):
     optimizer.zero_grad()
     noise = noise.to(device=device)

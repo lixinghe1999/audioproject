@@ -1,16 +1,12 @@
 import os
-
 import json
 import math
-import time
-
 import numpy as np
 import torch
 import torch.utils.data as Data
 import scipy.signal as signal
 import librosa
 from feature import norm_amplitude, tailor_dB_FS, is_clipped
-import torchaudio as ta
 import soundfile as sf
 
 import argparse
@@ -151,9 +147,7 @@ class BaseDataset:
                 data = signal.filtfilt(b, a, data, axis=0)
                 data = np.clip(data, -0.05, 0.05)
             else:
-                # data, sr = librosa.load(file, sr=None)
                 data, sr = sf.read(file, frames=duration * self.sample_rate, start=offset * self.sample_rate)
-                # data, sr = ta.load(file)
             return data, file
 class NoisyCleanSet:
     def __init__(self, json_paths, text=False, person=None, simulation=False, ratio=1, snr=(0, 20),
@@ -322,12 +316,3 @@ if __name__ == "__main__":
         loader = Data.DataLoader(dataset=dataset_train, batch_size=2, shuffle=False)
         for step, (clean, noise) in enumerate(loader):
             print(noise.shape, clean.shape)
-
-            # x = x[0, 0].numpy()
-            # noise = noise[0, 0].numpy()
-            # y = y[0, 0].numpy()
-            # fig, axs = plt.subplots(3, 1)
-            # axs[0].plot(x)
-            # axs[1].plot(noise)
-            # axs[2].plot(y)
-            # plt.show()
