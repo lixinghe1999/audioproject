@@ -107,7 +107,7 @@ if __name__ == "__main__":
         # start checkpoint
         ckpt_mode = 0
         # per-user train or single-train: 0-per_user, 1-single_train, 2-just_test
-        train_mode = 2
+        train_mode = 1
 
         if ckpt_mode == 0:
             ckpt_dir = 'pretrain/vibvoice'
