@@ -94,11 +94,6 @@ if __name__ == "__main__":
         BATCH_SIZE = 64
         lr = 0.0001
         EPOCH = 20
-        # ckpt_dir = 'pretrain/vibvoice'
-        # ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
-        # ckpt_start = torch.load(ckpt_name)
-        # model.load_state_dict(ckpt_start)
-
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/all_noise.json'], simulation=True,
                                 ratio=1, rir=None, dvector=None)
         ckpt_best, loss_curve, metric_best = train(dataset, EPOCH, lr, BATCH_SIZE, model)
@@ -147,7 +142,7 @@ if __name__ == "__main__":
                                            simulation=True, person=positions, ratio=0.8,)
 
             train_dataset = torch.utils.data.ConcatDataset([train_dataset2, train_dataset3])
-            ckpt, _, _ = train(train_dataset, 5, 0.0001, 4, model)
+            ckpt, _, _ = train(train_dataset, 5, 0.0001, 16, model)
         else:
             ckpt = ckpt_start
 
