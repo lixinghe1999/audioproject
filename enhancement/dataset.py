@@ -223,6 +223,7 @@ class NoisyCleanSet:
         else:
             # already added noisy
             noise, _ = self.dataset[1][index]
+        print(time.time() - t_start)
         data = [clean.astype(np.float32), noise.astype(np.float32)]
         if self.dvector is not None:
             spk = file.split('/')[-3]
