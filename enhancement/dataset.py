@@ -94,7 +94,6 @@ class NoiseDataset:
         remaining_length = self.target_length
         while remaining_length > 0:
             noise_file, info = self.files[np.random.randint(0, self.__len__())]
-            # noise_new_added, sr = librosa.load(noise_file, sr=self.sr)
             noise_new_added, sr = sf.read(noise_file)
             noise_y = np.append(noise_y, noise_new_added)
             remaining_length -= len(noise_new_added)
@@ -214,20 +213,20 @@ class NoisyCleanSet:
         t_start = time.time()
         print('get one')
         clean, file = self.dataset[0][index]
-        print('read1', time.time() - t_start)
         if self.simulation:
             # use rir dataset to add noise
             use_reverb = False if self.rir is None else bool(np.random.random(1) < 0.75)
             noise = self.dataset[1].__getitem__()
-            print('read2', time.time() - t_start)
             snr = np.random.choice(self.snr_list)
+            print('mix', time.time() - t_start)
             noise, clean = snr_mix(noise, clean, snr, -25, 10,
             rir = librosa.load(self.rir[np.random.randint(0, self.rir_length)][0], sr=rate_mic, mono=False)[0]
             if use_reverb else None, eps=1e-6)
+            print('mix', time.time() - t_start)
         else:
             # already added noisy
             noise, _ = self.dataset[1][index]
-        print('mix', time.time() - t_start)
+
         data = [clean.astype(np.float32), noise.astype(np.float32)]
         if self.dvector is not None:
             spk = file.split('/')[-3]
