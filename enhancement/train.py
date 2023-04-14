@@ -57,12 +57,12 @@ def train(dataset, EPOCH, lr, BATCH_SIZE, model, save_all=False):
     for e in range(EPOCH):
         Loss_list = []
         model.train()
-        for i, sample in enumerate(tqdm(train_loader)):
-            text, clean, noise, acc = parse_sample(sample)
-            loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
-            if i % 500 == 0 and i != 0:
-                print(loss)
-            Loss_list.append(loss)
+        # for i, sample in enumerate(tqdm(train_loader)):
+        #     text, clean, noise, acc = parse_sample(sample)
+        #     loss = getattr(model_zoo, 'train_' + model_name)(model, acc, noise, clean, optimizer, device)
+        #     if i % 500 == 0 and i != 0:
+        #         print(loss)
+        #     Loss_list.append(loss)
         mean_lost = np.mean(Loss_list)
         if save_all:
             torch.save(ckpt_best, 'pretrain/' + str(mean_lost) + '.pth')
@@ -98,8 +98,10 @@ if __name__ == "__main__":
         BATCH_SIZE = 64
         lr = 0.0001
         EPOCH = 20
-        # ckpt_start = torch.load('pretrain/0.0792353513582573.pth')
-        # model.load_state_dict(ckpt_start)
+        ckpt_dir = 'pretrain/vibvoice'
+        ckpt_name = ckpt_dir + '/' + sorted(os.listdir(ckpt_dir))[-1]
+        ckpt_start = torch.load(ckpt_name)
+        model.load_state_dict(ckpt_start)
 
         dataset = NoisyCleanSet(['json/librispeech-100.json', 'json/all_noise.json'], simulation=True,
                                 ratio=1, rir='json/rir.json', dvector=None)
