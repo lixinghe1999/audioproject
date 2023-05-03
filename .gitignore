@@ -1,4 +1,6 @@
 /dataset/
+/authentication/
+/simulation/
 /pretrained_models/
 /transfer_function/
 *.pdf
@@ -6,5 +8,6 @@
 *.pth
 *.ckpt
 *.npz
+*.npy
+*.json
 /.idea
-/event/FL/
