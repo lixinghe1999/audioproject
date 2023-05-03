@@ -1,6 +1,4 @@
 /dataset/
-/authentication/
-/simulation/
 /pretrained_models/
 /transfer_function/
 *.pdf
@@ -10,3 +8,4 @@
 *.npz
 *.npy
 *.json
+*.png

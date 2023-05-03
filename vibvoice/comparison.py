@@ -1,5 +1,5 @@
-from enhancement.model.fullsubnet import FullSubNet
-from enhancement.model.vibvoice import A2net
+from vibvoice.model.fullsubnet import FullSubNet
+from vibvoice.model.vibvoice import A2net
 from dataset import NoisyCleanSet
 from model_zoo import test_vibvoice, test_fullsubnet
 import scipy.io.wavfile as wav
